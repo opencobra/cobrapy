@@ -24,20 +24,18 @@ from warnings import warn
 
 # When https://github.com/symengine/symengine.py/issues/334 is resolved, change it to
 # optlang.symbolics.Symbol
+from sympy import Expr as sp_Expr
 from sympy import Symbol as Symbol
-from sympy import SympifyError, simplify_logic, symbols
 from sympy.core.singleton import S
-from sympy.logic.boolalg import And as sp_And
+from sympy.logic.boolalg import And as sp_And, Equivalent
 from sympy.logic.boolalg import Or as sp_Or
 from sympy.parsing.sympy_parser import parse_expr as parse_expr_sympy
-from sympy.parsing.sympy_parser import standard_transformations
 
 from _ast import AST
 from cobra.core.dictlist import DictList
 from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
-
 
 keywords = list(kwlist)
 keywords.remove("and")
@@ -581,8 +579,67 @@ class GPR(Module):
             gpr=format_long_string(self.to_string(), 100)
         )
 
-    # def as_symbolic(self):
-    #     # ...
+    def as_symbolic(
+        self, expr: Union[Expression, BoolOp, Name, list], GPRGene_dict=None
+    ) -> Union[sp_Or, sp_And, None]:
+        """parse gpr into SYMPY using afst and Node Visitor
+        Parameters
+        ----------
+        expr : AST or GPR or list or Name or BoolOp
+            compiled GPR
+        GPRGene_dict: dict
+            dictionary from gene id to GPRGeneSymbol
+        Returns
+        -------
+        tuple
+            elements SYMPY expression or None if the GPR is empty
+        """
+        if isinstance(expr, Expression) | isinstance(expr, GPR):
+            if GPRGene_dict is None:
+                GPRGene_dict = {gid: Symbol(name=gid) for gid in expr.geneset}
+            return (
+                self.as_symbolic(expr.body, GPRGene_dict)
+                if hasattr(expr, "body")
+                else None
+            )
+        else:
+            if isinstance(expr, Name):
+                return GPRGene_dict.get(expr.id)
+            elif isinstance(expr, BoolOp):
+                op = expr.op
+                if isinstance(op, Or):
+                    sym_exp = sp_Or(
+                        *[
+                            parse_gpr_sympy_like_ast2str(i, GPRGene_dict)
+                            for i in expr.values
+                        ]
+                    )
+                elif isinstance(op, And):
+                    sym_exp = sp_And(
+                        *[
+                            parse_gpr_sympy_like_ast2str(i, GPRGene_dict)
+                            for i in expr.values
+                        ]
+                    )
+                else:
+                    raise TypeError("unsupported operation " + op.__class__.__name)
+                return sym_exp
+            elif expr is None or (isinstance(expr, list) and len(expr) == 0):
+                return None
+            else:
+                raise TypeError("unsupported operation  " + repr(expr))
+
+    def __eq__(self, other):
+        if not hasattr(self, "body"):
+            if not hasattr(other, "body"):
+                return True
+            else:
+                return False
+        else:
+            if not hasattr(other, "body"):
+                return False
+            return Equivalent(self.as_symbolic(self.body),
+                              other.as_symbolic(other.body))
 
 
 def eval_gpr(expr, knockouts):
