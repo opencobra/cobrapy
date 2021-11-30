@@ -342,7 +342,7 @@ def remove_genes(
             # if the reaction is not removed, remove the gene
             # from its gpr
             remover.visit(rxn.gpr)
-            rxn.update_genes_from_gpr()
+            rxn._update_genes_from_gpr()
     for gene in gene_set:
         model.genes.remove(gene)
         # remove reference to the gene in all groups

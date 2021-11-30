@@ -1190,7 +1190,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         if gpr is not None and hasattr(gpr, "body"):
             # replace ids in string
             if f_replace and F_GENE_REV in f_replace:
-                idmap = {gid: f_replace[F_GENE_REV](gid) for gid in gpr.geneset}
+                idmap = {gid: f_replace[F_GENE_REV](gid) for gid in gpr.genes}
                 gpr_new = gpr.to_string(names=idmap)
             else:
                 gpr_new = gpr.to_string()
