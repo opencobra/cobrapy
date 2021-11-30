@@ -17,7 +17,11 @@ from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.core.reaction import Reaction
 from cobra.core.solution import get_solution
-from cobra.medium import find_boundary_types, find_external_compartment, sbo_terms
+from cobra.medium import (
+    find_boundary_types,
+    find_external_compartment,
+    sbo_terms,
+)
 from cobra.util.context import HistoryManager, get_context, resettable
 from cobra.util.solver import (
     add_cons_vars_to_problem,

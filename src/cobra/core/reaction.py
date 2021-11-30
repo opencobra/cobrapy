@@ -484,9 +484,7 @@ class Reaction(Object):
 
     @property
     def gpr(self):
-        """Return the GPR associated with the reaction
-
-        """
+        """Return the GPR associated with the reaction"""
         return self._gpr
 
     @gpr.setter
