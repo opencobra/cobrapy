@@ -17,7 +17,6 @@ def test_gpr() -> None:
     """Test GPR evaluation."""
     model = Model()
     reaction = Reaction("test")
-    reaction._update_genes_from_gpr()
 
     # Set GPR to an empty string
     reaction.gene_reaction_rule = ""

@@ -556,7 +556,7 @@ def ast2str(
     string
         The gene reaction rule
     .. deprecated ::
-    Use GPR.eval(knockouts=) in the future. Because of the GPR() class,
+    Use GPR.to_string(names=) in the future. Because of the GPR() class,
     this function will be removed.
     """
     warn(
