@@ -19,7 +19,7 @@ from ast import (
 from ast import parse as ast_parse
 from copy import deepcopy
 from keyword import kwlist
-from typing import FrozenSet, Iterable, Set, Union
+from typing import FrozenSet, Iterable, Set, Tuple, Union
 from warnings import warn
 
 from cobra.core.dictlist import DictList
@@ -78,7 +78,7 @@ class GPRWalker(NodeVisitor):
         NodeVisitor.__init__(self)
         self.gene_set = set()
 
-    def visit_Name(self, node):
+    def visit_Name(self, node) -> None:
         self.gene_set.add(node.id)
 
     def visit_BoolOp(self, node: BoolOp) -> None:
@@ -116,7 +116,7 @@ class GPRCleaner(NodeTransformer):
             raise TypeError("unsupported operation '%s'" % node.op.__class__.__name__)
 
 
-def parse_gpr(str_expr):
+def parse_gpr(str_expr: str) -> Tuple:
     """parse gpr into AST
 
     Parameters
@@ -305,7 +305,7 @@ class GPR(Module):
 
     #       elif isinstance(gpr_from, "sbml")
 
-    def from_string(self, string_gpr) -> None:
+    def from_string(self, string_gpr: str) -> None:
         """
 
         Parameters
@@ -370,7 +370,7 @@ class GPR(Module):
         self.update_genes()
         return frozenset(self._genes)
 
-    def update_genes(self):
+    def update_genes(self) -> None:
         if hasattr(self, "body"):
             walker = GPRWalker()
             walker.visit(self)
@@ -381,7 +381,7 @@ class GPR(Module):
     # @staticmethod
     # def from_sbml(sbml_exp):
 
-    def __eval_gpr(self, expr, knockouts):
+    def __eval_gpr(self, expr, knockouts) -> bool:
         """evaluate compiled ast of gene_reaction_rule with knockouts
 
         Parameters
@@ -417,7 +417,7 @@ class GPR(Module):
         else:
             raise TypeError("unsupported operation  " + repr(expr))
 
-    def eval(self, knockouts: Union[DictList, Set, str, Iterable] = None):
+    def eval(self, knockouts: Union[DictList, Set, str, Iterable] = None) -> bool:
         if knockouts is None:
             knockouts = set()
         if knockouts is str:
