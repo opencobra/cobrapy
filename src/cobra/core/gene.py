@@ -13,12 +13,13 @@ from ast import (
     Module,
     Name,
     NodeTransformer,
+    NodeVisitor,
     Or,
 )
 from ast import parse as ast_parse
 from copy import deepcopy
 from keyword import kwlist
-from typing import FrozenSet, Set, Union
+from typing import FrozenSet, Iterable, Set, Union
 from warnings import warn
 
 from cobra.core.dictlist import DictList
@@ -72,6 +73,20 @@ def eval_gpr(expr, knockouts):
     return expr.eval(knockouts=knockouts)
 
 
+class GPRWalker(NodeVisitor):
+    def __init__(self):
+        NodeVisitor.__init__(self)
+        self.gene_set = set()
+
+    def visit_Name(self, node):
+        self.gene_set.add(node.id)
+
+    def visit_BoolOp(self, node: BoolOp) -> None:
+        self.generic_visit(node)
+        for val in node.values:
+            self.visit(val)
+
+
 class GPRCleaner(NodeTransformer):
     """Parses compiled ast of a gene_reaction_rule and identifies genes
 
@@ -123,8 +138,8 @@ def parse_gpr(str_expr):
         "Use GPR(string_gpr=str_expr) in the future",
         DeprecationWarning,
     )
-    gpr_tree = GPR.__init__(gpr_from=str_expr)
-    return gpr_tree, GPR.genes
+    gpr_tree = GPR(gpr_from=str_expr)
+    return gpr_tree, gpr_tree.genes
 
 
 class Gene(Species):
@@ -161,10 +176,6 @@ class Gene(Species):
         if not isinstance(value, bool):
             raise ValueError("expected boolean")
         self._functional = value
-        # if value:
-        #     self._gpr_gene.is_gene_functional = S.true
-        # else:
-        #     self._gpr_gene.is_gene_functional = S.false
 
     def knock_out(self):
         """Knockout gene by marking it as non-functional and setting all
@@ -284,8 +295,11 @@ class GPR(Module):
         if gpr_from:
             if isinstance(gpr_from, str):
                 self.from_string(gpr_from)
-            elif isinstance(gpr_from, (AST, Name, Or, And)):
-                self.body = gpr_from
+            elif isinstance(gpr_from, (AST, Or, And, Name)):
+                cleaner = GPRCleaner()
+                cleaner.visit(gpr_from)
+                self._genes = cleaner.gene_set
+                self.body = gpr_from.body
             else:
                 raise (TypeError, "GPR requires string or AST")
 
@@ -327,7 +341,8 @@ class GPR(Module):
             if "AND" in string_gpr or "OR" in string_gpr:
                 warn(
                     "uppercase AND/OR found in rule '%s' for '%s'"
-                    % (string_gpr, repr(self))
+                    % (string_gpr, repr(self)),
+                    SyntaxWarning,
                 )
                 string_gpr = uppercase_AND.sub("and", string_gpr)
                 string_gpr = uppercase_OR.sub("or", string_gpr)
@@ -336,11 +351,12 @@ class GPR(Module):
             except SyntaxError as e:
                 warn(
                     "malformed gene_reaction_rule '%s' for %s"
-                    % (string_gpr, repr(self))
+                    % (string_gpr, repr(self)),
+                    SyntaxWarning,
                 )
                 warn("GPR will be empty")
                 warn(e.msg)
-                return None
+                return
         cleaner = GPRCleaner()
         cleaner.visit(tree)
         self._genes = cleaner.gene_set
@@ -356,9 +372,9 @@ class GPR(Module):
 
     def update_genes(self):
         if hasattr(self, "body"):
-            cleaner = GPRCleaner()
-            cleaner.visit(self.body)
-            self._genes = cleaner.gene_set
+            walker = GPRWalker()
+            walker.visit(self)
+            self._genes = walker.gene_set
             if "" in self._genes:
                 self._genes.remove("")
 
@@ -383,6 +399,8 @@ class GPR(Module):
         """
         # just always call the recursions as self.__eval_gpr(a, b)
         if isinstance(expr, Expression) or isinstance(expr, GPR):
+            if not hasattr(expr, "body"):
+                return True
             return self.__eval_gpr(expr.body, knockouts)
         elif isinstance(expr, Name):
             return expr.id not in knockouts
@@ -399,9 +417,11 @@ class GPR(Module):
         else:
             raise TypeError("unsupported operation  " + repr(expr))
 
-    def eval(self, knockouts: Union[DictList, Set] = None):
+    def eval(self, knockouts: Union[DictList, Set, str, Iterable] = None):
         if knockouts is None:
             knockouts = set()
+        if knockouts is str:
+            knockouts = list(knockouts)
         if hasattr(self, "body"):
             return self.__eval_gpr(self.body, knockouts=knockouts)
         else:
