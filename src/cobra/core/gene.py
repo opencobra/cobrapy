@@ -600,7 +600,7 @@ class GPR(Module):
         if expr is None:
             expr = self
         if GPRGene_dict is None:
-            GPRGene_dict = {gid: Symbol(name=gid) for gid in expr.geneset}
+            GPRGene_dict = {gid: Symbol(name=gid) for gid in expr.genes}
         if isinstance(expr, Expression) | isinstance(expr, GPR):
             return (
                 self.as_symbolic(expr.body, GPRGene_dict)

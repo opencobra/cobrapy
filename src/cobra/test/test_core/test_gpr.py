@@ -3,6 +3,9 @@ import itertools
 from ast import parse as ast_parse
 
 import pytest
+from sympy.core.symbol import Symbol
+from sympy.logic import And, Or
+from sympy.logic.boolalg import BooleanFunction
 
 from cobra.core.gene import GPR, ast2str, eval_gpr, parse_gpr
 
@@ -231,17 +234,51 @@ def test_deprecated_gpr():
     with pytest.deprecated_call():
         assert not eval_gpr(gpr1, {"c"})
 
+
 def test_gpr_as_symbolic() -> None:
-    pass
+    gpr1 = GPR()
+    assert gpr1.as_symbolic() is None
+    gpr1 = GPR("a")
+    assert isinstance(gpr1.as_symbolic(), Symbol)
+    assert gpr1.as_symbolic() == Symbol("a")
+    gpr1 = GPR("a & b")
+    isinstance(gpr1.as_symbolic(), BooleanFunction)
+    assert isinstance(gpr1.as_symbolic(), And)
+    assert gpr1.as_symbolic() == And(Symbol("a"), Symbol("b"))
+    gpr1 = GPR("a | b")
+    assert isinstance(gpr1.as_symbolic(), BooleanFunction)
+    assert isinstance(gpr1.as_symbolic(), Or)
+    assert gpr1.as_symbolic() == Or(Symbol("a"), Symbol("b"))
+    gpr1 = GPR("a | b | c")
+    assert isinstance(gpr1.as_symbolic(), BooleanFunction)
+    assert isinstance(gpr1.as_symbolic(), Or)
+    assert gpr1.as_symbolic() == Or(Symbol("a"), Symbol("b"), Symbol("c"))
+    gpr1 = GPR("(a OR b) AND c")
+    assert isinstance(gpr1.as_symbolic(), BooleanFunction)
+    assert isinstance(gpr1.as_symbolic(), And)
+    assert gpr1.as_symbolic() == And(Symbol("c"), Or(Symbol("a"), Symbol("b")))
 
 
 def test_gpr_equality() -> None:
     assert GPR() == GPR()
-    assert GPR() != GPR('a')
-    assert GPR('a') == GPR('a')
+    assert GPR() != GPR("a")
+    assert GPR("a") == GPR("a")
 
 
 def test_gpr_equality_with_bolean_logic() -> None:
-    gpr1 = GPR('a & b')
-    gpr2 = GPR('b & a')
+    gpr1 = GPR("a & b")
+    gpr2 = GPR("b & a")
+    assert gpr1 == gpr2
+    gpr1 = GPR("a | b | c")
+    gpr2 = GPR("(a or b) or c")
+    assert gpr1 == gpr2
+    gpr1 = GPR("(a and b) and c")
+    gpr2 = GPR("c & b & a")
+    assert gpr1 == gpr2
+    gpr1 = GPR("(a OR b) AND c")
+    gpr2 = GPR("a | b & c")
+    assert gpr1 == gpr2
+    gpr2 = GPR("(a & c) | b & c")
+    assert gpr1 == gpr2
+    gpr2 = GPR("c & (a | b)")
     assert gpr1 == gpr2
