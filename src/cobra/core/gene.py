@@ -32,11 +32,11 @@ from sympy.logic.boolalg import Equivalent
 from sympy.logic.boolalg import Or as sp_Or
 from sympy.parsing.sympy_parser import parse_expr as parse_expr_sympy
 
-from _ast import AST
 from cobra.core.dictlist import DictList
 from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
+
 
 keywords = list(kwlist)
 keywords.remove("and")
