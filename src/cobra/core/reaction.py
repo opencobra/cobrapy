@@ -11,6 +11,7 @@ from copy import copy, deepcopy
 from functools import partial
 from math import isinf
 from operator import attrgetter
+from typing import FrozenSet
 from warnings import warn
 
 from future.utils import raise_from, raise_with_traceback
@@ -408,10 +409,22 @@ class Reaction(Object):
         return self._metabolites.copy()
 
     @property
-    def genes(self):
+    def genes(self) -> FrozenSet:
+        """Return the genes of the reaction.
+
+        Returns
+        -------
+        genes: FrozenSet
+        """
         return frozenset(self._genes)
 
-    def _update_genes_from_gpr(self, new_gene_names: set = None):
+    def _update_genes_from_gpr(self, new_gene_names: set = None) -> None:
+        """Update genes of reation based on GPR.
+
+        Parameters
+        ----------
+        new_gene_names: set
+        """
         if new_gene_names is None:
             if self._gpr is not None:
                 new_gene_names = self._gpr.genes
@@ -448,21 +461,29 @@ class Reaction(Object):
                     )
 
     @property
-    def gene_reaction_rule(self):
+    def gene_reaction_rule(self) -> str:
+        """See gene reaction rule as string.
+
+        Uses the to_string() method of the GPR class
+
+        Returns
+        -------
+        string
+
+        """
         return self._gpr.to_string()
 
     @gene_reaction_rule.setter
     def gene_reaction_rule(self, new_rule: str):
-        """Set a new GPR for the reaction, using a string expression
+        """Set a new GPR for the reaction, using a string expression.
 
         Parameters
         ----------
-        new_rule : string, which will be parsed by the string
-        parser in GPR, GPR.from_string(new_rule). It makes a new GPR, and does not
-        modify the existing one.
+        new_rule : string
+            which will be parsed by the string parser in GPR, GPR.from_string(new_rule).
+            It makes a new GPR, and does not modify the existing one.
 
         """
-
         # TODO: Do this :)
         if get_context(self):
             warn("Context management not implemented for " "gene reaction rules")
@@ -484,12 +505,12 @@ class Reaction(Object):
 
     @property
     def gpr(self):
-        """Return the GPR associated with the reaction"""
+        """Return the GPR associated with the reaction."""
         return self._gpr
 
     @gpr.setter
     def gpr(self, value: GPR):
-        """Set a new GPR for the reaction, using GPR() class
+        """Set a new GPR for the reaction, using GPR() class.
 
         Parameters
         ----------
