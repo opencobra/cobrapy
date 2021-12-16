@@ -34,6 +34,7 @@ import logging
 import os
 import re
 import traceback
+from ast import And, BoolOp, Module, Name, Or
 from collections import defaultdict, namedtuple
 from copy import deepcopy
 from sys import platform
@@ -41,12 +42,13 @@ from sys import platform
 import libsbml
 
 import cobra
-from cobra.core import Gene, Group, Metabolite, Model, Reaction
+from cobra.core import GPR, Gene, Group, Metabolite, Model, Reaction
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
 
 
 try:
+    # noinspection PyCompatibility
     from cStringIO import StringIO  # Python 2
 except ImportError:
     from io import StringIO
@@ -565,35 +567,23 @@ def _sbml_to_model(
 
     # GPR rules
     def process_association(ass):
-        """Recursively convert gpr association to a gpr string.
+        """Recursively convert gpr association to a GPR class
         Defined as inline functions to not pass the replacement dict around.
         """
         if ass.isFbcOr():
-            return " ".join(
-                [
-                    "(",
-                    " or ".join(
-                        process_association(c) for c in ass.getListOfAssociations()
-                    ),
-                    ")",
-                ]
+            return BoolOp(
+                Or(), [process_association(c) for c in ass.getListOfAssociations()]
             )
         elif ass.isFbcAnd():
-            return " ".join(
-                [
-                    "(",
-                    " and ".join(
-                        process_association(c) for c in ass.getListOfAssociations()
-                    ),
-                    ")",
-                ]
+            return BoolOp(
+                And(), [process_association(c) for c in ass.getListOfAssociations()]
             )
         elif ass.isGeneProductRef():
             gid = ass.getGeneProduct()
             if f_replace and F_GENE in f_replace:
-                return f_replace[F_GENE](gid)
+                return Name(id=f_replace[F_GENE](gid))
             else:
-                return gid
+                return Name(id=gid)
 
     # Reactions
     missing_bounds = False
@@ -721,7 +711,9 @@ def _sbml_to_model(
                 association = (
                     gpa.getAssociation()
                 )  # noqa: E501 type: libsbml.FbcAssociation
-                gpr = process_association(association)
+                gpr = Module(process_association(association))
+            else:
+                gpr = None
         else:
             # fallback to notes information
             notes = cobra_reaction.notes
@@ -742,7 +734,7 @@ def _sbml_to_model(
                 if f_replace and F_GENE in f_replace:
                     gpr = " ".join(f_replace[F_GENE](t) for t in gpr.split(" "))
 
-        cobra_reaction.gene_reaction_rule = gpr
+        cobra_reaction.gpr = GPR(gpr_from=gpr)
 
     cobra_model.add_reactions(reactions)
 
