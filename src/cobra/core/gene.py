@@ -48,7 +48,11 @@ replacements = (
 
 
 def eval_gpr(expr, knockouts):
-    """evaluate compiled ast of gene_reaction_rule with knockouts
+    """Evaluate compiled ast of gene_reaction_rule with knockouts.
+
+    .. deprecated ::
+    Use GPR().eval() in the future. Because of the GPR() class,
+    this function will be removed.
 
     Parameters
     ----------
@@ -62,9 +66,6 @@ def eval_gpr(expr, knockouts):
     bool
         True if the gene reaction rule is true with the given knockouts
         otherwise false
-    .. deprecated ::
-    Use GPR().eval() in the future. Because of the GPR() class,
-    this function will be removed.
     """
     warn(
         "eval_gpr() will be removed soon." "Use GPR().eval(knockouts) in the future",
@@ -74,6 +75,11 @@ def eval_gpr(expr, knockouts):
 
 
 class GPRWalker(NodeVisitor):
+    """Identifies genes in an AST/GPR tree.
+
+    Walks over the tree, and identifies the id of each Name node
+    """
+
     def __init__(self):
         NodeVisitor.__init__(self)
         self.gene_set = set()
@@ -88,10 +94,11 @@ class GPRWalker(NodeVisitor):
 
 
 class GPRCleaner(NodeTransformer):
-    """Parses compiled ast of a gene_reaction_rule and identifies genes
+    """Parses compiled ast of a gene_reaction_rule and identifies genes.
 
     Parts of the tree are rewritten to allow periods in gene ID's and
-    bitwise boolean operations"""
+    bitwise boolean operations
+    """
 
     def __init__(self):
         NodeTransformer.__init__(self)
@@ -117,7 +124,7 @@ class GPRCleaner(NodeTransformer):
 
 
 def parse_gpr(str_expr: str) -> Tuple:
-    """parse gpr into AST
+    """Parse gpr into AST.
 
     Parameters
     ----------
@@ -143,7 +150,7 @@ def parse_gpr(str_expr: str) -> Tuple:
 
 
 class Gene(Species):
-    """A Gene in a cobra model
+    """A Gene in a cobra model.
 
     Parameters
     ----------
@@ -158,12 +165,24 @@ class Gene(Species):
     """
 
     def __init__(self, id=None, name="", functional=True):
+        """Initialize a gene.
+
+        Parameters
+        ----------
+        id: str
+            A string that will identify the gene.
+        name: str
+            A (longer) string that will identify the gene. Can have more special
+            characters.
+        functional: bool
+            A flag whether or not the gene is functional
+        """
         Species.__init__(self, id=id, name=name)
         self._functional = functional
 
     @property
     def functional(self):
-        """A flag indicating if the gene is functional.
+        """Flag indicating if the gene is functional.
 
         Changing the flag is reverted upon exit if executed within the model
         as context.
@@ -178,9 +197,10 @@ class Gene(Species):
         self._functional = value
 
     def knock_out(self):
-        """Knockout gene by marking it as non-functional and setting all
-        associated reactions bounds to zero.
+        """Knockout gene by marking it as non-functional.
 
+        Knockout gene by marking it as non-functional and setting all
+        associated reactions bounds to zero.
         The change is reverted upon exit if executed within the model as
         context.
         """
@@ -192,7 +212,7 @@ class Gene(Species):
     def remove_from_model(
         self, model=None, make_dependent_reactions_nonfunctional=True
     ):
-        """Removes the association
+        """Removes the association.
 
         Parameters
         ----------
@@ -281,7 +301,7 @@ class Gene(Species):
 
 
 class GPR(Module):
-    """A Gene Reaction rule in a cobra model, using AST as base class
+    """A Gene Reaction rule in a cobra model, using AST as base class.
 
     Parameters
     ----------
@@ -303,10 +323,8 @@ class GPR(Module):
             else:
                 raise (TypeError, "GPR requires string or AST")
 
-    #       elif isinstance(gpr_from, "sbml")
-
     def from_string(self, string_gpr: str) -> None:
-        """
+        """Construct a GPR from a string.
 
         Parameters
         ----------
@@ -367,10 +385,25 @@ class GPR(Module):
 
     @property
     def genes(self) -> FrozenSet:
+        """To check the genes.
+
+        This property updates the genes before returning them, in case the GPR was
+        changed and the genes weren't.
+
+        Returns
+        -------
+        genes: frozenset
+            All the genes in a frozen set. Do not try to change them with this property.
+        """
         self.update_genes()
         return frozenset(self._genes)
 
     def update_genes(self) -> None:
+        """Update genes, used after changes in GPR.
+
+        Walks along the AST tree of the GPR class, and modifies self._genes
+
+        """
         if hasattr(self, "body"):
             walker = GPRWalker()
             walker.visit(self)
@@ -378,11 +411,8 @@ class GPR(Module):
             if "" in self._genes:
                 self._genes.remove("")
 
-    # @staticmethod
-    # def from_sbml(sbml_exp):
-
     def __eval_gpr(self, expr, knockouts) -> bool:
-        """evaluate compiled ast of gene_reaction_rule with knockouts
+        """Evaluate compiled ast of gene_reaction_rule with knockouts.
 
         Parameters
         ----------
@@ -418,6 +448,23 @@ class GPR(Module):
             raise TypeError("unsupported operation  " + repr(expr))
 
     def eval(self, knockouts: Union[DictList, Set, str, Iterable] = None) -> bool:
+        """Evaluate compiled ast of gene_reaction_rule with knockouts.
+
+        This function calls __eval_gpr, but allows more flexibility in input, including
+        name, and list.
+
+        Parameters
+        ----------
+        knockouts
+            Which gene or genes to knoc out
+
+        Returns
+        -------
+        bool
+            True if the gene reaction rule is true with the given knockouts
+            otherwise false
+
+        """
         if knockouts is None:
             knockouts = set()
         if knockouts is str:
@@ -433,7 +480,7 @@ class GPR(Module):
         level: int = 0,
         names: dict = None,
     ) -> str:
-        """convert compiled ast to gene_reaction_rule str
+        """Convert compiled ast to gene_reaction_rule str.
 
         Parameters
         ----------
@@ -476,7 +523,7 @@ class GPR(Module):
         pass
 
     def to_string(self, names: dict = None) -> str:
-        """convert compiled ast to gene_reaction_rule str
+        """Convert compiled ast to gene_reaction_rule str.
 
         Parameters
         ----------
@@ -489,11 +536,15 @@ class GPR(Module):
         ------
         string
             The gene reaction rule
+
+        Notes
+        -----
+        Calls __aststr()
         """
         return self.__ast2str(self, names=names)
 
     def copy(self):
-        """Copy a GPR"""
+        """Copy a GPR."""
         return deepcopy(self)
 
     def __repr__(self):
@@ -504,7 +555,7 @@ class GPR(Module):
         )
 
     def __str__(self):
-        """convert compiled ast to gene_reaction_rule str
+        """Convert compiled ast to gene_reaction_rule str.
 
         Parameters
         ----------
@@ -537,7 +588,7 @@ class GPR(Module):
 def ast2str(
     expr: Union[Expression, GPR, BoolOp, Name, list], level: int = 0, names: dict = None
 ) -> str:
-    """convert compiled ast to gene_reaction_rule str
+    """Convert compiled ast to gene_reaction_rule str.
 
     Parameters
     ----------

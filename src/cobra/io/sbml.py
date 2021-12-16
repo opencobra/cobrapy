@@ -566,6 +566,7 @@ def _sbml_to_model(
     # GPR rules
     def process_association(ass):
         """Recursively convert gpr association to a GPR class
+
         Defined as inline functions to not pass the replacement dict around.
         """
         if ass.isFbcOr():
