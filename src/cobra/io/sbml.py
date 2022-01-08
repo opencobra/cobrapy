@@ -33,7 +33,6 @@ import datetime
 import logging
 import os
 import re
-import traceback
 from collections import defaultdict, namedtuple
 from copy import deepcopy
 from sys import platform
