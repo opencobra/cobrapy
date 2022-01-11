@@ -47,6 +47,7 @@ from cobra.util.solver import linear_reaction_coefficients, set_objective
 
 
 try:
+    # noinspection PyCompatibility
     from cStringIO import StringIO  # Python 2
 except ImportError:
     from io import StringIO
