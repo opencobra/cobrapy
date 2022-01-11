@@ -565,7 +565,7 @@ def _sbml_to_model(
 
     # GPR rules
     def process_association(ass):
-        """Recursively convert gpr association to a GPR class
+        """Recursively convert gpr association to a GPR class.
 
         Defined as inline functions to not pass the replacement dict around.
         """
@@ -713,6 +713,7 @@ def _sbml_to_model(
                 gpr = Module(process_association(association))
             else:
                 gpr = None
+            cobra_reaction.gpr = GPR(gpr_from=gpr)
         else:
             # fallback to notes information
             notes = cobra_reaction.notes
@@ -732,8 +733,7 @@ def _sbml_to_model(
                 )
                 if f_replace and F_GENE in f_replace:
                     gpr = " ".join(f_replace[F_GENE](t) for t in gpr.split(" "))
-
-        cobra_reaction.gpr = GPR(gpr_from=gpr)
+            cobra_reaction.gpr = GPR().from_string(gpr)
 
     cobra_model.add_reactions(reactions)
 

@@ -7,6 +7,12 @@ import pytest
 from cobra.core.gene import GPR, ast2str, eval_gpr, parse_gpr
 
 
+def test_gpr():
+    gpr1 = GPR().from_string(string_gpr="")
+    assert isinstance(gpr1.body, list)
+    assert len(gpr1.body) == 0
+
+
 def test_empty_gpr() -> None:
     gpr1 = GPR()
     assert len(gpr1._genes) == 0
@@ -15,6 +21,7 @@ def test_empty_gpr() -> None:
     assert len(gpr1.genes) == 0
     assert gpr1.to_string() == ""
     assert gpr1.eval()
+    gpr2 = gpr1.copy()
     assert not hasattr(gpr1, "body")
     gpr1 = GPR(None)
     assert len(gpr1._genes) == 0
@@ -24,7 +31,7 @@ def test_empty_gpr() -> None:
     assert gpr1.to_string() == ""
     assert gpr1.eval()
     assert not hasattr(gpr1, "body")
-    gpr1.from_string("a")
+    gpr1 = gpr1.from_string("a")
     assert len(gpr1._genes) == 1
     assert len(gpr1.genes) == 1
     gpr1.update_genes()
@@ -36,7 +43,7 @@ def test_empty_gpr() -> None:
 
 
 def test_and_gpr():
-    gpr1 = GPR("a & b")
+    gpr1 = GPR.from_string("a & b")
     assert len(gpr1._genes) == 2
     assert len(gpr1.genes) == 2  # This will test update_genes()
     gpr1.update_genes()
@@ -45,7 +52,7 @@ def test_and_gpr():
     assert gpr1.to_string() == "a and b"
     assert gpr1.eval()
     assert hasattr(gpr1, "body")
-    gpr1.from_string("a and b")
+    gpr1 = gpr1.from_string("a and b")
     assert len(gpr1._genes) == 2
     assert len(gpr1.genes) == 2  # This will test update_genes()
     gpr1.update_genes()
@@ -63,7 +70,7 @@ def test_and_gpr():
         assert gpr1.to_string() == "a and b"
         assert gpr1.eval()
         assert hasattr(gpr1, "body")
-    gpr1.from_string("a & b & c")
+    gpr1 = gpr1.from_string("a & b & c")
     assert len(gpr1._genes) == 3
     assert len(gpr1.genes) == 3  # This will test update_genes()
     gpr1.update_genes()
@@ -76,7 +83,7 @@ def test_and_gpr():
     assert not gpr1.eval("c")
     assert not gpr1.eval(["a", "b"])
     assert hasattr(gpr1, "body")
-    gpr1.from_string("a")
+    gpr1 = gpr1.from_string("a")
     assert len(gpr1.genes) == 1
     gpr1.update_genes()
     assert len(gpr1.genes) == 1
@@ -86,7 +93,7 @@ def test_and_gpr():
 
 
 def test_or_gpr():
-    gpr1 = GPR("a | b")
+    gpr1 = GPR.from_string("a | b")
     assert len(gpr1._genes) == 2
     assert len(gpr1.genes) == 2
     gpr1.update_genes()
@@ -95,7 +102,7 @@ def test_or_gpr():
     assert gpr1.to_string() == "a or b"
     assert gpr1.eval()
     assert hasattr(gpr1, "body")
-    gpr1.from_string("a or b")
+    gpr1 = gpr1.from_string("a or b")
     assert len(gpr1._genes) == 2
     assert len(gpr1.genes) == 2  # This will test update_genes()
     gpr1.update_genes()
@@ -105,7 +112,7 @@ def test_or_gpr():
     assert hasattr(gpr1, "body")
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        gpr1.from_string("a OR b")
+        gpr1 = gpr1.from_string("a OR b")
         assert len(gpr1._genes) == 2
         assert len(gpr1.genes) == 2  # This will test update_genes()
         gpr1.update_genes()
@@ -116,7 +123,7 @@ def test_or_gpr():
         assert gpr1.eval(["b"])
         assert not gpr1.eval(["a", "b"])
         assert hasattr(gpr1, "body")
-    gpr1.from_string("a | b | c")
+    gpr1 = gpr1.from_string("a | b | c")
     assert len(gpr1._genes) == 3
     assert len(gpr1.genes) == 3  # This will test update_genes()
     gpr1.update_genes()
@@ -130,7 +137,7 @@ def test_or_gpr():
     assert gpr1.eval(["a", "b"])
     assert not gpr1.eval(["a", "b", "c"])
     assert hasattr(gpr1, "body")
-    gpr1.from_string("a")
+    gpr1 = gpr1.from_string("a")
     assert len(gpr1.genes) == 1
     gpr1.update_genes()
     assert len(gpr1.genes) == 1
@@ -140,7 +147,7 @@ def test_or_gpr():
 
 
 def test_complicated_gpr():
-    gpr1 = GPR("(a | b) & c")
+    gpr1 = GPR.from_string("(a | b) & c")
     assert len(gpr1._genes) == 3
     assert len(gpr1.genes) == 3
     gpr1.update_genes()
@@ -148,7 +155,7 @@ def test_complicated_gpr():
     assert gpr1.to_string() == "(a or b) and c"
     assert gpr1.eval()
     assert hasattr(gpr1, "body")
-    gpr1.from_string("(a or b) and c")
+    gpr1 = gpr1.from_string("(a or b) and c")
     assert len(gpr1._genes) == 3
     assert len(gpr1.genes) == 3  # This will test update_genes()
     gpr1.update_genes()
@@ -158,7 +165,7 @@ def test_complicated_gpr():
     assert hasattr(gpr1, "body")
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        gpr1.from_string("(a OR b) AND c")
+        gpr1 = gpr1.from_string("(a OR b) AND c")
         assert len(gpr1._genes) == 3
         assert len(gpr1.genes) == 3  # This will test update_genes()
         gpr1.update_genes()
@@ -173,7 +180,7 @@ def test_complicated_gpr():
         assert not gpr1.eval("c")
         assert not gpr1.eval(["a", "b"])
         assert not gpr1.eval(["a", "b", "c"])
-    gpr1 = GPR("a & c | b & c")
+    gpr1 = GPR.from_string("a & c | b & c")
     assert len(gpr1._genes) == 3
     assert len(gpr1.genes) == 3  # This will test update_genes()
     gpr1.update_genes()
@@ -240,15 +247,15 @@ def test_wrong_input_gpr():
     with pytest.raises(TypeError):
         GPR({"a", "b"})
     with pytest.warns(SyntaxWarning):
-        GPR("a |")
+        GPR.from_string("a |")
     with pytest.warns(SyntaxWarning):
-        gpr1 = GPR("a & ")
+        gpr1 = GPR.from_string("a & ")
         assert not hasattr(gpr1, "body")
         assert len(gpr1.genes) == 0
 
 
 def test_deprecated_gpr():
-    gpr1 = GPR("(a | b) & c")
+    gpr1 = GPR.from_string("(a | b) & c")
     with pytest.deprecated_call():
         assert ast2str(gpr1) == "(a or b) and c"
     with pytest.deprecated_call():

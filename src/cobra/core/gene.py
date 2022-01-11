@@ -47,33 +47,6 @@ replacements = (
 )
 
 
-def eval_gpr(expr, knockouts):
-    """Evaluate compiled ast of gene_reaction_rule with knockouts.
-
-    .. deprecated ::
-    Use GPR().eval() in the future. Because of the GPR() class,
-    this function will be removed.
-
-    Parameters
-    ----------
-    expr : Expression or GPR or list or BoolOp or Name
-        The ast of the gene reaction rule
-    knockouts : DictList, set
-        Set of genes that are knocked out
-
-    Returns
-    -------
-    bool
-        True if the gene reaction rule is true with the given knockouts
-        otherwise false
-    """
-    warn(
-        "eval_gpr() will be removed soon." "Use GPR().eval(knockouts) in the future",
-        DeprecationWarning,
-    )
-    return expr.eval(knockouts=knockouts)
-
-
 class GPRWalker(NodeVisitor):
     """Identifies genes in an AST/GPR tree.
 
@@ -145,7 +118,7 @@ def parse_gpr(str_expr: str) -> Tuple:
         "Use GPR(string_gpr=str_expr) in the future",
         DeprecationWarning,
     )
-    gpr_tree = GPR(gpr_from=str_expr)
+    gpr_tree = GPR().from_string(str_expr)
     return gpr_tree, gpr_tree.genes
 
 
@@ -305,25 +278,34 @@ class GPR(Module):
 
     Parameters
     ----------
-    gpr_from : string or AST or Name or Or or And or list
-        A GPR in string format, which will be parsed into AST
+    gpr_from : Expression or Module or AST
+        A GPR in AST format
     """
 
-    def __init__(self, gpr_from=None, *args, **kwargs):
+    def __init__(
+        self, gpr_from: Union[Expression, Module, AST] = None, *args, **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self._genes = set()
         if gpr_from:
             if isinstance(gpr_from, str):
                 self.from_string(gpr_from)
-            elif isinstance(gpr_from, (AST, Or, And, Name)):
+                raise TypeError(
+                    f"GPR accepts AST, not string. "
+                    f'Next time, use GPR().from_string("{gpr_from}")'
+                )
+            elif isinstance(gpr_from, (Expression, Module)):
                 cleaner = GPRCleaner()
                 cleaner.visit(gpr_from)
                 self._genes = cleaner.gene_set
+                # noinspection PyTypeChecker
                 self.body = gpr_from.body
+                self.eval()
             else:
-                raise (TypeError, "GPR requires string or AST")
+                raise (TypeError, "GPR requires AST Expression or Module")
 
-    def from_string(self, string_gpr: str) -> None:
+    @classmethod
+    def from_string(cls: type, string_gpr: str):
         """Construct a GPR from a string.
 
         Parameters
@@ -334,19 +316,21 @@ class GPR(Module):
 
         Returns
         -------
-        Does not return
-
-            Sets self.body as
+        GPR:
+            returns a new GPR while setting  self.body as
             Parsed AST tree that has the gene rules
             This function also sets self._genes with the gene ids in the AST
 
         """
+        gpr = cls()
+        if not isinstance(string_gpr, str):
+            raise TypeError(f"GPR().from_string requires a str, not {type(str)}")
         uppercase_AND = re.compile(r"\bAND\b")
         uppercase_OR = re.compile(r"\bOR\b")
         str_expr = string_gpr.strip()
         if len(str_expr) == 0:
-            self.body = []
-            return
+            gpr.body = []
+            return gpr
         for char, escaped in replacements:
             if char in str_expr:
                 str_expr = str_expr.replace(char, escaped)
@@ -359,7 +343,7 @@ class GPR(Module):
             if "AND" in string_gpr or "OR" in string_gpr:
                 warn(
                     "uppercase AND/OR found in rule '%s' for '%s'"
-                    % (string_gpr, repr(self)),
+                    % (string_gpr, repr(gpr)),
                     SyntaxWarning,
                 )
                 string_gpr = uppercase_AND.sub("and", string_gpr)
@@ -369,19 +353,13 @@ class GPR(Module):
             except SyntaxError as e:
                 warn(
                     "malformed gene_reaction_rule '%s' for %s"
-                    % (string_gpr, repr(self)),
+                    % (string_gpr, repr(gpr)),
                     SyntaxWarning,
                 )
                 warn("GPR will be empty")
                 warn(e.msg)
-                return
-        cleaner = GPRCleaner()
-        cleaner.visit(tree)
-        self._genes = cleaner.gene_set
-        if "" in self._genes:
-            self._genes.remove("")
-        self.body = tree.body
-        self.eval()  # ensure the rule can be evaluated
+                return gpr
+        return cls(tree)
 
     @property
     def genes(self) -> FrozenSet:
@@ -411,7 +389,11 @@ class GPR(Module):
             if "" in self._genes:
                 self._genes.remove("")
 
-    def __eval_gpr(self, expr, knockouts) -> bool:
+    def __eval_gpr(
+        self,
+        expr: Union[Expression, list, BoolOp, Name],
+        knockouts: Union[DictList, set],
+    ) -> bool:
         """Evaluate compiled ast of gene_reaction_rule with knockouts.
 
         Parameters
@@ -437,8 +419,10 @@ class GPR(Module):
         elif isinstance(expr, BoolOp):
             op = expr.op
             if isinstance(op, Or):
+                # noinspection PyTypeChecker
                 return any(self.__eval_gpr(i, knockouts) for i in expr.values)
             elif isinstance(op, And):
+                # noinspection PyTypeChecker
                 return all(self.__eval_gpr(i, knockouts) for i in expr.values)
             else:
                 raise TypeError("unsupported operation " + op.__class__.__name__)
@@ -506,14 +490,17 @@ class GPR(Module):
         elif isinstance(expr, BoolOp):
             op = expr.op
             if isinstance(op, Or):
+                # noinspection PyTypeChecker
                 str_exp = " or ".join(
                     self.__ast2str(i, level + 1, names) for i in expr.values
                 )
             elif isinstance(op, And):
+                # noinspection PyTypeChecker
                 str_exp = " and ".join(
                     self.__ast2str(i, level + 1, names) for i in expr.values
                 )
             else:
+                # noinspection PyTypeChecker
                 raise TypeError("unsupported operation " + op.__class__.__name)
             return "(" + str_exp + ")" if level else str_exp
         elif expr is None or (isinstance(expr, list) and len(expr) == 0):
@@ -541,6 +528,7 @@ class GPR(Module):
         -----
         Calls __aststr()
         """
+        # noinspection PyTypeChecker
         return self.__ast2str(self, names=names)
 
     def copy(self):
@@ -570,13 +558,7 @@ class GPR(Module):
         return self.to_string(names={})
 
     def __repr_html__(self):
-        return """
-        <table>
-            <tr>
-                <td><strong>GPR</strong></td><td>{gpr}</td>
-            </tr>
-        </table>
-        """.format(
+        return """<p><strong>GPR</strong></p><p>{gpr}</p>""".format(
             gpr=format_long_string(self.to_string(), 100)
         )
 
@@ -584,16 +566,44 @@ class GPR(Module):
     #     # ...
 
 
+def eval_gpr(expr, knockouts):
+    """Evaluate compiled ast of gene_reaction_rule with knockouts.
+
+    .. deprecated ::
+    Use GPR().eval() in the future. Because of the GPR() class,
+    this function will be removed.
+
+    Parameters
+    ----------
+    expr : Expression or GPR
+        The ast of the gene reaction rule
+    knockouts : DictList, set
+        Set of genes that are knocked out
+
+    Returns
+    -------
+    bool
+        True if the gene reaction rule is true with the given knockouts
+        otherwise false
+    """
+    warn(
+        "eval_gpr() will be removed soon." "Use GPR().eval(knockouts) in the future",
+        DeprecationWarning,
+    )
+    if isinstance(expr, GPR):
+        return expr.eval(knockouts=knockouts)
+    else:
+        return GPR(expr).eval(knockouts=knockouts)
+
+
 # functions for gene reaction rules
-def ast2str(
-    expr: Union[Expression, GPR, BoolOp, Name, list], level: int = 0, names: dict = None
-) -> str:
+def ast2str(expr: Union[Expression, GPR], level: int = 0, names: dict = None) -> str:
     """Convert compiled ast to gene_reaction_rule str.
 
     Parameters
     ----------
-    expr : AST or GPR or list or Name or BoolOp
-        string for a gene reaction rule, e.g "a and b"
+    expr : AST or GPR
+        AST or GPR
     level : int
         internal use only
     names : dict
@@ -614,4 +624,7 @@ def ast2str(
         "ast2satr() will be removed soon. Use gpr.to_string(names=names) in the future",
         DeprecationWarning,
     )
-    return expr.to_string(names=names)
+    if isinstance(expr, GPR):
+        return expr.to_string(names=names)
+    else:
+        return GPR(expr).to_string(names=names)

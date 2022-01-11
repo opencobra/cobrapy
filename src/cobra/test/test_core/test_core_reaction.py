@@ -21,7 +21,7 @@ def test_gpr() -> None:
     # Set GPR to an empty string
     reaction.gene_reaction_rule = ""
     # Empty gene_reaction_rule leads to an empty GPR
-    assert not hasattr(reaction._gpr, "body")
+    assert hasattr(reaction._gpr, "body")
     assert reaction.gpr.to_string() == ""
     assert reaction.gpr.to_string(names={"goo": "blah"}) == ""
     # Set GPR directly (shouldn't really be used, but just a test)
