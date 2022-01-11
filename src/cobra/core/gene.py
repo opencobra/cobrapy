@@ -305,7 +305,7 @@ class GPR(Module):
                 raise (TypeError, "GPR requires AST Expression or Module")
 
     @classmethod
-    def from_string(cls: type, string_gpr: str):
+    def from_string(cls: type, string_gpr: str) -> "GPR":
         """Construct a GPR from a string.
 
         Parameters
