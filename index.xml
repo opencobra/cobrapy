@@ -6,7 +6,7 @@
     <description>Recent content on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 13 Jul 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 24 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title></title>
       <link>https://opencobra.github.io/cobrapy/intro/description/</link>
@@ -40,6 +40,22 @@ $ conda install -c conda-forge cobra For futher help refer to the detailed insta
 Please use the Google Group for help. Alternatively, you can use gitter.im for quick questions and discussions about cobrapy (faster response times).
 File bug reports and contribute to development on our github page.
 If you use cobrapy in a scientific publication, please cite our publication 😄</description>
+    </item>
+    
+    <item>
+      <title>0.23.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.23.0/</link>
+      <pubDate>Mon, 24 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.23.0/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0230&#34;&gt;Release notes for cobrapy 0.23.0&lt;/h1&gt;
+&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Make compatible with Python 3.10&lt;/li&gt;
+&lt;li&gt;Use the internal semantic GPR parser in the SBML module&lt;/li&gt;
+&lt;li&gt;Setting a growth medium will not reset export flux bounds anymore&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;other&#34;&gt;Other&lt;/h2&gt;</description>
     </item>
     
     <item>
