@@ -287,7 +287,7 @@ class GPR(Module):
     ):
         super().__init__(**kwargs)
         self._genes = set()
-        self.body = []
+        self.body = None
         if gpr_from:
             if isinstance(gpr_from, str):
                 self.from_string(gpr_from)
@@ -331,7 +331,7 @@ class GPR(Module):
         uppercase_OR = re.compile(r"\bOR\b")
         str_expr = string_gpr.strip()
         if len(str_expr) == 0:
-            gpr.body = []
+            gpr.body = None
             return gpr
         for char, escaped in replacements:
             if char in str_expr:
@@ -382,7 +382,7 @@ class GPR(Module):
         Walks along the AST tree of the GPR class, and modifies self._genes
 
         """
-        if len(self.body):
+        if self.body:
             walker = GPRWalker()
             walker.visit(self)
             self._genes = walker.gene_set
@@ -411,7 +411,7 @@ class GPR(Module):
         """
         # just always call the recursions as self._eval_gpr(a, b)
         if isinstance(expr, (Expression, GPR)):
-            if not len(expr.body):
+            if not expr.body:
                 return True
             return self._eval_gpr(expr.body, knockouts)
         elif isinstance(expr, Name):
@@ -453,7 +453,7 @@ class GPR(Module):
             knockouts = set()
         if knockouts is str:
             knockouts = list(knockouts)
-        if len(self.body):
+        if self.body:
             return self._eval_gpr(self.body, knockouts=knockouts)
         else:
             return True
@@ -484,7 +484,7 @@ class GPR(Module):
             The gene reaction rule
         """
         if isinstance(expr, (Expression, GPR)):
-            return self._ast2str(expr.body, 0, names) if len(expr.body) else ""
+            return self._ast2str(expr.body, 0, names) if expr.body else ""
         elif isinstance(expr, Name):
             return names.get(expr.id, expr.id) if names else expr.id
         elif isinstance(expr, BoolOp):
