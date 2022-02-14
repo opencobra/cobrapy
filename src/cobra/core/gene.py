@@ -97,7 +97,7 @@ class GPRCleaner(NodeTransformer):
 
 
 def parse_gpr(str_expr: str) -> Tuple:
-    """Parse gpr into AST.
+    """Parse GPR into AST.
 
     Parameters
     ----------
@@ -118,7 +118,7 @@ def parse_gpr(str_expr: str) -> Tuple:
         "Use GPR(string_gpr=str_expr) in the future",
         DeprecationWarning,
     )
-    gpr_tree = GPR().from_string(str_expr)
+    gpr_tree = GPR.from_string(str_expr)
     return gpr_tree, gpr_tree.genes
 
 
@@ -283,9 +283,9 @@ class GPR(Module):
     """
 
     def __init__(
-        self, gpr_from: Union[Expression, Module, AST] = None, *args, **kwargs
+        self, gpr_from: Union[Expression, Module, AST] = None, **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
         self._genes = set()
         if gpr_from:
             if isinstance(gpr_from, str):
@@ -302,7 +302,7 @@ class GPR(Module):
                 self.body = gpr_from.body
                 self.eval()
             else:
-                raise (TypeError, "GPR requires AST Expression or Module")
+                raise TypeError("GPR requires AST Expression or Module")
 
     @classmethod
     def from_string(cls: type, string_gpr: str) -> "GPR":
@@ -322,9 +322,9 @@ class GPR(Module):
             This function also sets self._genes with the gene ids in the AST
 
         """
-        gpr = cls()
         if not isinstance(string_gpr, str):
-            raise TypeError(f"GPR().from_string requires a str, not {type(str)}")
+            raise TypeError(f"{cls.__name__}.from_string requires a str argument, not {type(string_gpr)}.")
+        gpr = cls()
         uppercase_AND = re.compile(r"\bAND\b")
         uppercase_OR = re.compile(r"\bOR\b")
         str_expr = string_gpr.strip()
@@ -342,8 +342,7 @@ class GPR(Module):
         except (SyntaxError, TypeError) as e:
             if "AND" in string_gpr or "OR" in string_gpr:
                 warn(
-                    "uppercase AND/OR found in rule '%s' for '%s'"
-                    % (string_gpr, repr(gpr)),
+                    f"Uppercase AND/OR found in rule '{string_gpr}'.",
                     SyntaxWarning,
                 )
                 string_gpr = uppercase_AND.sub("and", string_gpr)
@@ -352,8 +351,7 @@ class GPR(Module):
                 tree = ast_parse(string_gpr, "<string>", "eval")
             except SyntaxError as e:
                 warn(
-                    "malformed gene_reaction_rule '%s' for %s"
-                    % (string_gpr, repr(gpr)),
+                    f"Malformed gene_reaction_rule '{string_gpr}' for {repr(gpr)}",
                     SyntaxWarning,
                 )
                 warn("GPR will be empty")
@@ -410,7 +408,7 @@ class GPR(Module):
             otherwise false
         """
         # just always call the recursions as self.__eval_gpr(a, b)
-        if isinstance(expr, Expression) or isinstance(expr, GPR):
+        if isinstance(expr, (Expression, GPR)):
             if not hasattr(expr, "body"):
                 return True
             return self.__eval_gpr(expr.body, knockouts)
@@ -425,11 +423,11 @@ class GPR(Module):
                 # noinspection PyTypeChecker
                 return all(self.__eval_gpr(i, knockouts) for i in expr.values)
             else:
-                raise TypeError("unsupported operation " + op.__class__.__name__)
+                raise TypeError(f"Unsupported operation: {op.__class__.__name__}")
         elif expr is None:
             return True
         else:
-            raise TypeError("unsupported operation  " + repr(expr))
+            raise TypeError(f"Unsupported operation: {repr(expr)}")
 
     def eval(self, knockouts: Union[DictList, Set, str, Iterable] = None) -> bool:
         """Evaluate compiled ast of gene_reaction_rule with knockouts.
@@ -483,7 +481,7 @@ class GPR(Module):
         string
             The gene reaction rule
         """
-        if isinstance(expr, Expression) | isinstance(expr, GPR):
+        if isinstance(expr, (Expression, GPR)):
             return self.__ast2str(expr.body, 0, names) if hasattr(expr, "body") else ""
         elif isinstance(expr, Name):
             return names.get(expr.id, expr.id) if names else expr.id
@@ -501,13 +499,12 @@ class GPR(Module):
                 )
             else:
                 # noinspection PyTypeChecker
-                raise TypeError("unsupported operation " + op.__class__.__name)
-            return "(" + str_exp + ")" if level else str_exp
+                raise TypeError(f"Unsupported operation: {op.__class__.__name}")
+            return f"({str_exp})" if level else str_exp
         elif expr is None or (isinstance(expr, list) and len(expr) == 0):
             return ""
         else:
-            raise TypeError("unsupported operation  " + repr(expr))
-        pass
+            raise TypeError(f"Unsupported operation: {repr(expr)}")
 
     def to_string(self, names: dict = None) -> str:
         """Convert compiled ast to gene_reaction_rule str.

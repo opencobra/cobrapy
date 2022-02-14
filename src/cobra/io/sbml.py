@@ -734,7 +734,7 @@ def _sbml_to_model(
                 )
                 if f_replace and F_GENE in f_replace:
                     gpr = " ".join(f_replace[F_GENE](t) for t in gpr.split(" "))
-            cobra_reaction.gpr = GPR().from_string(gpr)
+            cobra_reaction.gpr = GPR.from_string(gpr)
 
     cobra_model.add_reactions(reactions)
 

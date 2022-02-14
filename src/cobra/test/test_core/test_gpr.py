@@ -8,7 +8,7 @@ from cobra.core.gene import GPR, ast2str, eval_gpr, parse_gpr
 
 
 def test_gpr():
-    gpr1 = GPR().from_string(string_gpr="")
+    gpr1 = GPR.from_string(string_gpr="")
     assert isinstance(gpr1.body, list)
     assert len(gpr1.body) == 0
 
