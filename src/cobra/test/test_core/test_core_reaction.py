@@ -42,19 +42,23 @@ def test_gpr() -> None:
     model_gene = model.genes.get_by_id(reaction_gene.id)
     assert reaction_gene is model_gene
 
+
+def test_gpr_uppercase():
     # Test ability to handle uppercase AND/OR
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
+    reaction = Reaction("test")
+    with pytest.warns(SyntaxWarning):
         reaction.gene_reaction_rule = "(b1 AND b2) OR (b3 and b4)"
         assert reaction.gene_reaction_rule == "(b1 and b2) or (b3 and b4)"
         assert len(reaction.genes) == 4
 
+
+@pytest.mark.parametrize("input_gpr", ["(a1 or a2", "(forT or "])
+def test_gpr_malformed(input_gpr):
     # Malformed GPR strings will lead to empty GPRs with no genes
+    reaction = Reaction("test")
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        reaction.gene_reaction_rule = "(a1 or a2"
-        assert len(reaction.genes) == 0
-        reaction.gene_reaction_rule = "(forT or "
+        reaction.gene_reaction_rule = input_gpr
         assert len(reaction.genes) == 0
 
 
