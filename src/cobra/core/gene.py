@@ -282,9 +282,7 @@ class GPR(Module):
         A GPR in AST format
     """
 
-    def __init__(
-        self, gpr_from: Union[Expression, Module, AST] = None, **kwargs
-    ):
+    def __init__(self, gpr_from: Union[Expression, Module, AST] = None, **kwargs):
         super().__init__(**kwargs)
         self._genes = set()
         self.body = None
@@ -324,8 +322,10 @@ class GPR(Module):
 
         """
         if not isinstance(string_gpr, str):
-            raise TypeError(f"{cls.__name__}.from_string "
-                            f"requires a str argument, not {type(string_gpr)}.")
+            raise TypeError(
+                f"{cls.__name__}.from_string "
+                f"requires a str argument, not {type(string_gpr)}."
+            )
         gpr = cls()
         uppercase_AND = re.compile(r"\bAND\b")
         uppercase_OR = re.compile(r"\bOR\b")
