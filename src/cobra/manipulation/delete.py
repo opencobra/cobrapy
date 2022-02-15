@@ -3,6 +3,7 @@ from ast import And, BoolOp, Module, Name, NodeTransformer
 from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple, Union
 from warnings import warn
 
+from cobra.core import GPR
 
 if TYPE_CHECKING:
     from cobra import Gene, Metabolite, Model, Reaction
@@ -342,6 +343,8 @@ def remove_genes(
             # if the reaction is not removed, remove the gene
             # from its gpr
             remover.visit(rxn.gpr)
+            if 'body' not in rxn.gpr.__dict__.keys():
+                rxn.gpr = GPR()
             rxn._update_genes_from_gpr()
     for gene in gene_set:
         model.genes.remove(gene)
