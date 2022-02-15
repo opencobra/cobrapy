@@ -296,9 +296,9 @@ class GPR(Module):
             elif isinstance(gpr_from, (Expression, Module)):
                 cleaner = GPRCleaner()
                 cleaner.visit(gpr_from)
-                self._genes = cleaner.gene_set
+                self._genes = deepcopy(cleaner.gene_set)
                 # noinspection PyTypeChecker
-                self.body = gpr_from.body
+                self.body = deepcopy(gpr_from.body)
                 self.eval()
             else:
                 raise TypeError("GPR requires AST Expression or Module")
@@ -385,9 +385,7 @@ class GPR(Module):
         if self.body:
             walker = GPRWalker()
             walker.visit(self)
-            self._genes = walker.gene_set
-            if "" in self._genes:
-                self._genes.remove("")
+            self._genes = deepcopy(walker.gene_set)
 
     def _eval_gpr(
         self,

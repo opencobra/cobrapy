@@ -36,6 +36,7 @@ import re
 from ast import And, BoolOp, Module, Name, Or
 from collections import defaultdict, namedtuple
 from copy import deepcopy
+from io import StringIO
 from sys import platform
 
 import libsbml
@@ -44,13 +45,6 @@ import cobra
 from cobra.core import GPR, Gene, Group, Metabolite, Model, Reaction
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
-
-
-try:
-    # noinspection PyCompatibility
-    from cStringIO import StringIO  # Python 2
-except ImportError:
-    from io import StringIO
 
 
 class CobraSBMLError(Exception):
