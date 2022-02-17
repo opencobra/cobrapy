@@ -1,7 +1,5 @@
 from os.path import join
 
-import pytest
-
 import cobra
 from cobra.io import read_sbml_model, write_sbml_model
 

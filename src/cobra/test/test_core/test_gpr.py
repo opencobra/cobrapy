@@ -1,6 +1,5 @@
 """Test functions of cobra.core.gene.GPR ."""
 import itertools
-import warnings
 from ast import parse as ast_parse
 
 import pytest
