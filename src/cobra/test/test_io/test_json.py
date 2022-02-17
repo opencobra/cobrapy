@@ -25,9 +25,7 @@ def test_validate_json(
 ) -> None:
     """Validate file according to JSON-schema."""
     jsonschema = pytest.importorskip("jsonschema")
-    with open(
-        join(data_directory, "mini.json"), "r", encoding="utf-8"
-    ) as infile:
+    with open(join(data_directory, "mini.json"), "r", encoding="utf-8") as infile:
         loaded = json.load(infile)
     assert jsonschema.validate(loaded, json_schema_v1) is None
 
