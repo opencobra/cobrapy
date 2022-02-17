@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING, Any
 
-from ..dict import model_from_dict, model_to_dict
+from .dict import model_from_dict, model_to_dict
 
 
 try:
