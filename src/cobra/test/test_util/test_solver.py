@@ -60,7 +60,7 @@ def test_fail_non_linear_reaction_coefficients(model: "Model") -> None:
 
     with pytest.raises(ValueError) as error:
         model.objective = model.problem.Objective(
-            model.reactions.ATPM.flux_expression ** 2
+            model.reactions.ATPM.flux_expression**2
         )
         coefficients = su.linear_reaction_coefficients(model)
         assert coefficients == {}

@@ -158,7 +158,7 @@ def add_moma(
                 name="moma_constraint_" + r.id,
             )
             to_add.extend([dist, const])
-            obj_vars.append(dist ** 2)
+            obj_vars.append(dist**2)
     model.add_cons_vars(to_add)
     if linear:
         model.objective.set_linear_coefficients({v: 1.0 for v in obj_vars})

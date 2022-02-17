@@ -39,7 +39,7 @@ def to_json(model, sort=False, **kwargs):
     json.dumps : Base function.
     """
     obj = model_to_dict(model, sort=sort)
-    obj[u"version"] = JSON_SPEC
+    obj["version"] = JSON_SPEC
     return json.dumps(obj, allow_nan=False, **kwargs)
 
 
@@ -91,7 +91,7 @@ def save_json_model(model, filename, sort=False, pretty=False, **kwargs):
     json.dump : Base function.
     """
     obj = model_to_dict(model, sort=sort)
-    obj[u"version"] = JSON_SPEC
+    obj["version"] = JSON_SPEC
 
     if pretty:
         dump_opts = {

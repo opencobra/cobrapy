@@ -229,7 +229,7 @@ def test_query(dict_list):
     test_list.append(obj2)
     result = test_list.query("test1")  # matches only test1
     assert len(result) == 1
-    result = test_list.query(u"test1", "id")  # matches with unicode
+    result = test_list.query("test1", "id")  # matches with unicode
     assert len(result) == 1
     assert result[0] == obj
     result = test_list.query("foo", "name")  # matches only test2
