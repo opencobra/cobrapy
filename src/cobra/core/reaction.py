@@ -11,12 +11,13 @@ from copy import copy, deepcopy
 from functools import partial
 from math import isinf
 from operator import attrgetter
+from typing import FrozenSet
 from warnings import warn
 
 from future.utils import raise_from, raise_with_traceback
 
 from cobra.core.configuration import Configuration
-from cobra.core.gene import Gene, ast2str, eval_gpr, parse_gpr
+from cobra.core.gene import GPR, Gene
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.exceptions import OptimizationError
@@ -39,7 +40,7 @@ uppercase_OR = re.compile(r"\bOR\b")
 gpr_clean = re.compile(" {2,}")
 # This regular expression finds any single letter compartment enclosed in
 # square brackets at the beginning of the string. For example [c] : foo --> bar
-compartment_finder = re.compile("^\s*(\[[A-Za-z]\])\s*:*")
+compartment_finder = re.compile(r"^\s*(\[[A-Za-z]\])\s*:*")
 # Regular expressions to match the arrows
 _reversible_arrow_finder = re.compile("<(-+|=+)>")
 _forward_arrow_finder = re.compile("(-+|=+)>")
@@ -75,7 +76,7 @@ class Reaction(Object):
         self, id=None, name="", subsystem="", lower_bound=0.0, upper_bound=None
     ):
         Object.__init__(self, id, name)
-        self._gene_reaction_rule = ""
+        self._gpr = GPR()
         self.subsystem = subsystem
 
         # The cobra.Genes that are used to catalyze the reaction
@@ -408,49 +409,38 @@ class Reaction(Object):
         return self._metabolites.copy()
 
     @property
-    def genes(self):
+    def genes(self) -> FrozenSet:
+        """Return the genes of the reaction.
+
+        Returns
+        -------
+        genes: FrozenSet
+        """
         return frozenset(self._genes)
 
-    @property
-    def gene_reaction_rule(self):
-        return self._gene_reaction_rule
+    def _update_genes_from_gpr(self, new_gene_names: set = None) -> None:
+        """Update genes of reation based on GPR.
 
-    @gene_reaction_rule.setter
-    def gene_reaction_rule(self, new_rule):
-
-        # TODO: Do this :)
-        if get_context(self):
-            warn("Context management not implemented for " "gene reaction rules")
-
-        self._gene_reaction_rule = new_rule.strip()
-        try:
-            _, gene_names = parse_gpr(self._gene_reaction_rule)
-        except (SyntaxError, TypeError) as e:
-            if "AND" in new_rule or "OR" in new_rule:
-                warn(
-                    "uppercase AND/OR found in rule '%s' for '%s'"
-                    % (new_rule, repr(self))
-                )
-                new_rule = uppercase_AND.sub("and", new_rule)
-                new_rule = uppercase_OR.sub("or", new_rule)
-                self.gene_reaction_rule = new_rule
-                return
-            warn("malformed gene_reaction_rule '%s' for %s" % (new_rule, repr(self)))
-            tmp_str = and_or_search.sub("", self._gene_reaction_rule)
-            gene_names = set((gpr_clean.sub(" ", tmp_str).split(" ")))
-        if "" in gene_names:
-            gene_names.remove("")
-        old_genes = self._genes
+        Parameters
+        ----------
+        new_gene_names: set
+        """
+        if new_gene_names is None:
+            if self._gpr is not None:
+                new_gene_names = self._gpr.genes
+            else:
+                new_gene_names = set()
+        old_genes = self._genes.copy()
         if self._model is None:
-            self._genes = {Gene(i) for i in gene_names}
+            self._genes = {Gene(i) for i in new_gene_names}
         else:
             model_genes = self._model.genes
             self._genes = set()
-            for id in gene_names:
-                if model_genes.has_id(id):
-                    self._genes.add(model_genes.get_by_id(id))
+            for g_id in new_gene_names:
+                if model_genes.has_id(g_id):
+                    self._genes.add(model_genes.get_by_id(g_id))
                 else:
-                    new_gene = Gene(id)
+                    new_gene = Gene(g_id)
                     new_gene._model = self._model
                     self._genes.add(new_gene)
                     model_genes.append(new_gene)
@@ -471,6 +461,37 @@ class Reaction(Object):
                     )
 
     @property
+    def gene_reaction_rule(self) -> str:
+        """See gene reaction rule as string.
+
+        Uses the to_string() method of the GPR class
+
+        Returns
+        -------
+        string
+
+        """
+        return self._gpr.to_string()
+
+    @gene_reaction_rule.setter
+    def gene_reaction_rule(self, new_rule: str):
+        """Set a new GPR for the reaction, using a string expression.
+
+        Parameters
+        ----------
+        new_rule : string
+            which will be parsed by the string parser in GPR, GPR.from_string(new_rule).
+            It makes a new GPR, and does not modify the existing one.
+
+        """
+        # TODO: Do this :)
+        if get_context(self):
+            warn("Context management not implemented for gene reaction rules.")
+
+        self._gpr = GPR.from_string(new_rule)
+        self._update_genes_from_gpr()
+
+    @property
     def gene_name_reaction_rule(self):
         """Display gene_reaction_rule with names intead.
 
@@ -480,8 +501,24 @@ class Reaction(Object):
 
         """
         names = {i.id: i.name for i in self._genes}
-        ast = parse_gpr(self._gene_reaction_rule)[0]
-        return ast2str(ast, names=names)
+        return self._gpr.to_string(names=names)
+
+    @property
+    def gpr(self):
+        """Return the GPR associated with the reaction."""
+        return self._gpr
+
+    @gpr.setter
+    def gpr(self, value: GPR):
+        """Set a new GPR for the reaction, using GPR() class.
+
+        Parameters
+        ----------
+        value : GPR() class.
+
+        """
+        self._gpr = value
+        self._update_genes_from_gpr()
 
     @property
     def functional(self):
@@ -495,9 +532,8 @@ class Reaction(Object):
             otherwise False.
         """
         if self._model:
-            tree, _ = parse_gpr(self.gene_reaction_rule)
-            return eval_gpr(
-                tree, {gene.id for gene in self.genes if not gene.functional}
+            return self._gpr.eval(
+                {gene.id for gene in self.genes if not gene.functional}
             )
         return True
 

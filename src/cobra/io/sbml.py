@@ -33,23 +33,18 @@ import datetime
 import logging
 import os
 import re
+from ast import And, BoolOp, Module, Name, Or
 from collections import defaultdict, namedtuple
 from copy import deepcopy
+from io import StringIO
 from sys import platform
 
 import libsbml
 
 import cobra
-from cobra.core import Gene, Group, Metabolite, Model, Reaction
-from cobra.core.gene import ast2str, parse_gpr
+from cobra.core import GPR, Gene, Group, Metabolite, Model, Reaction
 from cobra.manipulation.validate import check_metabolite_compartment_formula
 from cobra.util.solver import linear_reaction_coefficients, set_objective
-
-
-try:
-    from cStringIO import StringIO  # Python 2
-except ImportError:
-    from io import StringIO
 
 
 class CobraSBMLError(Exception):
@@ -565,35 +560,24 @@ def _sbml_to_model(
 
     # GPR rules
     def process_association(ass):
-        """Recursively convert gpr association to a gpr string.
+        """Recursively convert gpr association to a GPR class.
+
         Defined as inline functions to not pass the replacement dict around.
         """
         if ass.isFbcOr():
-            return " ".join(
-                [
-                    "(",
-                    " or ".join(
-                        process_association(c) for c in ass.getListOfAssociations()
-                    ),
-                    ")",
-                ]
+            return BoolOp(
+                Or(), [process_association(c) for c in ass.getListOfAssociations()]
             )
         elif ass.isFbcAnd():
-            return " ".join(
-                [
-                    "(",
-                    " and ".join(
-                        process_association(c) for c in ass.getListOfAssociations()
-                    ),
-                    ")",
-                ]
+            return BoolOp(
+                And(), [process_association(c) for c in ass.getListOfAssociations()]
             )
         elif ass.isGeneProductRef():
             gid = ass.getGeneProduct()
             if f_replace and F_GENE in f_replace:
-                return f_replace[F_GENE](gid)
+                return Name(id=f_replace[F_GENE](gid))
             else:
-                return gid
+                return Name(id=gid)
 
     # Reactions
     missing_bounds = False
@@ -721,7 +705,10 @@ def _sbml_to_model(
                 association = (
                     gpa.getAssociation()
                 )  # noqa: E501 type: libsbml.FbcAssociation
-                gpr = process_association(association)
+                gpr = Module(process_association(association))
+            else:
+                gpr = None
+            cobra_reaction.gpr = GPR(gpr_from=gpr)
         else:
             # fallback to notes information
             notes = cobra_reaction.notes
@@ -741,11 +728,7 @@ def _sbml_to_model(
                 )
                 if f_replace and F_GENE in f_replace:
                     gpr = " ".join(f_replace[F_GENE](t) for t in gpr.split(" "))
-
-        # remove outside parenthesis and format into standard form
-        gpr = ast2str(parse_gpr(gpr)[0])
-
-        cobra_reaction.gene_reaction_rule = gpr
+            cobra_reaction.gpr = GPR.from_string(gpr)
 
     cobra_model.add_reactions(reactions)
 
@@ -1190,17 +1173,14 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         )
 
         # GPR
-        gpr = cobra_reaction.gene_reaction_rule
-        if gpr is not None and len(gpr) > 0:
-            # we will parse the GPR to format them correctly for libSBML
-            # avoids cases where a GPR can be parsed by cobrapy but not libSBML
-            tree, gids = parse_gpr(gpr)
+        gpr = cobra_reaction.gpr
+        if gpr is not None and gpr.body:
             # replace ids in string
             if f_replace and F_GENE_REV in f_replace:
-                idmap = {gid: f_replace[F_GENE_REV](gid) for gid in gids}
-                gpr_new = ast2str(tree, names=idmap)
+                idmap = {gid: f_replace[F_GENE_REV](gid) for gid in gpr.genes}
+                gpr_new = gpr.to_string(names=idmap)
             else:
-                gpr_new = ast2str(tree)
+                gpr_new = gpr.to_string()
 
             gpa = (
                 r_fbc.createGeneProductAssociation()

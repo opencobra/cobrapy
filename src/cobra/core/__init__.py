@@ -1,6 +1,6 @@
 from cobra.core.configuration import Configuration
 from cobra.core.dictlist import DictList
-from cobra.core.gene import Gene
+from cobra.core.gene import Gene, GPR
 from cobra.core.metabolite import Metabolite
 from cobra.core.model import Model
 from cobra.core.object import Object

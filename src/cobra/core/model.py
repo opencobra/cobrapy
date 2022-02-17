@@ -278,7 +278,7 @@ class Model(Object):
         for rxn_id, bound in medium.items():
             rxn = self.reactions.get_by_id(rxn_id)
             if rxn not in exchange_rxns:
-                logger.warn(
+                logger.warning(
                     "%s does not seem to be an"
                     " an exchange reaction. Applying bounds anyway.",
                     rxn.id,
@@ -1117,6 +1117,7 @@ class Model(Object):
             for gene in self.genes:
                 gene._reaction.clear()
             for rxn in self.reactions:
+                rxn._update_genes_from_gpr()
                 for met in rxn._metabolites:
                     met._reaction.add(rxn)
                 for gene in rxn._genes:

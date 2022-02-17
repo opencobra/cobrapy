@@ -6,7 +6,7 @@ from typing import Iterable
 import numpy as np
 import pytest
 
-from cobra.core import Configuration, Metabolite, Model, Reaction
+from cobra.core import GPR, Configuration, Metabolite, Model, Reaction
 
 
 config = Configuration()
@@ -18,6 +18,16 @@ def test_gpr() -> None:
     model = Model()
     reaction = Reaction("test")
 
+    # Set GPR to an empty string
+    reaction.gene_reaction_rule = ""
+    # Empty gene_reaction_rule leads to an empty GPR
+    assert reaction.gpr.body is None
+    assert reaction.gpr.to_string() == ""
+    assert reaction.gpr.to_string(names={"goo": "blah"}) == ""
+    # Set GPR directly (shouldn't really be used, but just a test)
+    reaction.gpr = GPR()
+    assert reaction.gene_reaction_rule == ""
+    assert reaction.gpr.eval()
     # Set GPR to a reaction not in a model
     reaction.gene_reaction_rule = "(g1 or g2) and g3"
     assert reaction.gene_reaction_rule == "(g1 or g2) and g3"
@@ -32,21 +42,24 @@ def test_gpr() -> None:
     model_gene = model.genes.get_by_id(reaction_gene.id)
     assert reaction_gene is model_gene
 
+
+def test_gpr_uppercase():
     # Test ability to handle uppercase AND/OR
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
+    reaction = Reaction("test")
+    with pytest.warns(SyntaxWarning):
         reaction.gene_reaction_rule = "(b1 AND b2) OR (b3 and b4)"
         assert reaction.gene_reaction_rule == "(b1 and b2) or (b3 and b4)"
         assert len(reaction.genes) == 4
 
-    # Ensure regular expressions correctly extract genes from malformed
-    # GPR string
+
+@pytest.mark.parametrize("input_gpr", ["(a1 or a2", "(forT or "])
+def test_gpr_malformed(input_gpr):
+    # Malformed GPR strings will lead to empty GPRs with no genes
+    reaction = Reaction("test")
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        reaction.gene_reaction_rule = "(a1 or a2"
-        assert len(reaction.genes) == 2
-        reaction.gene_reaction_rule = "(forT or "
-        assert len(reaction.genes) == 1
+        reaction.gene_reaction_rule = input_gpr
+        assert len(reaction.genes) == 0
 
 
 def test_gpr_modification(model: Model) -> None:
