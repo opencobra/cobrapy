@@ -10,6 +10,8 @@ from .dict import model_from_dict, model_to_dict
 
 
 if TYPE_CHECKING:
+    from io import TextIOBase
+
     from cobra import Model
 
 
@@ -19,16 +21,18 @@ YAML_SPEC = "1.2"
 class CobraYAML(YAML):
     """Define custom subclass for YAML I/O."""
 
-    def dump(self, data: Dict, stream: Optional[Any] = None, **kwargs: Any) -> str:
+    def dump(
+        self, data: Dict, stream: Optional["TextIOBase"] = None, **kwargs: Any
+    ) -> str:
         """Dump YAML data.
 
         Parameters
         ----------
         data : dict
             A dictionary representing the cobra model and its components.
-        stream : bool, optional
-            Kind of stream object. If None, `ruamel.yaml.compat.StringIO`
-            is used (default None).
+        stream : TextIOBase, optional
+            A text stream object inheriting from `io.TextIOBase`. If None,
+            `ruamel.yaml.compat.StringIO` is used (default None).
         **kwargs : Any
             Keyword arguments passed on to `ruamel.yaml.main.YAML.dump`.
 
