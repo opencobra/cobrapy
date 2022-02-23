@@ -18,6 +18,7 @@ def test_gpr():
     assert gpr1.to_string() == ""
     assert gpr1.eval()
     gpr2 = gpr1.copy()
+    assert isinstance(gpr2, GPR)
     assert len(gpr1.genes) == 0
 
 
@@ -47,7 +48,7 @@ def test_one_gene_gpr():
 # Gets an iterable of all combinations of genes except the empty list. Used to
 # evaluate AND gprs
 def powerset_ne(iterable):
-    "powerset_ne([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
+    """powerset_ne([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"""
     s = list(iterable)
     return itertools.chain.from_iterable(
         itertools.combinations(s, r) for r in range(1, len(s) + 1)
@@ -83,7 +84,7 @@ def test_and_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string):
 # Gets an iterable of all combinations of genes except a single gene and the empty
 # list. Used to evaluate OR gprs
 def all_except_one(iterable):
-    "all_except_one([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3)"
+    """all_except_one([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3)"""
     s = list(iterable)
     return itertools.chain.from_iterable(
         itertools.combinations(s, r) for r in range(1, len(s))
@@ -237,48 +238,117 @@ def test_deprecated_gpr():
 
 def test_gpr_as_symbolic() -> None:
     gpr1 = GPR()
-    assert gpr1.as_symbolic() is None
-    gpr1 = GPR("a")
+    assert gpr1.as_symbolic() is Symbol("")
+    gpr1 = GPR.from_string("")
+    assert gpr1.as_symbolic() is Symbol("")
+    gpr1 = GPR.from_string("a")
     assert isinstance(gpr1.as_symbolic(), Symbol)
     assert gpr1.as_symbolic() == Symbol("a")
-    gpr1 = GPR("a & b")
-    isinstance(gpr1.as_symbolic(), BooleanFunction)
-    assert isinstance(gpr1.as_symbolic(), And)
-    assert gpr1.as_symbolic() == And(Symbol("a"), Symbol("b"))
-    gpr1 = GPR("a | b")
+
+
+@pytest.mark.parametrize(
+    "gpr_input, symbolic_gpr",
+    [
+        ("a | b", Or(Symbol("a"), Symbol("b"))),
+        ("a or b", Or(Symbol("a"), Symbol("b"))),
+        pytest.param(
+            "a OR b", Or(Symbol("a"), Symbol("b")), marks=pytest.mark.filterwarnings
+        ),
+        ("a | b", Or(Symbol("b"), Symbol("a"))),
+        ("a | b | c", Or(Symbol("a"), Symbol("b"), Symbol("c"))),
+        ("a or b or c", Or(Symbol("a"), Symbol("b"), Symbol("c"))),
+        ("(a OR b) AND c", And(Symbol("c"), Or(Symbol("a"), Symbol("b")))),
+    ],
+)
+def test_gpr_as_symbolic_boolean(gpr_input, symbolic_gpr) -> None:
+    gpr1 = GPR().from_string(gpr_input)
     assert isinstance(gpr1.as_symbolic(), BooleanFunction)
-    assert isinstance(gpr1.as_symbolic(), Or)
-    assert gpr1.as_symbolic() == Or(Symbol("a"), Symbol("b"))
-    gpr1 = GPR("a | b | c")
-    assert isinstance(gpr1.as_symbolic(), BooleanFunction)
-    assert isinstance(gpr1.as_symbolic(), Or)
-    assert gpr1.as_symbolic() == Or(Symbol("a"), Symbol("b"), Symbol("c"))
-    gpr1 = GPR("(a OR b) AND c")
-    assert isinstance(gpr1.as_symbolic(), BooleanFunction)
-    assert isinstance(gpr1.as_symbolic(), And)
-    assert gpr1.as_symbolic() == And(Symbol("c"), Or(Symbol("a"), Symbol("b")))
+    assert gpr1.as_symbolic() == symbolic_gpr
+    if "OR" not in gpr_input and "AND" not in gpr_input:
+        ast_tree = ast_parse(gpr_input, "<string>", "eval")
+        gpr1 = GPR(ast_tree)
+        assert isinstance(gpr1.as_symbolic(), BooleanFunction)
+        assert gpr1.as_symbolic() == symbolic_gpr
 
 
 def test_gpr_equality() -> None:
     assert GPR() == GPR()
-    assert GPR() != GPR("a")
-    assert GPR("a") == GPR("a")
+    assert GPR() == GPR.from_string("")
+    assert GPR() != GPR.from_string("a")
+    assert GPR.from_string("a") == GPR.from_string("a")
 
 
-def test_gpr_equality_with_bolean_logic() -> None:
-    gpr1 = GPR("a & b")
-    gpr2 = GPR("b & a")
-    assert gpr1 == gpr2
-    gpr1 = GPR("a | b | c")
-    gpr2 = GPR("(a or b) or c")
-    assert gpr1 == gpr2
-    gpr1 = GPR("(a and b) and c")
-    gpr2 = GPR("c & b & a")
-    assert gpr1 == gpr2
-    gpr1 = GPR("(a OR b) AND c")
-    gpr2 = GPR("a | b & c")
-    assert gpr1 == gpr2
-    gpr2 = GPR("(a & c) | b & c")
-    assert gpr1 == gpr2
-    gpr2 = GPR("c & (a | b)")
-    assert gpr1 == gpr2
+gpr_str_lists = {
+    "a_and_b_strs": ["a & b", "a and b", "a AND b", "b & a", "b and a", "b AND a"],
+    "a_or_b_strs": ["a | b", "a or b", "a OR b", "b | a", "b or a", "b OR a"],
+    "a_b_c_or_strs": [
+        "a | b | c",
+        "a or b or c",
+        "a OR b or c",
+        "(a or b) or c",
+        "b | a | c",
+        "b or a or c",
+        "b | c | a",
+        "b or c | a",
+        "b or c or a",
+        "c or a or b",
+        "c | a or b",
+        "c or a | b",
+        "c or b or a",
+        "c | b or a",
+        "c or b | a",
+        "c | b | a",
+    ],
+    "a_b_c_and_strs": [
+        "a & b & c",
+        "a and b and c",
+        "a AND b and c",
+        "(a and b) and c",
+        "b & a & c",
+        "b and a and c",
+        "b & c & a",
+        "b and c & a",
+        "b and c and a",
+        "c and a and b",
+        "c & a and b",
+        "c and a & b",
+        "c and b and a",
+        "c & b and a",
+        "c and b & a",
+        "c & b & a",
+    ],
+    "a_b_c_or_and_strs": [
+        "(a OR b) AND c",
+        "(a | b) & c",
+        "(a & c) | b & c",
+        "c & (a | b)",
+    ],
+}
+
+
+@pytest.fixture(params=list(gpr_str_lists.keys()))
+def gpr_list(request):
+    gpr_str_list = gpr_str_lists[request.param]
+    return gpr_str_list
+
+
+def test_gpr_equality_with_bolean_logic(gpr_list) -> None:
+    for i in range(len(gpr_list)):
+        for j in range(i + 1, len(gpr_list)):
+            assert GPR().from_string(gpr_list[i]) == GPR.from_string(gpr_list[j])
+
+
+@pytest.fixture(params=list(itertools.combinations(gpr_str_lists.keys(), 2)))
+def gpr_lists(request):
+    gpr_dict = dict()
+    gpr_dict["gpr1"] = gpr_str_lists[request.param[0]]
+    gpr_dict["gpr2"] = gpr_str_lists[request.param[1]]
+    return gpr_dict
+
+
+def test_gpr_inequality_boolean(gpr_lists) -> None:
+    gpr_list1 = gpr_lists["gpr1"]
+    gpr_list2 = gpr_lists["gpr2"]
+    for i in range(len(gpr_list1)):
+        for j in range(len(gpr_list2)):
+            assert GPR.from_string(gpr_list1[i]) != GPR.from_string(gpr_list2[j])
