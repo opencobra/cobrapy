@@ -635,7 +635,7 @@ class GPR(Module):
         return deepcopy(self)
 
     def __repr__(self):
-        return "%s.%s(%r)" % (
+        return "%s.%s.from_string(%r)" % (
             self.__class__.__module__,
             self.__class__.__qualname__,
             self.to_string(),
@@ -663,9 +663,16 @@ class GPR(Module):
 
     def as_symbolic(
         self,
-        expr: Union[Expression, BoolOp, Name, list] = None,
         GPRGene_dict: dict = None,
-    ) -> Union[sp_Or, sp_And, None]:
+    ) -> Union[sp_Or, sp_And, Symbol]:
+        # noinspection PyTypeChecker
+        return self._symbolic_gpr(self, GPRGene_dict=GPRGene_dict)
+
+    def _symbolic_gpr(
+        self,
+        expr: Union["GPR", Expression, BoolOp, Name, list] = None,
+        GPRGene_dict: dict = None,
+    ) -> Union[sp_Or, sp_And, Symbol]:
         """parse gpr into SYMPY using afst and Node Visitor
         Parameters
         ----------
@@ -678,48 +685,43 @@ class GPR(Module):
         tuple
             elements SYMPY expression or None if the GPR is empty
         """
-        if expr is None:
-            expr = self
         if GPRGene_dict is None:
             GPRGene_dict = {gid: Symbol(name=gid) for gid in expr.genes}
-        if isinstance(expr, Expression) | isinstance(expr, GPR):
-            return (
-                self.as_symbolic(expr.body, GPRGene_dict)
-                if hasattr(expr, "body")
-                else None
-            )
+        if isinstance(expr, (Expression, GPR)):
+            return self._symbolic_gpr(expr.body, GPRGene_dict) if expr.body else Symbol('')
         else:
             if isinstance(expr, Name):
                 return GPRGene_dict.get(expr.id)
             elif isinstance(expr, BoolOp):
                 op = expr.op
                 if isinstance(op, Or):
+                    # noinspection PyTypeChecker
                     sym_exp = sp_Or(
-                        *[self.as_symbolic(i, GPRGene_dict) for i in expr.values]
+                        *[self._symbolic_gpr(i, GPRGene_dict) for i in expr.values]
                     )
                 elif isinstance(op, And):
+                    # noinspection PyTypeChecker
                     sym_exp = sp_And(
-                        *[self.as_symbolic(i, GPRGene_dict) for i in expr.values]
+                        *[self._symbolic_gpr(i, GPRGene_dict) for i in expr.values]
                     )
                 else:
                     raise TypeError("unsupported operation " + op.__class__.__name)
                 return sym_exp
             elif expr is None or (isinstance(expr, list) and len(expr) == 0):
-                return None
+                return Symbol('')
             else:
                 raise TypeError("unsupported operation  " + repr(expr))
 
     def __eq__(self, other):
-        if not hasattr(self, "body"):
-            if not hasattr(other, "body"):
+        if not self.body:
+            if not other.body:
                 return True
             else:
                 return False
         else:
-            if not hasattr(other, "body"):
+            if not other.body:
                 return False
-            # noinspection PyTypeChecker
-            return Equivalent(self.as_symbolic(self), other.as_symbolic(other))
+            return self.as_symbolic().equals(other.as_symbolic())
 
 
 def eval_gpr(expr, knockouts):
