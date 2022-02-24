@@ -189,6 +189,8 @@ def parse_gpr_sympy_ast_visitor(gpr_to_sympy):
         elements SYMPY expression and gene_ids as a set
     """
     tree = gpr_to_sympy
+    if not tree.body:
+        return Symbol('')
     sympifier = GPRSympifier()
     sympy_exp = sympifier.visit(tree)
     return sympy_exp
@@ -199,7 +201,7 @@ def parse_sympy_via_names(gpr_to_sympy):
     if sympy_str:
         return eval(sympy_str)
     else:
-        return None
+        return Symbol('')
 
 
 def ast2sympy_str(expr, level=0):
