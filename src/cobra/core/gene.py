@@ -102,17 +102,6 @@ class GPRCleaner(NodeTransformer):
             raise TypeError("unsupported operation '%s'" % node.op.__class__.__name__)
 
 
-# Using unescaped ":", "," or " " causes sympy to make a range or separate items
-str_for_sympy_symbols_dict = {":": r"\:", ",": r"\,", " ": r"\ "}
-
-
-def fix_str_for_symbols(unescaped_str):
-    escaped_str = unescaped_str
-    for key, value in str_for_sympy_symbols_dict.items():
-        escaped_str = escaped_str.replace(key, value)
-    return escaped_str
-
-
 def parse_gpr(str_expr: str) -> Tuple:
     """Parse GPR into AST.
 
@@ -157,7 +146,7 @@ class GPRSympifier(NodeVisitor):
         for char, escaped in replacements:
             if escaped in node.id:
                 node.id = node.id.replace(escaped, char)
-        return symbols(fix_str_for_symbols(node.id))
+        return Symbol(node.id)
 
     def visit_BinOp(self, node):
         if isinstance(node.op, BitAnd):
