@@ -721,7 +721,13 @@ class GPR(Module):
         else:
             if not other.body:
                 return False
-            return self.as_symbolic().equals(other.as_symbolic())
+            self_symb = self.as_symbolic()
+            other_symb = other.as_symbolic()
+            if isinstance(self_symb, Symbol) and isinstance(other_symb, Symbol):
+                return self_symb == other_symb
+            if isinstance(self_symb, Symbol) or isinstance(other_symb, Symbol):
+                return False
+            return self_symb.equals(other_symb)
 
 
 def eval_gpr(expr, knockouts):
