@@ -3,11 +3,13 @@ import itertools
 from ast import parse as ast_parse
 
 import pytest
+from os.path import join
 from sympy.core.symbol import Symbol
 from sympy.logic import And, Or
 from sympy.logic.boolalg import BooleanFunction
 
 from cobra.core.gene import GPR, ast2str, eval_gpr, parse_gpr
+from cobra.io import read_sbml_model
 
 
 def test_gpr():
@@ -238,12 +240,16 @@ def test_deprecated_gpr():
 
 def test_gpr_as_symbolic() -> None:
     gpr1 = GPR()
-    assert gpr1.as_symbolic() is Symbol("")
+    assert gpr1.as_symbolic() == Symbol("")
     gpr1 = GPR.from_string("")
-    assert gpr1.as_symbolic() is Symbol("")
+    assert gpr1.as_symbolic() == Symbol("")
     gpr1 = GPR.from_string("a")
     assert isinstance(gpr1.as_symbolic(), Symbol)
     assert gpr1.as_symbolic() == Symbol("a")
+    gpr2 = GPR.from_string('a & b')
+    assert isinstance(gpr2.as_symbolic(), BooleanFunction)
+    assert gpr2.as_symbolic() == And(Symbol('a'), Symbol('b'))
+    assert gpr1 != gpr2
 
 
 @pytest.mark.parametrize(
@@ -352,3 +358,18 @@ def test_gpr_inequality_boolean(gpr_lists) -> None:
     for i in range(len(gpr_list1)):
         for j in range(len(gpr_list2)):
             assert GPR.from_string(gpr_list1[i]) != GPR.from_string(gpr_list2[j])
+
+
+def gpr_equality_benchmark(data_directory, benchmark):
+    """Benchmark equality of GPR using the e coli core model."""
+    sbml_path = join(data_directory, "iJO1366.xml.gz")
+    model = read_sbml_model(sbml_path)
+
+    def gpr_equality_all_reactions():
+        for i in range(len(model.reactions)):
+            rxn1 = model.reactions[i]
+            for j in range(i + 1, len(model.reactions)):
+                rxn2 = model.reactions[j]
+                rxn1.gpr == rxn2.gpr
+
+    benchmark(gpr_equality_all_reactions)
