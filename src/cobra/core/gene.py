@@ -24,15 +24,15 @@ from warnings import warn
 
 # When https://github.com/symengine/symengine.py/issues/334 is resolved, change it to
 # optlang.symbolics.Symbol
-from sympy import Symbol, symbols
+from sympy import Symbol
 from sympy.logic.boolalg import And as sp_And
-from sympy.logic.boolalg import Equivalent
 from sympy.logic.boolalg import Or as sp_Or
 
 from cobra.core.dictlist import DictList
 from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
+
 
 keywords = list(kwlist)
 keywords.remove("and")

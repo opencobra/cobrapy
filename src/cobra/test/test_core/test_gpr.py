@@ -7,7 +7,14 @@ from sympy.core.symbol import Symbol
 from sympy.logic import And, Or
 from sympy.logic.boolalg import BooleanFunction
 
-from cobra.core.gene import GPR, ast2str, eval_gpr, parse_gpr, parse_gpr_sympy_ast_visitor, parse_sympy_via_names
+from cobra.core.gene import (
+    GPR,
+    ast2str,
+    eval_gpr,
+    parse_gpr,
+    parse_gpr_sympy_ast_visitor,
+    parse_sympy_via_names,
+)
 
 
 def test_gpr():
@@ -244,9 +251,9 @@ def test_gpr_as_symbolic() -> None:
     gpr1 = GPR.from_string("a")
     assert isinstance(gpr1.as_symbolic(), Symbol)
     assert gpr1.as_symbolic() == Symbol("a")
-    gpr2 = GPR.from_string('a & b')
+    gpr2 = GPR.from_string("a & b")
     assert isinstance(gpr2.as_symbolic(), BooleanFunction)
-    assert gpr2.as_symbolic() == And(Symbol('a'), Symbol('b'))
+    assert gpr2.as_symbolic() == And(Symbol("a"), Symbol("b"))
     assert gpr1 != gpr2
 
 
