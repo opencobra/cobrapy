@@ -140,8 +140,7 @@ def parse_gpr(str_expr: str) -> Tuple:
 
 
 class GPRSympifier(NodeVisitor):
-    """Parses compiled ast of a gene_reaction_rule to sympy and identifies genes
-    """
+    """Parses compiled ast of a gene_reaction_rule to sympy and identifies genes"""
 
     def __init__(self):
         NodeVisitor.__init__(self)
@@ -185,12 +184,12 @@ def parse_gpr_sympy_ast_visitor(gpr_to_sympy):
 
     Returns
     -------
-    tuple
-        elements SYMPY expression and gene_ids as a set
+    Symbol or BooleanFunction
+        SYMPY expression (Symbol or And or Or). Symbol("") if the GPR is empty.
     """
     tree = gpr_to_sympy
     if not tree.body:
-        return Symbol('')
+        return Symbol("")
     sympifier = GPRSympifier()
     sympy_exp = sympifier.visit(tree)
     return sympy_exp
@@ -201,24 +200,28 @@ def parse_sympy_via_names(gpr_to_sympy):
     if sympy_str:
         return eval(sympy_str)
     else:
-        return Symbol('')
+        return Symbol("")
 
 
 def ast2sympy_str(expr, level=0):
     if isinstance(expr, Expression) | isinstance(expr, GPR):
         return ast2sympy_str(expr.body, 0) if hasattr(expr, "body") else ""
     elif isinstance(expr, Name):
-        return "Symbol(\'" + expr.id + "\')"
+        return "Symbol('" + expr.id + "')"
     elif isinstance(expr, BoolOp):
         op = expr.op
         if isinstance(op, Or):
-            str_exp = "sp_Or(" + ", ".join(
-                ast2sympy_str(i, level + 1) for i in expr.values
-            ) + ")"
+            str_exp = (
+                "sp_Or("
+                + ", ".join(ast2sympy_str(i, level + 1) for i in expr.values)
+                + ")"
+            )
         elif isinstance(op, And):
-            str_exp = "sp_And(" + ", ".join(
-                ast2sympy_str(i, level + 1) for i in expr.values
-            ) + ")"
+            str_exp = (
+                "sp_And("
+                + ", ".join(ast2sympy_str(i, level + 1) for i in expr.values)
+                + ")"
+            )
         else:
             raise TypeError("unsupported operation " + op.__class__.__name)
         return "(" + str_exp + ")" if level else str_exp
@@ -627,7 +630,7 @@ class GPR(Module):
 
         Notes
         -----
-        Calls __aststr()
+        Calls _aststr()
         """
         # noinspection PyTypeChecker
         return self._ast2str(self, names=names)
@@ -665,9 +668,32 @@ class GPR(Module):
 
     def as_symbolic(
         self,
-        GPRGene_dict: dict = None,
+        names: dict = None,
     ) -> Union[sp_Or, sp_And, Symbol]:
+        """Convert compiled ast to sympy expression.
+
+        Parameters
+        ----------
+        self : GPR
+           compiled ast Module describing GPR
+        names: dict
+           dictionary of gene ids to gene names. If this is empty,
+           returns sympy expression using gene ids
+
+        Returns
+        ------
+        Symbol or BooleanFunction
+            SYMPY expression (Symbol or And or Or). Symbol("") if the GPR is empty
+
+        Notes
+        -----
+        Calls _symbolic_gpr()
+        """
         # noinspection PyTypeChecker
+        if names:
+            GPRGene_dict = {gid: Symbol(names[gid]) for gid in self.genes}
+        else:
+            GPRGene_dict = None
         return self._symbolic_gpr(self, GPRGene_dict=GPRGene_dict)
 
     def _symbolic_gpr(
@@ -675,7 +701,8 @@ class GPR(Module):
         expr: Union["GPR", Expression, BoolOp, Name, list] = None,
         GPRGene_dict: dict = None,
     ) -> Union[sp_Or, sp_And, Symbol]:
-        """parse gpr into SYMPY using afst and Node Visitor
+        """Parse gpr into SYMPY using ast similar to _ast2str()
+
         Parameters
         ----------
         expr : AST or GPR or list or Name or BoolOp
@@ -684,13 +711,15 @@ class GPR(Module):
             dictionary from gene id to GPRGeneSymbol
         Returns
         -------
-        tuple
-            elements SYMPY expression or None if the GPR is empty
+        Symbol or BooleanFunction
+            SYMPY expression (Symbol or And or Or). Symbol("") if the GPR is empty
         """
         if GPRGene_dict is None:
             GPRGene_dict = {gid: Symbol(name=gid) for gid in expr.genes}
         if isinstance(expr, (Expression, GPR)):
-            return self._symbolic_gpr(expr.body, GPRGene_dict) if expr.body else Symbol('')
+            return (
+                self._symbolic_gpr(expr.body, GPRGene_dict) if expr.body else Symbol("")
+            )
         else:
             if isinstance(expr, Name):
                 return GPRGene_dict.get(expr.id)
@@ -710,7 +739,7 @@ class GPR(Module):
                     raise TypeError("unsupported operation " + op.__class__.__name)
                 return sym_exp
             elif expr is None or (isinstance(expr, list) and len(expr) == 0):
-                return Symbol('')
+                return Symbol("")
             else:
                 raise TypeError("unsupported operation  " + repr(expr))
 
