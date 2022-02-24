@@ -1,0 +1,44 @@
+name: CI-CD
+
+on:
+  push:
+    branches:
+    - stable
+    - devel
+    tags:
+    - '[0-9]+.[0-9]+.[0-9]+'
+    - '[0-9]+.[0-9]+.[0-9]+a[0-9]+'
+  pull_request:
+    branches:
+    - stable
+    - devel
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.10']
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        python -m pip install tox tox-gh-actions
+    - name: isort
+      run:
+        tox -e isort
+    - name: black
+      run:
+        tox -e black
+# We ignore flake8 for the time being because there are tons of things to fix.
+#    - name: flake8
+#      run:
+#        tox -e flake8
