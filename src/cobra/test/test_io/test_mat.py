@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-
-"""Test functionalities provided by mat.py"""
-
-from __future__ import absolute_import
+"""Test functionalities of I/O in MATLAB (.mat) format."""
 
 from os.path import join
 from pickle import load
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -19,8 +16,12 @@ except ImportError:
     scipy = None
 
 
+if TYPE_CHECKING:
+    from cobra import Model
+
+
 @pytest.fixture(scope="function")
-def raven_model(data_directory):
+def raven_model(data_directory: str) -> "Model":
     """Fixture for RAVEN model."""
     with open(join(data_directory, "raven.pickle"), "rb") as infile:
         return load(infile)
@@ -33,7 +34,9 @@ def raven_model(data_directory):
 #                           (pytest.fixture_request("raven_model"),
 #                            "raven.mat")])
 # TODO: wait for pytest.fixture_request() to get approved
-def test_load_matlab_model(data_directory, mini_model, raven_model):
+def test_load_matlab_model(
+    data_directory: str, mini_model: "Model", raven_model: "Model"
+) -> None:
     """Test the reading of MAT model."""
     mini_mat_model = io.load_matlab_model(join(data_directory, "mini.mat"))
     raven_mat_model = io.load_matlab_model(join(data_directory, "raven.mat"))
@@ -49,7 +52,9 @@ def test_load_matlab_model(data_directory, mini_model, raven_model):
 #                           (pytest.fixture_request("raven_model"),
 #                            "raven.mat")])
 # TODO: wait for pytest.fixture_request() to get approved
-def test_save_matlab_model(tmpdir, mini_model, raven_model):
+def test_save_matlab_model(
+    tmpdir: str, mini_model: "Model", raven_model: "Model"
+) -> None:
     """Test the writing of MAT model."""
     mini_output_file = tmpdir.join("mini.mat")
     raven_output_file = tmpdir.join("raven.mat")
