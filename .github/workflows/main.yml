@@ -32,6 +32,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip setuptools wheel
         python -m pip install tox tox-gh-actions
+    - name: safety
+      continue-on-error: true
+      run:
+        tox -e safety
     - name: Test with tox
       run:
         tox -- --cov-report=xml --benchmark-skip
