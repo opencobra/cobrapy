@@ -7,14 +7,7 @@ from sympy.core.symbol import Symbol
 from sympy.logic import And, Or
 from sympy.logic.boolalg import BooleanFunction
 
-from cobra.core.gene import (
-    GPR,
-    ast2str,
-    eval_gpr,
-    parse_gpr,
-    parse_gpr_sympy_ast_visitor,
-    parse_sympy_via_names,
-)
+from cobra.core.gene import GPR, ast2str, eval_gpr, parse_gpr
 
 
 def test_gpr():
