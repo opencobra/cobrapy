@@ -635,7 +635,7 @@ class GPR(Module):
                 else:
                     raise TypeError("Unsupported operation " + op.__class__.__name)
                 return sym_exp
-            elif expr is None or (isinstance(expr, list) and len(expr) == 0):
+            elif not expr:
                 return Symbol("")
             else:
                 raise TypeError("Unsupported Expression  " + repr(expr))
