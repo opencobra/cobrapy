@@ -21,7 +21,6 @@ from typing import FrozenSet, Iterable, Set, Tuple, Union
 from warnings import warn
 
 import sympy.logic.boolalg as spl
-
 # When https://github.com/symengine/symengine.py/issues/334 is resolved, change it to
 # optlang.symbolics.Symbol
 from sympy import Symbol
