@@ -21,14 +21,16 @@ from typing import FrozenSet, Iterable, Set, Tuple, Union
 from warnings import warn
 
 import sympy.logic.boolalg as spl
-# When https://github.com/symengine/symengine.py/issues/334 is resolved, change it to
-# optlang.symbolics.Symbol
 from sympy import Symbol
 
 from cobra.core.dictlist import DictList
 from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
+
+
+# TODO - When https://github.com/symengine/symengine.py/issues/334 is resolved,
+#  change sympy.Symbol (above in imports) to optlang.symbolics.Symbol
 
 
 keywords = list(kwlist)
