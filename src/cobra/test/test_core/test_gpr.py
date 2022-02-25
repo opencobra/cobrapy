@@ -390,13 +390,3 @@ def test_gpr_equality_benchmark(small_model, benchmark):
                 rxn1.gpr == rxn2.gpr
 
     benchmark(gpr_equality_all_reactions)
-
-
-def test_gpr_symbolic_methods(large_model):
-    model = large_model.copy()
-
-    for i in range(len(model.reactions)):
-        gpr1 = model.reactions[i].gpr
-        assert gpr1.as_symbolic() == parse_gpr_sympy_ast_visitor(gpr1)
-        assert gpr1.as_symbolic() == parse_sympy_via_names(gpr1)
-        assert parse_sympy_via_names(gpr1) == parse_gpr_sympy_ast_visitor(gpr1)
