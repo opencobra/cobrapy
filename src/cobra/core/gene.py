@@ -4,29 +4,18 @@ from __future__ import absolute_import
 
 import re
 from ast import (
-    AST,
-    And,
-    BitAnd,
-    BitOr,
-    BoolOp,
-    Expression,
-    Module,
-    Name,
-    NodeTransformer,
-    NodeVisitor,
-    Or,
-)
+    AST, And, BitAnd, BitOr, BoolOp, Expression, Module, Name, NodeTransformer,
+    NodeVisitor, Or,)
 from ast import parse as ast_parse
 from copy import deepcopy
 from keyword import kwlist
 from typing import FrozenSet, Iterable, Set, Tuple, Union
 from warnings import warn
 
+import sympy.logic.boolalg as spl
 # When https://github.com/symengine/symengine.py/issues/334 is resolved, change it to
 # optlang.symbolics.Symbol
 from sympy import Symbol
-from sympy.logic.boolalg import And as sp_And
-from sympy.logic.boolalg import Or as sp_Or
 
 from cobra.core.dictlist import DictList
 from cobra.core.species import Species
@@ -150,17 +139,17 @@ class GPRSympifier(NodeVisitor):
 
     def visit_BinOp(self, node):
         if isinstance(node.op, BitAnd):
-            return sp_And(*[node.left, node.right])
+            return spl.And(*[node.left, node.right])
         elif isinstance(node.op, BitOr):
-            return sp_Or(*[node.left, node.right])
+            return spl.Or(*[node.left, node.right])
         else:
             raise TypeError("unsupported operation '%s'" % node.op.__class__.__name__)
 
     def visit_BoolOp(self, node):
         if isinstance(node.op, And):
-            return sp_And(*[self.visit(i) for i in node.values])
+            return spl.And(*[self.visit(i) for i in node.values])
         if isinstance(node.op, Or):
-            return sp_Or(*[self.visit(i) for i in node.values])
+            return spl.Or(*[self.visit(i) for i in node.values])
 
 
 def parse_gpr_sympy_ast_visitor(gpr_to_sympy):
@@ -658,7 +647,7 @@ class GPR(Module):
     def as_symbolic(
         self,
         names: dict = None,
-    ) -> Union[sp_Or, sp_And, Symbol]:
+    ) -> Union[spl.Or, spl.And, Symbol]:
         """Convert compiled ast to sympy expression.
 
         Parameters
@@ -689,7 +678,7 @@ class GPR(Module):
         self,
         expr: Union["GPR", Expression, BoolOp, Name, list] = None,
         GPRGene_dict: dict = None,
-    ) -> Union[sp_Or, sp_And, Symbol]:
+    ) -> Union[spl.Or, spl.And, Symbol]:
         """Parse gpr into SYMPY using ast similar to _ast2str()
 
         Parameters
@@ -716,21 +705,21 @@ class GPR(Module):
                 op = expr.op
                 if isinstance(op, Or):
                     # noinspection PyTypeChecker
-                    sym_exp = sp_Or(
+                    sym_exp = spl.Or(
                         *[self._symbolic_gpr(i, GPRGene_dict) for i in expr.values]
                     )
                 elif isinstance(op, And):
                     # noinspection PyTypeChecker
-                    sym_exp = sp_And(
+                    sym_exp = spl.And(
                         *[self._symbolic_gpr(i, GPRGene_dict) for i in expr.values]
                     )
                 else:
-                    raise TypeError("unsupported operation " + op.__class__.__name)
+                    raise TypeError("Unsupported operation " + op.__class__.__name)
                 return sym_exp
             elif expr is None or (isinstance(expr, list) and len(expr) == 0):
                 return Symbol("")
             else:
-                raise TypeError("unsupported operation  " + repr(expr))
+                raise TypeError("Unsupported Expression  " + repr(expr))
 
     def __eq__(self, other):
         if not self.body:
