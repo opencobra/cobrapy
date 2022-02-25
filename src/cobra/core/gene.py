@@ -1,11 +1,19 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
+"""Functions to create and manage cobra.Gene"""
 
 import re
 from ast import (
-    AST, And, BitAnd, BitOr, BoolOp, Expression, Module, Name, NodeTransformer,
-    NodeVisitor, Or,)
+    AST,
+    And,
+    BitAnd,
+    BitOr,
+    BoolOp,
+    Expression,
+    Module,
+    Name,
+    NodeTransformer,
+    NodeVisitor,
+    Or,
+)
 from ast import parse as ast_parse
 from copy import deepcopy
 from keyword import kwlist
@@ -13,6 +21,7 @@ from typing import FrozenSet, Iterable, Set, Tuple, Union
 from warnings import warn
 
 import sympy.logic.boolalg as spl
+
 # When https://github.com/symengine/symengine.py/issues/334 is resolved, change it to
 # optlang.symbolics.Symbol
 from sympy import Symbol
@@ -589,7 +598,7 @@ class GPR(Module):
         expr: Union["GPR", Expression, BoolOp, Name, list] = None,
         GPRGene_dict: dict = None,
     ) -> Union[spl.Or, spl.And, Symbol]:
-        """Parse gpr into SYMPY using ast similar to _ast2str()
+        """Parse gpr into SYMPY using ast similar to _ast2str().
 
         Parameters
         ----------
