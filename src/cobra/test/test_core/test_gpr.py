@@ -81,10 +81,10 @@ def test_and_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string):
     gpr1.copy()
 
 
-# Gets an iterable of all combinations of genes except a single gene and the empty
+# Gets an iterable of all combinations of genes except the complete list and the empty
 # list. Used to evaluate OR gprs
-def all_except_one(iterable):
-    """all_except_one([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3)"""
+def all_except_complete(iterable):
+    """all_except_complete([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3)"""
     s = list(iterable)
     return itertools.chain.from_iterable(
         itertools.combinations(s, r) for r in range(1, len(s))
@@ -111,7 +111,7 @@ def test_or_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string):
     assert gpr1.genes == gpr_genes
     assert gpr1.to_string() == gpr_output_string
     assert gpr1.eval()
-    for ko_genes in all_except_one(gpr_genes):
+    for ko_genes in all_except_complete(gpr_genes):
         assert gpr1.eval(ko_genes)
     assert not gpr1.eval(gpr_genes)
     assert gpr1.body
@@ -163,7 +163,7 @@ def test_gpr_from_ast_or(
     assert gpr1.genes == gpr_genes
     assert gpr1.to_string() == gpr_output_string
     assert gpr1.eval()
-    for ko_genes in all_except_one(gpr_genes):
+    for ko_genes in all_except_complete(gpr_genes):
         assert gpr1.eval(ko_genes)
     assert not gpr1.eval(gpr_genes)
     gpr1.copy()
@@ -371,16 +371,16 @@ def test_gpr_symbolism_benchmark(large_model, benchmark):
     benchmark(gpr_symbolic)
 
 
-def test_gpr_equality_benchmark(small_model, benchmark):
+def test_gpr_equality_benchmark(medium_model, benchmark):
     """Benchmark equality of GPR using the mini model."""
-    model = small_model.copy()
+    model = medium_model.copy()
 
     def gpr_equality_all_reactions():
         for i in range(len(model.reactions)):
             rxn1 = model.reactions[i]
             for j in range(i + 1, len(model.reactions)):
                 rxn2 = model.reactions[j]
-                rxn1.gpr == rxn2.gpr
+                assert rxn1.gpr == rxn2.gpr
 
     benchmark(gpr_equality_all_reactions)
 
@@ -409,7 +409,9 @@ def test_gpr_from_symbolic(gpr_input, symbolic_gpr) -> None:
 
 
 def test_gpr_from_as_symbolic_equality(large_model) -> None:
-    """Test that as_symbolic followed by from_symbolic gives a GPR equivalent to the original."""
+    """Test that as_symbolic followed by from_symbolic gives a GPR equivalent to the
+    original.
+    """
     model = large_model.copy()
 
     for i in range(len(model.reactions)):
