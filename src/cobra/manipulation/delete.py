@@ -334,6 +334,7 @@ def remove_genes(
     gene_id_set = {i.id for i in gene_set}
     remover = _GeneRemover(gene_id_set)
     target_reactions = []
+    rxns_to_revisit = set()
     for rxn in model.reactions:
         if rxn.gene_reaction_rule is None or len(rxn.gene_reaction_rule) == 0:
             continue
@@ -346,7 +347,9 @@ def remove_genes(
             remover.visit(rxn.gpr)
             if "body" not in rxn.gpr.__dict__.keys():
                 rxn.gpr = GPR()
-            rxn._update_genes_from_gpr()
+                rxn._genes = set()
+            else:
+                rxns_to_revisit.add(rxn)
     for gene in gene_set:
         model.genes.remove(gene)
         # remove reference to the gene in all groups
@@ -354,3 +357,5 @@ def remove_genes(
         for group in associated_groups:
             group.remove_members(gene)
     model.remove_reactions(target_reactions)
+    for rxn in rxns_to_revisit:
+        rxn._update_genes_from_gpr()

@@ -21,6 +21,7 @@ from cobra.core.gene import GPR, Gene
 from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.exceptions import OptimizationError
+from cobra.manipulation import remove_genes
 from cobra.util.context import get_context, resettable
 from cobra.util.solver import (
     check_solver_status,
@@ -426,7 +427,7 @@ class Reaction(Object):
         new_gene_names: set
         """
         if new_gene_names is None:
-            if self._gpr is not None:
+            if self._gpr.body is not None:
                 new_gene_names = self._gpr.genes
             else:
                 new_gene_names = set()
@@ -454,6 +455,8 @@ class Reaction(Object):
             if g not in self._genes:  # if an old gene is not a new gene
                 try:
                     g._reaction.remove(self)
+                    if not len(g.reactions) and self.model and g in self.model.genes:
+                        remove_genes(self.model, [g], False)
                 except KeyError:
                     warn(
                         "could not remove old gene %s from reaction %s"
