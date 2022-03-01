@@ -1,5 +1,4 @@
 """Functions to create and manage cobra.Gene"""
-
 import re
 from ast import (
     AST,
@@ -364,7 +363,9 @@ class GPR(Module):
                 warn("GPR will be empty")
                 warn(e.msg)
                 return gpr
-        return cls(tree)
+        gpr = cls(tree)
+        gpr.update_genes()
+        return gpr
 
     @property
     def genes(self) -> FrozenSet:
@@ -659,24 +660,31 @@ class GPR(Module):
             This function also sets self._genes with the gene ids in the AST
 
         """
-        def _sympy_to_ast(sympy_expr: Union[spl.BooleanFunction, Symbol]) -> Union[BoolOp, Name]:
+
+        def _sympy_to_ast(
+            sympy_expr: Union[spl.BooleanFunction, Symbol]
+        ) -> Union[BoolOp, Name]:
             if sympy_expr.func is spl.Or:
-                return BoolOp(op=Or(), values=[_sympy_to_ast(i) for i in sympy_expr.args])
+                return BoolOp(
+                    op=Or(), values=[_sympy_to_ast(i) for i in sympy_expr.args]
+                )
             elif sympy_expr.func is spl.And:
-                return BoolOp(op=And(), values=[_sympy_to_ast(i) for i in sympy_expr.args])
+                return BoolOp(
+                    op=And(), values=[_sympy_to_ast(i) for i in sympy_expr.args]
+                )
             elif not sympy_expr.args:
                 return Name(id=sympy_expr.name)
             else:
                 raise TypeError(f"Unsupported operation: {sympy_expr.func}")
 
-        if not isinstance(sympy_gpr, (spl.BooleanFunction , Symbol)):
+        if not isinstance(sympy_gpr, (spl.BooleanFunction, Symbol)):
             raise TypeError(
                 f"{cls.__name__}.from_symbolic "
                 f"requires a sympy BooleanFunction or "
                 f"Symbol argument, not {type(sympy_gpr)}."
             )
         gpr = cls()
-        if sympy_gpr == Symbol(''):
+        if sympy_gpr == Symbol(""):
             gpr.body = None
             return gpr
         try:
@@ -689,17 +697,17 @@ class GPR(Module):
             warn("GPR will be empty")
             warn(e.msg)
             return gpr
-        return cls(tree)
+        gpr = cls(tree)
+        gpr.update_genes()
+        return gpr
 
     def __eq__(self, other):
-        if not self.body:
-            if not other.body:
-                return True
-            else:
-                return False
+        """Check equality of GPR via symbolic equality."""
+        if not self.body and not other.body:
+            return True
+        elif not self.body or not other.body:
+            return False
         else:
-            if not other.body:
-                return False
             self_symb = self.as_symbolic()
             other_symb = other.as_symbolic()
             if isinstance(self_symb, Symbol) and isinstance(other_symb, Symbol):
