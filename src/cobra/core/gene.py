@@ -641,6 +641,56 @@ class GPR(Module):
             else:
                 raise TypeError("Unsupported Expression  " + repr(expr))
 
+    @classmethod
+    def from_symbolic(cls, sympy_gpr: Union[spl.BooleanFunction, Symbol]) -> "GPR":
+        """Construct a GPR from a sympy expression.
+
+        Parameters
+        ----------
+        sympy_gpr: sympy
+            a sympy that describes the gene rules, being a Symbol for single genes
+            or a BooleanFunction for AND/OR relationships
+
+        Returns
+        -------
+        GPR:
+            returns a new GPR while setting  self.body as
+            Parsed AST tree that has the gene rules
+            This function also sets self._genes with the gene ids in the AST
+
+        """
+        def _sympy_to_ast(sympy_expr: Union[spl.BooleanFunction, Symbol]) -> Union[BoolOp, Name]:
+            if sympy_expr.func is spl.Or:
+                return BoolOp(op=Or(), values=[_sympy_to_ast(i) for i in sympy_expr.args])
+            elif sympy_expr.func is spl.And:
+                return BoolOp(op=And(), values=[_sympy_to_ast(i) for i in sympy_expr.args])
+            elif not sympy_expr.args:
+                return Name(id=sympy_expr.name)
+            else:
+                raise TypeError(f"Unsupported operation: {sympy_expr.func}")
+
+        if not isinstance(sympy_gpr, (spl.BooleanFunction , Symbol)):
+            raise TypeError(
+                f"{cls.__name__}.from_symbolic "
+                f"requires a sympy BooleanFunction or "
+                f"Symbol argument, not {type(sympy_gpr)}."
+            )
+        gpr = cls()
+        if sympy_gpr == Symbol(''):
+            gpr.body = None
+            return gpr
+        try:
+            tree = Expression(_sympy_to_ast(sympy_gpr))
+        except SyntaxError as e:
+            warn(
+                f"Problem with sympy expression '{sympy_gpr}' for {repr(gpr)}",
+                SyntaxWarning,
+            )
+            warn("GPR will be empty")
+            warn(e.msg)
+            return gpr
+        return cls(tree)
+
     def __eq__(self, other):
         if not self.body:
             if not other.body:
