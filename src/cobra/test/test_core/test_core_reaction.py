@@ -76,6 +76,7 @@ def test_gpr_modification(model: Model) -> None:
     # Remove old gene correctly
     assert old_gene not in reaction.genes
     assert reaction not in old_gene.reactions
+    assert old_gene not in model.genes
 
     # Add a new 'gene' to the GPR
     reaction.gene_reaction_rule = "fake_gene"
