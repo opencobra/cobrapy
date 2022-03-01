@@ -383,3 +383,37 @@ def test_gpr_equality_benchmark(small_model, benchmark):
                 rxn1.gpr == rxn2.gpr
 
     benchmark(gpr_equality_all_reactions)
+
+
+@pytest.mark.parametrize(
+    "gpr_input, symbolic_gpr",
+    [
+        ("", Symbol("")),
+        ("a", Symbol("a")),
+        ("a & b", And(Symbol("a"), Symbol("b"))),
+        ("a | b", Or(Symbol("a"), Symbol("b"))),
+        ("a or b", Or(Symbol("a"), Symbol("b"))),
+        pytest.param(
+            "a OR b", Or(Symbol("a"), Symbol("b")), marks=pytest.mark.filterwarnings
+        ),
+        ("a | b", Or(Symbol("b"), Symbol("a"))),
+        ("a | b | c", Or(Symbol("a"), Symbol("b"), Symbol("c"))),
+        ("a or b or c", Or(Symbol("a"), Symbol("b"), Symbol("c"))),
+        ("(a OR b) AND c", And(Symbol("c"), Or(Symbol("a"), Symbol("b")))),
+    ],
+)
+def test_gpr_from_symbolic(gpr_input, symbolic_gpr) -> None:
+    gpr1 = GPR().from_symbolic(symbolic_gpr)
+    gpr2 = GPR().from_string(gpr_input)
+    assert gpr1 == gpr2
+
+
+def test_gpr_from_as_symbolic_equality(large_model) -> None:
+    """Test that as_symbolic followed by from_symbolic gives a GPR equivalent to the original."""
+    model = large_model.copy()
+
+    for i in range(len(model.reactions)):
+        rxn1 = model.reactions[i]
+        gpr1 = rxn1.gpr
+        gpr2 = GPR().from_symbolic(gpr1.as_symbolic())
+        assert gpr1 == gpr2
