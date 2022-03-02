@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
+"""Provide functions for dealing with genes and gene product rules (GPR)."""
 
 import re
 from ast import (
@@ -22,6 +20,7 @@ from keyword import kwlist
 from typing import FrozenSet, Iterable, Set, Tuple, Union
 from warnings import warn
 
+from cobra import Model
 from cobra.core.dictlist import DictList
 from cobra.core.species import Species
 from cobra.util import resettable
@@ -32,7 +31,7 @@ keywords = list(kwlist)
 keywords.remove("and")
 keywords.remove("or")
 keywords.extend(("True", "False"))
-keyword_re = re.compile(r"(?=\b(%s)\b)" % "|".join(keywords))
+keyword_re = re.compile(fr"(?=\b({'|'.join(keywords)})\b)")
 number_start_re = re.compile(r"(?=\b[0-9])")
 
 replacements = (
@@ -54,13 +53,37 @@ class GPRWalker(NodeVisitor):
     """
 
     def __init__(self):
+        """Initialize a new object.
+
+        Other Parameters
+        ----------------
+        **kwargs:
+            Further keyword arguments are passed on to the parent class.
+
+        """
         NodeVisitor.__init__(self)
         self.gene_set = set()
 
-    def visit_Name(self, node) -> None:
+    def visit_Name(self, node: Name) -> None:
+        """Visit a Gene node and add the id to the gene_set.
+
+        Parameters
+        ----------
+        node: ast.Name
+            The node to visit
+
+        """
         self.gene_set.add(node.id)
 
     def visit_BoolOp(self, node: BoolOp) -> None:
+        """Visit a BoolOp node (AND/OR) and visit the children to add them to gene_set.
+
+        Parameters
+        ----------
+        node: ast.BoolOp
+            The node to visit
+
+        """
         self.generic_visit(node)
         for val in node.values:
             self.visit(val)
@@ -74,10 +97,34 @@ class GPRCleaner(NodeTransformer):
     """
 
     def __init__(self):
+        """Initialize a new object.
+
+        Other Parameters
+        ----------------
+        **kwargs:
+            Further keyword arguments are passed on to the parent class.
+
+        """
         NodeTransformer.__init__(self)
         self.gene_set = set()
 
-    def visit_Name(self, node):
+    def visit_Name(self, node: Name) -> Name:
+        """Visit a Gene node and add the id to the gene_set.
+
+        The gene id will be cleaned used __cobra_escape__ and replacements
+        dictionary (see above).
+
+        Parameters
+        ----------
+        node: ast.Name
+            The node to visit
+
+        Returns
+        -------
+        node: ast.Name
+            The transformed node (with the id changed).
+
+        """
         if node.id.startswith("__cobra_escape__"):
             node.id = node.id[16:]
         for char, escaped in replacements:
@@ -87,13 +134,25 @@ class GPRCleaner(NodeTransformer):
         return node
 
     def visit_BinOp(self, node):
+        """Visit a BoolOp node (AND/OR) and visit the children (genes) to process them.
+
+        Parameters
+        ----------
+        node: ast.BoolOp
+            The node to visit. Nodes other than And() and Or() will cause an error.
+
+        Returns
+        -------
+        node: ast.BoolOp
+            The node with the children transformed.
+        """
         self.generic_visit(node)
         if isinstance(node.op, BitAnd):
             return BoolOp(And(), (node.left, node.right))
         elif isinstance(node.op, BitOr):
             return BoolOp(Or(), (node.left, node.right))
         else:
-            raise TypeError("unsupported operation '%s'" % node.op.__class__.__name__)
+            raise TypeError(f"unsupported operation '{node.op.__class__.__name__}'")
 
 
 def parse_gpr(str_expr: str) -> Tuple:
@@ -137,7 +196,8 @@ class Gene(Species):
         used.
     """
 
-    def __init__(self, id=None, name="", functional=True):
+    # noinspection PyShadowingBuiltins
+    def __init__(self, id: str = None, name: str = "", functional: bool = True):
         """Initialize a gene.
 
         Parameters
@@ -154,7 +214,7 @@ class Gene(Species):
         self._functional = functional
 
     @property
-    def functional(self):
+    def functional(self) -> bool:
         """Flag indicating if the gene is functional.
 
         Changing the flag is reverted upon exit if executed within the model
@@ -164,12 +224,12 @@ class Gene(Species):
 
     @functional.setter
     @resettable
-    def functional(self, value):
+    def functional(self, value: bool) -> None:
         if not isinstance(value, bool):
             raise ValueError("expected boolean")
         self._functional = value
 
-    def knock_out(self):
+    def knock_out(self) -> None:
         """Knockout gene by marking it as non-functional.
 
         Knockout gene by marking it as non-functional and setting all
@@ -183,9 +243,9 @@ class Gene(Species):
                 reaction.bounds = (0, 0)
 
     def remove_from_model(
-        self, model=None, make_dependent_reactions_nonfunctional=True
-    ):
-        """Removes the association.
+        self, model: Model = None, make_dependent_reactions_nonfunctional: bool = True
+    ) -> None:
+        """Remove the association of gene from a model.
 
         Parameters
         ----------
@@ -206,17 +266,17 @@ class Gene(Species):
         if model is not None:
             if model != self._model:
                 raise Exception(
-                    "%s is a member of %s, not %s"
-                    % (repr(self), repr(self._model), repr(model))
+                    f"{repr(self)} is a member of {repr(self._model)}, "
+                    f"not {repr(model)}"
                 )
         if self._model is None:
-            raise Exception("%s is not in a model" % repr(self))
+            raise Exception(f"{repr(self)} is not in a model")
 
         if make_dependent_reactions_nonfunctional:
             gene_state = "False"
         else:
             gene_state = "True"
-        the_gene_re = re.compile("(^|(?<=( |\()))%s(?=( |\)|$))" % re.escape(self.id))
+        the_gene_re = re.compile(fr"(^|(?<=( |\())){re.escape(self.id)}(?=( |\)|$))")
 
         # remove reference to the gene in all groups
         associated_groups = self._model.get_associated_groups(self)
@@ -236,7 +296,7 @@ class Gene(Species):
             the_gene_reaction_relation = the_reaction.gene_reaction_rule
             for other_gene in the_reaction._genes:
                 other_gene_re = re.compile(
-                    "(^|(?<=( |\()))%s(?=( |\)|$))" % re.escape(other_gene.id)
+                    fr"(^|(?<=( |\())){re.escape(other_gene.id)}(?=( |\)|$))"
                 )
                 the_gene_reaction_relation = other_gene_re.sub(
                     "True", the_gene_reaction_relation
@@ -248,29 +308,23 @@ class Gene(Species):
         self._reaction.clear()
 
     def _repr_html_(self):
-        return """
+        return f"""
         <table>
             <tr>
-                <td><strong>Gene identifier</strong></td><td>{id}</td>
+                <td><strong>Gene identifier</strong></td><td>{self.id}</td>
             </tr><tr>
-                <td><strong>Name</strong></td><td>{name}</td>
+                <td><strong>Name</strong></td><td>{self.name}</td>
             </tr><tr>
                 <td><strong>Memory address</strong></td>
-                <td>{address}</td>
+                <td>{"0x0%x" % id(self)}</td>
             </tr><tr>
-                <td><strong>Functional</strong></td><td>{functional}</td>
+                <td><strong>Functional</strong></td><td>{self.functional}</td>
             </tr><tr>
-                <td><strong>In {n_reactions} reaction(s)</strong></td><td>
-                    {reactions}</td>
+                <td><strong>In {len(self.reactions)} reaction(s)</strong></td><td>
+                    {format_long_string(", ".join(r.id for r in self.reactions), 200)}
+                    </td>
             </tr>
-        </table>""".format(
-            id=self.id,
-            name=self.name,
-            functional=self.functional,
-            address="0x0%x" % id(self),
-            n_reactions=len(self.reactions),
-            reactions=format_long_string(", ".join(r.id for r in self.reactions), 200),
-        )
+        </table>"""
 
 
 class GPR(Module):
@@ -283,8 +337,18 @@ class GPR(Module):
     """
 
     def __init__(self, gpr_from: Union[Expression, Module, AST] = None, **kwargs):
+        """Initialize a gene.
+
+        Parameters
+        ----------
+        gpr_from: Expression, Module, AST
+            An AST expression that will be parsed to GPR.
+        **kwargs:
+            Further keyword arguments are passed on to the parent class.
+        """
         super().__init__(**kwargs)
         self._genes = set()
+        # noinspection PyTypeChecker
         self.body = None
         if gpr_from:
             if isinstance(gpr_from, str):
@@ -347,6 +411,7 @@ class GPR(Module):
                     f"Uppercase AND/OR found in rule '{string_gpr}'.",
                     SyntaxWarning,
                 )
+                warn(e.msg)
                 string_gpr = uppercase_AND.sub("and", string_gpr)
                 string_gpr = uppercase_OR.sub("or", string_gpr)
             try:
@@ -533,10 +598,10 @@ class GPR(Module):
         return deepcopy(self)
 
     def __repr__(self):
-        return "%s.%s(%r)" % (
-            self.__class__.__module__,
-            self.__class__.__qualname__,
-            self.to_string(),
+        """Return the GPR with module, class, and code to recreate it."""
+        return (
+            f"{self.__class__.__module__}.{self.__class__.__qualname__}"
+            f"({self.to_string()!r})"
         )
 
     def __str__(self):
@@ -555,15 +620,11 @@ class GPR(Module):
         return self.to_string(names={})
 
     def _repr_html__(self):
-        return """<p><strong>GPR</strong></p><p>{gpr}</p>""".format(
-            gpr=format_long_string(self.to_string(), 100)
-        )
-
-    # def as_symbolic(self):
-    #     # ...
+        return f"""<p><strong>GPR</strong></p><p>{format_long_string(self.to_string(),
+                                                                     100)}</p>"""
 
 
-def eval_gpr(expr, knockouts):
+def eval_gpr(expr: Union[Expression, GPR], knockouts: Union[DictList, set]) -> bool:
     """Evaluate compiled ast of gene_reaction_rule with knockouts.
 
     .. deprecated ::
@@ -602,7 +663,8 @@ def ast2str(expr: Union[Expression, GPR], level: int = 0, names: dict = None) ->
     expr : AST or GPR
         AST or GPR
     level : int
-        internal use only
+        internal use only. Ignored because of GPR() class, kept only for interface
+        consistency with code still using ast2str.
     names : dict
         Dict where each element id a gene identifier and the value is the
         gene name. Use this to get a rule str which uses names instead. This
