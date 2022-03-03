@@ -31,7 +31,7 @@ keywords = list(kwlist)
 keywords.remove("and")
 keywords.remove("or")
 keywords.extend(("True", "False"))
-keyword_re = re.compile(fr"(?=\b({'|'.join(keywords)})\b)")
+keyword_re = re.compile(rf"(?=\b({'|'.join(keywords)})\b)")
 number_start_re = re.compile(r"(?=\b[0-9])")
 
 replacements = (
