@@ -20,7 +20,7 @@ from keyword import kwlist
 from typing import FrozenSet, Iterable, Set, Tuple, Union
 from warnings import warn
 
-from cobra import Model
+from cobra.core.model import Model
 from cobra.core.dictlist import DictList
 from cobra.core.species import Species
 from cobra.util import resettable
