@@ -1,15 +1,25 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
+"""Creates the class DictList, used in many parts of cobrapy."""
 
 import re
 from itertools import islice
+from typing import (
+    Any,
+    Callable,
+    Iterable,
+    Iterator,
+    Pattern,
+    Tuple,
+    Type,
+    Union,
+)
 
 from numpy import bool_
 
+from cobra.core.object import Object
+
 
 class DictList(list):
-    """A combined dict and list
+    """A combined dict and list.
 
     This object behaves like a list, but has the O(1) speed
     benefits of a dict when looking up elements by their id.
@@ -26,7 +36,7 @@ class DictList(list):
 
         """
         if len(args) > 2:
-            raise TypeError("takes at most 1 argument (%d given)" % len(args))
+            raise TypeError(f"takes at most 1 argument ({len(args):d} given)")
         super(DictList, self).__init__(self)
         self._dict = {}
         if len(args) == 1:
@@ -37,32 +47,33 @@ class DictList(list):
             else:
                 self.extend(other)
 
-    def has_id(self, id):
+    def has_id(self, id: Any) -> bool:
+        """Check if id is in DictList."""
         return id in self._dict
 
-    def _check(self, id):
-        """make sure duplicate id's are not added.
+    def _check(self, id: Any) -> None:
+        """Make sure duplicate id's are not added.
+
         This function is called before adding in elements.
 
         """
         if id in self._dict:
-            raise ValueError("id %s is already present in list" % str(id))
+            raise ValueError(f"id {str(id)} is already present in list")
 
-    def _generate_index(self):
-        """rebuild the _dict index"""
+    def _generate_index(self) -> None:
+        """Rebuild the _dict index."""
         self._dict = {v.id: k for k, v in enumerate(self)}
 
-    def get_by_id(self, id):
-        """return the element with a matching id"""
+    def get_by_id(self, id: Any) -> Any:
+        """Return the element with a matching id."""
         return list.__getitem__(self, self._dict[id])
 
-    def list_attr(self, attribute):
-        """return a list of the given attribute for every object"""
+    def list_attr(self, attribute: str) -> list:
+        """Return a list of the given attribute for every object."""
         return [getattr(i, attribute) for i in self]
 
-    def get_by_any(self, iterable):
-        """
-        Get a list of members using several different ways of indexing
+    def get_by_any(self, iterable: list) -> list:
+        """Get a list of members using several different ways of indexing.
 
         Parameters
         ----------
@@ -77,7 +88,7 @@ class DictList(list):
             a list of members
         """
 
-        def get_item(item):
+        def get_item(item: Any) -> Any:
             if isinstance(item, int):
                 return self[item]
             elif isinstance(item, str):
@@ -85,14 +96,18 @@ class DictList(list):
             elif item in self:
                 return item
             else:
-                raise TypeError("item in iterable cannot be '%s'" % type(item))
+                raise TypeError(f"item in iterable cannot be '{type(item)}'")
 
         if not isinstance(iterable, list):
             iterable = [iterable]
         return [get_item(item) for item in iterable]
 
-    def query(self, search_function, attribute=None):
-        """Query the list
+    def query(
+        self,
+        search_function: Union[str, Pattern, Callable],
+        attribute: Union[str, None] = None,
+    ) -> "DictList":
+        """Query the list.
 
         Parameters
         ----------
@@ -122,7 +137,7 @@ class DictList(list):
         >>> model.metabolites.query(regex, attribute='name')
         """
 
-        def select_attribute(x):
+        def select_attribute(x: Union[type(None), Any]) -> Any:
             if attribute is None:
                 return x
             else:
@@ -139,9 +154,7 @@ class DictList(list):
 
             else:
                 # Don't regex on objects
-                matches = (
-                    i for i in self if regex_searcher.findall(getattr(i, "id")) != []
-                )
+                matches = (i for i in self if regex_searcher.findall(i.id) != [])
 
         except TypeError:
             matches = (i for i in self if search_function(select_attribute(i)))
@@ -150,35 +163,41 @@ class DictList(list):
         results._extend_nocheck(matches)
         return results
 
-    def _replace_on_id(self, new_object):
+    def _replace_on_id(self, new_object: Object) -> None:
         """Replace an object by another with the same id."""
         the_id = new_object.id
         the_index = self._dict[the_id]
         list.__setitem__(self, the_index, new_object)
 
     # overriding default list functions with new ones
-    def append(self, object):
-        """append object to end"""
-        the_id = object.id
+    def append(self, entity: Object) -> None:
+        """Append object to end."""
+        the_id = entity.id
         self._check(the_id)
         self._dict[the_id] = len(self)
-        list.append(self, object)
+        list.append(self, entity)
 
-    def union(self, iterable):
-        """adds elements with id's not already in the model"""
+    def union(self, iterable: Iterable) -> None:
+        """Add elements with id's not already in the model."""
         _dict = self._dict
         append = self.append
         for i in iterable:
             if i.id not in _dict:
                 append(i)
 
-    def extend(self, iterable):
-        """extend list by appending elements from the iterable"""
-        # Sometimes during initialization from an older pickle, _dict
-        # will not have initialized yet, because the initialization class was
-        # left unspecified. This is an issue because unpickling calls
-        # DictList.extend, which requires the presence of _dict. Therefore,
-        # the issue is caught and addressed here.
+    def extend(self, iterable: Iterable) -> None:
+        """Extend list by appending elements from the iterable.
+
+        Sometimes during initialization from an older pickle, _dict
+        will not have initialized yet, because the initialization class was
+        left unspecified. This is an issue because unpickling calls
+        DictList.extend, which requires the presence of _dict. Therefore,
+        the issue is caught and addressed here.
+
+        Parameters
+        ----------
+        iterable : Iterable
+        """
         if not hasattr(self, "_dict") or self._dict is None:
             self._dict = {}
         _dict = self._dict
@@ -195,35 +214,45 @@ class DictList(list):
                 # if the above succeeded, then the id must be present
                 # twice in the list being added
                 raise ValueError(
-                    "id '%s' at index %d is non-unique. "
-                    "Is it present twice?" % (str(the_id), i)
+                    f"id '{str(the_id)}' at index {i :d} is non-unique. "
+                    f"Is it present twice?"
                 )
 
-    def _extend_nocheck(self, iterable):
-        """extends without checking for uniqueness
+    def _extend_nocheck(self, iterable: Iterable) -> None:
+        """Extend without checking for uniqueness.
 
         This function should only be used internally by DictList when it
         can guarantee elements are already unique (as in when coming from
         self or other DictList). It will be faster because it skips these
         checks.
 
+        Parameters
+        ----------
+        iterable : Iterable
+
         """
         current_length = len(self)
         list.extend(self, iterable)
         _dict = self._dict
-        if current_length is 0:
+        if not current_length:
             self._generate_index()
             return
         for i, obj in enumerate(islice(self, current_length, None), current_length):
             _dict[obj.id] = i
 
-    def __sub__(self, other):
-        """x.__sub__(y) <==> x - y
+    def __sub__(self, other: Iterable) -> "DictList":
+        """Remove a value or values, and returns the new DictList.
+
+        x.__sub__(y) <==> x - y
 
         Parameters
         ----------
         other : iterable
             other must contain only unique id's present in the list
+        Returns
+        -------
+        total: DictList
+            new DictList with item(s) removed
         """
         total = DictList()
         total.extend(self)
@@ -231,36 +260,40 @@ class DictList(list):
             total.remove(item)
         return total
 
-    def __isub__(self, other):
-        """x.__sub__(y) <==> x -= y
+    def __isub__(self, other: Iterable) -> "DictList":
+        """Remove a value or values in place.
+
+        x.__sub__(y) <==> x -= y
 
         Parameters
         ----------
         other : iterable
             other must contain only unique id's present in the list
         """
-
         for item in other:
             self.remove(item)
         return self
 
-    def __add__(self, other):
-        """x.__add__(y) <==> x + y
+    def __add__(self, other: Iterable) -> "DictList":
+        """Add item while returning a new DictList.
+
+        x.__add__(y) <==> x + y
 
         Parameters
         ----------
         other : iterable
             other must contain only unique id's which do not intersect
             with self
-
         """
         total = DictList()
         total.extend(self)
         total.extend(other)
         return total
 
-    def __iadd__(self, other):
-        """x.__iadd__(y) <==> x += y
+    def __iadd__(self, other: Iterable) -> "DictList":
+        """Add item while returning the same DictList.
+
+        x.__iadd__(y) <==> x += y
 
         Parameters
         ----------
@@ -272,28 +305,37 @@ class DictList(list):
         self.extend(other)
         return self
 
-    def __reduce__(self):
-        return (self.__class__, (), self.__getstate__(), self.__iter__())
+    def __reduce__(self) -> Tuple[Type["DictList"], Tuple, dict, Iterator]:
+        """Return a reduced version of DictList.
 
-    def __getstate__(self):
-        """gets internal state
+        This reduced version details the class, an empty Tuple, a dictionary of the
+        state and an iterator to go over the DictList.
+        """
+        return self.__class__, (), self.__getstate__(), self.__iter__()
+
+    def __getstate__(self) -> dict:
+        """Get internal state.
 
         This is only provided for backwards compatibility so older
         versions of cobrapy can load pickles generated with cobrapy. In
-        reality, the "_dict" state is ignored when loading a pickle"""
+        reality, the "_dict" state is ignored when loading a pickle
+        """
         return {"_dict": self._dict}
 
-    def __setstate__(self, state):
-        """sets internal state
+    def __setstate__(self, state) -> None:
+        """Pretend to set internal state. Actually recalculates.
 
         Ignore the passed in state and recalculate it. This is only for
         compatibility with older pickles which did not correctly specify
-        the initialization class"""
+        the initialization class
+        """
         self._generate_index()
 
-    def index(self, id, *args):
-        """Determine the position in the list
+    def index(self, id: Union[str, Object], *args) -> int:
+        """Determine the position in the list.
 
+        Parameters
+        ----------
         id: A string or a :class:`~cobra.core.Object.Object`
 
         """
@@ -302,52 +344,57 @@ class DictList(list):
             try:
                 return self._dict[id]
             except KeyError:
-                raise ValueError("%s not found" % id)
+                raise ValueError(f"{id} not found")
         try:
             i = self._dict[id.id]
             if self[i] is not id:
                 raise ValueError(
-                    "Another object with the identical id (%s) found" % id.id
+                    f"Another object with the identical id ({id.id}) found"
                 )
             return i
         except KeyError:
-            raise ValueError("%s not found" % str(id))
+            raise ValueError(f"{str(id)} not found")
 
-    def __contains__(self, object):
-        """DictList.__contains__(object) <==> object in DictList
+    def __contains__(self, entity: Union[str, Object]) -> bool:
+        """Ask if the DictList contain an entity.
 
-        object: str or :class:`~cobra.core.Object.Object`
+        DictList.__contains__(entity) <==> entity in DictList
+
+        Parameters
+        ----------
+        entity: str or :class:`~cobra.core.Object.Object`
 
         """
-        if hasattr(object, "id"):
-            the_id = object.id
+        if hasattr(entity, "id"):
+            the_id = entity.id
         # allow to check with the object itself in addition to the id
         else:
-            the_id = object
+            the_id = entity
         return the_id in self._dict
 
-    def __copy__(self):
+    def __copy__(self) -> "DictList":
+        """Copy the DictList into a new one."""
         the_copy = DictList()
         list.extend(the_copy, self)
         the_copy._dict = self._dict.copy()
         return the_copy
 
-    def insert(self, index, object):
-        """insert object before index"""
-        self._check(object.id)
-        list.insert(self, index, object)
+    def insert(self, index, entity) -> None:
+        """Insert entity before index."""
+        self._check(entity.id)
+        list.insert(self, index, entity)
         # all subsequent entries now have been shifted up by 1
         _dict = self._dict
         for i, j in _dict.items():
             if j >= index:
                 _dict[i] = j + 1
-        _dict[object.id] = index
+        _dict[entity.id] = index
 
-    def pop(self, *args):
-        """remove and return item at index (default last)."""
+    def pop(self, *args) -> Any:
+        """Remove and return item at index (default last)."""
         value = list.pop(self, *args)
         index = self._dict.pop(value.id)
-        # If the pop occured from a location other than the end of the list,
+        # If the pop occurred from a location other than the end of the list,
         # we will need to subtract 1 from every entry afterwards
         if len(args) == 0 or args == [-1]:  # removing from the end of the list
             return value
@@ -357,24 +404,28 @@ class DictList(list):
                 _dict[i] = j - 1
         return value
 
-    def add(self, x):
-        """Opposite of `remove`. Mirrors set.add"""
+    def add(self, x: Any) -> None:
+        """Opposite of `remove`. Mirrors set.add."""
         self.extend([x])
 
-    def remove(self, x):
-        """.. warning :: Internal use only"""
-        # Each item is unique in the list which allows this
-        # It is much faster to do a dict lookup than n string comparisons
+    def remove(self, x: Any) -> None:
+        """.. warning :: Internal use only.
+
+        Each item is unique in the list which allows this
+        It is much faster to do a dict lookup than n string comparisons
+        """
         self.pop(self.index(x))
 
     # these functions are slower because they rebuild the _dict every time
-    def reverse(self):
-        """reverse *IN PLACE*"""
+    def reverse(self) -> None:
+        """Reverse *IN PLACE*."""
         list.reverse(self)
         self._generate_index()
 
-    def sort(self, cmp=None, key=None, reverse=False):
-        """stable sort *IN PLACE*
+    def sort(
+        self, cmp: Callable = None, key: Callable = None, reverse: bool = False
+    ) -> None:
+        """Stable sort *IN PLACE*.
 
         cmp(x, y) -> -1, 0, 1
 
@@ -388,7 +439,10 @@ class DictList(list):
 
         self._generate_index()
 
-    def __getitem__(self, i):
+    def __getitem__(
+        self, i: Union[int, slice, Iterable, Any]
+    ) -> Union["DictList", Any]:
+        """Get item from DictList."""
         if isinstance(i, int):
             return list.__getitem__(self, i)
         elif isinstance(i, slice):
@@ -406,7 +460,16 @@ class DictList(list):
         else:
             return list.__getitem__(self, i)
 
-    def __setitem__(self, i, y):
+    def __setitem__(self, i: Union[slice, int], y: Union[list, Any]) -> None:
+        """Set an item via index or slice.
+
+        Parameters
+        ----------
+        i : slice, int
+            i can be slice or int. If i is a slice, y needs to be a list
+        y: list, Any
+            Object to set as
+        """
         if isinstance(i, slice):
             # In this case, y needs to be a list. We will ensure all
             # the id's are unique
@@ -418,7 +481,7 @@ class DictList(list):
             list.__setitem__(self, i, y)
             self._generate_index()
             return
-        # in case a rename has occured
+        # in case a rename has occurred
         if self._dict.get(self[i].id) == i:
             self._dict.pop(self[i].id)
         the_id = y.id
@@ -426,7 +489,8 @@ class DictList(list):
         list.__setitem__(self, i, y)
         self._dict[the_id] = i
 
-    def __delitem__(self, index):
+    def __delitem__(self, index: Any) -> None:
+        """Remove item from DictList."""
         removed = self[index]
         list.__delitem__(self, index)
         if isinstance(removed, list):
@@ -438,23 +502,35 @@ class DictList(list):
             if j > index:
                 _dict[i] = j - 1
 
-    def __getslice__(self, i, j):
+    def __getslice__(self, i: int, j: int) -> "DictList":
+        """Get a slice from it to j of DictList."""
         return self.__getitem__(slice(i, j))
 
-    def __setslice__(self, i, j, y):
+    def __setslice__(self, i: int, j: int, y: Iterable) -> None:
+        """Set slice, where y is an iterable."""
         self.__setitem__(slice(i, j), y)
 
-    def __delslice__(self, i, j):
+    def __delslice__(self, i: int, j: int) -> None:
+        """Remove slice."""
         self.__delitem__(slice(i, j))
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: Any) -> Any:
+        """Get an attribute by id."""
         try:
             return DictList.get_by_id(self, attr)
         except KeyError:
-            raise AttributeError("DictList has no attribute or entry %s" % attr)
+            raise AttributeError(f"DictList has no attribute or entry {attr}")
 
-    def __dir__(self):
-        # override this to allow tab complete of items by their id
+    def __dir__(self) -> list:
+        """Directory of the DictList.
+
+        Override this to allow tab complete of items by their id.
+
+        Returns
+        -------
+        attributes: list
+            A list of attributes/entities.
+        """
         attributes = dir(self.__class__)
         attributes.append("_dict")
         attributes.extend(self._dict.keys())
