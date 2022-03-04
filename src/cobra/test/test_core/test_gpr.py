@@ -16,7 +16,7 @@ def test_gpr() -> None:
     assert gpr1.to_string() == ""
     assert gpr1.eval()
     gpr2 = gpr1.copy()
-    assert gpr2 is GPR
+    assert isinstance(gpr2, GPR)
     assert len(gpr1.genes) == 0
 
 

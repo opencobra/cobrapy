@@ -275,7 +275,7 @@ class Gene(Species):
             gene_state = "False"
         else:
             gene_state = "True"
-        the_gene_re = re.compile(fr"(^|(?<=( |\())){re.escape(self.id)}(?=( |\)|$))")
+        the_gene_re = re.compile(rf"(^|(?<=( |\())){re.escape(self.id)}(?=( |\)|$))")
 
         # remove reference to the gene in all groups
         associated_groups = self._model.get_associated_groups(self)
@@ -295,7 +295,7 @@ class Gene(Species):
             the_gene_reaction_relation = the_reaction.gene_reaction_rule
             for other_gene in the_reaction._genes:
                 other_gene_re = re.compile(
-                    fr"(^|(?<=( |\())){re.escape(other_gene.id)}(?=( |\)|$))"
+                    rf"(^|(?<=( |\())){re.escape(other_gene.id)}(?=( |\)|$))"
                 )
                 the_gene_reaction_relation = other_gene_re.sub(
                     "True", the_gene_reaction_relation
