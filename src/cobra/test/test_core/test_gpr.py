@@ -1,13 +1,14 @@
 """Test functions of cobra.core.gene.GPR ."""
 import itertools
 from ast import parse as ast_parse
+from typing import Iterable, Iterator, Union
 
 import pytest
 
 from cobra.core.gene import GPR, ast2str, eval_gpr, parse_gpr
 
 
-def test_gpr():
+def test_gpr() -> None:
     gpr1 = GPR()
     assert len(gpr1.genes) == 0
     gpr1.update_genes()
@@ -15,6 +16,7 @@ def test_gpr():
     assert gpr1.to_string() == ""
     assert gpr1.eval()
     gpr2 = gpr1.copy()
+    assert gpr2 is GPR
     assert len(gpr1.genes) == 0
 
 
@@ -30,7 +32,7 @@ def test_empty_gpr(test_input) -> None:
     assert len(gpr1.genes) == 0
 
 
-def test_one_gene_gpr():
+def test_one_gene_gpr() -> None:
     gpr1 = GPR.from_string("a")
     assert len(gpr1.genes) == 1
     gpr1.update_genes()
@@ -43,7 +45,7 @@ def test_one_gene_gpr():
 
 # Gets an iterable of all combinations of genes except the empty list. Used to
 # evaluate AND gprs
-def powerset_ne(iterable):
+def powerset_ne(iterable: Iterable) -> Iterator:
     "powerset_ne([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
     s = list(iterable)
     return itertools.chain.from_iterable(
@@ -63,7 +65,7 @@ def powerset_ne(iterable):
         ("a and b and c", 3, {"a", "b", "c"}, "a and b and c"),
     ],
 )
-def test_and_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string):
+def test_and_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string) -> None:
     gpr1 = GPR.from_string(gpr_input)
     assert len(gpr1.genes) == num_genes
     gpr1.update_genes()
@@ -79,7 +81,7 @@ def test_and_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string):
 
 # Gets an iterable of all combinations of genes except a single gene and the empty
 # list. Used to evaluate OR gprs
-def all_except_one(iterable):
+def all_except_one(iterable: Iterable) -> Iterator:
     "all_except_one([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3)"
     s = list(iterable)
     return itertools.chain.from_iterable(
@@ -99,7 +101,7 @@ def all_except_one(iterable):
         ("a or b or c", 3, {"a", "b", "c"}, "a or b or c"),
     ],
 )
-def test_or_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string):
+def test_or_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string) -> None:
     gpr1 = GPR.from_string(gpr_input)
     assert len(gpr1.genes) == num_genes
     gpr1.update_genes()
@@ -122,7 +124,7 @@ def test_or_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string):
         pytest.param("(a OR b) AND c", marks=pytest.mark.filterwarnings),
     ],
 )
-def test_complicated_gpr(gpr_input):
+def test_complicated_gpr(gpr_input: str) -> None:
     gpr1 = GPR.from_string(gpr_input)
     assert len(gpr1.genes) == 3
     gpr1.update_genes()
@@ -149,7 +151,7 @@ def test_complicated_gpr(gpr_input):
     ],
 )
 def test_gpr_from_ast_or(
-    string_to_ast, num_genes, gpr_genes, gpr_output_string
+    string_to_ast: str, num_genes: int, gpr_genes: set, gpr_output_string: str
 ) -> None:
     ast_tree = ast_parse(string_to_ast, "<string>", "eval")
     gpr1 = GPR(ast_tree)
@@ -174,7 +176,7 @@ def test_gpr_from_ast_or(
     ],
 )
 def test_gpr_from_ast_and(
-    string_to_ast, num_genes, gpr_genes, gpr_output_string
+    string_to_ast: str, num_genes: int, gpr_genes: set, gpr_output_string: str
 ) -> None:
     ast_tree = ast_parse(string_to_ast, "<string>", "eval")
     gpr1 = GPR(ast_tree)
@@ -190,7 +192,7 @@ def test_gpr_from_ast_and(
 
 
 @pytest.mark.parametrize("test_input", [["a", "b"], {"a", "b"}])
-def test_wrong_input_gpr_error(test_input):
+def test_wrong_input_gpr_error(test_input: Union[list, set]) -> None:
     with pytest.raises(TypeError):
         GPR.from_string(test_input)
     with pytest.raises(TypeError):
@@ -198,19 +200,19 @@ def test_wrong_input_gpr_error(test_input):
 
 
 @pytest.mark.parametrize("test_input", ["a |", "a &"])
-def test_wrong_input_gpr_warning(test_input):
+def test_wrong_input_gpr_warning(test_input: str) -> None:
     with pytest.warns(SyntaxWarning):
         gpr1 = GPR.from_string(test_input)
         assert gpr1.body is None
         assert len(gpr1.genes) == 0
 
 
-def test_deprecated_gpr():
+def test_deprecated_gpr() -> None:
     gpr1 = GPR.from_string("(a | b) & c")
     with pytest.deprecated_call():
         assert ast2str(gpr1) == "(a or b) and c"
     with pytest.deprecated_call():
-        assert eval_gpr(gpr1, {})
+        assert eval_gpr(gpr1, set())
     with pytest.deprecated_call():
         assert eval_gpr(gpr1, {"a"})
     with pytest.deprecated_call():
@@ -223,7 +225,7 @@ def test_deprecated_gpr():
     with pytest.deprecated_call():
         assert ast2str(gpr1) == "(a or b) and c"
     with pytest.deprecated_call():
-        assert eval_gpr(gpr1, {})
+        assert eval_gpr(gpr1, set())
     with pytest.deprecated_call():
         assert eval_gpr(gpr1, {"a"})
     with pytest.deprecated_call():
