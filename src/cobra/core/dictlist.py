@@ -2,7 +2,16 @@
 
 import re
 from itertools import islice
-from typing import Any, Callable, Pattern, Union, Iterable, Tuple, Iterator, Type
+from typing import (
+    Any,
+    Callable,
+    Iterable,
+    Iterator,
+    Pattern,
+    Tuple,
+    Type,
+    Union,
+)
 
 from numpy import bool_
 
@@ -64,7 +73,7 @@ class DictList(list):
         return [getattr(i, attribute) for i in self]
 
     def get_by_any(self, iterable: list) -> list:
-        """Get a list of members using several different ways of indexing
+        """Get a list of members using several different ways of indexing.
 
         Parameters
         ----------
@@ -146,7 +155,7 @@ class DictList(list):
             else:
                 # Don't regex on objects
                 matches = (
-                    i for i in self if regex_searcher.findall(getattr(i, "id")) != []
+                    i for i in self if regex_searcher.findall(i.id) != []
                 )
 
         except TypeError:
@@ -212,7 +221,7 @@ class DictList(list):
                 )
 
     def _extend_nocheck(self, iterable: Iterable) -> None:
-        """Extends without checking for uniqueness.
+        """Extend without checking for uniqueness.
 
         This function should only be used internally by DictList when it
         can guarantee elements are already unique (as in when coming from
@@ -227,7 +236,7 @@ class DictList(list):
         current_length = len(self)
         list.extend(self, iterable)
         _dict = self._dict
-        if current_length is 0:
+        if not current_length:
             self._generate_index()
             return
         for i, obj in enumerate(islice(self, current_length, None), current_length):
@@ -263,20 +272,20 @@ class DictList(list):
         other : iterable
             other must contain only unique id's present in the list
         """
-
         for item in other:
             self.remove(item)
         return self
 
     def __add__(self, other: Iterable) -> "DictList":
-        """x.__add__(y) <==> x + y
+        """Add item while returning a new DictList.
+
+        x.__add__(y) <==> x + y
 
         Parameters
         ----------
         other : iterable
             other must contain only unique id's which do not intersect
             with self
-
         """
         total = DictList()
         total.extend(self)
@@ -284,7 +293,9 @@ class DictList(list):
         return total
 
     def __iadd__(self, other: Iterable) -> "DictList":
-        """x.__iadd__(y) <==> x += y
+        """Add item while returning the same DictList.
+
+        x.__iadd__(y) <==> x += y
 
         Parameters
         ----------
@@ -297,6 +308,11 @@ class DictList(list):
         return self
 
     def __reduce__(self) -> Tuple[Type["DictList"], Tuple, dict, Iterator]:
+        """Return a reduced version of DictList.
+
+        This reduced version details the class, an empty Tuple, a dictionary of the
+        state and an iterator to go over the DictList.
+        """
         return self.__class__, (), self.__getstate__(), self.__iter__()
 
     def __getstate__(self) -> dict:
@@ -304,7 +320,8 @@ class DictList(list):
 
         This is only provided for backwards compatibility so older
         versions of cobrapy can load pickles generated with cobrapy. In
-        reality, the "_dict" state is ignored when loading a pickle"""
+        reality, the "_dict" state is ignored when loading a pickle
+        """
         return {"_dict": self._dict}
 
     def __setstate__(self, state) -> None:
@@ -312,11 +329,12 @@ class DictList(list):
 
         Ignore the passed in state and recalculate it. This is only for
         compatibility with older pickles which did not correctly specify
-        the initialization class"""
+        the initialization class
+        """
         self._generate_index()
 
     def index(self, id: Union[str, Object], *args) -> int:
-        """Determine the position in the list
+        """Determine the position in the list.
 
         Parameters
         ----------
@@ -340,7 +358,9 @@ class DictList(list):
             raise ValueError(f"{str(id)} not found")
 
     def __contains__(self, entity: Union[str, Object]) -> bool:
-        """DictList.__contains__(entity) <==> entity in DictList
+        """Ask if the DictList contain an entity.
+
+        DictList.__contains__(entity) <==> entity in DictList
 
         Parameters
         ----------
@@ -387,14 +407,15 @@ class DictList(list):
         return value
 
     def add(self, x: Any) -> None:
-        """Opposite of `remove`. Mirrors set.add"""
+        """Opposite of `remove`. Mirrors set.add."""
         self.extend([x])
 
     def remove(self, x: Any) -> None:
-        """.. warning :: Internal use only
+        """.. warning :: Internal use only.
 
         Each item is unique in the list which allows this
-        It is much faster to do a dict lookup than n string comparisons """
+        It is much faster to do a dict lookup than n string comparisons
+        """
         self.pop(self.index(x))
 
     # these functions are slower because they rebuild the _dict every time
@@ -403,14 +424,16 @@ class DictList(list):
         list.reverse(self)
         self._generate_index()
 
-    def sort(self, cmp: Callable = None, key: Callable = None,
-             reverse: bool = False) -> None:
+    def sort(
+        self, cmp: Callable = None, key: Callable = None, reverse: bool = False
+    ) -> None:
         """Stable sort *IN PLACE*.
 
         cmp(x, y) -> -1, 0, 1
 
         """
         if key is None:
+
             def key(i):
                 return i.id
 
@@ -418,7 +441,10 @@ class DictList(list):
 
         self._generate_index()
 
-    def __getitem__(self, i: Union[int, slice, Iterable, Any]) -> Union["DictList", Any]:
+    def __getitem__(
+        self, i: Union[int, slice, Iterable, Any]
+    ) -> Union["DictList", Any]:
+        """Get item from DictList."""
         if isinstance(i, int):
             return list.__getitem__(self, i)
         elif isinstance(i, slice):
