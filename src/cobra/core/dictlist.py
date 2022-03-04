@@ -465,7 +465,8 @@ class DictList(list):
         list.__setitem__(self, i, y)
         self._dict[the_id] = i
 
-    def __delitem__(self, index) -> None:
+    def __delitem__(self, index: Any) -> None:
+        """Remove item from DictList."""
         removed = self[index]
         list.__delitem__(self, index)
         if isinstance(removed, list):
@@ -477,23 +478,35 @@ class DictList(list):
             if j > index:
                 _dict[i] = j - 1
 
-    def __getslice__(self, i, j):
+    def __getslice__(self, i: int, j: int) -> "DictList":
+        """Get a slice from it to j of DictList."""
         return self.__getitem__(slice(i, j))
 
-    def __setslice__(self, i, j, y):
+    def __setslice__(self, i: int, j: int, y: Iterable) -> None:
+        """Set slice, where y is an iterable."""
         self.__setitem__(slice(i, j), y)
 
-    def __delslice__(self, i, j):
+    def __delslice__(self, i: int, j: int) -> None:
+        """Remove slice."""
         self.__delitem__(slice(i, j))
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: Any) -> Any:
+        """Get an attribute by id."""
         try:
             return DictList.get_by_id(self, attr)
         except KeyError:
             raise AttributeError(f"DictList has no attribute or entry {attr}")
 
-    def __dir__(self):
-        # override this to allow tab complete of items by their id
+    def __dir__(self) -> list:
+        """Directory of the DictList.
+
+        Override this to allow tab complete of items by their id.
+
+        Returns
+        -------
+        attributes: list
+            A list of attributes/entities.
+        """
         attributes = dir(self.__class__)
         attributes.append("_dict")
         attributes.extend(self._dict.keys())
