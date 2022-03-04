@@ -701,7 +701,7 @@ class GPR(Module):
         gpr.update_genes()
         return gpr
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         """Check equality of GPR via symbolic equality."""
         if not self.body and not other.body:
             return True
