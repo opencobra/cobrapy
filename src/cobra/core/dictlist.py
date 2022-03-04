@@ -2,11 +2,11 @@
 
 import re
 from itertools import islice
-from typing import Any, Callable, Pattern, Union, Iterable
+from typing import Any, Callable, Pattern, Union, Iterable, Tuple, Iterator, Type
 
 from numpy import bool_
 
-from cobra import Object
+from cobra.core.object import Object
 
 
 class DictList(list):
@@ -296,26 +296,26 @@ class DictList(list):
         self.extend(other)
         return self
 
-    def __reduce__(self):
-        return (self.__class__, (), self.__getstate__(), self.__iter__())
+    def __reduce__(self) -> Tuple[Type["DictList"], Tuple, dict, Iterator]:
+        return self.__class__, (), self.__getstate__(), self.__iter__()
 
-    def __getstate__(self):
-        """gets internal state
+    def __getstate__(self) -> dict:
+        """Get internal state.
 
         This is only provided for backwards compatibility so older
         versions of cobrapy can load pickles generated with cobrapy. In
         reality, the "_dict" state is ignored when loading a pickle"""
         return {"_dict": self._dict}
 
-    def __setstate__(self, state):
-        """sets internal state
+    def __setstate__(self, state) -> None:
+        """Pretend to set internal state. Actually recalculates.
 
         Ignore the passed in state and recalculate it. This is only for
         compatibility with older pickles which did not correctly specify
         the initialization class"""
         self._generate_index()
 
-    def index(self, id: Union[str, Object], *args) -> Any:
+    def index(self, id: Union[str, Object], *args) -> int:
         """Determine the position in the list
 
         Parameters
@@ -344,7 +344,7 @@ class DictList(list):
 
         Parameters
         ----------
-        object: str or :class:`~cobra.core.Object.Object`
+        entity: str or :class:`~cobra.core.Object.Object`
 
         """
         if hasattr(entity, "id"):
@@ -436,7 +436,16 @@ class DictList(list):
         else:
             return list.__getitem__(self, i)
 
-    def __setitem__(self, i, y):
+    def __setitem__(self, i: Union[slice, int], y: Union[list, Any]) -> None:
+        """Set an item via index or slice.
+
+        Parameters
+        ----------
+        i : slice, int
+            i can be slice or int. If i is a slice, y needs to be a list
+        y: list, Any
+            Object to set as
+        """
         if isinstance(i, slice):
             # In this case, y needs to be a list. We will ensure all
             # the id's are unique
@@ -456,7 +465,7 @@ class DictList(list):
         list.__setitem__(self, i, y)
         self._dict[the_id] = i
 
-    def __delitem__(self, index):
+    def __delitem__(self, index) -> None:
         removed = self[index]
         list.__delitem__(self, index)
         if isinstance(removed, list):
