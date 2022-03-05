@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
-
-"""Test functions of dictlist.py"""
-
-from __future__ import absolute_import
+"""Test functions of dictlist.py."""
 
 import re
 from copy import copy, deepcopy
 from pickle import HIGHEST_PROTOCOL, dumps, loads
+from typing import Tuple
 
 import pytest
 
@@ -14,14 +11,14 @@ from cobra.core import DictList, Object
 
 
 @pytest.fixture(scope="function")
-def dict_list():
+def dict_list() -> Tuple[Object, DictList]:
     obj = Object("test1")
     test_list = DictList()
     test_list.append(obj)
     return obj, test_list
 
 
-def test_contains(dict_list):
+def test_contains(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
     assert obj in test_list
     assert obj.id in test_list
@@ -29,7 +26,7 @@ def test_contains(dict_list):
     assert "not_in" not in test_list
 
 
-def test_index(dict_list):
+def test_index(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
     assert test_list.index("test1") == 0
     assert test_list.index(obj) == 0
@@ -43,7 +40,7 @@ def test_index(dict_list):
         test_list.index(Object("test1"))
 
 
-def test_independent():
+def test_independent() -> None:
     a = DictList([Object("o1"), Object("o2")])
     b = DictList()
     assert "o1" in a
@@ -53,7 +50,7 @@ def test_independent():
     assert "o3" in b
 
 
-def test_get_by_any(dict_list):
+def test_get_by_any(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
     assert test_list.get_by_any(0) == [obj]
     assert test_list.get_by_any("test1") == [obj]
@@ -64,7 +61,7 @@ def test_get_by_any(dict_list):
     assert test_list.get_by_any(obj) == [obj]
 
 
-def test_append(dict_list):
+def test_append(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
     obj2 = Object("test2")
     test_list.append(obj2)
@@ -76,7 +73,7 @@ def test_append(dict_list):
     assert len(test_list) == 2
 
 
-def test_insert(dict_list):
+def test_insert(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
     obj2 = Object("a")
     test_list.insert(0, obj2)
@@ -88,9 +85,9 @@ def test_insert(dict_list):
         test_list.append(obj2)
 
 
-def test_extend(dict_list):
+def test_extend(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
-    obj_list = [Object("test%d" % (i)) for i in range(2, 10)]
+    obj_list = [Object(f"test{i:d}") for i in range(2, 10)]
     test_list.extend(obj_list)
     assert test_list[1].id == "test2"
     assert test_list.get_by_id("test2") == obj_list[0]
@@ -104,9 +101,9 @@ def test_extend(dict_list):
         test_list.extend([Object("testd"), Object("testd")])
 
 
-def test_iadd(dict_list):
+def test_iadd(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
-    obj_list = [Object("test%d" % (i)) for i in range(2, 10)]
+    obj_list = [Object(f"test{i:d}") for i in range(2, 10)]
     test_list += obj_list
     assert test_list[1].id == "test2"
     assert test_list.get_by_id("test2") == obj_list[0]
@@ -114,42 +111,43 @@ def test_iadd(dict_list):
     assert len(test_list) == 9
 
 
-def test_add(dict_list):
+def test_add(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
-    obj_list = [Object("test%d" % (i)) for i in range(2, 10)]
-    sum = test_list + obj_list
-    assert sum is not test_list
-    assert sum is not obj_list
+    obj_list = [Object(f"test{i:d}") for i in range(2, 10)]
+    sum_ = test_list + obj_list
+    assert sum_ is not test_list
+    assert sum_ is not obj_list
     assert test_list[0].id == "test1"
-    assert sum[1].id == "test2"
-    assert sum.get_by_id("test2") == obj_list[0]
-    assert sum[8].id == "test9"
+    assert sum_[1].id == "test2"
+    # noinspection PyUnresolvedReferences
+    assert sum_.get_by_id("test2") == obj_list[0]
+    assert sum_[8].id == "test9"
     assert len(test_list) == 1
-    assert len(sum) == 9
+    assert len(sum_) == 9
 
 
-def test_sub(dict_list):
+def test_sub(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
     obj_list = [Object("test%d" % i) for i in range(2, 10)]
-    sum = test_list + obj_list
-    sub = sum - test_list
+    sum_ = test_list + obj_list
+    sub = sum_ - test_list
     assert test_list[0].id == "test1"
     assert sub[0].id == "test2"
     assert len(sub) == 8
-    assert sum - obj_list == test_list
+    assert sum_ - obj_list == test_list
 
 
-def test_isub(dict_list):
+def test_isub(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
     obj_list = [Object("test%d" % i) for i in range(2, 10)]
-    sum = test_list + obj_list
-    sum -= obj_list[2:4]
-    assert len(sum) == 7
+    sum_ = test_list + obj_list
+    sum_ -= obj_list[2:4]
+    assert len(sum_) == 7
     with pytest.raises(ValueError):
-        sum -= [Object("bogus")]
+        sum_ -= [Object("bogus")]
 
 
-def test_init_copy(dict_list):
+def test_init_copy(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
     test_list.append(Object("test2"))
     copied = DictList(test_list)
@@ -163,7 +161,7 @@ def test_init_copy(dict_list):
         assert v is copied.get_by_id(v.id)
 
 
-def test_slice(dict_list):
+def test_slice(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
     test_list.append(Object("test2"))
     test_list.append(Object("test3"))
@@ -178,7 +176,7 @@ def test_slice(dict_list):
         assert test_list[i] is sliced.get_by_id(v.id)
 
 
-def test_copy(dict_list):
+def test_copy(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
     test_list.append(Object("test2"))
     copied = copy(test_list)
@@ -192,7 +190,7 @@ def test_copy(dict_list):
         assert v is copied.get_by_id(v.id)
 
 
-def test_deepcopy(dict_list):
+def test_deepcopy(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
     test_list.append(Object("test2"))
     copied = deepcopy(test_list)
@@ -206,7 +204,7 @@ def test_deepcopy(dict_list):
         assert v is not copied.get_by_id(v.id)
 
 
-def test_pickle(dict_list):
+def test_pickle(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
     test_list.append(Object("test2"))
     for protocol in range(HIGHEST_PROTOCOL):
@@ -222,7 +220,7 @@ def test_pickle(dict_list):
             assert v is not copied.get_by_id(v.id)
 
 
-def test_query(dict_list):
+def test_query(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
     obj2 = Object("test2")
     obj2.name = "foobar1"
@@ -250,8 +248,8 @@ def test_query(dict_list):
     assert len(result) == 1
 
 
-def test_removal():
-    obj_list = DictList(Object("test%d" % (i)) for i in range(2, 10))
+def test_removal() -> None:
+    obj_list = DictList(Object(f"test{i:d}") for i in range(2, 10))
     del obj_list[3]
     assert "test5" not in obj_list
     assert obj_list.index(obj_list[-1]) == len(obj_list) - 1
@@ -272,8 +270,8 @@ def test_removal():
     assert len(obj_list) == 3
 
 
-def test_set():
-    obj_list = DictList(Object("test%d" % (i)) for i in range(10))
+def test_set() -> None:
+    obj_list = DictList(Object(f"test{i:d}") for i in range(10))
     obj_list[4] = Object("testa")
     assert obj_list.index("testa") == 4
     assert obj_list[4].id == "testa"
@@ -288,8 +286,8 @@ def test_set():
         obj_list.__setitem__(slice(5, 7), [Object("testd"), Object("testd")])
 
 
-def test_sort_and_reverse():
-    dl = DictList(Object("test%d" % (i)) for i in reversed(range(10)))
+def test_sort_and_reverse() -> None:
+    dl = DictList(Object(f"test{i:d}") for i in reversed(range(10)))
     assert dl[0].id == "test9"
     dl.sort()
     assert len(dl) == 10
@@ -300,7 +298,7 @@ def test_sort_and_reverse():
     assert dl.index("test0") == 9
 
 
-def test_dir(dict_list):
+def test_dir(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
     # Make sure tab completion works
     attrs = dir(test_list)
@@ -308,7 +306,7 @@ def test_dir(dict_list):
     assert "_dict" in attrs  # attribute of DictList
 
 
-def test_union(dict_list):
+def test_union(dict_list: Tuple[Object, DictList]) -> None:
     obj, test_list = dict_list
     test_list.union([Object("test1"), Object("test2")])
     # Add only 1 element
