@@ -51,7 +51,7 @@ class GPRWalker(NodeVisitor):
     Walks over the tree, and identifies the id of each Name node
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs) -> None:
         """Initialize a new object.
 
         Other Parameters
@@ -95,7 +95,7 @@ class GPRCleaner(NodeTransformer):
     bitwise boolean operations
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs) -> None:
         """Initialize a new object.
 
         Other Parameters
@@ -104,7 +104,7 @@ class GPRCleaner(NodeTransformer):
             Further keyword arguments are passed on to the parent class.
 
         """
-        NodeTransformer.__init__(self)
+        super().__init__(**kwargs)
         self.gene_set = set()
 
     def visit_Name(self, node: Name) -> Name:
@@ -196,7 +196,7 @@ class Gene(Species):
     """
 
     # noinspection PyShadowingBuiltins
-    def __init__(self, id: str = None, name: str = "", functional: bool = True):
+    def __init__(self, id: str = None, name: str = "", functional: bool = True, **kwargs) -> None:
         """Initialize a gene.
 
         Parameters
@@ -315,7 +315,7 @@ class Gene(Species):
                 <td><strong>Name</strong></td><td>{self.name}</td>
             </tr><tr>
                 <td><strong>Memory address</strong></td>
-                <td>{"0x0%x" % id(self)}</td>
+                <td>{id(self):#x}</td>
             </tr><tr>
                 <td><strong>Functional</strong></td><td>{self.functional}</td>
             </tr><tr>
@@ -596,14 +596,14 @@ class GPR(Module):
         """Copy a GPR."""
         return deepcopy(self)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return the GPR with module, class, and code to recreate it."""
         return (
             f"{self.__class__.__module__}.{self.__class__.__qualname__}"
             f"({self.to_string()!r})"
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Convert compiled ast to gene_reaction_rule str.
 
         Parameters
