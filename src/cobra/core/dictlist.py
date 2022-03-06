@@ -2,16 +2,7 @@
 
 import re
 from itertools import islice
-from typing import (
-    Any,
-    Callable,
-    Iterable,
-    Iterator,
-    Pattern,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import Any, Callable, Iterable, Iterator, Pattern, Tuple, Type, Union
 
 from numpy import bool_
 
