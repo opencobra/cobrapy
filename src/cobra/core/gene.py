@@ -17,7 +17,7 @@ from ast import (
 from ast import parse as ast_parse
 from copy import deepcopy
 from keyword import kwlist
-from typing import FrozenSet, Iterable, Set, Tuple, Union
+from typing import FrozenSet, Iterable, Optional, Set, Tuple, Union
 from warnings import warn
 
 from cobra.core.dictlist import DictList
@@ -132,7 +132,7 @@ class GPRCleaner(NodeTransformer):
         self.gene_set.add(node.id)
         return node
 
-    def visit_BinOp(self, node):
+    def visit_BinOp(self, node: BoolOp[Union[And, Or]]) -> None:
         """Visit a BoolOp node (AND/OR) and visit the children (genes) to process them.
 
         Parameters
@@ -196,7 +196,7 @@ class Gene(Species):
     """
 
     # noinspection PyShadowingBuiltins
-    def __init__(self, id: str = None, name: str = "", functional: bool = True, **kwargs) -> None:
+    def __init__(self, id: str = None, name: str = "", functional: bool = True) -> None:
         """Initialize a gene.
 
         Parameters
@@ -209,7 +209,7 @@ class Gene(Species):
         functional: bool
             A flag whether or not the gene is functional
         """
-        Species.__init__(self, id=id, name=name)
+        super().__init__(id=id, name=name)
         self._functional = functional
 
     @property
@@ -347,8 +347,7 @@ class GPR(Module):
         """
         super().__init__(**kwargs)
         self._genes = set()
-        # noinspection PyTypeChecker
-        self.body = None
+        self.body: Optional[list] = None
         if gpr_from:
             if isinstance(gpr_from, str):
                 self.from_string(gpr_from)
@@ -360,7 +359,6 @@ class GPR(Module):
                 cleaner = GPRCleaner()
                 cleaner.visit(gpr_from)
                 self._genes = deepcopy(cleaner.gene_set)
-                # noinspection PyTypeChecker
                 self.body = deepcopy(gpr_from.body)
                 self.eval()
             else:
@@ -522,7 +520,7 @@ class GPR(Module):
 
     def _ast2str(
         self,
-        expr: Union[Expression, BoolOp, Name, list],
+        expr: Union["GPR", Expression, BoolOp, Name, list],
         level: int = 0,
         names: dict = None,
     ) -> str:
@@ -589,7 +587,6 @@ class GPR(Module):
         -----
         Calls __aststr()
         """
-        # noinspection PyTypeChecker
         return self._ast2str(self, names=names)
 
     def copy(self):
@@ -618,7 +615,7 @@ class GPR(Module):
         """
         return self.to_string(names={})
 
-    def _repr_html__(self):
+    def _repr_html_(self) -> str:
         return f"""<p><strong>GPR</strong></p><p>{format_long_string(self.to_string(),
                                                                      100)}</p>"""
 
