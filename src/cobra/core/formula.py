@@ -1,4 +1,4 @@
-"""Sets up the class for Chemical Formula."""
+"""Provide a class representing a chemical formula."""
 
 import re
 from typing import Union
@@ -14,7 +14,7 @@ element_re = re.compile("([A-Z][a-z]?)([0-9.]+[0-9.]?|(?=[A-Z])?)")
 
 
 class Formula(Object):
-    """Describes a Chemical Formula.
+    """Describe a chemical formula.
 
     Parameters
     ---------
@@ -22,7 +22,7 @@ class Formula(Object):
         A legal formula string contains only letters and numbers.
     """
 
-    def __init__(self, formula: str = None):
+    def __init__(self, formula: Optional[str] = None, **kwargs) -> None:
         """Initialize a formula.
 
         Parameters
@@ -30,13 +30,13 @@ class Formula(Object):
         formula: str, optional
             An string that will be parsed as a formula.
         """
-        super().__init__(self, formula)
+        super().__init__(self, formula, **kwargs)
         self.formula = formula
         self.elements = {}
         if self.formula is not None:
             self.parse_composition()
 
-    def __add__(self, other_formula: Union["Formula", str]):
+    def __add__(self, other_formula: Union["Formula", str]) -> "Formula":
         """Combine two molecular formulas.
 
         Parameters
@@ -51,7 +51,7 @@ class Formula(Object):
         """
         return Formula(self.formula + other_formula.formula)
 
-    def parse_composition(self):
+    def parse_composition(self) -> None:
         """Break the chemical formula down by element."""
         tmp_formula = self.formula
         # commonly occuring characters in incorrectly constructed formulas
@@ -85,7 +85,7 @@ class Formula(Object):
         self.elements = composition
 
     @property
-    def weight(self):
+    def weight(self) -> float:
         """Calculate the mol mass of the compound.
 
         Returns
