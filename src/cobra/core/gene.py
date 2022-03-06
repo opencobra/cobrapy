@@ -60,7 +60,7 @@ class GPRWalker(NodeVisitor):
             Further keyword arguments are passed on to the parent class.
 
         """
-        NodeVisitor.__init__(self)
+        super().__init__(**kwargs)
         self.gene_set = set()
 
     def visit_Name(self, node: Name) -> None:
