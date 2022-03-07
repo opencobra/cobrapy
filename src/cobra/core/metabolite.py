@@ -266,7 +266,7 @@ class Metabolite(Species):
 
     def summary(
         self,
-        solution: Optional[Solution] = None,
+        solution: Optional["Solution"] = None,
         fva: Optional[Union[float, "DataFrame"]] = None,
     ) -> "MetaboliteSummary":
         """Create a summary of the producing and consuming fluxes.
