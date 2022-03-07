@@ -12,10 +12,11 @@ from cobra.util.util import format_long_string
 
 
 if TYPE_CHECKING:
-    from cobra.core import Solution
-    from cobra.summary.metabolite_summary import MetaboliteSummary
     from optlang.interface import Container
     from pandas import DataFrame
+
+    from cobra.core import Solution
+    from cobra.summary.metabolite_summary import MetaboliteSummary
 
 # Numbers are not required because of the |(?=[A-Z])? block. See the
 # discussion in https://github.com/opencobra/cobrapy/issues/128 for
