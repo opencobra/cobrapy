@@ -68,7 +68,7 @@ class Metabolite(Species):
         compartment: str or None
            Compartment of the metabolite.
         """
-        Species.__init__(self, id, name)
+        super().__init__(id=id, name=name)
         self.formula = formula
         # because in a Model a metabolite may participate in multiple Reactions
         self.compartment = compartment
