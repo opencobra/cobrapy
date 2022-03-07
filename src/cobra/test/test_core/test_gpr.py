@@ -112,7 +112,7 @@ def test_or_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string) -> None:
     assert gpr1.genes == gpr_genes
     assert gpr1.to_string() == gpr_output_string
     assert gpr1.eval()
-    for ko_genes in all_except_complete(gpr_genes):
+    for ko_genes in all_except_one(gpr_genes):
         assert gpr1.eval(ko_genes)
     assert not gpr1.eval(gpr_genes)
     assert gpr1.body
@@ -164,7 +164,7 @@ def test_gpr_from_ast_or(
     assert gpr1.genes == gpr_genes
     assert gpr1.to_string() == gpr_output_string
     assert gpr1.eval()
-    for ko_genes in all_except_complete(gpr_genes):
+    for ko_genes in all_except_one(gpr_genes):
         assert gpr1.eval(ko_genes)
     assert not gpr1.eval(gpr_genes)
     gpr1.copy()
