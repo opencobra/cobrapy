@@ -50,9 +50,9 @@ class Metabolite(Species):
         id: Optional[str] = None,
         formula: Optional[str] = None,
         name: Optional[str] = "",
-        charge: Optional[str] = None,
+        charge: Optional[float] = None,
         compartment: Optional[str] = None,
-    ):
+    ) -> None:
         """Initialize Metaboblite cobra Species.
 
         Parameters
@@ -312,7 +312,7 @@ class Metabolite(Species):
                 <td><strong>Name</strong></td><td>{format_long_string(self.name)}</td>
             </tr><tr>
                 <td><strong>Memory address</strong></td>
-                <td>{"0x0%x" % id(self)}</td>
+                <td>{id(self):#x}</td>
             </tr><tr>
                 <td><strong>Formula</strong></td><td>{self.formula}</td>
             </tr><tr>
