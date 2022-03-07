@@ -2,7 +2,18 @@
 
 import re
 from itertools import islice
-from typing import Any, Callable, Iterable, Iterator, Pattern, Tuple, Type, Union
+from typing import (
+    Any,
+    Callable,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Pattern,
+    Tuple,
+    Type,
+    Union,
+)
 
 from numpy import bool_
 
@@ -38,11 +49,13 @@ class DictList(list):
             else:
                 self.extend(other)
 
-    def has_id(self, id: Any) -> bool:
+    # noinspection PyShadowingBuiltins
+    def has_id(self, id: Union[Object, str]) -> bool:
         """Check if id is in DictList."""
         return id in self._dict
 
-    def _check(self, id: Any) -> None:
+    # noinspection PyShadowingBuiltins
+    def _check(self, id: Union[Object, str]) -> None:
         """Make sure duplicate id's are not added.
 
         This function is called before adding in elements.
@@ -55,7 +68,8 @@ class DictList(list):
         """Rebuild the _dict index."""
         self._dict = {v.id: k for k, v in enumerate(self)}
 
-    def get_by_id(self, id: Any) -> Any:
+    # noinspection PyShadowingBuiltins
+    def get_by_id(self, id: Union[Object, str]) -> Object:
         """Return the element with a matching id."""
         return list.__getitem__(self, self._dict[id])
 
@@ -63,7 +77,7 @@ class DictList(list):
         """Return a list of the given attribute for every object."""
         return [getattr(i, attribute) for i in self]
 
-    def get_by_any(self, iterable: list) -> list:
+    def get_by_any(self, iterable: List[Union[str, Object, int]]) -> list:
         """Get a list of members using several different ways of indexing.
 
         Parameters
@@ -322,6 +336,7 @@ class DictList(list):
         """
         self._generate_index()
 
+    # noinspection PyShadowingBuiltins
     def index(self, id: Union[str, Object], *args) -> int:
         """Determine the position in the list.
 
@@ -399,7 +414,7 @@ class DictList(list):
         """Opposite of `remove`. Mirrors set.add."""
         self.extend([x])
 
-    def remove(self, x: Object) -> None:
+    def remove(self, x: Union[str, Object]) -> None:
         """.. warning :: Internal use only.
 
         Each item is unique in the list which allows this
@@ -431,7 +446,7 @@ class DictList(list):
         self._generate_index()
 
     def __getitem__(
-        self, i: Union[int, slice, Iterable, Object]
+        self, i: Union[int, slice, Iterable, Object, "DictList"]
     ) -> Union["DictList", Object]:
         """Get item from DictList."""
         if isinstance(i, int):
@@ -458,7 +473,7 @@ class DictList(list):
         ----------
         i : slice, int
             i can be slice or int. If i is a slice, y needs to be a list
-        y: list, Any
+        y: list, Object
             Object to set as
         """
         if isinstance(i, slice):
@@ -480,7 +495,7 @@ class DictList(list):
         list.__setitem__(self, i, y)
         self._dict[the_id] = i
 
-    def __delitem__(self, index: Any) -> None:
+    def __delitem__(self, index: int) -> None:
         """Remove item from DictList."""
         removed = self[index]
         list.__delitem__(self, index)
@@ -497,7 +512,7 @@ class DictList(list):
         """Get a slice from it to j of DictList."""
         return self.__getitem__(slice(i, j))
 
-    def __setslice__(self, i: int, j: int, y: Iterable) -> None:
+    def __setslice__(self, i: int, j: int, y: Union[list, Object]) -> None:
         """Set slice, where y is an iterable."""
         self.__setitem__(slice(i, j), y)
 
