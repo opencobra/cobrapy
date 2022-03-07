@@ -47,11 +47,11 @@ class Metabolite(Species):
     # noinspection PyShadowingBuiltins
     def __init__(
         self,
-        id: str = None,
-        formula: str = None,
-        name: str = "",
-        charge: float = None,
-        compartment: str = None,
+        id: Optional[str] = None,
+        formula: Optional[str] = None,
+        name: Optional[str] = "",
+        charge: Optional[str] = None,
+        compartment: Optional[str] = None,
     ):
         """Initialize Metaboblite cobra Species.
 
@@ -104,7 +104,7 @@ class Metabolite(Species):
             return self.model.constraints[self.id]
 
     @property
-    def elements(self) -> Union[None, Dict[Any, Union[int, float]]]:
+    def elements(self) -> Optional[Dict[str, Union[int, float]]]:
         """Get dicitonary of elements and counts.
 
         Dictionary of elements as keys and their count in the metabolite
