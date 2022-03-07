@@ -1,7 +1,7 @@
 """Test functions of cobra.core.gene.GPR ."""
 import itertools
 from ast import parse as ast_parse
-from typing import Iterable, Iterator, Union, Tuple
+from typing import Iterable, Iterator, Tuple, Union
 
 import pytest
 from sympy.core.symbol import Symbol
@@ -46,10 +46,13 @@ def test_one_gene_gpr() -> None:
     assert len(gpr1.genes) == 1
 
 
-# Gets an iterable of all combinations of genes except the empty list. Used to
-# evaluate AND gprs
 def powerset_ne(iterable: Iterable[str]) -> Iterator[Tuple[str, ...]]:
-    "powerset_ne([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
+    """Get all combinations of an iterable except the empty list.
+
+    Gets an iterable of all combinations of genes except the empty list.
+    Used to evaluate AND gprs
+    powerset_ne([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)
+    """
     s = list(iterable)
     return itertools.chain.from_iterable(
         itertools.combinations(s, r) for r in range(1, len(s) + 1)
@@ -82,10 +85,13 @@ def test_and_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string) -> None:
     gpr1.copy()
 
 
-# Gets an iterable of all combinations of genes except the complete list and the empty
-# list. Used to evaluate OR gprs
 def all_except_one(iterable: Iterable[str]) -> Iterator[Tuple[str, ...]]:
-    "all_except_one([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3)"
+    """Generate all combinations from an iterable, while leaving one out.
+
+    Gets an iterable of all combinations of genes except the complete list and the
+    empty list. Used to evaluate OR gprs
+    all_except_one([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3)
+    """
     s = list(iterable)
     return itertools.chain.from_iterable(
         itertools.combinations(s, r) for r in range(1, len(s))
@@ -360,7 +366,7 @@ def test_gpr_inequality_boolean(gpr_lists) -> None:
 
 
 def test_gpr_symbolism_benchmark(large_model, benchmark):
-    """Benchmark as symbolic time"""
+    """Benchmark as symbolic time."""
     model = large_model.copy()
 
     def gpr_symbolic():
@@ -410,9 +416,7 @@ def test_gpr_from_symbolic(gpr_input, symbolic_gpr) -> None:
 
 
 def test_gpr_from_as_symbolic_equality(large_model) -> None:
-    """Test that as_symbolic followed by from_symbolic gives a GPR equivalent to the
-    original.
-    """
+    """Test as_symbolic followed by from_symbolic gives a GPR equivalent to original."""
     model = large_model.copy()
 
     for i in range(len(model.reactions)):
