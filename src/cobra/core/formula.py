@@ -1,7 +1,7 @@
 """Provide a class representing a chemical formula."""
 
 import re
-from typing import Union
+from typing import Optional, Union
 from warnings import warn
 
 from cobra.core.object import Object
