@@ -1,13 +1,8 @@
-# -*- coding: utf-8 -*-
-
 """Define the Metabolite class."""
 
-from __future__ import absolute_import
-
 import re
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 from warnings import warn
-
-from future.utils import raise_from, raise_with_traceback
 
 from cobra.core.formula import elements_and_molecular_weights
 from cobra.core.species import Species
@@ -16,6 +11,12 @@ from cobra.util.solver import check_solver_status
 from cobra.util.util import format_long_string
 
 
+if TYPE_CHECKING:
+    from cobra.core import Solution
+    from cobra.summary.metabolite_summary import MetaboliteSummary
+    from optlang.interface import Container
+    from pandas import DataFrame
+
 # Numbers are not required because of the |(?=[A-Z])? block. See the
 # discussion in https://github.com/opencobra/cobrapy/issues/128 for
 # more details.
@@ -23,7 +24,9 @@ element_re = re.compile("([A-Z][a-z]?)([0-9.]+[0-9.]?|(?=[A-Z])?)")
 
 
 class Metabolite(Species):
-    """Metabolite is a class for holding information regarding
+    """Class for information about metabolite in cobra.Reaction.
+
+    Metabolite is a class for holding information regarding
     a metabolite in a cobra.Reaction object.
 
     Parameters
@@ -40,7 +43,30 @@ class Metabolite(Species):
        Compartment of the metabolite.
     """
 
-    def __init__(self, id=None, formula=None, name="", charge=None, compartment=None):
+    # noinspection PyShadowingBuiltins
+    def __init__(
+        self,
+        id: str = None,
+        formula: str = None,
+        name: str = "",
+        charge: float = None,
+        compartment: str = None,
+    ):
+        """Initialize Metaboblite cobra Species.
+
+        Parameters
+        ----------
+        id : str
+            the identifier to associate with the metabolite
+        formula : str
+            Chemical formula (e.g. H2O)
+        name : str
+            A human readable name.
+        charge : float
+           The charge number of the metabolite
+        compartment: str or None
+           Compartment of the metabolite.
+        """
         Species.__init__(self, id, name)
         self.formula = formula
         # because in a Model a metabolite may participate in multiple Reactions
@@ -49,31 +75,48 @@ class Metabolite(Species):
 
         self._bound = 0.0
 
-    def _set_id_with_model(self, value):
+    def _set_id_with_model(self, value: str) -> None:
+        """Set id with value.
+
+        Parameters
+        ----------
+        value: str
+        """
         if value in self.model.metabolites:
             raise ValueError(
-                "The model already contains a metabolite with " "the id:", value
+                f"The model already contains a metabolite with the id:" f" {value}"
             )
         self.model.constraints[self.id].name = value
         self._id = value
         self.model.metabolites._generate_index()
 
     @property
-    def constraint(self):
-        """Get the constraints associated with this metabolite from the solve
+    def constraint(self) -> "Container":
+        """Get the constraints associated with this metabolite from the solver.
 
         Returns
         -------
-        optlang.<interface>.Constraint
+        optlang.<interface>.Containter
             the optlang constraint for this metabolite
         """
         if self.model is not None:
             return self.model.constraints[self.id]
 
     @property
-    def elements(self):
-        """Dictionary of elements as keys and their count in the metabolite
-        as integer. When set, the `formula` property is update accordingly"""
+    def elements(self) -> Union[None, Dict[Any, Union[int, float]]]:
+        """Get dicitonary of elements and counts.
+
+        Dictionary of elements as keys and their count in the metabolite
+        as integer. When set, the `formula` property is updated accordingly.
+
+        Returns
+        -------
+        composition: None or Dict
+            A dictionary of elements and counts, where count is int unless it is needed
+            to be a float.
+            Returns None in case of error.
+
+        """
         tmp_formula = self.formula
         if tmp_formula is None:
             return {}
@@ -82,10 +125,10 @@ class Metabolite(Species):
         tmp_formula = str(self.formula)
         # commonly occurring characters in incorrectly constructed formulas
         if "*" in tmp_formula:
-            warn("invalid character '*' found in formula '%s'" % self.formula)
+            warn(f"invalid character '*' found in formula '{self.formula}'")
             tmp_formula = tmp_formula.replace("*", "")
         if "(" in tmp_formula or ")" in tmp_formula:
-            warn("invalid formula (has parenthesis) in '%s'" % self.formula)
+            warn(f"invalid formula (has parenthesis) in '{self.formula}'")
             return None
         composition = {}
         parsed = element_re.findall(tmp_formula)
@@ -99,12 +142,9 @@ class Metabolite(Species):
                     if count == int_count:
                         count = int_count
                     else:
-                        warn(
-                            "%s is not an integer (in formula %s)"
-                            % (count, self.formula)
-                        )
+                        warn(f"{count} is not an integer (in formula {self.formula})")
                 except ValueError:
-                    warn("failed to parse %s (in formula %s)" % (count, self.formula))
+                    warn(f"failed to parse {count} (in formula {self.formula})")
                     return None
             if element in composition:
                 composition[element] += count
@@ -113,7 +153,15 @@ class Metabolite(Species):
         return composition
 
     @elements.setter
-    def elements(self, elements_dict):
+    def elements(self, elements_dict: Dict[Any, Union[int, float]]) -> None:
+        """Update formula based on elements dictionary.
+
+        Parameters
+        ----------
+        elements_dict: dict
+            A dicitonary of elements as keys, count as items.
+        """
+
         def stringify(element, number):
             return element if number == 1 else element + str(number)
 
@@ -122,8 +170,8 @@ class Metabolite(Species):
         )
 
     @property
-    def formula_weight(self):
-        """Calculate the formula weight"""
+    def formula_weight(self) -> Union[int, float]:
+        """Calculate the formula weight."""
         try:
             return sum(
                 [
@@ -132,26 +180,30 @@ class Metabolite(Species):
                 ]
             )
         except KeyError as e:
-            warn("The element %s does not appear in the periodic table" % e)
+            warn(f"The element {e} does not appear in the periodic table")
 
     @property
-    def y(self):
-        """The shadow price for the metabolite in the most recent solution
+    def y(self) -> float:
+        """Return the shadow price for the metabolite in the most recent solution.
 
         Shadow prices are computed from the dual values of the bounds in
         the solution.
-
+        .. deprecated ::
+        Use metabolite.shadow_price instead.
         """
         warn("Please use metabolite.shadow_price instead.", DeprecationWarning)
         return self.shadow_price
 
     @property
-    def shadow_price(self):
-        """
-        The shadow price in the most recent solution.
+    def shadow_price(self) -> float:
+        """Return the shadow price for the metabolite in the most recent solution.
 
         Shadow price is the dual value of the corresponding constraint in the
         model.
+
+        Returns
+        -------
+        shadow_price: float
 
         Warnings
         --------
@@ -188,22 +240,18 @@ class Metabolite(Species):
             check_solver_status(self._model.solver.status)
             return self._model.constraints[self.id].dual
         except AttributeError:
-            raise RuntimeError("metabolite '{}' is not part of a model".format(self.id))
+            raise RuntimeError(f"metabolite '{self.id}' is not part of a model")
         # Due to below all-catch, which sucks, need to reraise these.
         except (RuntimeError, OptimizationError) as err:
-            raise_with_traceback(err)
+            raise err.with_traceback()
         # Would love to catch CplexSolverError and GurobiError here.
         except Exception as err:
-            raise_from(
-                OptimizationError(
-                    "Likely no solution exists. Original solver message: {}."
-                    "".format(str(err))
-                ),
-                err,
-            )
+            raise OptimizationError(
+                f"Likely no solution exists. Original solver message: {str(err)}."
+            ) from err
 
-    def remove_from_model(self, destructive=False):
-        """Removes the association from self.model
+    def remove_from_model(self, destructive: bool = False) -> None:
+        """Remove the association from self.model.
 
         The change is reverted upon exit when using the model as a context.
 
@@ -216,9 +264,12 @@ class Metabolite(Species):
         """
         self._model.remove_metabolites(self, destructive)
 
-    def summary(self, solution=None, fva=None):
-        """
-        Create a summary of the producing and consuming fluxes.
+    def summary(
+        self,
+        solution: Optional[Solution] = None,
+        fva: Optional[Union[float, "DataFrame"]] = None,
+    ) -> "MetaboliteSummary":
+        """Create a summary of the producing and consuming fluxes.
 
         Parameters
         ----------
@@ -251,30 +302,23 @@ class Metabolite(Species):
             fva=fva,
         )
 
-    def _repr_html_(self):
-        return """
+    def _repr_html_(self) -> str:
+        return f"""
         <table>
             <tr>
-                <td><strong>Metabolite identifier</strong></td><td>{id}</td>
+                <td><strong>Metabolite identifier</strong></td><td>{self.id}</td>
             </tr><tr>
-                <td><strong>Name</strong></td><td>{name}</td>
+                <td><strong>Name</strong></td><td>{format_long_string(self.name)}</td>
             </tr><tr>
                 <td><strong>Memory address</strong></td>
-                <td>{address}</td>
+                <td>{"0x0%x" % id(self)}</td>
             </tr><tr>
-                <td><strong>Formula</strong></td><td>{formula}</td>
+                <td><strong>Formula</strong></td><td>{self.formula}</td>
             </tr><tr>
-                <td><strong>Compartment</strong></td><td>{compartment}</td>
+                <td><strong>Compartment</strong></td><td>{self.compartment}</td>
             </tr><tr>
-                <td><strong>In {n_reactions} reaction(s)</strong></td><td>
-                    {reactions}</td>
+                <td><strong>In {len(self.reactions)} reaction(s)</strong></td><td>
+                    {format_long_string(", ".join(r.id for r in self.reactions), 200)}
+                    </td>
             </tr>
-        </table>""".format(
-            id=self.id,
-            name=format_long_string(self.name),
-            formula=self.formula,
-            address="0x0%x" % id(self),
-            compartment=self.compartment,
-            n_reactions=len(self.reactions),
-            reactions=format_long_string(", ".join(r.id for r in self.reactions), 200),
-        )
+        </table>"""
