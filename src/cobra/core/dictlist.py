@@ -128,7 +128,7 @@ class DictList(list):
         >>> model.metabolites.query(regex, attribute='name')
         """
 
-        def select_attribute(x: Union[type(None), Any]) -> Any:
+        def select_attribute(x: Optional[Any]) -> Any:
             if attribute is None:
                 return x
             else:
@@ -168,7 +168,7 @@ class DictList(list):
         self._dict[the_id] = len(self)
         list.append(self, entity)
 
-    def union(self, iterable: Iterable) -> None:
+    def union(self, iterable: Iterable[Object]) -> None:
         """Add elements with id's not already in the model."""
         _dict = self._dict
         append = self.append
@@ -176,7 +176,7 @@ class DictList(list):
             if i.id not in _dict:
                 append(i)
 
-    def extend(self, iterable: Iterable) -> None:
+    def extend(self, iterable: Iterable[Object]) -> None:
         """Extend list by appending elements from the iterable.
 
         Sometimes during initialization from an older pickle, _dict
@@ -189,7 +189,7 @@ class DictList(list):
         ----------
         iterable : Iterable
         """
-        if not hasattr(self, "_dict") or self._dict is None:
+        if getattr(self, "_dict", None) is None:
             self._dict = {}
         _dict = self._dict
         current_length = len(self)
@@ -209,7 +209,7 @@ class DictList(list):
                     f"Is it present twice?"
                 )
 
-    def _extend_nocheck(self, iterable: Iterable) -> None:
+    def _extend_nocheck(self, iterable: Iterable[Object]) -> None:
         """Extend without checking for uniqueness.
 
         This function should only be used internally by DictList when it
@@ -231,7 +231,7 @@ class DictList(list):
         for i, obj in enumerate(islice(self, current_length, None), current_length):
             _dict[obj.id] = i
 
-    def __sub__(self, other: Iterable) -> "DictList":
+    def __sub__(self, other: Iterable[Object]) -> "DictList":
         """Remove a value or values, and returns the new DictList.
 
         x.__sub__(y) <==> x - y
@@ -251,7 +251,7 @@ class DictList(list):
             total.remove(item)
         return total
 
-    def __isub__(self, other: Iterable) -> "DictList":
+    def __isub__(self, other: Iterable[Object]) -> "DictList":
         """Remove a value or values in place.
 
         x.__sub__(y) <==> x -= y
@@ -265,7 +265,7 @@ class DictList(list):
             self.remove(item)
         return self
 
-    def __add__(self, other: Iterable) -> "DictList":
+    def __add__(self, other: Iterable[Object]) -> "DictList":
         """Add item while returning a new DictList.
 
         x.__add__(y) <==> x + y
@@ -281,7 +281,7 @@ class DictList(list):
         total.extend(other)
         return total
 
-    def __iadd__(self, other: Iterable) -> "DictList":
+    def __iadd__(self, other: Iterable[Object]) -> "DictList":
         """Add item while returning the same DictList.
 
         x.__iadd__(y) <==> x += y
@@ -313,7 +313,7 @@ class DictList(list):
         """
         return {"_dict": self._dict}
 
-    def __setstate__(self, state) -> None:
+    def __setstate__(self, state: dict) -> None:
         """Pretend to set internal state. Actually recalculates.
 
         Ignore the passed in state and recalculate it. This is only for
@@ -370,7 +370,7 @@ class DictList(list):
         the_copy._dict = self._dict.copy()
         return the_copy
 
-    def insert(self, index, entity) -> None:
+    def insert(self, index: int, entity: Object) -> None:
         """Insert entity before index."""
         self._check(entity.id)
         list.insert(self, index, entity)
@@ -381,7 +381,7 @@ class DictList(list):
                 _dict[i] = j + 1
         _dict[entity.id] = index
 
-    def pop(self, *args) -> Any:
+    def pop(self, *args) -> Object:
         """Remove and return item at index (default last)."""
         value = list.pop(self, *args)
         index = self._dict.pop(value.id)
@@ -395,11 +395,11 @@ class DictList(list):
                 _dict[i] = j - 1
         return value
 
-    def add(self, x: Any) -> None:
+    def add(self, x: Object) -> None:
         """Opposite of `remove`. Mirrors set.add."""
         self.extend([x])
 
-    def remove(self, x: Any) -> None:
+    def remove(self, x: Object) -> None:
         """.. warning :: Internal use only.
 
         Each item is unique in the list which allows this
@@ -431,8 +431,8 @@ class DictList(list):
         self._generate_index()
 
     def __getitem__(
-        self, i: Union[int, slice, Iterable, Any]
-    ) -> Union["DictList", Any]:
+        self, i: Union[int, slice, Iterable, Object]
+    ) -> Union["DictList", Object]:
         """Get item from DictList."""
         if isinstance(i, int):
             return list.__getitem__(self, i)
@@ -451,7 +451,7 @@ class DictList(list):
         else:
             return list.__getitem__(self, i)
 
-    def __setitem__(self, i: Union[slice, int], y: Union[list, Any]) -> None:
+    def __setitem__(self, i: Union[slice, int], y: Union[list, Object]) -> None:
         """Set an item via index or slice.
 
         Parameters
