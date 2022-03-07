@@ -1,7 +1,7 @@
 """Test functions of cobra.core.gene.GPR ."""
 import itertools
 from ast import parse as ast_parse
-from typing import Iterable, Iterator, Union
+from typing import Iterable, Iterator, Union, Tuple
 
 import pytest
 from sympy.core.symbol import Symbol
@@ -48,7 +48,7 @@ def test_one_gene_gpr() -> None:
 
 # Gets an iterable of all combinations of genes except the empty list. Used to
 # evaluate AND gprs
-def powerset_ne(iterable: Iterable) -> Iterator:
+def powerset_ne(iterable: Iterable[str]) -> Iterator[Tuple[str, ...]]:
     "powerset_ne([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
     s = list(iterable)
     return itertools.chain.from_iterable(
@@ -84,7 +84,7 @@ def test_and_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string) -> None:
 
 # Gets an iterable of all combinations of genes except the complete list and the empty
 # list. Used to evaluate OR gprs
-def all_except_one(iterable: Iterable) -> Iterator:
+def all_except_one(iterable: Iterable[str]) -> Iterator[Tuple[str, ...]]:
     "all_except_one([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3)"
     s = list(iterable)
     return itertools.chain.from_iterable(
