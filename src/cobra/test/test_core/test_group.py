@@ -1,14 +1,14 @@
-# -*- coding: utf-8 -*-
-
-"""Test functions of model.py"""
+"""Test functions of group via model.py."""
 
 
 import pytest
 
+from cobra import Model
 from cobra.core import Group
 
 
-def test_group_add_elements(model):
+def test_group_add_elements(model: Model) -> None:
+    """Test adding elements to a group."""
     num_members = 5
     reactions_for_group = model.reactions[0:num_members]
     group = Group("arbitrary_group1")
@@ -29,7 +29,8 @@ def test_group_add_elements(model):
         assert group.members[i] == model.reactions[i]
 
 
-def test_group_kind():
+def test_group_kind() -> None:
+    """Test SBML compliance and group kind."""
     group = Group("arbitrary_group1")
     with pytest.raises(ValueError) as excinfo:
         group.kind = "non-SBML compliant group kind"
