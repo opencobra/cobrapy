@@ -1251,7 +1251,7 @@ class Reaction(Object):
                 else:
                     self.bounds = config.lower_bound, 0
         reactant_str = reaction_str[: arrow_match.start()].strip()
-        product_str = reaction_str[arrow_match.end():].strip()
+        product_str = reaction_str[arrow_match.end() :].strip()
 
         self.subtract_metabolites(self.metabolites, combine=True)
 
