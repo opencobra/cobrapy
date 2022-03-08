@@ -692,10 +692,10 @@ class Reaction(Object):
 
         self.__dict__.update(state)
         for x in state["_metabolites"]:
-            setattr(x, "_model", self._model)
+            x._model = self._model
             x._reaction.add(self)
         for x in state["_genes"]:
-            setattr(x, "_model", self._model)
+            x._model = self._model
             x._reaction.add(self)
 
     def copy(self) -> "Reaction":
@@ -1251,7 +1251,7 @@ class Reaction(Object):
                 else:
                     self.bounds = config.lower_bound, 0
         reactant_str = reaction_str[: arrow_match.start()].strip()
-        product_str = reaction_str[arrow_match.end() :].strip()
+        product_str = reaction_str[arrow_match.end():].strip()
 
         self.subtract_metabolites(self.metabolites, combine=True)
 
