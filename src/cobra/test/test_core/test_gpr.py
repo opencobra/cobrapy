@@ -1,9 +1,12 @@
 """Test functions of cobra.core.gene.GPR ."""
 import itertools
 from ast import parse as ast_parse
-from typing import Iterable, Iterator, Union
+from typing import Iterable, Iterator, Tuple, Union
 
 import pytest
+from sympy.core.symbol import Symbol
+from sympy.logic import And, Or
+from sympy.logic.boolalg import BooleanFunction
 
 from cobra.core.gene import GPR, ast2str, eval_gpr, parse_gpr
 
@@ -43,10 +46,13 @@ def test_one_gene_gpr() -> None:
     assert len(gpr1.genes) == 1
 
 
-# Gets an iterable of all combinations of genes except the empty list. Used to
-# evaluate AND gprs
-def powerset_ne(iterable: Iterable) -> Iterator:
-    "powerset_ne([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
+def powerset_ne(iterable: Iterable[str]) -> Iterator[Tuple[str, ...]]:
+    """Get all combinations of an iterable except the empty list.
+
+    Gets an iterable of all combinations of genes except the empty list.
+    Used to evaluate AND gprs
+    powerset_ne([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)
+    """
     s = list(iterable)
     return itertools.chain.from_iterable(
         itertools.combinations(s, r) for r in range(1, len(s) + 1)
@@ -79,10 +85,13 @@ def test_and_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string) -> None:
     gpr1.copy()
 
 
-# Gets an iterable of all combinations of genes except a single gene and the empty
-# list. Used to evaluate OR gprs
-def all_except_one(iterable: Iterable) -> Iterator:
-    "all_except_one([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3)"
+def all_except_one(iterable: Iterable[str]) -> Iterator[Tuple[str, ...]]:
+    """Generate all combinations from an iterable, while leaving one out.
+
+    Gets an iterable of all combinations of genes except the complete list and the
+    empty list. Used to evaluate OR gprs
+    all_except_one([1,2,3]) --> (1,) (2,) (3,) (1,2) (1,3) (2,3)
+    """
     s = list(iterable)
     return itertools.chain.from_iterable(
         itertools.combinations(s, r) for r in range(1, len(s))
@@ -232,3 +241,186 @@ def test_deprecated_gpr() -> None:
         assert eval_gpr(gpr1, {"b"})
     with pytest.deprecated_call():
         assert not eval_gpr(gpr1, {"c"})
+
+
+def test_gpr_as_symbolic() -> None:
+    gpr1 = GPR()
+    assert gpr1.as_symbolic() == Symbol("")
+    gpr1 = GPR.from_string("")
+    assert gpr1.as_symbolic() == Symbol("")
+    gpr1 = GPR.from_string("a")
+    assert isinstance(gpr1.as_symbolic(), Symbol)
+    assert gpr1.as_symbolic() == Symbol("a")
+    gpr2 = GPR.from_string("a & b")
+    assert isinstance(gpr2.as_symbolic(), BooleanFunction)
+    assert gpr2.as_symbolic() == And(Symbol("a"), Symbol("b"))
+    assert gpr1 != gpr2
+
+
+@pytest.mark.parametrize(
+    "gpr_input, symbolic_gpr",
+    [
+        ("a | b", Or(Symbol("a"), Symbol("b"))),
+        ("a or b", Or(Symbol("a"), Symbol("b"))),
+        pytest.param(
+            "a OR b", Or(Symbol("a"), Symbol("b")), marks=pytest.mark.filterwarnings
+        ),
+        ("a | b", Or(Symbol("b"), Symbol("a"))),
+        ("a | b | c", Or(Symbol("a"), Symbol("b"), Symbol("c"))),
+        ("a or b or c", Or(Symbol("a"), Symbol("b"), Symbol("c"))),
+        ("(a OR b) AND c", And(Symbol("c"), Or(Symbol("a"), Symbol("b")))),
+    ],
+)
+def test_gpr_as_symbolic_boolean(gpr_input, symbolic_gpr) -> None:
+    gpr1 = GPR().from_string(gpr_input)
+    assert isinstance(gpr1.as_symbolic(), BooleanFunction)
+    assert gpr1.as_symbolic() == symbolic_gpr
+    if "OR" not in gpr_input and "AND" not in gpr_input:
+        ast_tree = ast_parse(gpr_input, "<string>", "eval")
+        gpr1 = GPR(ast_tree)
+        assert isinstance(gpr1.as_symbolic(), BooleanFunction)
+        assert gpr1.as_symbolic() == symbolic_gpr
+
+
+def test_gpr_equality() -> None:
+    assert GPR() == GPR()
+    assert GPR() == GPR.from_string("")
+    assert GPR() != GPR.from_string("a")
+    assert GPR.from_string("a") == GPR.from_string("a")
+
+
+gpr_str_lists = {
+    "a_and_b_strs": ["a & b", "a and b", "a AND b", "b & a", "b and a", "b AND a"],
+    "a_or_b_strs": ["a | b", "a or b", "a OR b", "b | a", "b or a", "b OR a"],
+    "a_b_c_or_strs": [
+        "a | b | c",
+        "a or b or c",
+        "a OR b or c",
+        "(a or b) or c",
+        "b | a | c",
+        "b or a or c",
+        "b | c | a",
+        "b or c | a",
+        "b or c or a",
+        "c or a or b",
+        "c | a or b",
+        "c or a | b",
+        "c or b or a",
+        "c | b or a",
+        "c or b | a",
+        "c | b | a",
+    ],
+    "a_b_c_and_strs": [
+        "a & b & c",
+        "a and b and c",
+        "a AND b and c",
+        "(a and b) and c",
+        "b & a & c",
+        "b and a and c",
+        "b & c & a",
+        "b and c & a",
+        "b and c and a",
+        "c and a and b",
+        "c & a and b",
+        "c and a & b",
+        "c and b and a",
+        "c & b and a",
+        "c and b & a",
+        "c & b & a",
+    ],
+    "a_b_c_or_and_strs": [
+        "(a OR b) AND c",
+        "(a | b) & c",
+        "(a & c) | b & c",
+        "c & (a | b)",
+    ],
+}
+
+
+@pytest.fixture(params=list(gpr_str_lists.keys()))
+def gpr_list(request):
+    gpr_str_list = gpr_str_lists[request.param]
+    return gpr_str_list
+
+
+def test_gpr_equality_with_bolean_logic(gpr_list) -> None:
+    for i in range(len(gpr_list)):
+        for j in range(i + 1, len(gpr_list)):
+            assert GPR().from_string(gpr_list[i]) == GPR.from_string(gpr_list[j])
+
+
+@pytest.fixture(params=list(itertools.combinations(gpr_str_lists.keys(), 2)))
+def gpr_lists(request):
+    gpr_dict = dict()
+    gpr_dict["gpr1"] = gpr_str_lists[request.param[0]]
+    gpr_dict["gpr2"] = gpr_str_lists[request.param[1]]
+    return gpr_dict
+
+
+def test_gpr_inequality_boolean(gpr_lists) -> None:
+    gpr_list1 = gpr_lists["gpr1"]
+    gpr_list2 = gpr_lists["gpr2"]
+    for i in range(len(gpr_list1)):
+        for j in range(len(gpr_list2)):
+            assert GPR.from_string(gpr_list1[i]) != GPR.from_string(gpr_list2[j])
+
+
+def test_gpr_symbolism_benchmark(large_model, benchmark):
+    """Benchmark as symbolic time."""
+    model = large_model.copy()
+
+    def gpr_symbolic():
+        for i in range(len(model.reactions)):
+            rxn1 = model.reactions[i]
+            gpr1 = rxn1.gpr
+            gpr1.as_symbolic()
+
+    benchmark(gpr_symbolic)
+
+
+def test_gpr_equality_benchmark(medium_model, benchmark):
+    """Benchmark equality of GPR using the mini model."""
+    model = medium_model.copy()
+
+    def gpr_equality_all_reactions():
+        for i in range(len(model.reactions)):
+            rxn1 = model.reactions[i]
+            for j in range(i + 1, len(model.reactions)):
+                rxn2 = model.reactions[j]
+                assert rxn1.gpr == rxn2.gpr
+
+    benchmark(gpr_equality_all_reactions)
+
+
+@pytest.mark.parametrize(
+    "gpr_input, symbolic_gpr",
+    [
+        ("", Symbol("")),
+        ("a", Symbol("a")),
+        ("a & b", And(Symbol("a"), Symbol("b"))),
+        ("a | b", Or(Symbol("a"), Symbol("b"))),
+        ("a or b", Or(Symbol("a"), Symbol("b"))),
+        pytest.param(
+            "a OR b", Or(Symbol("a"), Symbol("b")), marks=pytest.mark.filterwarnings
+        ),
+        ("a | b", Or(Symbol("b"), Symbol("a"))),
+        ("a | b | c", Or(Symbol("a"), Symbol("b"), Symbol("c"))),
+        ("a or b or c", Or(Symbol("a"), Symbol("b"), Symbol("c"))),
+        ("(a OR b) AND c", And(Symbol("c"), Or(Symbol("a"), Symbol("b")))),
+    ],
+)
+def test_gpr_from_symbolic(gpr_input, symbolic_gpr) -> None:
+    gpr1 = GPR().from_symbolic(symbolic_gpr)
+    gpr2 = GPR().from_string(gpr_input)
+    assert gpr1 == gpr2
+
+
+def test_gpr_from_as_symbolic_equality(large_model) -> None:
+    """Test as_symbolic followed by from_symbolic gives a GPR equivalent to original."""
+    model = large_model.copy()
+
+    for i in range(len(model.reactions)):
+        rxn1 = model.reactions[i]
+        gpr1 = rxn1.gpr
+        gpr2 = GPR().from_symbolic(gpr1.as_symbolic())
+        assert gpr1 == gpr2

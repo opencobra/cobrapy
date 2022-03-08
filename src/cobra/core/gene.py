@@ -20,10 +20,17 @@ from keyword import kwlist
 from typing import FrozenSet, Iterable, Optional, Set, Tuple, Union
 from warnings import warn
 
+import sympy.logic.boolalg as spl
+from sympy import Symbol
+
 from cobra.core.dictlist import DictList
 from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
+
+
+# TODO - When https://github.com/symengine/symengine.py/issues/334 is resolved,
+#  change sympy.Symbol (above in imports) to optlang.symbolics.Symbol
 
 
 keywords = list(kwlist)
@@ -421,7 +428,9 @@ class GPR(Module):
                 warn("GPR will be empty")
                 warn(e.msg)
                 return gpr
-        return cls(tree)
+        gpr = cls(tree)
+        gpr.update_genes()
+        return gpr
 
     @property
     def genes(self) -> FrozenSet:
@@ -585,7 +594,7 @@ class GPR(Module):
 
         Notes
         -----
-        Calls __aststr()
+        Calls _aststr()
         """
         return self._ast2str(self, names=names)
 
@@ -618,6 +627,157 @@ class GPR(Module):
     def _repr_html_(self) -> str:
         return f"""<p><strong>GPR</strong></p><p>{format_long_string(self.to_string(),
                                                                      100)}</p>"""
+
+    def as_symbolic(
+        self,
+        names: dict = None,
+    ) -> Union[spl.Or, spl.And, Symbol]:
+        """Convert compiled ast to sympy expression.
+
+        Parameters
+        ----------
+        self : GPR
+           compiled ast Module describing GPR
+        names: dict
+           dictionary of gene ids to gene names. If this is empty,
+           returns sympy expression using gene ids
+
+        Returns
+        ------
+        Symbol or BooleanFunction
+            SYMPY expression (Symbol or And or Or). Symbol("") if the GPR is empty
+
+        Notes
+        -----
+        Calls _symbolic_gpr()
+        """
+        # noinspection PyTypeChecker
+        if names:
+            GPRGene_dict = {gid: Symbol(names[gid]) for gid in self.genes}
+        else:
+            GPRGene_dict = None
+        return self._symbolic_gpr(self, GPRGene_dict=GPRGene_dict)
+
+    def _symbolic_gpr(
+        self,
+        expr: Union["GPR", Expression, BoolOp, Name, list] = None,
+        GPRGene_dict: dict = None,
+    ) -> Union[spl.Or, spl.And, Symbol]:
+        """Parse gpr into SYMPY using ast similar to _ast2str().
+
+        Parameters
+        ----------
+        expr : AST or GPR or list or Name or BoolOp
+            compiled GPR
+        GPRGene_dict: dict
+            dictionary from gene id to GPRGeneSymbol
+        Returns
+        -------
+        Symbol or BooleanFunction
+            SYMPY expression (Symbol or And or Or). Symbol("") if the GPR is empty
+        """
+        if GPRGene_dict is None:
+            GPRGene_dict = {gid: Symbol(name=gid) for gid in expr.genes}
+        if isinstance(expr, (Expression, GPR)):
+            return (
+                self._symbolic_gpr(expr.body, GPRGene_dict) if expr.body else Symbol("")
+            )
+        else:
+            if isinstance(expr, Name):
+                return GPRGene_dict.get(expr.id)
+            elif isinstance(expr, BoolOp):
+                op = expr.op
+                if isinstance(op, Or):
+                    # noinspection PyTypeChecker
+                    sym_exp = spl.Or(
+                        *[self._symbolic_gpr(i, GPRGene_dict) for i in expr.values]
+                    )
+                elif isinstance(op, And):
+                    # noinspection PyTypeChecker
+                    sym_exp = spl.And(
+                        *[self._symbolic_gpr(i, GPRGene_dict) for i in expr.values]
+                    )
+                else:
+                    raise TypeError("Unsupported operation " + op.__class__.__name)
+                return sym_exp
+            elif not expr:
+                return Symbol("")
+            else:
+                raise TypeError("Unsupported Expression  " + repr(expr))
+
+    @classmethod
+    def from_symbolic(cls, sympy_gpr: Union[spl.BooleanFunction, Symbol]) -> "GPR":
+        """Construct a GPR from a sympy expression.
+
+        Parameters
+        ----------
+        sympy_gpr: sympy
+            a sympy that describes the gene rules, being a Symbol for single genes
+            or a BooleanFunction for AND/OR relationships
+
+        Returns
+        -------
+        GPR:
+            returns a new GPR while setting  self.body as
+            Parsed AST tree that has the gene rules
+            This function also sets self._genes with the gene ids in the AST
+
+        """
+
+        def _sympy_to_ast(
+            sympy_expr: Union[spl.BooleanFunction, Symbol]
+        ) -> Union[BoolOp, Name]:
+            if sympy_expr.func is spl.Or:
+                return BoolOp(
+                    op=Or(), values=[_sympy_to_ast(i) for i in sympy_expr.args]
+                )
+            elif sympy_expr.func is spl.And:
+                return BoolOp(
+                    op=And(), values=[_sympy_to_ast(i) for i in sympy_expr.args]
+                )
+            elif not sympy_expr.args:
+                return Name(id=sympy_expr.name)
+            else:
+                raise TypeError(f"Unsupported operation: {sympy_expr.func}")
+
+        if not isinstance(sympy_gpr, (spl.BooleanFunction, Symbol)):
+            raise TypeError(
+                f"{cls.__name__}.from_symbolic "
+                f"requires a sympy BooleanFunction or "
+                f"Symbol argument, not {type(sympy_gpr)}."
+            )
+        gpr = cls()
+        if sympy_gpr == Symbol(""):
+            gpr.body = None
+            return gpr
+        try:
+            tree = Expression(_sympy_to_ast(sympy_gpr))
+        except SyntaxError as e:
+            warn(
+                f"Problem with sympy expression '{sympy_gpr}' for {repr(gpr)}",
+                SyntaxWarning,
+            )
+            warn("GPR will be empty")
+            warn(e.msg)
+            return gpr
+        gpr = cls(tree)
+        gpr.update_genes()
+        return gpr
+
+    def __eq__(self, other) -> bool:
+        """Check equality of GPR via symbolic equality."""
+        if not self.body and not other.body:
+            return True
+        elif not self.body or not other.body:
+            return False
+        else:
+            self_symb = self.as_symbolic()
+            other_symb = other.as_symbolic()
+            if isinstance(self_symb, Symbol) and isinstance(other_symb, Symbol):
+                return self_symb == other_symb
+            if isinstance(self_symb, Symbol) or isinstance(other_symb, Symbol):
+                return False
+            return self_symb.equals(other_symb)
 
 
 def eval_gpr(expr: Union[Expression, GPR], knockouts: Union[DictList, set]) -> bool:
