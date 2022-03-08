@@ -773,7 +773,8 @@ class Reaction(Object):
         """Subtract two reactions and return a new one.
 
         The stoichiometry will be the subtracted stoichiometry of the two
-        reactions, and the gene_reaction_rule will be the gene_reaction_rule of the first reaction. All other attributes (i.e. reaction bounds) will match those of
+        reactions, and the gene_reaction_rule will be the gene_reaction_rule of the
+        first reaction. All other attributes (i.e. reaction bounds) will match those of
         the first reaction.
 
         Does not modify in place. The name will still be that of the first reaction.
@@ -789,7 +790,9 @@ class Reaction(Object):
     def __isub__(self, other: "Reaction") -> "Reaction":
         """Subtract metabolites of one reaction from another in place.
 
-        The stoichiometry will be the metabolites of self minus the metabolites of the other. All other attributes including gene_reaction_rule (i.e. reaction bounds) will match those of
+        The stoichiometry will be the metabolites of self minus the metabolites
+         of the other. All other attributes including gene_reaction_rule
+         (i.e. reaction bounds) will match those of
         the first reaction.
 
         Modifies in place and changes the original reaction.
