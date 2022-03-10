@@ -25,7 +25,10 @@ class Species(Object):
        A human readable name.
     """
 
-    def __init__(self, id: Optional[str] = None, name: Optional[str] = None) -> None:
+    # noinspection PyShadowingBuiltins
+    def __init__(
+        self, id: Optional[str] = None, name: Optional[str] = None, **kwargs
+    ) -> None:
         """Initialize a Species.
 
         Parameters
@@ -38,7 +41,7 @@ class Species(Object):
         A species also contains a _model, reference to a cobra.model (initialized as
         None) and a self._reaction, a set of cobra.reactions (initialized as empty set).
         """
-        Object.__init__(self, id, name)
+        super().__init__(id=id, name=name, **kwargs)
         self._model = None
         # references to reactions that operate on this species
         self._reaction = set()
