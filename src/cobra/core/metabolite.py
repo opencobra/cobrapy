@@ -1,14 +1,14 @@
 """Define the Metabolite class."""
 
 import re
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Dict, Optional, Union
 from warnings import warn
 
-from cobra.core.formula import elements_and_molecular_weights
-from cobra.core.species import Species
-from cobra.exceptions import OptimizationError
-from cobra.util.solver import check_solver_status
-from cobra.util.util import format_long_string
+from ..exceptions import OptimizationError
+from ..util.solver import check_solver_status
+from ..util.util import format_long_string
+from .formula import elements_and_molecular_weights
+from .species import Species
 
 
 if TYPE_CHECKING:
@@ -154,7 +154,7 @@ class Metabolite(Species):
         return composition
 
     @elements.setter
-    def elements(self, elements_dict: Dict[Any, Union[int, float]]) -> None:
+    def elements(self, elements_dict: Dict[str, Union[int, float]]) -> None:
         """Update formula based on elements dictionary.
 
         Parameters
@@ -172,7 +172,14 @@ class Metabolite(Species):
 
     @property
     def formula_weight(self) -> Union[int, float]:
-        """Calculate the formula weight."""
+        """Calculate the formula weight.
+
+        Returns
+        ------
+        float, int
+            Weight of formula, based on the weight and count of elements. Can be int if
+            the formula weight is a whole number, but unlikely.
+        """
         try:
             return sum(
                 [
@@ -191,6 +198,11 @@ class Metabolite(Species):
         the solution.
         .. deprecated ::
         Use metabolite.shadow_price instead.
+
+        Returns
+        -------
+        float
+            Float representing the shadow price.
         """
         warn("Please use metabolite.shadow_price instead.", DeprecationWarning)
         return self.shadow_price
@@ -258,7 +270,7 @@ class Metabolite(Species):
 
         Parameters
         ----------
-        destructive : bool
+        destructive : bool, default False
             If False then the metabolite is removed from all
             associated reactions.  If True then all associated
             reactions are removed from the Model.
@@ -304,6 +316,7 @@ class Metabolite(Species):
         )
 
     def _repr_html_(self) -> str:
+        """Return the metabolite as an HTML string."""
         return f"""
         <table>
             <tr>
