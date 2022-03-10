@@ -3,8 +3,8 @@
 from typing import Iterable, Optional
 from warnings import warn
 
-from cobra.core.dictlist import DictList
-from cobra.core.object import Object
+from .dictlist import DictList
+from .object import Object
 
 
 class Group(Object):
@@ -44,11 +44,23 @@ class Group(Object):
     def __init__(
         self,
         id: str,
-        name: Optional[str] = "",
+        name: str = "",
         members: Optional[Iterable] = None,
         kind: Optional[str] = None,
     ):
-        """Initialize the group object."""
+        """Initialize the group object.
+
+         id : str
+            The identifier to associate with this group
+        name : str, optional
+            A human readable name for the group
+        members : iterable, optional
+            A DictList containing references to cobra.Model-associated objects
+            that belong to the group.
+        kind : {"collection", "classification", "partonomy"}, optional
+            The kind of group, as specified for the Groups feature in the SBML
+            level 3 package specification.
+        """
         Object.__init__(self, id, name)
 
         self._members = DictList() if members is None else DictList(members)
@@ -59,23 +71,51 @@ class Group(Object):
         self._model = None
 
     def __len__(self) -> int:
-        """Get length of group."""
+        """Get length of group.
+
+        Returns
+        -------
+        int
+            An int with the length of the group.
+
+        """
         return len(self._members)
 
     # read-only
     @property
     def members(self) -> DictList:
-        """Get members of the group."""
+        """Get members of the group.
+
+        Returns
+        -------
+        DictList
+            A dictlist containing the members of the group.
+        """
         return self._members
 
     @property
     def kind(self) -> str:
-        """Return the group kind."""
+        """Return the group kind.
+
+        Returns
+        -------
+        str
+            The group kind. Should be one of the three types allowed in SBML.
+
+        """
         return self._kind
 
     @kind.setter
     def kind(self, kind: str) -> None:
-        """Set the group kind."""
+        """Set the group kind.
+
+        Parameters
+        ----------
+        kind: str
+            Must be one of the allowed kind types "collection", "classification",
+            "partonomy".
+            If kind is not one of these types, a ValueError Exception is raised.
+        """
         kind = kind.lower()
         if kind in self.KIND_TYPES:
             self._kind = kind
