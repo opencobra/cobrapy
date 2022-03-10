@@ -42,10 +42,11 @@ def test_biomodels_access(biomodels):
     biomodels.get_sbml.assert_called_once_with(model_id="BIOMD0000000633")
 
 
-@pytest.mark.raises(exception=RuntimeError, message="could not be found")
 def test_unknown_model():
     """Expect that a not found error is raised (e2e)."""
-    load_model("MODELWHO?", cache=False)
+    with pytest.raises(RuntimeError, match="could not be found "
+                                           "in any of the repositories."):
+        load_model("MODELWHO?", cache=False)
 
 
 @pytest.mark.parametrize(
