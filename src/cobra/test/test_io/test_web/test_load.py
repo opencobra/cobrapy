@@ -44,8 +44,9 @@ def test_biomodels_access(biomodels):
 
 def test_unknown_model():
     """Expect that a not found error is raised (e2e)."""
-    with pytest.raises(RuntimeError, match="could not be found "
-                                           "in any of the repositories."):
+    with pytest.raises(
+        RuntimeError, match="could not be found in any of the repositories."
+    ):
         load_model("MODELWHO?", cache=False)
 
 
