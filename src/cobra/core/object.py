@@ -22,8 +22,8 @@ class Object:
         self._id = id
         self.name = name
 
-        self.notes = dict()
-        self._annotation = dict()
+        self.notes = {}
+        self._annotation = {}
 
     @property
     def id(self) -> str:
@@ -121,7 +121,7 @@ class Object:
         str
             Composed of class.name, id and hexadecimal of id.
         """
-        return f"<{self.__class__.__name__} {self.id} at 0x{id(self):x}>"
+        return f"<{self.__class__.__name__} {self.id} at {id(self):#x}>"
 
     def __str__(self) -> str:
         """Return string representation of object.
