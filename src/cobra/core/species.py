@@ -91,7 +91,7 @@ class Species(Object):
         return deepcopy(self)
 
     @property
-    def model(self) -> Union[None, "Model"]:
+    def model(self) -> Optional["Model"]:
         """Return the model.
 
         Returns
