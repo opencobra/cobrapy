@@ -27,8 +27,6 @@ Some SBML related issues are still open, please refer to the respective issue:
     https://github.com/opencobra/cobrapy/issues/812)
 """
 
-from __future__ import absolute_import
-
 import datetime
 import logging
 import os
@@ -38,13 +36,14 @@ from collections import defaultdict, namedtuple
 from copy import deepcopy
 from io import StringIO
 from sys import platform
+from typing import IO, Match, Optional, Pattern, Tuple, Type, Union
 
 import libsbml
 
 import cobra
-from cobra.core import GPR, Gene, Group, Metabolite, Model, Reaction
-from cobra.manipulation.validate import check_metabolite_compartment_formula
-from cobra.util.solver import linear_reaction_coefficients, set_objective
+from ..core import GPR, Gene, Group, Metabolite, Model, Reaction
+from ..manipulation.validate import check_metabolite_compartment_formula
+from ..util.solver import linear_reaction_coefficients, set_objective
 
 
 class CobraSBMLError(Exception):
@@ -92,77 +91,279 @@ SBML_DOT = "__SBML_DOT__"
 # -----------------------------------------------------------------------------
 # Precompiled note pattern
 # -----------------------------------------------------------------------------
-pattern_notes = re.compile(
+pattern_notes: Pattern = re.compile(
     r"<(?P<prefix>(\w+:)?)p[^>]*>(?P<content>.*?)</(?P=prefix)p>",
     re.IGNORECASE | re.DOTALL,
 )
 
-pattern_to_sbml = re.compile(r"([^0-9_a-zA-Z])")
+pattern_to_sbml: Pattern = re.compile(r"([^0-9_a-zA-Z])")
 
-pattern_from_sbml = re.compile(r"__(\d+)__")
+pattern_from_sbml: Pattern = re.compile(r"__(\d+)__")
 
 
-def _escape_non_alphanum(nonASCII):
-    """converts a non alphanumeric character to a string representation of
-    its ascii number"""
+def _escape_non_alphanum(nonASCII: Match) -> str:
+    """Convert non alphanumeric to string representation of ascii number.
+
+    Converts a non alphanumeric character to a string representation of
+    its ascii number using ord.
+
+    Parameters
+    ---------
+    nonASCII: Match
+        Match object, identified by pattern_from_sbml
+
+    Returns
+    -------
+    str:
+        The ascii code, surronded by __.
+    """
     return "__" + str(ord(nonASCII.group())) + "__"
 
 
-def _number_to_chr(numberStr):
-    """converts an ascii number to a character"""
+def _number_to_chr(numberStr: Match) -> str:
+    """Convert an ascii number to a character.
+
+    Parameters
+    ---------
+    numberStr: Match
+        Match object, identified by pattern_from_sbml
+
+    Returns
+    -------
+    str:
+        The first match between the underscores, converted to character.
+    """
     return chr(int(numberStr.group(1)))
 
 
-def _clip(sid, prefix):
-    """Clips a prefix from the beginning of a string if it exists."""
+# Why do we have this, and not use something like replace(sid, prefix, 1) or regex?
+def _clip(sid: str, prefix: str) -> str:
+    """Clip a prefix from the beginning of a string if it exists.
+
+    Parameters
+    ----------
+    sid: str
+        String to clip.
+    prefix:
+        Prefix to remove.
+
+    Returns
+    -------
+    str
+        The string with prefix clipped if it existed. Otherwise the original string.
+    """
     return sid[len(prefix) :] if sid.startswith(prefix) else sid
 
 
-def _f_gene(sid, prefix="G_"):
-    """Clips gene prefix from id."""
+def _f_gene(sid: str, prefix: str = "G_") -> str:
+    """Clip gene prefix from id.
+
+    Parameters
+    ----------
+    sid: str
+        String to process
+    prefix: str
+        Prefix for gene, default "G_".
+
+    Returns
+    -------
+    str
+        Returns modified str with prefix removed, SBML_DOT (see above) replaced
+        with ".", __(NUMBER)__ replaced with the character value of NUMBER.
+
+    See Also
+    --------
+    pattern_from_sbml
+    _number_to_chr
+    SBML_DOT
+    """
     sid = sid.replace(SBML_DOT, ".")
     sid = pattern_from_sbml.sub(_number_to_chr, sid)
     return _clip(sid, prefix)
 
 
-def _f_gene_rev(sid, prefix="G_"):
-    """Adds gene prefix to id."""
+def _f_gene_rev(sid: str, prefix: str = "G_") -> str:
+    """Add gene prefix to id.
+
+    Parameters
+    ----------
+    sid: str
+        String to process
+    prefix: str
+        Prefix for gene, default "G_".
+
+    Returns
+    -------
+    str
+        Returns prefix prepended to modified str, with "." replaced with
+        SBML_DOT, non alphanumeric repalced with a string representation of the
+        unicode number.
+
+    See Also
+    --------
+    pattern_to_sbml
+    _escape_non_alphanum
+    SBML_DOT
+    """
     sid = pattern_to_sbml.sub(_escape_non_alphanum, sid)
     return prefix + sid.replace(".", SBML_DOT)
 
 
-def _f_specie(sid, prefix="M_"):
-    """Clips specie/metabolite prefix from id."""
+def _f_specie(sid: str, prefix: str = "M_") -> str:
+    """Clip specie/metabolite prefix from id.
+
+    Parameters
+    ----------
+    sid: str
+        String to process
+    prefix: str
+        Prefix for specie/metabolite, default "M_".
+
+    Returns
+    -------
+    str
+        Returns modified str with prefix removed, SBML_DOT (see above) replaced
+        with ".", __(NUMBER)__ replaced with the character value of NUMBER.
+
+    See Also
+    --------
+    pattern_from_sbml
+    _number_to_chr
+    SBML_DOT
+    """
     sid = pattern_from_sbml.sub(_number_to_chr, sid)
     return _clip(sid, prefix)
 
 
-def _f_specie_rev(sid, prefix="M_"):
-    """Adds specie/metabolite prefix to id."""
+def _f_specie_rev(sid: str, prefix: str = "M_") -> str:
+    """Add specie/metabolite prefix to id.
+
+    Parameters
+    ----------
+    sid: str
+        String to process
+    prefix: str
+        Prefix for metabolite, default "M_".
+
+    Returns
+    -------
+    str
+        Returns prefix prepended to modified str, with "." replaced with
+        SBML_DOT, non alphanumeric repalced with a string representation of the
+        unicode number.
+
+    See Also
+    --------
+    pattern_to_sbml
+    _escape_non_alphanum
+    SBML_DOT
+    """
     sid = pattern_to_sbml.sub(_escape_non_alphanum, sid)
     return prefix + sid
 
 
-def _f_reaction(sid, prefix="R_"):
-    """Clips reaction prefix from id."""
+def _f_reaction(sid: str, prefix: str = "R_") -> str:
+    """Clip reaction prefix from id.
+
+    Parameters
+    ----------
+    sid: str
+        String to process
+    prefix: str
+        Prefix for reaction, default "R_".
+
+    Returns
+    -------
+    str
+        Returns modified str with prefix removed, SBML_DOT (see above) replaced
+        with ".", __(NUMBER)__ replaced with the character value of NUMBER.
+
+    See Also
+    --------
+    pattern_from_sbml
+    _number_to_chr
+    SBML_DOT
+    """
     sid = pattern_from_sbml.sub(_number_to_chr, sid)
     return _clip(sid, prefix)
 
 
-def _f_reaction_rev(sid, prefix="R_"):
-    """Adds reaction prefix to id."""
+def _f_reaction_rev(sid: str, prefix: str = "R_") -> str:
+    """Add reaction prefix to id.
+
+    Parameters
+    ----------
+    sid: str
+        String to process
+    prefix: str
+        Prefix for reaction, default "R_".
+
+    Returns
+    -------
+    str
+        Returns prefix prepended to modified str, with "." replaced with
+        SBML_DOT, non alphanumeric repalced with a string representation of the
+        unicode number.
+
+    See Also
+    --------
+    pattern_to_sbml
+    _escape_non_alphanum
+    SBML_DOT
+    """
     sid = pattern_to_sbml.sub(_escape_non_alphanum, sid)
     return prefix + sid
 
 
-def _f_group(sid, prefix="G_"):
-    """Clips group prefix from id."""
+def _f_group(sid: str, prefix: str = "G_") -> str:
+    """Clip group prefix from id.
+
+    Parameters
+    ----------
+    sid: str
+        String to process
+    prefix: str
+        Prefix for group, default "G_".
+
+    Returns
+    -------
+    str
+        Returns modified str with prefix removed, SBML_DOT (see above) replaced
+        with ".", __(NUMBER)__ replaced with the character value of NUMBER.
+
+    See Also
+    --------
+    pattern_from_sbml
+    _number_to_chr
+    SBML_DOT
+    """
     sid = pattern_from_sbml.sub(_number_to_chr, sid)
     return _clip(sid, prefix)
 
 
-def _f_group_rev(sid, prefix="G_"):
-    """Adds group prefix to id."""
+def _f_group_rev(sid: str, prefix: str = "G_") -> str:
+    """Add group prefix to id.
+
+    Parameters
+    ----------
+    sid: str
+        String to process
+    prefix: str
+        Prefix for group, default "G_".
+
+    Returns
+    -------
+    str
+        Returns prefix prepended to modified str, with "." replaced with
+        SBML_DOT, non alphanumeric repalced with a string representation of the
+        unicode number.
+
+    See Also
+    --------
+    pattern_to_sbml
+    _escape_non_alphanum
+    SBML_DOT
+    """
     sid = pattern_to_sbml.sub(_escape_non_alphanum, sid)
     return prefix + sid
 
@@ -176,7 +377,7 @@ F_REACTION_REV = "F_REACTION_REV"
 F_GROUP = "F_GROUP"
 F_GROUP_REV = "F_GROUP_REV"
 
-F_REPLACE = {
+F_REPLACE: dict = {
     F_GENE: _f_gene,
     F_GENE_REV: _f_gene_rev,
     F_SPECIE: _f_specie,
@@ -191,8 +392,14 @@ F_REPLACE = {
 # -----------------------------------------------------------------------------
 # Read SBML
 # -----------------------------------------------------------------------------
-def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
-    """Reads SBML model from given filename.
+# noinspection PyDefaultArgument
+def read_sbml_model(
+    filename: Union[str, IO],
+    number: Type = float,
+    f_replace: dict = F_REPLACE,
+    **kwargs,
+) -> Model:
+    """Read SBML model from given filename.
 
     If the given filename ends with the suffix ''.gz'' (for example,
     ''myfile.xml.gz'),' the file is assumed to be compressed in gzip
@@ -227,10 +434,17 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
         By default the following id changes are performed on import:
         clip G_ from genes, clip M_ from species, clip R_ from reactions
         If no replacements should be performed, set f_replace={}, None
+    **kwargs:
+        Further keyword arguments are passed on to the called function (_sbml_to_model)
 
     Returns
     -------
     cobra.core.Model
+
+    Raises
+    ------
+    IOError if file not read
+    All other errors are wrapped around in a message pointing to SBML validator.
 
     Notes
     -----
@@ -258,7 +472,7 @@ def read_sbml_model(filename, number=float, f_replace=F_REPLACE, **kwargs):
         raise cobra_error from original_error
 
 
-def _get_doc_from_filename(filename):
+def _get_doc_from_filename(filename: Union[str, IO]) -> "libsbml.SBMLDocument":
     """Get SBMLDocument from given filename.
 
     Parameters
@@ -268,6 +482,11 @@ def _get_doc_from_filename(filename):
     Returns
     -------
     libsbml.SBMLDocument
+
+    Raises
+    ------
+    IOError if file not readable or does not contain SBML.
+    CobraSBMLError if input type is not valid.
     """
     if isinstance(filename, str):
         if ("win" in platform) and (len(filename) < 260) and os.path.exists(filename):
@@ -284,11 +503,9 @@ def _get_doc_from_filename(filename):
             # string representation
             if "<sbml" not in filename:
                 raise IOError(
-                    "The file with 'filename' does not exist, "
-                    "or is not an SBML string. Provide the path to "
-                    "an existing SBML file or a valid SBML string "
-                    "representation: \n%s",
-                    filename,
+                    f"The file with '{filename}' does not exist, "
+                    f"or is not an SBML string. Provide the path to "
+                    f"an existing SBML file or a valid SBML string representation:\n"
                 )
 
             doc = libsbml.readSBMLFromString(
@@ -302,34 +519,51 @@ def _get_doc_from_filename(filename):
         )  # noqa: E501 type: libsbml.SBMLDocument
     else:
         raise CobraSBMLError(
-            "Input type '%s' for 'filename' is not supported."
-            " Provide a path, SBML str, "
-            "or file handle.",
-            type(filename),
+            f"Input type '{type(filename)}' for '{filename}' is not supported."
+            f" Provide a path, SBML str, or file handle."
         )
 
     return doc
 
 
+# noinspection PyDefaultArgument
+# noinspection PyUnusedLocal
 def _sbml_to_model(
-    doc, number=float, f_replace=F_REPLACE, set_missing_bounds=False, **kwargs
-):
-    """Creates cobra model from SBMLDocument.
+    doc: "libsbml.SBMLDocument",
+    number: Type = float,
+    f_replace: dict = F_REPLACE,
+    set_missing_bounds: bool = False,
+    **kwargs,
+) -> Model:
+    """Create cobra model from SBMLDocument.
 
     Parameters
     ----------
     doc: libsbml.SBMLDocument
     number: data type of stoichiometry: {float, int}
         In which data type should the stoichiometry be parsed.
-    f_replace : dict of replacement functions for id replacement
-    set_missing_bounds : flag to set missing bounds
+    f_replace : dict
+        dict of replacement functions for id replacement
+    set_missing_bounds : bool
+        flag to set missing bounds. Looks like it will be ignored.
+    **kwargs:
+        Further keyword arguments are passed on.
 
     Returns
     -------
     cobra.core.Model
+
+    Raises
+    ------
+    CobraSBMLError if no SBML model detected in file.
+    Exception if fbc coversion from v1 to v2 needed and not successful.
+    CobraSBMLError if upper or lower bound are missing from a reaction.
+    CobraSBMLError if objective reaction declared and not found. Objective reaction not
+                    declared will lead to an ERROR being logged.
+
     """
     if f_replace is None:
-        f_replace = {}
+        f_replace = dict()
 
     # SBML model
     model = doc.getModel()  # type: libsbml.Model
@@ -349,7 +583,7 @@ def _sbml_to_model(
 
         if fbc_version == 1:
             LOGGER.warning(
-                "Loading SBML with fbc-v1 (models should be encoded" " using fbc-v2)"
+                "Loading SBML with fbc-v1 (models should be encoded using fbc-v2)"
             )
             conversion_properties = libsbml.ConversionProperties()
             conversion_properties.addOption(
@@ -362,7 +596,7 @@ def _sbml_to_model(
     # Model
     model_id = model.getIdAttribute()
     if not libsbml.SyntaxChecker.isValidSBMLSId(model_id):
-        LOGGER.error("'%s' is not a valid SBML 'SId'." % model_id)
+        LOGGER.error(f"'{model_id}' is not a valid SBML 'SId'.")
     cobra_model = Model(model_id)
     cobra_model.name = model.getName()
 
@@ -399,18 +633,17 @@ def _sbml_to_model(
     meta["notes"] = _parse_notes_dict(doc)
     meta["annotation"] = _parse_annotations(doc)
 
-    info = "<{}> SBML L{}V{}".format(model_id, model.getLevel(), model.getVersion())
+    info = f"<{model_id}> SBML L{model.getLevel()}V{model.getVersion()}"
     packages = {}
     for k in range(doc.getNumPlugins()):
         plugin = doc.getPlugin(k)  # type:libsbml.SBasePlugin
         key, value = plugin.getPackageName(), plugin.getPackageVersion()
         packages[key] = value
-        info += ", {}-v{}".format(key, value)
+        info += f", {key}-v{value}"
         if key not in ["fbc", "groups", "l3v2extendedmath"]:
             LOGGER.warning(
-                "SBML package '%s' not supported by cobrapy, "
-                "information is not parsed",
-                key,
+                f"SBML package '{key}' not supported by cobrapy, "
+                f"information is not parsed"
             )
     meta["info"] = info
     meta["packages"] = packages
@@ -454,19 +687,15 @@ def _sbml_to_model(
         else:
             if specie.isSetCharge():
                 LOGGER.warning(
-                    "Use of the species charge attribute is "
-                    "discouraged, use fbc:charge "
-                    "instead: %s",
-                    specie,
+                    f"Use of the species charge attribute is "
+                    f"discouraged, use fbc:charge instead: {specie}"
                 )
                 met.charge = specie.getCharge()
             else:
                 if "CHARGE" in met.notes:
                     LOGGER.warning(
-                        "Use of CHARGE in the notes element is "
-                        "discouraged, use fbc:charge "
-                        "instead: %s",
-                        specie,
+                        f"Use of CHARGE in the notes element is "
+                        f"discouraged, use fbc:charge instead: {specie}"
                     )
                     try:
                         met.charge = int(met.notes["CHARGE"])
@@ -476,10 +705,8 @@ def _sbml_to_model(
 
             if "FORMULA" in met.notes:
                 LOGGER.warning(
-                    "Use of FORMULA in the notes element is "
-                    "discouraged, use fbc:chemicalFormula "
-                    "instead: %s",
-                    specie,
+                    f"Use of FORMULA in the notes element is "
+                    f"discouraged, use fbc:chemicalFormula instead: {specie}"
                 )
                 met.formula = met.notes["FORMULA"]
 
@@ -494,15 +721,15 @@ def _sbml_to_model(
     # Add exchange reactions for boundary metabolites
     ex_reactions = []
     for met in boundary_metabolites:
-        ex_rid = "EX_{}".format(met.id)
+        ex_rid = f"EX_{met.id}"
         ex_reaction = Reaction(ex_rid)
         ex_reaction.name = ex_rid
         ex_reaction.annotation = {"sbo": SBO_EXCHANGE_REACTION}
         ex_reaction.lower_bound = config.lower_bound
         ex_reaction.upper_bound = config.upper_bound
         LOGGER.warning(
-            "Adding exchange reaction %s with default bounds "
-            "for boundary metabolite: %s." % (ex_reaction.id, met.id)
+            f"Adding exchange reaction {ex_reaction.id} with default bounds for "
+            f"boundary metabolite: {met.id}."
         )
         # species is reactant
         ex_reaction.add_metabolites({met: -1})
@@ -559,10 +786,19 @@ def _sbml_to_model(
                         cobra_model.genes.append(cobra_gene)
 
     # GPR rules
-    def process_association(ass):
+    def process_association(ass: "libsbml.FbcAssociation") -> Union[BoolOp, Name]:
         """Recursively convert gpr association to a GPR class.
 
         Defined as inline functions to not pass the replacement dict around.
+
+        Parameters
+        ----------
+        ass: libsbml.FbcAssociation
+
+        Returns
+        -------
+        BoolOp or Name
+            AST formatted of the FbcAssociation, which will be processed by GPR().
         """
         if ass.isFbcOr():
             return BoolOp(
@@ -573,11 +809,11 @@ def _sbml_to_model(
                 And(), [process_association(c) for c in ass.getListOfAssociations()]
             )
         elif ass.isGeneProductRef():
-            gid = ass.getGeneProduct()
+            g_id = ass.getGeneProduct()
             if f_replace and F_GENE in f_replace:
-                return Name(id=f_replace[F_GENE](gid))
+                return Name(id=f_replace[F_GENE](g_id))
             else:
-                return Name(id=gid)
+                return Name(id=g_id)
 
     # Reactions
     missing_bounds = False
@@ -606,7 +842,7 @@ def _sbml_to_model(
                     cobra_reaction.lower_bound = p_lb.getValue()
                 else:
                     raise CobraSBMLError(
-                        "No constant bound '%s' for " "reaction: %s" % (p_lb, reaction)
+                        f"No constant bound '{p_lb}' for reaction: {reaction}"
                     )
 
             ub_id = r_fbc.getUpperFluxBound()
@@ -616,7 +852,7 @@ def _sbml_to_model(
                     cobra_reaction.upper_bound = p_ub.getValue()
                 else:
                     raise CobraSBMLError(
-                        "No constant bound '%s' for " "reaction: %s" % (p_ub, reaction)
+                        f"No constant bound '{p_ub}' for reaction: {reaction}"
                     )
 
         elif reaction.isSetKineticLaw():
@@ -635,10 +871,9 @@ def _sbml_to_model(
 
             if p_ub is not None or p_lb is not None:
                 LOGGER.warning(
-                    "Encoding LOWER_BOUND and UPPER_BOUND in "
-                    "KineticLaw is discouraged, "
-                    "use fbc:fluxBounds instead: %s",
-                    reaction,
+                    f"Encoding LOWER_BOUND and UPPER_BOUND in "
+                    f"KineticLaw is discouraged, "
+                    f"use fbc:fluxBounds instead: {reaction}"
                 )
 
         if p_lb is None:
@@ -646,9 +881,8 @@ def _sbml_to_model(
             lower_bound = config.lower_bound
             cobra_reaction.lower_bound = lower_bound
             LOGGER.warning(
-                "Missing lower flux bound set to '%s' for " " reaction: '%s'",
-                lower_bound,
-                reaction,
+                f"Missing lower flux bound set to '{lower_bound}' for "
+                f"reaction: '{reaction}'"
             )
 
         if p_ub is None:
@@ -656,9 +890,8 @@ def _sbml_to_model(
             upper_bound = config.upper_bound
             cobra_reaction.upper_bound = upper_bound
             LOGGER.warning(
-                "Missing upper flux bound set to '%s' for " " reaction: '%s'",
-                upper_bound,
-                reaction,
+                f"Missing upper flux bound set to '{upper_bound}' for "
+                f"reaction: '{reaction}'"
             )
 
         # add reaction
@@ -697,7 +930,7 @@ def _sbml_to_model(
 
         # GPR
         if r_fbc:
-            gpr = ""
+            gpr = None
             gpa = (
                 r_fbc.getGeneProductAssociation()
             )  # noqa: E501 type: libsbml.GeneProductAssociation
@@ -706,8 +939,6 @@ def _sbml_to_model(
                     gpa.getAssociation()
                 )  # noqa: E501 type: libsbml.FbcAssociation
                 gpr = Module(process_association(association))
-            else:
-                gpr = None
             cobra_reaction.gpr = GPR(gpr_from=gpr)
         else:
             # fallback to notes information
@@ -721,10 +952,9 @@ def _sbml_to_model(
 
             if len(gpr) > 0:
                 LOGGER.warning(
-                    "Use of GENE ASSOCIATION or GENE_ASSOCIATION "
-                    "in the notes element is discouraged, use "
-                    "fbc:gpr instead: %s",
-                    reaction,
+                    f"Use of GENE ASSOCIATION or GENE_ASSOCIATION "
+                    f"in the notes element is discouraged, use "
+                    f"fbc:gpr instead: {reaction}"
                 )
                 if f_replace and F_GENE in f_replace:
                     gpr = " ".join(f_replace[F_GENE](t) for t in gpr.split(" "))
@@ -761,7 +991,7 @@ def _sbml_to_model(
                 try:
                     objective_reaction = cobra_model.reactions.get_by_id(rid)
                 except KeyError:
-                    raise CobraSBMLError("Objective reaction '%s' " "not found" % rid)
+                    raise CobraSBMLError(f"Objective reaction '{rid}' not found")
                 try:
                     coefficients[objective_reaction] = number(flux_obj.getCoefficient())
                 except ValueError as e:
@@ -781,25 +1011,20 @@ def _sbml_to_model(
                     try:
                         objective_reaction = cobra_model.reactions.get_by_id(rid)
                     except KeyError:
-                        raise CobraSBMLError(
-                            "Objective reaction '%s' " "not found", rid
-                        )
+                        raise CobraSBMLError(f"Objective reaction '{rid}' not found")
                     try:
                         coefficients[objective_reaction] = number(p_oc.getValue())
                     except ValueError as e:
                         LOGGER.warning(str(e))
 
                     LOGGER.warning(
-                        "Encoding OBJECTIVE_COEFFICIENT in "
-                        "KineticLaw is discouraged, "
-                        "use fbc:fluxObjective "
-                        "instead: %s",
-                        reaction,
+                        "Encoding OBJECTIVE_COEFFICIENT in KineticLaw is discouraged, "
+                        f"use fbc:fluxObjective instead: {reaction}"
                     )
 
     if len(coefficients) == 0:
         LOGGER.error(
-            "No objective coefficients in model. Unclear what should " "be optimized"
+            "No objective coefficients in model. Unclear what should be optimized"
         )
     set_objective(cobra_model, coefficients)
     cobra_model.solver.objective.direction = obj_direction
@@ -843,6 +1068,7 @@ def _sbml_to_model(
                 elif member.isSetMetaIdRef():
                     obj = metaid_map[member.getMetaIdRef()]
 
+                # noinspection PyUnboundLocalVariable
                 typecode = obj.getTypeCode()
                 obj_id = _check_required(obj, obj.getIdAttribute(), "id")
 
@@ -862,9 +1088,8 @@ def _sbml_to_model(
                     cobra_member = cobra_model.genes.get_by_id(obj_id)
                 else:
                     LOGGER.warning(
-                        "Member %s could not be added to group %s."
-                        "unsupported type code: "
-                        "%s" % (member, group, typecode)
+                        f"Member {member} could not be added to group {group}."
+                        f"unsupported type code: {typecode}"
                     )
 
                 if cobra_member:
@@ -906,8 +1131,11 @@ def _sbml_to_model(
 # -----------------------------------------------------------------------------
 # Write SBML
 # -----------------------------------------------------------------------------
-def write_sbml_model(cobra_model, filename, f_replace=F_REPLACE, **kwargs):
-    """Writes cobra model to filename.
+# noinspection PyDefaultArgument
+def write_sbml_model(
+    cobra_model: Model, filename: Union[str, IO], f_replace: dict = F_REPLACE, **kwargs
+) -> None:
+    """Write cobra model to filename.
 
     The created model is SBML level 3 version 1 (L1V3) with
     fbc package v2 (fbc-v2).
@@ -931,7 +1159,10 @@ def write_sbml_model(cobra_model, filename, f_replace=F_REPLACE, **kwargs):
         Model instance which is written to SBML
     filename : string or filehandle
         path to which the model is written
-    f_replace: dict of replacement functions for id replacement
+    f_replace: dict
+        dictionary of replacement functions for id replacement
+    **kwargs:
+        Further keyword arguments are passed on.
     """
     doc = _model_to_sbml(cobra_model, f_replace=f_replace, **kwargs)
 
@@ -945,7 +1176,9 @@ def write_sbml_model(cobra_model, filename, f_replace=F_REPLACE, **kwargs):
         filename.write(sbml_str)
 
 
-def _model_to_sbml(cobra_model, f_replace=None, units=True):
+def _model_to_sbml(
+    cobra_model: Model, f_replace: Optional[dict] = None, units: bool = True
+) -> libsbml.SBMLDocument:
     """Convert Cobra model to SBMLDocument.
 
     Parameters
@@ -1027,6 +1260,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         # _check(model.setModelHistory(history), 'set model history')
 
     # Units
+    flux_udef = None
     if units:
         flux_udef = model.createUnitDefinition()  # type:libsbml.UnitDefinition
         flux_udef.setId(UNITS_FLUX[0])
@@ -1130,7 +1364,7 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
         _sbase_notes_dict(reaction, cobra_reaction.notes)
 
         # stoichiometry
-        for metabolite, stoichiometry in cobra_reaction._metabolites.items():
+        for metabolite, stoichiometry in cobra_reaction.metabolites.items():
             sid = metabolite.id
             if f_replace and F_SPECIE_REV in f_replace:
                 sid = f_replace[F_SPECIE_REV](sid)
@@ -1242,8 +1476,15 @@ def _model_to_sbml(cobra_model, f_replace=None, units=True):
     return doc
 
 
-def _create_bound(model, reaction, bound_type, f_replace, units=None, flux_udef=None):
-    """Creates bound in model for given reaction.
+def _create_bound(
+    model: libsbml.Model,
+    reaction: Reaction,
+    bound_type: str,
+    f_replace: dict,
+    units: Optional[bool] = None,
+    flux_udef: Optional[libsbml.UnitDefinition] = None,
+) -> str:
+    """Create bound in model for given reaction.
 
     Adds the parameters for the bounds to the SBML model.
 
@@ -1255,12 +1496,17 @@ def _create_bound(model, reaction, bound_type, f_replace, units=None, flux_udef=
         Cobra reaction instance from which the bounds are read.
     bound_type : {LOWER_BOUND, UPPER_BOUND}
         Type of bound
-    f_replace : dict of id replacement functions
-    units : flux units
+    f_replace : dict
+        of id replacement functions
+    units : bool, optional, defualt None
+        Whether or not to use flux units in the SBML document.
+    flux_udef: libsbml.UnitDefinition, optional
+        Unit definition if units are used.
 
     Returns
     -------
-    Id of bound parameter.
+    pid: str
+        Id of bound parameter.
     """
     value = getattr(reaction, bound_type)
     if value == config.lower_bound:
@@ -1291,9 +1537,35 @@ def _create_bound(model, reaction, bound_type, f_replace, units=None, flux_udef=
 
 
 def _create_parameter(
-    model, pid, value, sbo=None, constant=True, units=None, flux_udef=None
-):
-    """Create parameter in SBML model."""
+    model: libsbml.Model,
+    pid: str,
+    value: float,
+    sbo: Optional[str] = None,
+    constant: Optional[bool] = True,
+    units: Optional[bool] = None,
+    flux_udef: Optional[libsbml.UnitDefinition] = None,
+) -> None:
+    """Create parameter in SBML model.
+
+    Parameters
+    ----------
+    model : libsbml.Model
+        SBML model instance
+    pid : str
+        Parameter id to create in the SBML model.
+    value: float
+        Value to set parameter
+    sbo: str, optional
+        SBO term for parameter. In COBRA, it seems to be SBO_FLUX_BOUND ( "SBO:0000625")
+        or SBO_DEFAULT_FLUX_BOUND ("SBO:0000626")
+    constant: bool, optional
+        Flag if parameter is constant.
+    units : bool, optional, defualt None
+        Whether or not to use flux units in the SBML document.
+    flux_udef: libsbml.UnitDefinition, optional
+        Unit definition if units are used.
+
+    """
     parameter = model.createParameter()  # type: libsbml.Parameter
     parameter.setId(pid)
     parameter.setValue(value)
@@ -1304,7 +1576,7 @@ def _create_parameter(
         parameter.setUnits(flux_udef.getId())
 
 
-def _check_required(sbase, value, attribute):
+def _check_required(sbase: "libsbml.Base", value: str, attribute: str) -> str:
     """Get required attribute from SBase.
 
     Parameters
@@ -1316,30 +1588,38 @@ def _check_required(sbase, value, attribute):
     Returns
     -------
     attribute value (or value if already set)
-    """
 
+    Raises
+    ------
+    CobraSBMLError if attribute not found or not parsed.
+    """
     if (value is None) or (value == ""):
-        msg = "Required attribute '%s' cannot be found or parsed in " "'%s'." % (
-            attribute,
-            sbase,
+        msg = (
+            f"Required attribute '{attribute}' cannot be "
+            f"found or parsed in '{sbase}'."
         )
         if hasattr(sbase, "getId") and sbase.getId():
-            msg += " with id '%s'" % sbase.getId()
+            msg += f" with id '{sbase.getId()}'"
         elif hasattr(sbase, "getName") and sbase.getName():
-            msg += " with name '%s'" % sbase.getName()
+            msg += f" with name '{sbase.getName()}'"
         elif hasattr(sbase, "getMetaId") and sbase.getMetaId():
-            msg += " with metaId '%s'" % sbase.getName()
+            msg += f" with metaId '{sbase.getName()}'"
         raise CobraSBMLError(msg)
     if attribute == "id":
         if not libsbml.SyntaxChecker.isValidSBMLSId(value):
-            LOGGER.error("'%s' is not a valid SBML 'SId'." % value)
+            LOGGER.error(f"'{value}' is not a valid SBML 'SId'.")
 
     return value
 
 
-def _check(value, message):
+def _check(value: Union[None, int], message: str) -> None:
     """
-    Checks the libsbml return value and logs error messages.
+    Check the libsbml return value and logs error messages.
+
+    Parameters
+    ----------
+    value: None or int
+    message: str
 
     If 'value' is None, logs an error message constructed using
       'message' and then exits with status code 1. If 'value' is an integer,
@@ -1351,7 +1631,7 @@ def _check(value, message):
     """
     if value is None:
         LOGGER.error(
-            "Error: LibSBML returned a null value trying " "to <" + message + ">."
+            "Error: LibSBML returned a null value trying to <" + message + ">."
         )
     elif type(value) is int:
         if value == libsbml.LIBSBML_OPERATION_SUCCESS:
@@ -1359,9 +1639,8 @@ def _check(value, message):
         else:
             LOGGER.error("Error encountered trying to <" + message + ">.")
             LOGGER.error(
-                "LibSBML error code {}: {}".format(
-                    str(value), libsbml.OperationReturnValue_toString(value).strip()
-                )
+                f"LibSBML error code {str(value)}: "
+                f"{libsbml.OperationReturnValue_toString(value).strip()}"
             )
     else:
         return
@@ -1370,8 +1649,8 @@ def _check(value, message):
 # -----------------------------------------------------------------------------
 # Notes
 # -----------------------------------------------------------------------------
-def _parse_notes_dict(sbase):
-    """Creates dictionary of COBRA notes.
+def _parse_notes_dict(sbase) -> dict:
+    """Create dictionary of COBRA notes.
 
     Parameters
     ----------
@@ -1385,12 +1664,13 @@ def _parse_notes_dict(sbase):
     if notes and len(notes) > 0:
         notes_store = dict()
         for match in pattern_notes.finditer(notes):
+            _content = match.group("content")
             try:
                 # Python 2.7 does not allow keywords for split.
                 # Python 3 can have (":", maxsplit=1)
-                key, value = match.group("content").split(":", 1)
+                key, value = _content.split(":", maxsplit=1)
             except ValueError:
-                LOGGER.debug("Unexpected content format '{}'.", match.group("content"))
+                LOGGER.debug(f"Unexpected content format '{_content}'.")
                 continue
             notes_store[key.strip()] = value.strip()
         return {k: v for k, v in notes_store.items() if len(v) > 0}
@@ -1398,25 +1678,25 @@ def _parse_notes_dict(sbase):
         return {}
 
 
-def _sbase_notes_dict(sbase, notes):
+def _sbase_notes_dict(sbase: libsbml.SBase, notes: dict) -> None:
     """Set SBase notes based on dictionary.
 
     Parameters
     ----------
     sbase : libsbml.SBase
         SBML object to set notes on
-    notes : notes object
-        notes information from cobra object
+    notes : dict
+        Notes information from cobra object.
     """
     if notes and len(notes) > 0:
         tokens = (
             ['<html xmlns = "http://www.w3.org/1999/xhtml" >']
-            + ["<p>{}: {}</p>".format(k, v) for (k, v) in notes.items()]
+            + [f"<p>{k}: {v}</p>" for (k, v) in notes.items()]
             + ["</html>"]
         )
         _check(
             sbase.setNotes("\n".join(tokens)),
-            "Setting notes on sbase: {}".format(sbase),
+            f"Setting notes on sbase: {sbase}",
         )
 
 
@@ -1468,8 +1748,8 @@ QUALIFIER_TYPES = {
 }
 
 
-def _parse_annotations(sbase):
-    """Parses cobra annotations from a given SBase object.
+def _parse_annotations(sbase: libsbml.SBase) -> dict:
+    """Parse cobra annotations from a given SBase object.
 
     Annotations are dictionaries with the providers as keys.
 
@@ -1481,10 +1761,9 @@ def _parse_annotations(sbase):
     Returns
     -------
     dict (annotation dictionary)
-
-    FIXME: annotation format must be updated (this is a big collection of
-          fixes) - see: https://github.com/opencobra/cobrapy/issues/684)
     """
+    #     FIXME: annotation format must be updated (this is a big collection of
+    #           fixes) - see: https://github.com/opencobra/cobrapy/issues/684)
     annotation = {}
 
     # SBO term
@@ -1521,8 +1800,8 @@ def _parse_annotations(sbase):
     return annotation
 
 
-def _parse_annotation_info(uri):
-    """Parses provider and term from given identifiers annotation uri.
+def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
+    """Parse provider and term from given identifiers annotation uri.
 
     Parameters
     ----------
@@ -1537,34 +1816,35 @@ def _parse_annotation_info(uri):
     if match:
         provider, identifier = match.group(1), match.group(2)
         if provider.isupper():
-            identifier = "%s:%s" % (provider, identifier)
+            identifier = f"{provider}:{identifier}"
             provider = provider.lower()
     else:
         LOGGER.warning(
-            "%s does not conform to "
-            "'http(s)://identifiers.org/collection/id' or"
-            "'http(s)://identifiers.org/COLLECTION:id",
-            uri,
+            f"{uri} does not conform to "
+            f"'http(s)://identifiers.org/collection/id' or"
+            f"'http(s)://identifiers.org/COLLECTION:id"
         )
         return None
 
     return provider, identifier
 
 
-def _sbase_annotations(sbase, annotation):
+def _sbase_annotations(sbase: libsbml.SBase, annotation: dict) -> None:
     """Set SBase annotations based on cobra annotations.
 
     Parameters
     ----------
     sbase : libsbml.SBase
         SBML object to annotate
-    annotation : cobra annotation structure
+    annotation : dict, cobra annotation structure
         cobra object with annotation information
 
-    FIXME: annotation format must be updated
-        (https://github.com/opencobra/cobrapy/issues/684)
+    Raises
+    ------
+    CobraSBMLError for unsupported qualifier
     """
-
+    #    FIXME: annotation format must be updated
+    #     (https://github.com/opencobra/cobrapy/issues/684)
     if not annotation or len(annotation) == 0:
         return
 
@@ -1578,13 +1858,13 @@ def _sbase_annotations(sbase, annotation):
         if isinstance(value, str):
             annotation_data[key] = [("is", value)]
 
-    for key, value in annotation_data.items():
+    for _key, value in annotation_data.items():
         for idx, item in enumerate(value):
             if isinstance(item, str):
                 value[idx] = ("is", item)
 
     # set metaId
-    meta_id = "meta_{}".format(sbase.getId())
+    meta_id = f"meta_{sbase.getId()}"
     sbase.setMetaId(meta_id)
 
     # rdf_items = []
@@ -1594,10 +1874,10 @@ def _sbase_annotations(sbase, annotation):
         if provider in ["SBO", "sbo"]:
             if provider == "SBO":
                 LOGGER.warning(
-                    "'SBO' provider is deprecated, " "use 'sbo' provider instead"
+                    "'SBO' provider is deprecated, use 'sbo' provider instead"
                 )
             sbo_term = data[0][1]
-            _check(sbase.setSBOTerm(sbo_term), "Setting SBOTerm: {}".format(sbo_term))
+            _check(sbase.setSBOTerm(sbo_term), f"Setting SBOTerm: {sbo_term}")
 
             # FIXME: sbo should also be written as CVTerm
             continue
@@ -1608,8 +1888,7 @@ def _sbase_annotations(sbase, annotation):
             if qualifier is None:
                 qualifier = libsbml.BQB_IS
                 LOGGER.error(
-                    "Qualifier type is not supported on "
-                    "annotation: '{}'".format(qualifier_str)
+                    f"Qualifier type is not supported on annotation: '{qualifier_str}'"
                 )
 
             qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
@@ -1623,12 +1902,12 @@ def _sbase_annotations(sbase, annotation):
             elif qualifier_type == libsbml.MODEL_QUALIFIER:
                 cv.setModelQualifierType(qualifier)
             else:
-                raise CobraSBMLError("Unsupported qualifier: " "%s" % qualifier)
-            resource = "%s/%s/%s" % (URL_IDENTIFIERS_PREFIX, provider, entity)
+                raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
+            resource = f"{URL_IDENTIFIERS_PREFIX}/{provider}/{entity}"
             cv.addResource(resource)
             _check(
                 sbase.addCVTerm(cv),
-                "Setting cvterm: {}, resource: {}".format(cv, resource),
+                f"Setting cvterm: {cv}, resource: {resource}",
             )
 
 
@@ -1636,28 +1915,30 @@ def _sbase_annotations(sbase, annotation):
 # Validation
 # -----------------------------------------------------------------------------
 def validate_sbml_model(
-    filename,
-    check_model=True,
-    internal_consistency=True,
-    check_units_consistency=False,
-    check_modeling_practice=False,
-    **kwargs
-):
+    filename: Union[str, IO],
+    check_model: bool = True,
+    internal_consistency: bool = True,
+    check_units_consistency: bool = False,
+    check_modeling_practice: bool = False,
+    **kwargs,
+) -> Tuple[Optional[Model], dict]:
     """Validate SBML model and returns the model along with a list of errors.
 
     Parameters
     ----------
     filename : str or filehandle
         The filename (or SBML string) of the SBML model to be validated.
-    internal_consistency: boolean {True, False}
-        Check internal consistency.
-    check_units_consistency: boolean {True, False}
-        Check consistency of units.
-    check_modeling_practice: boolean {True, False}
-        Check modeling practise.
-    check_model: boolean {True, False}
+    check_model: boolean {True, False}, default True
         Whether to also check some basic model properties such as reaction
         boundaries and compartment formulas.
+    internal_consistency: boolean {True, False}, default True
+        Check internal consistency.
+    check_units_consistency: boolean {True, False}, default True
+        Check consistency of units.
+    check_modeling_practice: boolean {True, False}, default True
+        Check modeling practise.
+    **kwargs:
+        Further keyword arguments are passed on to the called function (_sbml_to_model).
 
     Returns
     -------
@@ -1668,13 +1949,12 @@ def validate_sbml_model(
     errors : dict
         Warnings and errors grouped by their respective types.
 
-    Raises
-    ------
-    CobraSBMLError
+    Notes
+    -----
+    Errors and warnings are grouped based on their type. SBML_* types are
+    from the libsbml validator. COBRA_* types are from the cobrapy SBML
+    parser.
     """
-    # Errors and warnings are grouped based on their type. SBML_* types are
-    # from the libsbml validator. COBRA_* types are from the cobrapy SBML
-    # parser.
     keys = (
         "SBML_FATAL",
         "SBML_ERROR",
@@ -1757,33 +2037,32 @@ def validate_sbml_model(
 
     for key in ["SBML_FATAL", "SBML_ERROR", "SBML_SCHEMA_ERROR"]:
         if len(errors[key]) > 0:
-            LOGGER.error("SBML errors in validation, check error log " "for details.")
+            LOGGER.error("SBML errors in validation, check error log for details.")
             break
     for key in ["SBML_WARNING"]:
         if len(errors[key]) > 0:
-            LOGGER.error("SBML warnings in validation, check error log " "for details.")
+            LOGGER.error("SBML warnings in validation, check error log for details.")
             break
     for key in ["COBRA_FATAL", "COBRA_ERROR"]:
         if len(errors[key]) > 0:
-            LOGGER.error("COBRA errors in validation, check error log " "for details.")
+            LOGGER.error("COBRA errors in validation, check error log for details.")
             break
     for key in ["COBRA_WARNING", "COBRA_CHECK"]:
         if len(errors[key]) > 0:
-            LOGGER.error(
-                "COBRA warnings in validation, check error log " "for details."
-            )
+            LOGGER.error("COBRA warnings in validation, check error log for details.")
             break
 
     return model, errors
 
 
-def _error_string(error, k=None):
-    """String representation of SBMLError.
+def _error_string(error: "libsbml.SBMLError", k: Optional[int] = None):
+    """Return string representation of SBMLError.
 
     Parameters
     ----------
     error : libsbml.SBMLError
-    k : index of error
+    k : int, optional
+        index of error
 
     Returns
     -------
@@ -1793,14 +2072,10 @@ def _error_string(error, k=None):
     if package == "":
         package = "core"
 
-    template = "E{} ({}): {} ({}, L{}); {}; {}"
-    error_str = template.format(
-        k,
-        error.getSeverityAsString(),
-        error.getCategoryAsString(),
-        package,
-        error.getLine(),
-        error.getShortMessage(),
-        error.getMessage(),
+    error_str = (
+        f"E{k} ({error.getSeverityAsString()}): "
+        f"{error.getCategoryAsString()} "
+        f"({package}, L{error.getLine()}); "
+        f"{error.getShortMessage()}; {error.getMessage()}"
     )
     return error_str
