@@ -43,7 +43,7 @@ def test_gpr() -> None:
     assert reaction_gene is model_gene
 
 
-def test_gpr_uppercase():
+def test_gpr_uppercase() -> None:
     """Test ability to handle uppercase AND/OR."""
     reaction = Reaction("test")
     with pytest.warns(SyntaxWarning):
@@ -53,7 +53,7 @@ def test_gpr_uppercase():
 
 
 @pytest.mark.parametrize("input_gpr", ["(a1 or a2", "(forT or "])
-def test_gpr_malformed(input_gpr):
+def test_gpr_malformed(input_gpr: str) -> None:
     """Test ability to deal with malformed GPR.
 
     Malformed GPR strings will lead to empty GPRs with no genes.
