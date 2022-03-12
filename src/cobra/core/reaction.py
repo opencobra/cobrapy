@@ -25,23 +25,23 @@ from warnings import warn
 
 if TYPE_CHECKING:
     from optlang.interface import Variable
-    from cobra import Model, Solution
-    from cobra.summary import ReactionSummary
-    from pandas import DataFrame
+    from . import Model, Solution
+    from ..summary import ReactionSummary
+    import pandas as pd
 
-from cobra.core.configuration import Configuration
-from cobra.core.gene import GPR, Gene
-from cobra.core.metabolite import Metabolite
-from cobra.core.object import Object
-from cobra.exceptions import OptimizationError
-from cobra.manipulation import remove_genes
-from cobra.util.context import get_context, resettable
-from cobra.util.solver import (
+from ..exceptions import OptimizationError
+from ..util.context import get_context, resettable
+from ..util.solver import (
     check_solver_status,
     linear_reaction_coefficients,
     set_objective,
 )
-from cobra.util.util import format_long_string
+from ..util.util import format_long_string
+from .configuration import Configuration
+from .gene import GPR, Gene
+from ..manipulation import remove_genes
+from .metabolite import Metabolite
+from .object import Object
 
 
 config = Configuration()
@@ -70,16 +70,16 @@ class Reaction(Object):
 
     Parameters
     ----------
-    id : string
-        The identifier to associate with this reaction
-    name : string, optional
-        A human readable name for the reaction
-    subsystem : string, optional
-        Subsystem where the reaction is meant to occur
-    lower_bound : float, optional
-        The lower flux bound
-    upper_bound : float, optional
-        The upper flux bound
+    id : str, default None
+        The identifier to associate with this reaction (default None).
+    name : str, optional, default ""
+        A human readable name for the reaction (default "").
+    subsystem : str, optional, default ""
+        Subsystem where the reaction is meant to occur (default "").
+    lower_bound : float, default 0
+        The lower flux bound (default 0).
+    upper_bound : float, optional, default None
+        The upper flux bound (default None).
     **kwargs:
         Further keyword arguments are passed on to the parent class.
     """
@@ -88,9 +88,9 @@ class Reaction(Object):
     def __init__(
         self,
         id: Optional[str] = None,
-        name: Optional[str] = "",
-        subsystem: Optional[str] = "",
-        lower_bound: Optional[float] = 0.0,
+        name: str = "",
+        subsystem: str = "",
+        lower_bound: float = 0.0,
         upper_bound: Optional[float] = None,
         **kwargs,
     ) -> None:
@@ -104,7 +104,7 @@ class Reaction(Object):
 
         # A dictionary of metabolites and their stoichiometric coefficients in
         # this reaction.
-        self._metabolites = dict()
+        self._metabolites = {}
 
         # self.model is None or refers to the cobra.Model that
         # contains self
@@ -126,7 +126,12 @@ class Reaction(Object):
         Parameters
         ----------
         value: str
-            string that represents the id.
+            A string that represents the id.
+
+        Raises
+        ------
+        ValueError
+            If the model already contains a reaction with the id value.
         """
         if value in self.model.reactions:
             raise ValueError(
@@ -141,18 +146,25 @@ class Reaction(Object):
 
     @property
     def reverse_id(self) -> str:
-        """Generate the id of reverse_variable from the reaction's id."""
+        """Generate the id of reverse_variable from the reaction's id.
+
+        Returns
+        -------
+        str
+            The original id, joined to the word reverse and a partial hash
+            of the utf-8 encoded id.
+        """
         return "_".join(
             (self.id, "reverse", hashlib.md5(self.id.encode("utf-8")).hexdigest()[0:5])
         )
 
     @property
-    def flux_expression(self) -> Union["Variable", None]:
+    def flux_expression(self) -> Optional["Variable"]:
         """Get Forward flux expression.
 
         Returns
         -------
-        flux_expression
+        flux_expression: optlang.interface.Variable, optional
             The expression representing the the forward flux (if associated
             with model), otherwise None. Representing the net flux if
             model.reversible_encoding == 'unsplit' or None if reaction is
@@ -164,12 +176,12 @@ class Reaction(Object):
             return None
 
     @property
-    def forward_variable(self) -> Union["Variable", None]:
+    def forward_variable(self) -> Optional["Variable"]:
         """Get an optlang variable representing the forward flux.
 
         Returns
         -------
-        optlang.interface.Variable
+        optlang.interface.Variable, optional
             An optlang variable for the forward flux or None if reaction is
             not associated with a model.
         """
@@ -179,12 +191,12 @@ class Reaction(Object):
             return None
 
     @property
-    def reverse_variable(self) -> Union["Variable", None]:
+    def reverse_variable(self) -> Optional["Variable"]:
         """Get an optlang variable representing the reverse flux.
 
         Returns
         -------
-        optlang.interface.Variable
+        optlang.interface.Variable, optional
             An optlang variable for the reverse flux or None if reaction is
             not associated with a model.
         """
@@ -201,29 +213,81 @@ class Reaction(Object):
         fluxes from a set of reactions, the coefficient for each reaction
         can be obtained individually using this property. A more general way
         is to use the `model.objective` property directly.
+
+        Returns
+        ------
+        float
+            Linear coefficient if this reaction has any, or 0 otherwise.
+
+        Raises
+        ------
+        AttributeError
+            If the model of the reaction is missing (None).
         """
         return linear_reaction_coefficients(self.model, [self]).get(self, 0)
 
     @objective_coefficient.setter
     def objective_coefficient(self, value: float) -> None:
+        """Set Objective coefficient.
+
+        Parameters
+        ----------
+        value: float
+            Number to set coefficient to.
+
+        Raises
+        ------
+        AttributeError
+            If reaction does not have model.
+        """
         if self.model is None:
             raise AttributeError("cannot assign objective to a missing model")
         if self.flux_expression is not None:
             set_objective(self.model, {self: value}, additive=True)
 
     def __copy__(self) -> "Reaction":
-        """Copy the Reaction."""
+        """Copy the Reaction.
+
+        Returns
+        -------
+        Reaction
+            A new reaction that is a copy of the original reaction.
+        """
         cop = copy(super(Reaction, self))
         return cop
 
     # Unclear what memo should be
     def __deepcopy__(self, memo) -> "Reaction":
-        """Copy the reaction with memo."""
+        """Copy the reaction with memo.
+
+        Parameters
+        ----------
+        memo
+
+        Returns
+        -------
+        Reaction
+            A new reaction that is a deep copy of the original reaction with memo.
+        """
         cop = deepcopy(super(Reaction, self), memo)
         return cop
 
     @staticmethod
-    def _check_bounds(lb: Union[int, float], ub: Union[int, float]) -> None:
+    def _check_bounds(lb: float, ub: float) -> None:
+        """Check if the lower and upper bounds are valid.
+
+        Parameters
+        ----------
+        lb: float
+            The lower bound.
+        ub: float
+            The upper bound.
+
+        Raises
+        ------
+        ValueError
+            If the lower bound is higher than upper bound.
+        """
         if lb > ub:
             raise ValueError(
                 f"The lower bound must be less than or equal to the upper bound "
@@ -233,8 +297,14 @@ class Reaction(Object):
     def update_variable_bounds(self) -> None:
         """Update and correct variable bounds.
 
-        Sets the forward_variable and reverse_varaible bounds based on lower and
+        Sets the forward_variable and reverse_variable bounds based on lower and
         upper bounds. This function corrects for bounds defined as inf or -inf.
+        This function will also adjust the associated optlang variables associated
+        with the reaction.
+
+        See Also
+        -------
+        optlang.interface.set_bounds
         """
         if self.model is None:
             return
@@ -260,65 +330,117 @@ class Reaction(Object):
             )
 
     @property
-    def lower_bound(self) -> Union[int, float]:
-        """Get or set the lower bound.
+    def lower_bound(self) -> float:
+        """Get the lower bound.
 
-        Setting the lower bound (float) will also adjust the associated optlang
-        variables associated with the reaction. Infeasible combinations,
-        such as a lower bound higher than the current upper bound will
-        update the other bound.
-
-        When using a `HistoryManager` context, this attribute can be set
-        temporarily, reversed when the exiting the context.
+        Returns
+        -------
+        float
+            The lower bound of the reaction.
         """
         return self._lower_bound
 
     @lower_bound.setter
     @resettable
-    def lower_bound(self, value: Union[int, float]) -> None:
+    def lower_bound(self, value: float) -> None:
+        """Set the lower bound.
+
+        Parameters
+        ----------
+        value: float
+            The value to set the lower bound.
+
+        Setting the lower bound (float) will also adjust the associated optlang
+        variables associated with the reaction.
+
+        When using a `HistoryManager` context, this attribute can be set
+        temporarily, reversed when the exiting the context.
+
+        Raises
+        ------
+        ValueError
+            If lower bound higher than the current upper bound. via _check_bounds.
+
+        See Also
+        --------
+        _check_bounds
+        """
         # Validate bounds before setting them.
         self._check_bounds(value, self._upper_bound)
         self._lower_bound = value
         self.update_variable_bounds()
 
     @property
-    def upper_bound(self) -> Union[int, float]:
-        """Get or set the upper bound.
+    def upper_bound(self) -> float:
+        """Get the upper bound.
 
-        Setting the upper bound (float) will also adjust the associated optlang
-        variables associated with the reaction. Infeasible combinations,
-        such as a upper bound lower than the current lower bound will
-        update the other bound.
-
-        When using a `HistoryManager` context, this attribute can be set
-        temporarily, reversed when the exiting the context.
+        Returns
+        -------
+        float
+            The upper bound of the reaction.
         """
         return self._upper_bound
 
     @upper_bound.setter
     @resettable
-    def upper_bound(self, value: Union[int, float]) -> None:
+    def upper_bound(self, value: float) -> None:
+        """Set the upper bound.
+
+        Parameters
+        ----------
+        value: float
+            The value to set the upper bound.
+
+        Setting the upper bound (float) will also adjust the associated optlang
+        variables associated with the reaction.
+
+        When using a `HistoryManager` context, this attribute can be set
+        temporarily, reversed when the exiting the context.
+
+        Raises
+        ------
+        ValueError
+            If upper bound lower than the current upper bound. via _check_bounds.
+
+        See Also
+        --------
+        _check_bounds
+        """
         # Validate bounds before setting them.
         self._check_bounds(self._lower_bound, value)
         self._upper_bound = value
         self.update_variable_bounds()
 
     @property
-    def bounds(self) -> Tuple[Union[float, int], Union[float, int]]:
-        """Get or set the bounds directly from a tuple.
+    def bounds(self) -> Tuple[float, float]:
+        """Get or the bounds.
 
-        Convenience method for setting upper and lower bounds in one line
-        using a tuple of lower and upper bound. Invalid bounds will raise an
-        AssertionError.
-
-        When using a `HistoryManager` context, this attribute can be set
-        temporarily, reversed when the exiting the context.
+        Returns
+        -------
+        tuple: lower_bound, upper_bound
+            A tuple of floats, representing the lower and upper bound.
         """
         return self.lower_bound, self.upper_bound
 
     @bounds.setter
     @resettable
-    def bounds(self, value: Union[Tuple, list]) -> None:
+    def bounds(self, value: Union[Tuple[float, float], List[float]]) -> None:
+        """Set the bounds directly, using a tuple or list.
+
+        Parameters
+        ----------
+        value: tuple or list
+            The lower bound and upper bound. Invalid bounds will raise ValueError.
+
+        When using a `HistoryManager` context, this attribute can be set
+        temporarily, reversed when the exiting the context.
+
+        Raises
+        ------
+        ValueError
+            If lower bound higher than upper bound, via _check_bounds.
+
+        """
         lower, upper = value
         # Validate bounds before setting them.
         self._check_bounds(lower, upper)
@@ -327,11 +449,16 @@ class Reaction(Object):
         self.update_variable_bounds()
 
     @property
-    def flux(self) -> Union[int, float]:
+    def flux(self) -> float:
         """
         Get the flux value in the most recent solution.
 
         Flux is the primal value of the corresponding variable in the model.
+
+        Returns
+        -------
+        flux: float
+            Flux is the primal value of the corresponding variable in the model.
 
         Warnings
         --------
@@ -380,12 +507,17 @@ class Reaction(Object):
             ) from err
 
     @property
-    def reduced_cost(self) -> Union[int, float]:
+    def reduced_cost(self) -> float:
         """
         Get the reduced cost in the most recent solution.
 
         Reduced cost is the dual value of the corresponding variable in the
         model.
+
+        Returns
+        -------
+        reducd_cost: float
+            A float representing the reduced cost.
 
         Warnings
         --------
@@ -433,8 +565,17 @@ class Reaction(Object):
 
     # read-only
     @property
-    def metabolites(self) -> Dict:
-        """Get a dictionary of metabolites and coefficients."""
+    def metabolites(self) -> Dict[Metabolite, float]:
+        """Get a dictionary of metabolites and coefficients.
+
+        Returns
+        -------
+        metaoblites: Dict[Metabolite, float]
+            A copy of self._metabolites, which is a dictionary of cobra.Metabolite for
+            keys and floats for coeffecieints. Positive coefficient means the reaction
+            produces this metabolite, while negative coefficient means the reaction
+            consumes this metabolite.
+        """
         return self._metabolites.copy()
 
     @property
@@ -490,24 +631,24 @@ class Reaction(Object):
 
     @property
     def gene_reaction_rule(self) -> str:
-        """See gene reaction rule as string.
+        """See gene reaction rule as str.
 
         Uses the to_string() method of the GPR class
 
         Returns
         -------
-        string
+        str
 
         """
         return self._gpr.to_string()
 
     @gene_reaction_rule.setter
     def gene_reaction_rule(self, new_rule: str):
-        """Set a new GPR for the reaction, using a string expression.
+        """Set a new GPR for the reaction, using a str expression.
 
         Parameters
         ----------
-        new_rule : string
+        new_rule : str
             which will be parsed by the string parser in GPR, GPR.from_string(new_rule).
             It makes a new GPR, and does not modify the existing one.
 
@@ -533,17 +674,28 @@ class Reaction(Object):
 
     @property
     def gpr(self) -> GPR:
-        """Return the GPR associated with the reaction."""
+        """Return the GPR associated with the reaction.
+
+        Returns
+        -------
+        gpr: GPR
+            The GPR class, see cobra.core.gene.GPR() for details.
+        """
         return self._gpr
 
     @gpr.setter
     def gpr(self, value: GPR) -> None:
         """Set a new GPR for the reaction, using GPR() class.
 
+        Also updates the reaction genes based on GPR.
+
         Parameters
         ----------
         value : GPR() class.
 
+        See Also
+        --------
+        cobra.core.gene.GPR()
         """
         self._gpr = value
         self._update_genes_from_gpr()
@@ -566,21 +718,37 @@ class Reaction(Object):
         return True
 
     @property
-    def x(self) -> Union[int, float]:
+    def x(self) -> float:
         """Get the flux through the reaction in the most recent solution.
 
         Flux values are computed from the primal values of the variables in
         the solution.
+
+        Returns
+        -------
+        flux: float
+            Float representing the flux value.
+
+        .. deprecated ::
+        Use reaction.flux instead.
         """
         warn("Please use reaction.flux instead.", DeprecationWarning)
         return self.flux
 
     @property
-    def y(self) -> Union[int, float]:
+    def y(self) -> float:
         """Get the reduced cost of the reaction in the most recent solution.
 
         Reduced costs are computed from the dual values of the variables in
         the solution.
+
+        Returns
+        -------
+        flux: float
+            Float representing the reduced cost value.
+
+        .. deprecated ::
+        Use reaction.reduced_cost instead.
         """
         warn("Please use reaction.reduced_cost instead.", DeprecationWarning)
         return self.reduced_cost
@@ -593,13 +761,26 @@ class Reaction(Object):
 
         Returns
         -------
-        bool
+        bool:
+            True if the reaction is reversible (lower bound lower than 0 and upper
+            bound is higher than 0).
 
         """
         return self._lower_bound < 0 < self._upper_bound
 
     @reversibility.setter
     def reversibility(self, value: bool) -> None:
+        """Set reversiblitly (ignored).
+
+        At this stage this is not set and is ignored. Present for compatiblity reasons.
+        If you'd like to change the reversibility of the reaction change
+        lower and upper bounds.
+
+        Parameters
+        ----------
+        value: bool
+            This value is ignored.
+        """
         warn("Setting reaction reversibility is ignored")
 
     @property
@@ -613,8 +794,15 @@ class Reaction(Object):
         return len(self.metabolites) == 1 and not (self.reactants and self.products)
 
     @property
-    def model(self) -> "Model":
-        """Return the model the reaction is a part of."""
+    def model(self) -> Optional["Model"]:
+        """Return the model the reaction is a part of.
+
+        Returns
+        -------
+        model: cobra.Model, optional
+            The model this reaction belongs to. None if there is no model associated
+            with this reaction.
+        """
         return self._model
 
     def _update_awareness(self) -> None:
@@ -629,7 +817,7 @@ class Reaction(Object):
         for x in self._genes:
             x._reaction.add(self)
 
-    def remove_from_model(self, remove_orphans: Optional[bool] = False) -> None:
+    def remove_from_model(self, remove_orphans: bool = False) -> None:
         """Remove the reaction from a model.
 
         This removes all associations between a reaction the associated
@@ -639,13 +827,12 @@ class Reaction(Object):
 
         Parameters
         ----------
-        remove_orphans : bool
+        remove_orphans : bool, default False
             Remove orphaned genes and metabolites from the model as well
-
         """
         self._model.remove_reactions([self], remove_orphans=remove_orphans)
 
-    def delete(self, remove_orphans: Optional[bool] = False) -> None:
+    def delete(self, remove_orphans: bool = False) -> None:
         """Remove the reaction from a model.
 
         This removes all associations between a reaction the associated
@@ -658,9 +845,8 @@ class Reaction(Object):
 
         Parameters
         ----------
-        remove_orphans : bool
+        remove_orphans : bool, default False.
             Remove orphaned genes and metabolites from the model as well
-
         """
         warn(
             "delete is deprecated. Use reaction.remove_from_model instead",
@@ -678,6 +864,11 @@ class Reaction(Object):
         However, to increase performance speed we do want to let the metabolite
         and gene know that they are employed in this reaction
 
+        Parameters
+        ----------
+        state: dict
+            A dictionary of state, where keys are attribute names (str).
+            Similar to __dict__.
         """
         # These are necessary for old pickles which store attributes
         # which have since been superceded by properties.
@@ -703,6 +894,10 @@ class Reaction(Object):
 
         The referenced metabolites and genes are also copied.
 
+        Returns
+        -------
+        cobra.Reaction
+            A copy of the Reaction.
         """
         # no references to model when copying
         model = self._model
@@ -731,6 +926,11 @@ class Reaction(Object):
 
         Does not modify in place.
 
+        Parameters
+        ----------
+        other: cobra.Reaction
+            Another reaction to add to the current one.
+
         Returns
         -------
         Reaction - new reaction with the added properties.
@@ -755,6 +955,15 @@ class Reaction(Object):
         the first reaction.
 
         Modifies in place.
+
+        Parameters
+        ----------
+        other: cobra.Reaction
+            Another reaction to add to the current one.
+
+        Returns
+        -------
+        Reaction - original reaction (self) with the added properties.
         """
         self.add_metabolites(other._metabolites, combine=True)
         gpr1 = self.gene_reaction_rule.strip()
@@ -779,6 +988,11 @@ class Reaction(Object):
 
         Does not modify in place. The name will still be that of the first reaction.
 
+        Parameters
+        ----------
+        other: Reaction
+            The reaction to subtract from self.
+
         Returns
         -------
         Reaction - new reaction with the added properties.
@@ -797,6 +1011,11 @@ class Reaction(Object):
 
         Modifies in place and changes the original reaction.
 
+        Parameters
+        ----------
+        other: Reaction
+            The reaction to subtract from self.
+
         Returns
         -------
         Reaction - self with the subtracted metabolites.
@@ -804,7 +1023,7 @@ class Reaction(Object):
         self.subtract_metabolites(other._metabolites, combine=True)
         return self
 
-    def __imul__(self, coefficient: Union[int, float]) -> "Reaction":
+    def __imul__(self, coefficient: float) -> "Reaction":
         """Scale coefficients in a reaction by a given value in place.
 
         E.g. A -> B becomes 2A -> 2B.
@@ -814,7 +1033,7 @@ class Reaction(Object):
 
         Parameters
         ----------
-        coefficient: int or float
+        coefficient: float
             Value to scale coefficients of metabolites by. If less than zero, reverses
             the reaction.
 
@@ -840,7 +1059,7 @@ class Reaction(Object):
 
         return self
 
-    def __mul__(self, coefficient: Union[int, float]) -> "Reaction":
+    def __mul__(self, coefficient: float) -> "Reaction":
         """Scale coefficients in a reaction by a given value and return new reaction.
 
         E.g. A -> B becomes 2A -> 2B.
@@ -850,7 +1069,7 @@ class Reaction(Object):
 
         Parameters
         ----------
-        coefficient: int or float
+        coefficient: float
             Value to scale coefficients of metabolites by. If less than zero, reverses
             the reaction.
 
@@ -865,17 +1084,27 @@ class Reaction(Object):
 
     @property
     def reactants(self) -> List[Metabolite]:
-        """Return a list of reactants for the reaction."""
+        """Return a list of reactants for the reaction.
+
+        Returns
+        -------
+        list
+            A list of the metabolites consudmed (coefficient < 0) by the reaction.
+        """
         return [k for k, v in self._metabolites.items() if v < 0]
 
     @property
     def products(self) -> List[Metabolite]:
-        """Return a list of products for the reaction."""
+        """Return a list of products for the reaction.
+
+        Returns
+        -------
+        list
+            A list of the metabolites produced (coefficient > 0) by the reaction.
+        """
         return [k for k, v in self._metabolites.items() if v >= 0]
 
-    def get_coefficient(
-        self, metabolite_id: Union[str, Metabolite]
-    ) -> Union[int, float]:
+    def get_coefficient(self, metabolite_id: Union[str, Metabolite]) -> float:
         """Return the stoichiometric coefficient of a metabolite.
 
         Parameters
@@ -891,7 +1120,7 @@ class Reaction(Object):
 
     def get_coefficients(
         self, metabolite_ids: Iterable[Union[str, Metabolite]]
-    ) -> Iterator[Union[int, float]]:
+    ) -> Iterator[float]:
         """Return the stoichiometric coefficients for a list of metabolites.
 
         Parameters
@@ -909,9 +1138,9 @@ class Reaction(Object):
 
     def add_metabolites(
         self,
-        metabolites_to_add: Dict[Metabolite, Union[int, float]],
-        combine: Optional[bool] = True,
-        reversibly: Optional[bool] = True,
+        metabolites_to_add: Dict[Metabolite, float],
+        combine: bool = True,
+        reversibly: bool = True,
     ) -> None:
         """Add metabolites and stoichiometric coefficients to the reaction.
 
@@ -928,15 +1157,22 @@ class Reaction(Object):
             metabolite) the reaction must already be part of a model and a
             metabolite with the given name must exist in the model.
 
-        combine : bool
+        combine : bool, default True
             Describes behavior a metabolite already exists in the reaction.
             True causes the coefficients to be added.
             False causes the coefficient to be replaced.
 
-        reversibly : bool
+        reversibly : bool, default True
             Whether to add the change to the context to make the change
             reversibly or not (primarily intended for internal use).
 
+        Raises
+        ------
+        KeyError
+            If the metabolite string id is not in the model.
+        ValueError
+            If the metabolite key in the dictionary is a string, and there is no model
+            for the reaction.
         """
         old_coefficients = self.metabolites
         new_metabolites = []
@@ -1035,9 +1271,9 @@ class Reaction(Object):
 
     def subtract_metabolites(
         self,
-        metabolites: Dict[Metabolite, Union[int, float]],
-        combine: Optional[bool] = True,
-        reversibly: Optional[bool] = True,
+        metabolites: Dict[Metabolite, float],
+        combine: bool = True,
+        reversibly: bool = True,
     ) -> None:
         """Subtract metabolites from a reaction.
 
@@ -1057,15 +1293,14 @@ class Reaction(Object):
             are the coefficients. These metabolites will be added to the
             reaction.
 
-        combine : bool
+        combine : bool, default True
             Describes behavior a metabolite already exists in the reaction.
             True causes the coefficients to be added.
             False causes the coefficient to be replaced.
 
-        reversibly : bool
+        reversibly : bool, defalt True
             Whether to add the change to the context to make the change
             reversibly or not (primarily intended for internal use).
-
         """
         self.add_metabolites(
             {k: -v for k, v in metabolites.items()},
@@ -1075,17 +1310,43 @@ class Reaction(Object):
 
     @property
     def reaction(self) -> str:
-        """Return Human readable reaction string."""
+        """Return Human readable reaction str.
+
+        Returns
+        -------
+        str
+            The reaction in a human readble str.
+        """
         return self.build_reaction_string()
 
     @reaction.setter
-    def reaction(self, value: str):
+    def reaction(self, value: str) -> None:
+        """Set reaction from Human readable reaction str.
+
+        Parameters
+        -------
+        value: str
+            The reaction in a human readble str.
+
+        See Also
+        --------
+        build_reaction_from_string()
+        """
         self.build_reaction_from_string(value)
 
-    def build_reaction_string(
-        self, use_metabolite_names: Optional[bool] = False
-    ) -> str:
-        """Generate a human readable reaction string."""
+    def build_reaction_string(self, use_metabolite_names: bool = False) -> str:
+        """Generate a human readable reaction str.
+
+        Parameters
+        ----------
+        use_metabolite_names: bool, default False
+            Whether to use metabolite names (when True) or metabolite ids (when False).
+
+        Returns
+        -------
+        str
+            A human readable str.
+        """
 
         def format(number: Union[int, float]) -> str:
             return "" if number == 1 else str(number).rstrip(".") + " "
@@ -1114,7 +1375,7 @@ class Reaction(Object):
         reaction_string += " + ".join(product_bits)
         return reaction_string
 
-    def check_mass_balance(self) -> Dict[str, Union[int, float]]:
+    def check_mass_balance(self) -> Dict[str, float]:
         """Compute mass and charge balance for the reaction.
 
         Returns
@@ -1123,6 +1384,11 @@ class Reaction(Object):
             a dict of {element: amount} for unbalanced elements.
             "charge" is treated as an element in this dict
             This should be empty for balanced reactions.
+
+        Raises
+        ------
+        ValueError
+            No elements were found in metabolite.
         """
         reaction_element_dict = defaultdict(int)
         for metabolite, coefficient in self._metabolites.items():
@@ -1137,13 +1403,27 @@ class Reaction(Object):
 
     @property
     def compartments(self) -> Set:
-        """Return set of compartments the metabolites are in."""
+        """Return set of compartments the metabolites are in.
+
+        Returns
+        -------
+        set
+            A set of compartments the metabolites are in.
+        """
         return {
             met.compartment for met in self._metabolites if met.compartment is not None
         }
 
     def get_compartments(self) -> list:
-        """List compartments the metabolites are in."""
+        """List compartments the metabolites are in.
+
+        Returns
+        -------
+        list
+            A list of compartments the metabolites are in.
+        .. deprecated ::
+        Use reaction.compartments() instead.
+        """
         warn("use Reaction.compartments instead", DeprecationWarning)
         return list(self.compartments)
 
@@ -1177,11 +1457,11 @@ class Reaction(Object):
     def build_reaction_from_string(
         self,
         reaction_str: str,
-        verbose: Optional[bool] = True,
+        verbose: bool = True,
         fwd_arrow: Optional[AnyStr] = None,
         rev_arrow: Optional[AnyStr] = None,
         reversible_arrow: Optional[AnyStr] = None,
-        term_split: Optional[str] = "+",
+        term_split: str = "+",
     ) -> None:
         """Build reaction from reaction equation reaction_str using parser.
 
@@ -1195,19 +1475,23 @@ class Reaction(Object):
 
         Parameters
         ----------
-        reaction_str : string
+        reaction_str : str
             a string containing a reaction formula (equation)
-        verbose: bool
+        verbose: bool, default True
             setting verbosity of function
-        fwd_arrow : AnyStr
-            for forward irreversible reaction arrows
-        rev_arrow : AnyStr
-            for backward irreversible reaction arrows
-        reversible_arrow : AnyStr
-            for reversible reaction arrows
-        term_split : string
+        fwd_arrow : AnyStr, optional
+            Str or bytes that encode forward irreversible reaction arrows.
+        rev_arrow : AnyStr, optional
+            Str or bytes that encode backward irreversible reaction arrows.
+        reversible_arrow : AnyStr, optional
+            Str or bytes that encode reversible reaction arrows.
+        term_split : str
             dividing individual metabolite entries
 
+        Raises
+        ------
+        ValueError
+            No arrow found in reaction string.
         """
         # set the arrows
         forward_arrow_finder = (
@@ -1283,7 +1567,7 @@ class Reaction(Object):
     def summary(
         self,
         solution: Optional["Solution"] = None,
-        fva: Optional[Union[float, "DataFrame"]] = None,
+        fva: Optional[Union[float, "pd.DataFrame"]] = None,
     ) -> "ReactionSummary":
         """
         Create a summary of the reaction flux.
@@ -1320,11 +1604,23 @@ class Reaction(Object):
         )
 
     def __str__(self) -> str:
-        """Return reaction id and reaction as string."""
+        """Return reaction id and reaction as str.
+
+        Returns
+        -------
+        str
+            A string comprised out of reaction id and reaction.
+        """
         return f"{self.id}: {self.build_reaction_string()}"
 
     def _repr_html_(self) -> str:
-        """Generate html representation of reaction."""
+        """Generate html representation of reaction.
+
+        Returns
+        -------
+        str
+            HTML representation of the reaction.
+        """
         return f"""
         <table>
             <tr>
