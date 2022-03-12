@@ -501,7 +501,7 @@ class Reaction(Object):
             raise RuntimeError(f"reaction '{self.id}' is not part of a model")
         # Due to below all-catch, which sucks, need to reraise these.
         except (RuntimeError, OptimizationError) as err:
-            raise err.with_traceback()
+            raise
         # Would love to catch CplexSolverError and GurobiError here.
         except Exception as err:
             raise OptimizationError(
@@ -558,7 +558,7 @@ class Reaction(Object):
             raise RuntimeError(f"reaction '{self.id}' is not part of a model")
         # Due to below all-catch, which sucks, need to reraise these.
         except (RuntimeError, OptimizationError) as err:
-            raise err.with_traceback()
+            raise
         # Would love to catch CplexSolverError and GurobiError here.
         except Exception as err:
             raise OptimizationError(
