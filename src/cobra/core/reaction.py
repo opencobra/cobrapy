@@ -31,6 +31,7 @@ if TYPE_CHECKING:
     import pandas as pd
 
 from ..exceptions import OptimizationError
+from ..manipulation import remove_genes
 from ..util.context import get_context, resettable
 from ..util.solver import (
     check_solver_status,
@@ -40,7 +41,6 @@ from ..util.solver import (
 from ..util.util import format_long_string
 from .configuration import Configuration
 from .gene import GPR, Gene
-from ..manipulation import remove_genes
 from .metabolite import Metabolite
 from .object import Object
 
