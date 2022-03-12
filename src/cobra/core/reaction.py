@@ -78,7 +78,7 @@ class Reaction(Object):
     subsystem : str, optional
         Subsystem where the reaction is meant to occur (default "").
     lower_bound : float
-        The lower flux bound (default 0).
+        The lower flux bound (default 0.0).
     upper_bound : float, optional
         The upper flux bound (default None).
     **kwargs:
@@ -218,14 +218,14 @@ class Reaction(Object):
         Returns
         ------
         float
-            Linear coefficient if this reaction has any, or 0 otherwise.
+            Linear coefficient if this reaction has any, or 0.0 otherwise.
 
         Raises
         ------
         AttributeError
             If the model of the reaction is missing (None).
         """
-        return linear_reaction_coefficients(self.model, [self]).get(self, 0)
+        return linear_reaction_coefficients(self.model, [self]).get(self, 0.0)
 
     @objective_coefficient.setter
     def objective_coefficient(self, value: float) -> None:
@@ -501,7 +501,7 @@ class Reaction(Object):
             raise RuntimeError(f"reaction '{self.id}' is not part of a model")
         # Due to below all-catch, which sucks, need to reraise these.
         except (RuntimeError, OptimizationError) as err:
-            raise
+            raise err
         # Would love to catch CplexSolverError and GurobiError here.
         except Exception as err:
             raise OptimizationError(
@@ -645,7 +645,7 @@ class Reaction(Object):
         return self._gpr.to_string()
 
     @gene_reaction_rule.setter
-    def gene_reaction_rule(self, new_rule: str):
+    def gene_reaction_rule(self, new_rule: str) -> None:
         """Set a new GPR for the reaction, using a str expression.
 
         Parameters
@@ -1304,9 +1304,9 @@ class Reaction(Object):
             True causes the coefficients to be added.
             False causes the coefficient to be replaced.
 
-        reversibly : bool, defalt True
+        reversibly : bool
             Whether to add the change to the context to make the change
-            reversibly or not (primarily intended for internal use).
+            reversibly or not ,primarily intended for internal use (default True).
         """
         self.add_metabolites(
             {k: -v for k, v in metabolites.items()},
@@ -1489,9 +1489,10 @@ class Reaction(Object):
         fwd_arrow : AnyStr, optional
             Str or bytes that encode forward irreversible reaction arrows (default None).
         rev_arrow : AnyStr, optional
-            Str or bytes that encode backward irreversible reaction arrows (default None).
+            Str or bytes that encode backward irreversible reaction arrows (default
+            None).
         reversible_arrow : AnyStr, optional
-            Str or bytes that encode reversible reaction arrows (defualt None).
+            Str or bytes that encode reversible reaction arrows (default None).
         term_split : str
             dividing individual metabolite entries (default "+")".
 

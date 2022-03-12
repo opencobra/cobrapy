@@ -57,6 +57,11 @@ def test_gpr_malformed(input_gpr: str) -> None:
     """Test ability to deal with malformed GPR.
 
     Malformed GPR strings will lead to empty GPRs with no genes.
+
+    Parameters
+    ----------
+    input_gpr: str
+        String representing a malformed GPR string.
     """
     reaction = Reaction("test")
     with warnings.catch_warnings():
