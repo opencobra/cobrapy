@@ -26,8 +26,8 @@ from warnings import warn
 
 if TYPE_CHECKING:
     from optlang.interface import Variable
-    from . import Model, Solution
-    from ..summary import ReactionSummary
+    from cobra import Model, Solution
+    from cobra.summary import ReactionSummary
     import pandas as pd
 
 from ..exceptions import OptimizationError
@@ -558,7 +558,7 @@ class Reaction(Object):
             raise RuntimeError(f"reaction '{self.id}' is not part of a model")
         # Due to below all-catch, which sucks, need to reraise these.
         except (RuntimeError, OptimizationError) as err:
-            raise
+            raise err
         # Would love to catch CplexSolverError and GurobiError here.
         except Exception as err:
             raise OptimizationError(
@@ -1487,7 +1487,8 @@ class Reaction(Object):
         verbose: bool
             setting verbosity of function (default True)
         fwd_arrow : AnyStr, optional
-            Str or bytes that encode forward irreversible reaction arrows (default None).
+            Str or bytes that encode forward irreversible reaction arrows (default
+            None).
         rev_arrow : AnyStr, optional
             Str or bytes that encode backward irreversible reaction arrows (default
             None).
