@@ -41,6 +41,7 @@ from typing import IO, Match, Optional, Pattern, Tuple, Type, Union
 import libsbml
 
 import cobra
+
 from ..core import GPR, Gene, Group, Metabolite, Model, Reaction
 from ..manipulation.validate import check_metabolite_compartment_formula
 from ..util.solver import linear_reaction_coefficients, set_objective
@@ -566,10 +567,10 @@ def _sbml_to_model(
         f_replace = dict()
 
     # SBML model
-    model = doc.getModel()  # type: libsbml.Model
+    model: "libsbml.Model" = doc.getModel()
     if model is None:
         raise CobraSBMLError("No SBML model detected in file.")
-    model_fbc = model.getPlugin("fbc")  # type: libsbml.FbcModelPlugin
+    model_fbc: "libsbml.FbcModelPlugin" = model.getPlugin("fbc")
 
     if not model_fbc:
         LOGGER.warning("Model does not contain SBML fbc package information.")
@@ -578,7 +579,7 @@ def _sbml_to_model(
             LOGGER.warning('Loading SBML model without fbc:strict="true"')
 
         # fbc-v1 (legacy)
-        doc_fbc = doc.getPlugin("fbc")  # type: libsbml.FbcSBMLDocumentPlugin
+        doc_fbc: "libsbml.FbcSBMLDocumentPlugin" = doc.getPlugin("fbc")
         fbc_version = doc_fbc.getPackageVersion()
 
         if fbc_version == 1:
@@ -611,12 +612,13 @@ def _sbml_to_model(
     creators = []
     created = None
     if model.isSetModelHistory():
-        history = model.getModelHistory()  # type: libsbml.ModelHistory
+        history: "libsbml.ModelHistory" = model.getModelHistory()
 
         if history.isSetCreatedDate():
             created = history.getCreatedDate()
 
-        for c in history.getListCreators():  # type: libsbml.ModelCreator
+        c: "libsbml.ModelCreator"
+        for c in history.getListCreators():
             creators.append(
                 {
                     "familyName": c.getFamilyName() if c.isSetFamilyName() else None,
@@ -636,7 +638,7 @@ def _sbml_to_model(
     info = f"<{model_id}> SBML L{model.getLevel()}V{model.getVersion()}"
     packages = {}
     for k in range(doc.getNumPlugins()):
-        plugin = doc.getPlugin(k)  # type:libsbml.SBasePlugin
+        plugin: "libsbml.SBasePlugin" = doc.getPlugin(k)
         key, value = plugin.getPackageName(), plugin.getPackageVersion()
         packages[key] = value
         info += f", {key}-v{value}"
@@ -669,7 +671,8 @@ def _sbml_to_model(
     if model.getNumSpecies() == 0:
         LOGGER.warning("No metabolites in model")
 
-    for specie in model.getListOfSpecies():  # type: libsbml.Species
+    specie: "libsbml.Species"
+    for specie in model.getListOfSpecies():
         sid = _check_required(specie, specie.getIdAttribute(), "id")
         if f_replace and F_SPECIE in f_replace:
             sid = f_replace[F_SPECIE](sid)
@@ -680,7 +683,7 @@ def _sbml_to_model(
         met.annotation = _parse_annotations(specie)
         met.compartment = specie.getCompartment()
 
-        specie_fbc = specie.getPlugin("fbc")  # type: libsbml.FbcSpeciesPlugin
+        specie_fbc: "libsbml.FbcSpeciesPlugin" = specie.getPlugin("fbc")
         if specie_fbc:
             met.charge = specie_fbc.getCharge()
             met.formula = specie_fbc.getChemicalFormula()
@@ -821,7 +824,8 @@ def _sbml_to_model(
     if model.getNumReactions() == 0:
         LOGGER.warning("No reactions in model")
 
-    for reaction in model.getListOfReactions():  # type: libsbml.Reaction
+    reaction: "libsbml.Reaction"
+    for reaction in model.getListOfReactions():
         rid = _check_required(reaction, reaction.getIdAttribute(), "id")
         if f_replace and F_REACTION in f_replace:
             rid = f_replace[F_REACTION](rid)
@@ -832,12 +836,12 @@ def _sbml_to_model(
 
         # set bounds
         p_ub, p_lb = None, None
-        r_fbc = reaction.getPlugin("fbc")  # type: libsbml.FbcReactionPlugin
+        r_fbc: "libsbml.FbcReactionPlugin" = reaction.getPlugin("fbc")
         if r_fbc:
             # bounds in fbc
             lb_id = r_fbc.getLowerFluxBound()
             if lb_id:
-                p_lb = model.getParameter(lb_id)  # type: libsbml.Parameter
+                p_lb: "libsbml.Parameter" = model.getParameter(lb_id)
                 if p_lb and p_lb.getConstant() and (p_lb.getValue() is not None):
                     cobra_reaction.lower_bound = p_lb.getValue()
                 else:
@@ -847,7 +851,7 @@ def _sbml_to_model(
 
             ub_id = r_fbc.getUpperFluxBound()
             if ub_id:
-                p_ub = model.getParameter(ub_id)  # type: libsbml.Parameter
+                p_ub: "libsbml.Parameter" = model.getParameter(ub_id)
                 if p_ub and p_ub.getConstant() and (p_ub.getValue() is not None):
                     cobra_reaction.upper_bound = p_ub.getValue()
                 else:
@@ -857,7 +861,7 @@ def _sbml_to_model(
 
         elif reaction.isSetKineticLaw():
             # some legacy models encode bounds in kinetic laws
-            klaw = reaction.getKineticLaw()  # type: libsbml.KineticLaw
+            klaw: "libsbml.KineticLaw" = reaction.getKineticLaw()
             p_lb = klaw.getParameter(
                 "LOWER_BOUND"
             )  # noqa: E501 type: libsbml.LocalParameter
@@ -977,7 +981,7 @@ def _sbml_to_model(
             LOGGER.warning("No active objective in listOfObjectives")
         else:
             obj_id = obj_list.getActiveObjective()
-            obj = model_fbc.getObjective(obj_id)  # type: libsbml.Objective
+            obj: "libsbml.Objective" = model_fbc.getObjective(obj_id)
             obj_direction = LONG_SHORT_DIRECTION[obj.getType()]
 
             for (
@@ -998,12 +1002,13 @@ def _sbml_to_model(
                     LOGGER.warning(str(e))
     else:
         # some legacy models encode objective coefficients in kinetic laws
-        for reaction in model.getListOfReactions():  # type: libsbml.Reaction
+        reaction: "libsbml.Reaction"
+        for reaction in model.getListOfReactions():
             if reaction.isSetKineticLaw():
-                klaw = reaction.getKineticLaw()  # type: libsbml.KineticLaw
-                p_oc = klaw.getParameter(
+                klaw: "libsbml.KineticLaw" = reaction.getKineticLaw()
+                p_oc: "libsbml.LocalParameter" = klaw.getParameter(
                     "OBJECTIVE_COEFFICIENT"
-                )  # type: libsbml.LocalParameter
+                )
                 if p_oc:
                     rid = _check_required(reaction, reaction.getIdAttribute(), "id")
                     if f_replace and F_REACTION in f_replace:
@@ -1030,7 +1035,7 @@ def _sbml_to_model(
     cobra_model.solver.objective.direction = obj_direction
 
     # parse groups
-    model_groups = model.getPlugin("groups")  # type: libsbml.GroupsModelPlugin
+    model_groups: "libsbml.GroupsModelPlugin" = model.getPlugin("groups")
     groups = []
     if model_groups:
         # calculate hashmaps to lookup objects in O(1)
@@ -1043,14 +1048,16 @@ def _sbml_to_model(
             model_groups.getListOfGroups(),
         ]:
 
-            for sbase in obj_list:  # type: libsbml.SBase
+            sbase: "libsbml.SBase"
+            for sbase in obj_list:
                 if sbase.isSetId():
                     sid_map[sbase.getIdAttribute()] = sbase
                 if sbase.isSetMetaId():
                     metaid_map[sbase.getMetaId()] = sbase
 
         # create groups
-        for group in model_groups.getListOfGroups():  # type: libsbml.Group
+        group: "libsbml.Group"
+        for group in model_groups.getListOfGroups():
             gid = _check_required(group, group.getIdAttribute(), "id")
             if f_replace and F_GROUP in f_replace:
                 gid = f_replace[F_GROUP](gid)
@@ -1062,7 +1069,8 @@ def _sbml_to_model(
             cobra_group.notes = _parse_notes_dict(group)
 
             cobra_members = []
-            for member in group.getListOfMembers():  # type: libsbml.Member
+            member: "libsbml.Member"
+            for member in group.getListOfMembers():
                 if member.isSetIdRef():
                     obj = sid_map[member.getIdRef()]
                 elif member.isSetMetaIdRef():
@@ -1200,12 +1208,12 @@ def _model_to_sbml(
     sbml_ns = libsbml.SBMLNamespaces(3, 1)  # SBML L3V1
     sbml_ns.addPackageNamespace("fbc", 2)  # fbc-v2
 
-    doc = libsbml.SBMLDocument(sbml_ns)  # type: libsbml.SBMLDocument
+    doc: "libsbml.SBMLDocument" = libsbml.SBMLDocument(sbml_ns)
     doc.setPackageRequired("fbc", False)
     doc.setSBOTerm(SBO_FBA_FRAMEWORK)
 
-    model = doc.createModel()  # type: libsbml.Model
-    model_fbc = model.getPlugin("fbc")  # type: libsbml.FbcModelPlugin
+    model: "libsbml.Model" = doc.createModel()
+    model_fbc: "libsbml.FbcModelPlugin" = model.getPlugin("fbc")
     model_fbc.setStrict(True)
 
     if cobra_model.id is not None:
@@ -1229,7 +1237,7 @@ def _model_to_sbml(
         if "notes" in meta:
             _sbase_notes_dict(doc, meta["notes"])
 
-        history = libsbml.ModelHistory()  # type: libsbml.ModelHistory
+        history: "libsbml.ModelHistory" = libsbml.ModelHistory()
         if "created" in meta and meta["created"]:
             history.setCreatedDate(meta["created"])
         else:
@@ -1262,10 +1270,10 @@ def _model_to_sbml(
     # Units
     flux_udef = None
     if units:
-        flux_udef = model.createUnitDefinition()  # type:libsbml.UnitDefinition
+        flux_udef: "libsbml.UnitDefinition" = model.createUnitDefinition()
         flux_udef.setId(UNITS_FLUX[0])
         for u in UNITS_FLUX[1]:
-            unit = flux_udef.createUnit()  # type: libsbml.Unit
+            unit: "libsbml.Unit" = flux_udef.createUnit()
             unit.setKind(u.kind)
             unit.setExponent(u.exponent)
             unit.setScale(u.scale)
@@ -1297,7 +1305,7 @@ def _model_to_sbml(
     # FIXME: use first class compartment model (and write notes & annotations)
     #     (https://github.com/opencobra/cobrapy/issues/811)
     for cid, name in cobra_model.compartments.items():
-        compartment = model.createCompartment()  # type: libsbml.Compartment
+        compartment: "libsbml.Compartment" = model.createCompartment()
         compartment.setId(cid)
         compartment.setName(name)
         compartment.setConstant(True)
@@ -1308,7 +1316,7 @@ def _model_to_sbml(
 
     # Species
     for metabolite in cobra_model.metabolites:
-        specie = model.createSpecies()  # type: libsbml.Species
+        specie: "libsbml.Species" = model.createSpecies()
         mid = metabolite.id
         if f_replace and F_SPECIE_REV in f_replace:
             mid = f_replace[F_SPECIE_REV](mid)
@@ -1318,7 +1326,7 @@ def _model_to_sbml(
         specie.setHasOnlySubstanceUnits(False)
         specie.setName(metabolite.name)
         specie.setCompartment(metabolite.compartment)
-        s_fbc = specie.getPlugin("fbc")  # type: libsbml.FbcSpeciesPlugin
+        s_fbc: "libsbml.FbcSpeciesPlugin" = specie.getPlugin("fbc")
         if metabolite.charge is not None:
             s_fbc.setCharge(metabolite.charge)
         if metabolite.formula is not None:
@@ -1329,7 +1337,7 @@ def _model_to_sbml(
 
     # Genes
     for cobra_gene in cobra_model.genes:
-        gp = model_fbc.createGeneProduct()  # type: libsbml.GeneProduct
+        gp: "libsbml.GeneProduct" = model_fbc.createGeneProduct()
         gid = cobra_gene.id
         if f_replace and F_GENE_REV in f_replace:
             gid = f_replace[F_GENE_REV](gid)
@@ -1344,7 +1352,7 @@ def _model_to_sbml(
         _sbase_notes_dict(gp, cobra_gene.notes)
 
     # Objective
-    objective = model_fbc.createObjective()  # type: libsbml.Objective
+    objective: "libsbml.Objective" = model_fbc.createObjective()
     objective.setId("obj")
     objective.setType(SHORT_LONG_DIRECTION[cobra_model.objective.direction])
     model_fbc.setActiveObjectiveId("obj")
@@ -1355,7 +1363,7 @@ def _model_to_sbml(
         rid = cobra_reaction.id
         if f_replace and F_REACTION_REV in f_replace:
             rid = f_replace[F_REACTION_REV](rid)
-        reaction = model.createReaction()  # type: libsbml.Reaction
+        reaction: "libsbml.Reaction" = model.createReaction()
         reaction.setId(rid)
         reaction.setName(cobra_reaction.name)
         reaction.setFast(False)
@@ -1384,7 +1392,7 @@ def _model_to_sbml(
                 sref.setConstant(True)
 
         # bounds
-        r_fbc = reaction.getPlugin("fbc")  # type: libsbml.FbcReactionPlugin
+        r_fbc: "libsbml.FbcReactionPlugin" = reaction.getPlugin("fbc")
         r_fbc.setLowerFluxBound(
             _create_bound(
                 model,
@@ -1441,7 +1449,7 @@ def _model_to_sbml(
             "groups"
         )  # noqa: E501 type: libsbml.GroupsModelPlugin
         for cobra_group in cobra_model.groups:
-            group = model_group.createGroup()  # type: libsbml.Group
+            group: "libsbml.Group" = model_group.createGroup()
             if f_replace and F_GROUP_REV in f_replace:
                 gid = f_replace[F_GROUP_REV](cobra_group.id)
             else:
@@ -1454,7 +1462,7 @@ def _model_to_sbml(
             _sbase_annotations(group, cobra_group.annotation)
 
             for cobra_member in cobra_group.members:
-                member = group.createMember()  # type: libsbml.Member
+                member: "libsbml.Member" = group.createMember()
                 mid = cobra_member.id
                 m_type = str(type(cobra_member))
 
@@ -1566,7 +1574,7 @@ def _create_parameter(
         Unit definition if units are used.
 
     """
-    parameter = model.createParameter()  # type: libsbml.Parameter
+    parameter: "libsbml.Parameter" = model.createParameter()
     parameter.setId(pid)
     parameter.setValue(value)
     parameter.setConstant(constant)
@@ -1776,7 +1784,8 @@ def _parse_annotations(sbase: libsbml.SBase) -> dict:
     if cvterms is None:
         return annotation
 
-    for cvterm in cvterms:  # type: libsbml.CVTerm
+    cvterm: "libsbml.CVTerm"
+    for cvterm in cvterms:
         for k in range(cvterm.getNumResources()):
             # FIXME: read and store the qualifier
 
@@ -1895,7 +1904,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: dict) -> None:
             if qualifier_str.startswith("bqm_"):
                 qualifier_type = libsbml.MODEL_QUALIFIER
 
-            cv = libsbml.CVTerm()  # type: libsbml.CVTerm
+            cv: "libsbml.CVTerm" = libsbml.CVTerm()
             cv.setQualifierType(qualifier_type)
             if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
                 cv.setBiologicalQualifierType(qualifier)
@@ -1968,7 +1977,7 @@ def validate_sbml_model(
     errors = {key: [] for key in keys}
 
     # [1] libsbml validation
-    doc = _get_doc_from_filename(filename)  # type: libsbml.SBMLDocument
+    doc: "libsbml.SBMLDocument" = _get_doc_from_filename(filename)
 
     # set checking of units & modeling practise
     doc.setConsistencyChecks(
@@ -1984,7 +1993,7 @@ def validate_sbml_model(
     doc.checkConsistency()
 
     for k in range(doc.getNumErrors()):
-        e = doc.getError(k)  # type: libsbml.SBMLError
+        e: "libsbml.SBMLError" = doc.getError(k)
         msg = _error_string(e, k=k)
         sev = e.getSeverity()
         if sev == libsbml.LIBSBML_SEV_FATAL:
