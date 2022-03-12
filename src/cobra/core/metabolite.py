@@ -104,7 +104,7 @@ class Metabolite(Species):
             return self.model.constraints[self.id]
 
     @property
-    def elements(self) -> Union[None, Dict[str, Union[int, float]]]:
+    def elements(self) -> Optional[Dict[str, Union[int, float]]]:
         """Get dicitonary of elements and counts.
 
         Dictionary of elements as keys and their count in the metabolite
