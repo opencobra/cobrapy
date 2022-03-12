@@ -1,17 +1,14 @@
-# -*- coding: utf-8 -*-
-"""
-Testing SBML functionality based on libsbml.
-"""
-
-from __future__ import absolute_import
+"""Testing SBML functionality based on libsbml."""
 
 from collections import namedtuple
 from os import unlink
 from os.path import join, split
 from pickle import load
 from tempfile import gettempdir
+from typing import List, Tuple
 
 import pytest
+from _pytest.fixtures import SubRequest
 
 import cobra
 from cobra import Model
@@ -39,7 +36,7 @@ IOTrial = namedtuple(
         "validation_function",
     ],
 )
-trials = [
+trials: List[IOTrial] = [
     IOTrial(
         "fbc2",
         "mini.pickle",
@@ -69,11 +66,11 @@ trials = [
     ),
     IOTrial("cobra", None, "mini_cobra.xml", read_sbml_model, write_sbml_model, None),
 ]
-trial_names = [node.name for node in trials]
+trial_names: list = [node.name for node in trials]
 
 
 @pytest.mark.parametrize("trial", trials)
-def test_validate(trial, data_directory):
+def test_validate(trial: IOTrial, data_directory: str) -> None:
     """Test validation function."""
     if trial.validation_function is None:
         pytest.skip("not implemented")
@@ -85,7 +82,9 @@ class TestCobraIO:
     """Tests the read and write functions."""
 
     @classmethod
-    def compare_models(cls, name, model1, model2):
+    def compare_models(cls, name: str, model1: Model, model2: Model) -> None:
+        """Compare two models."""
+        print(name)
         assert len(model1.reactions) == len(model2.reactions)
         assert len(model1.metabolites) == len(model2.metabolites)
         assert model1.objective.direction == model2.objective.direction
@@ -139,7 +138,9 @@ class TestCobraIO:
         assert model2.genes[0]._model is model2
 
     @classmethod
-    def extra_comparisons(cls, name, model1, model2):
+    def extra_comparisons(cls, name: str, model1: Model, model2: Model) -> None:
+        """Compare additional features of the model."""
+        print(name)
         assert model1.compartments == model2.compartments
 
         # FIXME: problems of duplicate annotations in test data
@@ -161,28 +162,32 @@ class TestCobraIO:
             assert getattr(model1.genes[10], attr) == getattr(model2.genes[10], attr)
             assert getattr(model1.genes[-1], attr) == getattr(model2.genes[-1], attr)
 
-    def test_read_1(self, io_trial):
+    def test_read_1(self, io_trial: Tuple[str, Model, Model, Model]) -> None:
+        """Read the first model from IOTrial."""
         name, reference_model, test_model, _ = io_trial
         if name in ["fbc1"]:
             pytest.xfail("not supported")
         if reference_model:
             self.compare_models(name, reference_model, test_model)
 
-    def test_read_2(self, io_trial):
+    def test_read_2(self, io_trial: Tuple[str, Model, Model, Model]) -> None:
+        """Read the second model from IOTrial."""
         name, reference_model, test_model, _ = io_trial
         if name in ["fbc1", "mat", "cobra", "raven-mat"]:
             pytest.xfail("not supported")
         if reference_model:
             self.extra_comparisons(name, reference_model, test_model)
 
-    def test_write_1(self, io_trial):
+    def test_write_1(self, io_trial: Tuple[str, Model, Model, Model]) -> None:
+        """Test writing the first model from IOTrail."""
         name, _, test_model, reread_model = io_trial
         if name in ["fbc1", "raven-mat"]:
             pytest.xfail("not supported")
 
         self.compare_models(name, test_model, reread_model)
 
-    def test_write_2(self, io_trial):
+    def test_write_2(self, io_trial: Tuple[str, Model, Model, Model]) -> None:
+        """Test writing the second model from IOTrail."""
         name, _, test_model, reread_model = io_trial
         if name in ["fbc1", "mat", "cobra", "raven-mat"]:
             pytest.xfail("not supported")
@@ -190,7 +195,29 @@ class TestCobraIO:
 
 
 @pytest.fixture(scope="module", params=trials, ids=trial_names)
-def io_trial(request, data_directory):
+def io_trial(
+    request: SubRequest, data_directory: str
+) -> Tuple[str, Model, Model, Model]:
+    """Read reference model, test model, write test model and reread it.
+
+    Parameters
+    ----------
+    request: IOTrail
+    data_directory: str
+
+    This function will read the reference model, the test model. It will then write
+    the test model based on the write_function() in IOTrial, and read the written test
+    model using read_function in IOTrail.
+    This can be used to compare the original model, test model and the written and
+    reread model.
+
+    Returns
+    -------
+    Tuple: str, Model, Model, Model
+        Name, original model as read by read_funciton(), test model as read by
+        read_function(), test model as written by write_function() and reread by
+        read_function().
+    """
     reference_model = None
     if request.param.reference_file:
         with open(join(data_directory, request.param.reference_file), "rb") as infile:
@@ -208,7 +235,7 @@ def io_trial(request, data_directory):
     return request.param.name, reference_model, test_model, reread_model
 
 
-def test_filehandle(data_directory, tmp_path):
+def test_filehandle(data_directory: str, tmp_path: str) -> None:
     """Test reading and writing to file handle."""
     with open(join(data_directory, "mini_fbc2.xml"), "r") as f_in:
         model1 = read_sbml_model(f_in)
@@ -224,7 +251,7 @@ def test_filehandle(data_directory, tmp_path):
     TestCobraIO.compare_models(name="filehandle", model1=model1, model2=model2)
 
 
-def test_from_sbml_string(data_directory):
+def test_from_sbml_string(data_directory: str) -> None:
     """Test reading from SBML string."""
     sbml_path = join(data_directory, "mini_fbc2.xml")
     with open(sbml_path, "r") as f_in:
@@ -236,7 +263,7 @@ def test_from_sbml_string(data_directory):
 
 
 @pytest.mark.skip(reason="Model history currently not written")
-def test_model_history(tmp_path):
+def test_model_history(tmp_path: str) -> None:
     """Testing reading and writing of ModelHistory."""
     model = Model("test")
     model._sbml = {
@@ -258,7 +285,7 @@ def test_model_history(tmp_path):
         model2 = read_sbml_model(f_in)
 
     assert "creators" in model2._sbml
-    assert len(model2._sbml["creators"]) is 1
+    assert len(model2._sbml["creators"]) == 1
     c = model2._sbml["creators"][0]
     assert c["familyName"] == "Mustermann"
     assert c["givenName"] == "Max"
@@ -266,8 +293,8 @@ def test_model_history(tmp_path):
     assert c["email"] == "muster@university.com"
 
 
-def test_groups(data_directory, tmp_path):
-    """Testing reading and writing of groups"""
+def test_groups(data_directory: str, tmp_path: str) -> None:
+    """Testing reading and writing of groups."""
     sbml_path = join(data_directory, "e_coli_core.xml")
     model = read_sbml_model(sbml_path)
     assert model.groups is not None
@@ -288,10 +315,12 @@ def test_groups(data_directory, tmp_path):
         assert len(g1.members) == 6
 
 
-def test_missing_flux_bounds1(data_directory):
+def test_missing_flux_bounds1(data_directory: str) -> None:
+    """Test missing flux bounds in an incorrect model."""
     sbml_path = join(data_directory, "annotation.xml")
     with open(sbml_path, "r") as f_in:
         # missing flux bounds are set to cobra.configuration.bounds
+        # noinspection PyTupleAssignmentBalance
         model, errors = validate_sbml_model(f_in, set_missing_bounds=True)
         r1 = model.reactions.R1
         assert r1.lower_bound == config.lower_bound
@@ -299,29 +328,33 @@ def test_missing_flux_bounds1(data_directory):
 
 
 def test_missing_flux_bounds2(data_directory):
+    """Test missing flux bounds set to [-INF, INF]."""
     sbml_path = join(data_directory, "annotation.xml")
     with open(sbml_path, "r") as f_in:
         # missing flux bounds are set to [-INF, INF]
+        # noinspection PyTupleAssignmentBalance
         model, errors = validate_sbml_model(f_in, set_missing_bounds=False)
         r1 = model.reactions.R1
         assert r1.lower_bound == config.lower_bound
         assert r1.upper_bound == config.upper_bound
 
 
-def test_validate(data_directory):
+def test_validate2(data_directory: str) -> None:
     """Test the validation code."""
     sbml_path = join(data_directory, "mini_fbc2.xml")
     with open(sbml_path, "r") as f_in:
+        # noinspection PyTupleAssignmentBalance
         model1, errors = validate_sbml_model(f_in, check_modeling_practice=True)
         assert model1
         assert errors
         assert len(errors["SBML_WARNING"]) == 0
 
 
-def test_validation_warnings(data_directory):
+def test_validation_warnings(data_directory: str) -> None:
     """Test the validation warnings."""
     sbml_path = join(data_directory, "validation.xml")
     with open(sbml_path, "r") as f_in:
+        # noinspection PyTupleAssignmentBalance
         model1, errors = validate_sbml_model(f_in, check_modeling_practice=True)
         assert model1
         assert errors
@@ -329,13 +362,14 @@ def test_validation_warnings(data_directory):
         assert "No objective in listOfObjectives" in errors["COBRA_WARNING"]
 
 
-def test_infinity_bounds(data_directory, tmp_path):
+def test_infinity_bounds(data_directory: str, tmp_path: str) -> None:
     """Test infinity bound example."""
     sbml_path = join(data_directory, "fbc_ex1.xml")
     model = read_sbml_model(sbml_path)
 
     # check that simulation works
     solution = model.optimize()
+    assert solution
 
     # check that values are set
     r = model.reactions.get_by_id("EX_X")
@@ -353,7 +387,7 @@ def test_infinity_bounds(data_directory, tmp_path):
         assert r.upper_bound == float("Inf")
 
 
-def test_boundary_conditions(data_directory):
+def test_boundary_conditions(data_directory: str) -> None:
     """Test infinity bound example."""
     sbml_path1 = join(data_directory, "fbc_ex1.xml")
     model1 = read_sbml_model(sbml_path1)
@@ -371,8 +405,8 @@ def test_boundary_conditions(data_directory):
     assert sol1.objective_value == sol2.objective_value
 
 
-def test_gprs(data_directory, tmp_path):
-    """Test that GPRs are written and read correctly"""
+def test_gprs(data_directory: str, tmp_path: str) -> None:
+    """Test that GPRs are written and read correctly."""
     model1 = read_sbml_model(join(data_directory, "iJO1366.xml.gz"))
 
     sbml_path = join(str(tmp_path), "test.xml")
@@ -391,7 +425,8 @@ def test_gprs(data_directory, tmp_path):
         assert gpr1 == gpr2
 
 
-def test_identifiers_annotation():
+def test_identifiers_annotation() -> None:
+    """Test annotation with identifiers."""
     from cobra.io.sbml import _parse_annotation_info
 
     for uri in [
@@ -424,8 +459,8 @@ def test_identifiers_annotation():
         assert data is None
 
 
-def test_smbl_with_notes(data_directory, tmp_path):
-    """Test that NOTES in the RECON 2.2 style are written and read correctly"""
+def test_smbl_with_notes(data_directory: str, tmp_path: str) -> None:
+    """Test that NOTES in the RECON 2.2 style are written and read correctly."""
     sbml_path = join(data_directory, "example_notes.xml")
     model = read_sbml_model(sbml_path)
     assert model.metabolites is not None
@@ -531,7 +566,8 @@ def test_smbl_with_notes(data_directory, tmp_path):
         )
 
 
-def test_stable_gprs(data_directory, tmp_path):
+def test_stable_gprs(data_directory: str, tmp_path: str) -> None:
+    """Test that GPRs are written correctly after manual changes."""
     mini = read_sbml_model(join(data_directory, "mini_fbc2.xml"))
     mini.reactions.GLCpts.gene_reaction_rule = "((b2415 and b2417)or (b2416))"
     fixed = join(str(tmp_path), "fixed_gpr.xml")
