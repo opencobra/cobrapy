@@ -16,6 +16,7 @@ from typing import (
     Iterator,
     List,
     Optional,
+    Sequence,
     Set,
     Tuple,
     Union,
@@ -70,15 +71,15 @@ class Reaction(Object):
 
     Parameters
     ----------
-    id : str, default None
+    id : str, optional
         The identifier to associate with this reaction (default None).
-    name : str, optional, default ""
+    name : str, optional
         A human readable name for the reaction (default "").
-    subsystem : str, optional, default ""
+    subsystem : str, optional
         Subsystem where the reaction is meant to occur (default "").
-    lower_bound : float, default 0
+    lower_bound : float
         The lower flux bound (default 0).
-    upper_bound : float, optional, default None
+    upper_bound : float, optional
         The upper flux bound (default None).
     **kwargs:
         Further keyword arguments are passed on to the parent class.
@@ -257,12 +258,13 @@ class Reaction(Object):
         return cop
 
     # Unclear what memo should be
-    def __deepcopy__(self, memo) -> "Reaction":
+    def __deepcopy__(self, memo: dict) -> "Reaction":
         """Copy the reaction with memo.
 
         Parameters
         ----------
-        memo
+        memo: dict
+            Automatically passed parameter.
 
         Returns
         -------
@@ -424,12 +426,12 @@ class Reaction(Object):
 
     @bounds.setter
     @resettable
-    def bounds(self, value: Union[Tuple[float, float], List[float]]) -> None:
+    def bounds(self, value: Union[Tuple[float, float], Sequence[float]]) -> None:
         """Set the bounds directly, using a tuple or list.
 
         Parameters
         ----------
-        value: tuple or list
+        value: tuple or sequence
             The lower bound and upper bound. Invalid bounds will raise ValueError.
 
         When using a `HistoryManager` context, this attribute can be set
@@ -827,8 +829,9 @@ class Reaction(Object):
 
         Parameters
         ----------
-        remove_orphans : bool, default False
-            Remove orphaned genes and metabolites from the model as well
+        remove_orphans : bool
+            Remove orphaned genes and metabolites from the model as well (default
+            False).
         """
         self._model.remove_reactions([self], remove_orphans=remove_orphans)
 
@@ -845,8 +848,9 @@ class Reaction(Object):
 
         Parameters
         ----------
-        remove_orphans : bool, default False.
-            Remove orphaned genes and metabolites from the model as well
+        remove_orphans : bool
+            Remove orphaned genes and metabolites from the model as well (default
+            False).
         """
         warn(
             "delete is deprecated. Use reaction.remove_from_model instead",
@@ -1157,14 +1161,15 @@ class Reaction(Object):
             metabolite) the reaction must already be part of a model and a
             metabolite with the given name must exist in the model.
 
-        combine : bool, default True
-            Describes behavior a metabolite already exists in the reaction.
+        combine : bool
+            Describes behavior if a metabolite already exists in the reaction (default
+            True).
             True causes the coefficients to be added.
             False causes the coefficient to be replaced.
 
-        reversibly : bool, default True
+        reversibly : bool
             Whether to add the change to the context to make the change
-            reversibly or not (primarily intended for internal use).
+            reversibly or not (primarily intended for internal use). Default is True.
 
         Raises
         ------
@@ -1293,8 +1298,9 @@ class Reaction(Object):
             are the coefficients. These metabolites will be added to the
             reaction.
 
-        combine : bool, default True
-            Describes behavior a metabolite already exists in the reaction.
+        combine : bool
+            Describes behavior if a metabolite already exists in the reaction (default
+            True).
             True causes the coefficients to be added.
             False causes the coefficient to be replaced.
 
@@ -1339,8 +1345,9 @@ class Reaction(Object):
 
         Parameters
         ----------
-        use_metabolite_names: bool, default False
-            Whether to use metabolite names (when True) or metabolite ids (when False).
+        use_metabolite_names: bool
+            Whether to use metabolite names (when True) or metabolite ids (when False,
+            default).
 
         Returns
         -------
@@ -1477,16 +1484,16 @@ class Reaction(Object):
         ----------
         reaction_str : str
             a string containing a reaction formula (equation)
-        verbose: bool, default True
-            setting verbosity of function
+        verbose: bool
+            setting verbosity of function (default True)
         fwd_arrow : AnyStr, optional
-            Str or bytes that encode forward irreversible reaction arrows.
+            Str or bytes that encode forward irreversible reaction arrows (default None).
         rev_arrow : AnyStr, optional
-            Str or bytes that encode backward irreversible reaction arrows.
+            Str or bytes that encode backward irreversible reaction arrows (default None).
         reversible_arrow : AnyStr, optional
-            Str or bytes that encode reversible reaction arrows.
+            Str or bytes that encode reversible reaction arrows (defualt None).
         term_split : str
-            dividing individual metabolite entries
+            dividing individual metabolite entries (default "+")".
 
         Raises
         ------
@@ -1631,7 +1638,7 @@ class Reaction(Object):
             self.name, 100)}</td>
             </tr><tr>
                 <td><strong>Memory address</strong></td>
-                <td>{f"0x0{id(self):x}"}</td>
+                <td>{f"{id(self):#x}"}</td>
             </tr><tr>
                 <td><strong>Stoichiometry</strong></td>
                 <td>
