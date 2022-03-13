@@ -597,6 +597,7 @@ class Reaction(Object):
         ----------
         new_gene_names: set
         """
+        context = get_context(self)
         if new_gene_names is None:
             if self._gpr.body is not None:
                 new_gene_names = self._gpr.genes
@@ -609,13 +610,20 @@ class Reaction(Object):
             model_genes = self._model.genes
             self._genes = set()
             for g_id in new_gene_names:
+                if context:
+                    # Remove the gene later
+                    context(partial(self._genes.remove, model_genes.get_by_id(g_id)))
                 if model_genes.has_id(g_id):
                     self._genes.add(model_genes.get_by_id(g_id))
                 else:
                     new_gene = Gene(g_id)
                     new_gene._model = self._model
                     self._genes.add(new_gene)
-                    model_genes.append(new_gene)
+                    self._model.genes.append(new_gene)
+                    if context:
+                        # Remove the gene later
+                        context(partial(self._model.genes.__isub__, [new_gene]))
+                        context(partial(setattr, new_gene, "_model", None))
 
         # Make the genes aware that it is involved in this reaction
         for g in self._genes:
@@ -908,15 +916,12 @@ class Reaction(Object):
         self._model = None
         for i in self._metabolites:
             i._model = None
-        for i in self._genes:
-            i._model = None
         # now we can copy
         new_reaction = deepcopy(self)
+        new_reaction.gpr = self.gpr.copy()
         # restore the references
         self._model = model
         for i in self._metabolites:
-            i._model = model
-        for i in self._genes:
             i._model = model
         return new_reaction
 
