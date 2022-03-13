@@ -784,7 +784,6 @@ class GPR(Module):
             return self_symb.equals(other_symb)
 
 
-
 def eval_gpr(expr: Union[Expression, GPR], knockouts: Union[DictList, set]) -> bool:
     """Evaluate compiled ast of gene_reaction_rule with knockouts.
 
