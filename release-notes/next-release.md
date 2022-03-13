@@ -4,6 +4,8 @@
 
 ## Fixes
 
+`model.copy()` will now correctly copy GPRs.
+
 ## Other
 
 ## Deprecated features
