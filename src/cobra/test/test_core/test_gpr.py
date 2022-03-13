@@ -378,16 +378,15 @@ def test_gpr_symbolism_benchmark(large_model, benchmark):
     benchmark(gpr_symbolic)
 
 
-def test_gpr_equality_benchmark(medium_model, benchmark):
+def test_gpr_equality_benchmark(model, benchmark):
     """Benchmark equality of GPR using the mini model."""
-    model = medium_model.copy()
+    model2 = model.copy()
 
     def gpr_equality_all_reactions():
         for i in range(len(model.reactions)):
             rxn1 = model.reactions[i]
-            for j in range(i + 1, len(model.reactions)):
-                rxn2 = model.reactions[j]
-                assert rxn1.gpr == rxn2.gpr
+            rxn2 = model2.reactions[i]
+            assert rxn1.gpr == rxn2.gpr
 
     benchmark(gpr_equality_all_reactions)
 

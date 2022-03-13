@@ -602,6 +602,10 @@ class GPR(Module):
         """Copy a GPR."""
         return deepcopy(self)
 
+    def __copy__(self) -> "GPR":
+        """Ensure a correct shallow copy."""
+        return self.copy()
+
     def __repr__(self) -> str:
         """Return the GPR with module, class, and code to recreate it."""
         return (
@@ -778,6 +782,7 @@ class GPR(Module):
             if isinstance(self_symb, Symbol) or isinstance(other_symb, Symbol):
                 return False
             return self_symb.equals(other_symb)
+
 
 
 def eval_gpr(expr: Union[Expression, GPR], knockouts: Union[DictList, set]) -> bool:

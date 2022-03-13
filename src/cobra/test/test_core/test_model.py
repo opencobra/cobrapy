@@ -491,6 +491,9 @@ def test_copy(model):
     assert model_copy.annotation is not model.annotation
     assert len(model.reactions) == len(model_copy.reactions)
     assert len(model.metabolites) == len(model_copy.metabolites)
+    # test if GPRs are copied by content but not by reference
+    assert model.reactions[0].gpr == model_copy.reactions[0].gpr
+    assert id(model.reactions[0].gpr.body) != id(model_copy.reactions[0].gpr.body)
     model_copy.remove_reactions(model_copy.reactions[0:5])
     assert old_reaction_count == len(model.reactions)
     assert len(model.reactions) != len(model_copy.reactions)
