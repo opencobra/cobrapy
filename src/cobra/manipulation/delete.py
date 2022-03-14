@@ -345,6 +345,8 @@ def remove_genes(
             # if the reaction is not removed, remove the gene
             # from its gpr
             remover.visit(rxn.gpr)
+            # If the remover completely removed the AST tree from the GPR, it will not
+            # have body at all, which is why this isn't if body is None.
             if "body" not in rxn.gpr.__dict__.keys():
                 rxn.gpr = GPR()
                 rxn._genes = set()
