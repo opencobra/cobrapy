@@ -590,7 +590,7 @@ class Reaction(Object):
         """
         return frozenset(self._genes)
 
-    def _update_genes_from_gpr(self, new_gene_names: Optional[Set] = None) -> None:
+    def update_genes_from_gpr(self, new_gene_names: Optional[Set] = None) -> None:
         """Update genes of reation based on GPR.
 
         Parameters
@@ -668,7 +668,7 @@ class Reaction(Object):
             warn("Context management not implemented for gene reaction rules.")
 
         self._gpr = GPR.from_string(new_rule)
-        self._update_genes_from_gpr()
+        self.update_genes_from_gpr()
 
     @property
     def gene_name_reaction_rule(self):
@@ -708,7 +708,7 @@ class Reaction(Object):
         cobra.core.gene.GPR()
         """
         self._gpr = value
-        self._update_genes_from_gpr()
+        self.update_genes_from_gpr()
 
     @property
     def functional(self) -> bool:

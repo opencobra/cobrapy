@@ -1118,7 +1118,7 @@ class Model(Object):
             for gene in self.genes:
                 gene._reaction.clear()
             for rxn in self.reactions:
-                rxn._update_genes_from_gpr()
+                rxn.update_genes_from_gpr()
                 for met in rxn._metabolites:
                     met._reaction.add(rxn)
 

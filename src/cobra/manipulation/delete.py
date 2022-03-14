@@ -358,4 +358,4 @@ def remove_genes(
             group.remove_members(gene)
     model.remove_reactions(target_reactions)
     for rxn in rxns_to_revisit:
-        rxn._update_genes_from_gpr()
+        rxn.update_genes_from_gpr()
