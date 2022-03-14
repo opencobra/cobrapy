@@ -137,7 +137,6 @@ def _number_to_chr(numberStr: Match) -> str:
     return chr(int(numberStr.group(1)))
 
 
-# Why do we have this, and not use something like replace(sid, prefix, 1) or regex?
 def _clip(sid: str, prefix: str) -> str:
     """Clip a prefix from the beginning of a string if it exists.
 
