@@ -495,7 +495,7 @@ class DictList(list):
         list.__setitem__(self, i, y)
         self._dict[the_id] = i
 
-    def __delitem__(self, index: int) -> None:
+    def __delitem__(self, index: Union[int, slice]) -> None:
         """Remove item from DictList."""
         removed = self[index]
         list.__delitem__(self, index)
