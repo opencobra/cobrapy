@@ -214,7 +214,7 @@ def io_trial(
     Returns
     -------
     Tuple: str, Model, Model, Model
-        Name, original model as read by read_funciton(), test model as read by
+        Name, original model as read by read_function(), test model as read by
         read_function(), test model as written by write_function() and reread by
         read_function().
     """
