@@ -632,7 +632,7 @@ class Reaction(Object):
                     remove_genes(self.model, [g], False)
             except KeyError:
                 warn(f"could not remove old gene {g.id} from reaction {self.id}")
-            if g not in self._genes:  # if an old gene is not a new gene
+            if g in self._genes:  # if an old gene is still a new gene
                 raise Exception("something wrong with sets. Shouldn't happen.")
 
     @property
