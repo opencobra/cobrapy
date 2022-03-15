@@ -257,7 +257,6 @@ class Reaction(Object):
         cop = copy(super(Reaction, self))
         return cop
 
-    # Unclear what memo should be
     def __deepcopy__(self, memo: dict) -> "Reaction":
         """Copy the reaction with memo.
 
@@ -590,46 +589,51 @@ class Reaction(Object):
         """
         return frozenset(self._genes)
 
-    def _update_genes_from_gpr(self, new_gene_names: Optional[Set] = None) -> None:
+    def _update_genes_from_gpr(self) -> None:
         """Update genes of reation based on GPR.
 
-        Parameters
-        ----------
-        new_gene_names: set
+        If the reaction has a model, and new genes appear in the GPR, they will be
+        created as Gene() entities and added to the model. If the reaction doesn't have
+        a model, genes will be created without a model.
+
+        Genes that no longer appear in the GPR will be removed from the reaction, but
+        not the model. If you want to remove them expliclty, use model.remove_genes().
         """
-        if new_gene_names is None:
-            if self._gpr.body is not None:
-                new_gene_names = self._gpr.genes
-            else:
-                new_gene_names = set()
+        if self._gpr.body is not None:
+            new_gene_names = self._gpr.genes
+        else:
+            new_gene_names = set()
         old_genes = self._genes.copy()
+        new_genes = set()
         if self._model is None:
             self._genes = {Gene(i) for i in new_gene_names}
         else:
             model_genes = self._model.genes
             self._genes = set()
             for g_id in new_gene_names:
-                if model_genes.has_id(g_id):
-                    self._genes.add(model_genes.get_by_id(g_id))
-                else:
+                if not model_genes.has_id(g_id):
                     new_gene = Gene(g_id)
                     new_gene._model = self._model
                     self._genes.add(new_gene)
                     model_genes.append(new_gene)
+                new_gene = model_genes.get_by_id(g_id)
+                self._genes.add(new_gene)
+                new_genes.add(new_gene)
 
         # Make the genes aware that it is involved in this reaction
         for g in self._genes:
             g._reaction.add(self)
 
         # make the old genes aware they are no longer involved in this reaction
-        for g in old_genes:
+        for g in old_genes.difference(new_genes):
+            try:
+                g._reaction.remove(self)
+                if not len(g.reactions) and self.model and g in self.model.genes:
+                    remove_genes(self.model, [g], False)
+            except KeyError:
+                warn(f"could not remove old gene {g.id} from reaction {self.id}")
             if g not in self._genes:  # if an old gene is not a new gene
-                try:
-                    g._reaction.remove(self)
-                    if not len(g.reactions) and self.model and g in self.model.genes:
-                        remove_genes(self.model, [g], False)
-                except KeyError:
-                    warn(f"could not remove old gene {g.id} from reaction {self.id}")
+                raise Exception("something wrong with sets. Shouldn't happen.")
 
     @property
     def gene_reaction_rule(self) -> str:
@@ -648,11 +652,17 @@ class Reaction(Object):
     def gene_reaction_rule(self, new_rule: str) -> None:
         """Set a new GPR for the reaction, using a str expression.
 
+        Will use the new GPR to update reaction genes.
+
         Parameters
         ----------
         new_rule : str
             which will be parsed by the string parser in GPR, GPR.from_string(new_rule).
             It makes a new GPR, and does not modify the existing one.
+
+        See Also
+        --------
+        _update_genes_from_gpr()
 
         """
         # TODO: Do this :)
@@ -698,6 +708,7 @@ class Reaction(Object):
         See Also
         --------
         cobra.core.gene.GPR()
+        _update_genes_from_gpr()
         """
         self._gpr = value
         self._update_genes_from_gpr()
