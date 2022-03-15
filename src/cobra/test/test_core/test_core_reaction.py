@@ -81,10 +81,10 @@ def test_gpr_modification(model: Model) -> None:
     assert new_gene in reaction.genes
     assert reaction in new_gene.reactions
 
-    # Remove old gene correctly
+    # Remove old gene correctly, keep it in model
     assert old_gene not in reaction.genes
     assert reaction not in old_gene.reactions
-    assert old_gene not in model.genes
+    assert old_gene in model.genes
 
     # Add a new 'gene' to the GPR
     reaction.gene_reaction_rule = "fake_gene"
