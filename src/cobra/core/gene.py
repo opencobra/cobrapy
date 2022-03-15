@@ -2,30 +2,13 @@
 
 import re
 from ast import (
-    AST,
-    And,
-    BitAnd,
-    BitOr,
-    BoolOp,
-    Expression,
-    Module,
-    Name,
-    NodeTransformer,
-    NodeVisitor,
-    Or,
-)
+    AST, And, BitAnd, BitOr, BoolOp, Expression, Module, Name, NodeTransformer,
+    NodeVisitor, Or,)
 from ast import parse as ast_parse
 from copy import deepcopy
 from keyword import kwlist
 from typing import (
-    TYPE_CHECKING,
-    FrozenSet,
-    Iterable,
-    Optional,
-    Set,
-    Tuple,
-    Union,
-)
+    TYPE_CHECKING, FrozenSet, Iterable, Optional, Set, Tuple, Union,)
 from warnings import warn
 
 import sympy.logic.boolalg as spl
