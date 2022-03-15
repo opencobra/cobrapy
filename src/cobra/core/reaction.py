@@ -628,8 +628,6 @@ class Reaction(Object):
         for g in old_genes.difference(new_genes):
             try:
                 g._reaction.remove(self)
-                if not len(g.reactions) and self.model and g in self.model.genes:
-                    remove_genes(self.model, [g], False)
             except KeyError:
                 warn(f"could not remove old gene {g.id} from reaction {self.id}")
             if g in self._genes:  # if an old gene is still a new gene
