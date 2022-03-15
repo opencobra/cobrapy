@@ -187,3 +187,4 @@ def rename_genes(model: "Model", rename_dict: Dict[str, str]) -> None:
 
     for i in remove_genes:
         model.genes.remove(i)
+        i._model = None

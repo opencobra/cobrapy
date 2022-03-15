@@ -599,6 +599,7 @@ class Reaction(Object):
         Genes that no longer appear in the GPR will be removed from the reaction, but
         not the model. If you want to remove them expliclty, use model.remove_genes().
         """
+        context = get_context(self)
         if self._gpr.body is not None:
             new_gene_names = self._gpr.genes
         else:
@@ -614,11 +615,21 @@ class Reaction(Object):
                 if not model_genes.has_id(g_id):
                     new_gene = Gene(g_id)
                     new_gene._model = self._model
-                    self._genes.add(new_gene)
                     model_genes.append(new_gene)
+                    if context:
+                        # Remove the gene later
+                        context(partial(remove_genes, model=self._model,
+                                        gene_list=[model_genes.get_by_id(g_id)],
+                                        remove_reactions=False))
+                        context(partial(setattr, new_gene, "_model", None))
+                        # Maybe should be
+                        # context(partial(self._model.genes.__isub__, [new_gene]))
                 new_gene = model_genes.get_by_id(g_id)
                 self._genes.add(new_gene)
                 new_genes.add(new_gene)
+                if context:
+                    # Remove the gene later
+                    context(partial(self._genes.remove, model_genes.get_by_id(g_id)))
 
         # Make the genes aware that it is involved in this reaction
         for g in self._genes:

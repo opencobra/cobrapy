@@ -354,6 +354,7 @@ def remove_genes(
                 rxns_to_revisit.add(rxn)
     for gene in gene_set:
         model.genes.remove(gene)
+        gene._model = None
         # remove reference to the gene in all groups
         associated_groups = model.get_associated_groups(gene)
         for group in associated_groups:
