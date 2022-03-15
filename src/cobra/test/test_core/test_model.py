@@ -681,8 +681,8 @@ def test_change_objective(model):
     assert biomass.objective_coefficient == 1.0
     # Set both using a dict
     model.objective = {atpm: 0.2, biomass: 0.3}
-    assert abs(atpm.objective_coefficient - 0.2) < 10**-9
-    assert abs(biomass.objective_coefficient - 0.3) < 10**-9
+    assert abs(atpm.objective_coefficient - 0.2) < 10 ** -9
+    assert abs(biomass.objective_coefficient - 0.3) < 10 ** -9
     # Test setting by index
     model.objective = model.reactions.index(atpm)
     assert su.linear_reaction_coefficients(model) == {atpm: 1.0}

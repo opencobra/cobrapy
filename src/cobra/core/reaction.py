@@ -618,9 +618,14 @@ class Reaction(Object):
                     model_genes.append(new_gene)
                     if context:
                         # Remove the gene later
-                        context(partial(remove_genes, model=self._model,
-                                        gene_list=[model_genes.get_by_id(g_id)],
-                                        remove_reactions=False))
+                        context(
+                            partial(
+                                remove_genes,
+                                model=self._model,
+                                gene_list=[model_genes.get_by_id(g_id)],
+                                remove_reactions=False,
+                            )
+                        )
                         context(partial(setattr, new_gene, "_model", None))
                         # Maybe should be
                         # context(partial(self._model.genes.__isub__, [new_gene]))
