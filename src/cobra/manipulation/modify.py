@@ -1,8 +1,11 @@
 """Provide functions to modify model components."""
 
 from ast import NodeTransformer
+from functools import partial
 from itertools import chain
 from typing import TYPE_CHECKING, Dict
+
+from cobra.util import get_context
 
 
 if TYPE_CHECKING:
@@ -148,6 +151,7 @@ def rename_genes(model: "Model", rename_dict: Dict[str, str]) -> None:
     """
     recompute_reactions = set()  # need to recompute related genes
     remove_genes = []
+    context = get_context(model)
     for old_name, new_name in rename_dict.items():
         # undefined if there a value matches a different key
         try:
@@ -169,6 +173,10 @@ def rename_genes(model: "Model", rename_dict: Dict[str, str]) -> None:
             model.genes._dict.pop(gene.id)  # ugh
             gene.id = new_name
             model.genes[gene_index] = gene
+            if context:
+                model.genes._dict.pop(gene.id)  # ugh
+                gene.id = old_name
+                model.genes[gene_index] = gene
         elif not old_gene_present and new_gene_present:
             pass
         else:  # if not old gene_present and not new_gene_present
@@ -181,10 +189,17 @@ def rename_genes(model: "Model", rename_dict: Dict[str, str]) -> None:
     gene_renamer = _Renamer(rename_dict)
     for rxn in model.reactions:
         if rxn.gpr is not None:
+            old_gpr = rxn.gpr.copy()
             gene_renamer.visit(rxn.gpr)
+            if context:
+                context(partial(setattr, rxn, "gpr", old_gpr))
+                context(partial(rxn._update_genes_from_gpr))
 
     model.repair()
 
     for i in remove_genes:
         model.genes.remove(i)
         i._model = None
+        if context:
+            context(partial(model.genes.add, i))
+            context(partial(setattr, i, "_model", model))
