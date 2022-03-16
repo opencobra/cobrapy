@@ -705,6 +705,8 @@ class Model(Object):
 
         if context:
             context(partial(self.reactions.__isub__, pruned))
+            for rxn in pruned:
+                context(partial(setattr, rxn, "_model", None))
 
         # from cameo ...
         self._populate_solver(pruned)
