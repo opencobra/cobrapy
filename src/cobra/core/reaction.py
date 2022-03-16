@@ -638,12 +638,12 @@ class Reaction(Object):
 
         # Make the genes aware that it is involved in this reaction
         for g in self._genes:
-            g._reaction.add(self)
+            self._associate_gene(g)
 
         # make the old genes aware they are no longer involved in this reaction
         for g in old_genes.difference(new_genes):
             try:
-                g._reaction.remove(self)
+                self._dissociate_gene(g)
             except KeyError:
                 warn(f"could not remove old gene {g.id} from reaction {self.id}")
             if g in self._genes:  # if an old gene is still a new gene
