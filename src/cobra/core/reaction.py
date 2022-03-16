@@ -663,7 +663,6 @@ class Reaction(Object):
         return self._gpr.to_string()
 
     @gene_reaction_rule.setter
-    @resettable
     def gene_reaction_rule(self, new_rule: str) -> None:
         """Set a new GPR for the reaction, using a str expression.
 
@@ -680,9 +679,9 @@ class Reaction(Object):
         _update_genes_from_gpr()
 
         """
-        context = get_context(self)
-        if context:
-            context(partial(self._update_genes_from_gpr))
+        # TODO: Do this :)
+        if get_context(self):
+            warn("Context management not implemented for gene reaction rules.")
 
         self._gpr = GPR.from_string(new_rule)
         self._update_genes_from_gpr()
