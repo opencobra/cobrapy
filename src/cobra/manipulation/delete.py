@@ -1,9 +1,10 @@
 """Provide functions for pruning reactions, metabolites and genes."""
 from ast import And, BoolOp, Module, Name, NodeTransformer
+from functools import partial
 from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple, Union
 from warnings import warn
 
-from cobra.core import GPR
+from cobra.util import get_context
 
 
 if TYPE_CHECKING:
@@ -335,6 +336,7 @@ def remove_genes(
     remover = _GeneRemover(gene_id_set)
     target_reactions = []
     rxns_to_revisit = set()
+    context = get_context(model)
     for rxn in model.reactions:
         if rxn.gene_reaction_rule is None or len(rxn.gene_reaction_rule) == 0:
             continue
@@ -344,17 +346,24 @@ def remove_genes(
         else:
             # if the reaction is not removed, remove the gene
             # from its gpr
+            old_gpr = rxn.gpr.copy()
             remover.visit(rxn.gpr)
             # If the remover completely removed the AST tree from the GPR, it will not
             # have body at all, which is why this isn't if body is None.
             if "body" not in rxn.gpr.__dict__.keys():
-                rxn.gpr = GPR()
+                rxn.gpr.body = None
                 rxn._genes = set()
             else:
                 rxns_to_revisit.add(rxn)
+        if context:
+            context(partial(setattr, rxn, "gpr", old_gpr))
+            context(partial(rxn._update_genes_from_gpr))
     for gene in gene_set:
         model.genes.remove(gene)
         gene._model = None
+        if context:
+            context(partial(model.genes.add, gene))
+            context(partial(setattr, gene, "_model", model))
         # remove reference to the gene in all groups
         associated_groups = model.get_associated_groups(gene)
         for group in associated_groups:
