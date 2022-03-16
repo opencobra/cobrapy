@@ -667,6 +667,8 @@ class Model(Object):
         # Add reactions. Also take care of genes and metabolites in the loop.
         for reaction in pruned:
             reaction._model = self
+            if context:
+                context(partial(setattr, reaction, "_model", None))
             # Build a `list()` because the dict will be modified in the loop.
             for metabolite in list(reaction.metabolites):
                 # TODO: Should we add a copy of the metabolite instead?
@@ -705,8 +707,6 @@ class Model(Object):
 
         if context:
             context(partial(self.reactions.__isub__, pruned))
-            for rxn in pruned:
-                context(partial(setattr, rxn, "_model", None))
 
         # from cameo ...
         self._populate_solver(pruned)

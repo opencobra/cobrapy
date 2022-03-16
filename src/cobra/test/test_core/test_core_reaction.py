@@ -114,6 +114,7 @@ def test_gpr_modification_with_context(model: Model) -> None:
     assert reaction._model is None
 
     reaction = model.reactions.get_by_id("PGI")
+    old_reaction_rule = reaction.gene_reaction_rule
     old_gene = list(reaction.genes)[0]
     new_gene = model.genes.get_by_id("s0001")
 
@@ -128,6 +129,7 @@ def test_gpr_modification_with_context(model: Model) -> None:
         assert reaction not in old_gene.reactions
         assert old_gene in model.genes
 
+    assert reaction.gene_reaction_rule == old_reaction_rule
     assert new_gene not in reaction.genes
     assert reaction not in new_gene.reactions
 
@@ -435,25 +437,20 @@ def test_iadd_with_context(model: Model) -> None:
     """Test in-place addition of reaction is reversed with context."""
     PGI = model.reactions.PGI
     EX_h2o = model.reactions.EX_h2o_e
-    original_PGI_gpr = PGI.gene_reaction_rule
+    original_PGI_gene_reaction_rule = PGI.gene_reaction_rule
     with model:
         PGI += EX_h2o
-        assert PGI.gene_reaction_rule == original_PGI_gpr
+        assert PGI.gene_reaction_rule == original_PGI_gene_reaction_rule
         assert PGI.metabolites[model.metabolites.h2o_e] == -1.0
-    assert PGI.gene_reaction_rule == original_PGI_gpr
+    assert PGI.gene_reaction_rule == original_PGI_gene_reaction_rule
     assert model.metabolites.h2o_e not in PGI.metabolites.keys()
     # Add a reaction not in the model
     new_reaction = Reaction("test")
     new_reaction.add_metabolites({Metabolite("A"): -1, Metabolite("B"): 1})
     with model:
         PGI += new_reaction
-        # And vice versa
-        new_reaction += PGI
-    assert PGI.gene_reaction_rule == original_PGI_gpr
-    assert len(PGI.gene_reaction_rule) == 3
-    assert new_reaction not in model.reactions
-    assert len(new_reaction.metabolites) == 2  # not
-    assert len(new_reaction.genes) == 0
+    assert PGI.gene_reaction_rule == original_PGI_gene_reaction_rule
+    assert len(PGI.gene_reaction_rule) == 5
     # Combine two GPRs
     expected_rule = "(b2296 or b3115 or b1849) and (b0118 or b1276)"
     old_rule = model.reactions.ACKr.gene_reaction_rule
@@ -463,7 +460,7 @@ def test_iadd_with_context(model: Model) -> None:
         assert len(model.reactions.ACKr.genes) == 5
     assert model.reactions.ACKr.gene_reaction_rule == old_rule
     assert old_rule != expected_rule
-    assert len(model.reactions.ACkr.genes) == 3
+    assert len(model.reactions.ACKr.genes) == 3
 
 
 def test_add(model: Model) -> None:

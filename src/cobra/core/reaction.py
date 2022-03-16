@@ -994,16 +994,16 @@ class Reaction(Object):
         Reaction - original reaction (self) with the added properties.
         """
         self.add_metabolites(other._metabolites, combine=True)
-        gpr1 = self.gene_reaction_rule.strip()
-        gpr2 = other.gene_reaction_rule.strip()
-        if gpr1 != "" and gpr2 != "":
+        rule1 = self.gene_reaction_rule.strip()
+        rule2 = other.gene_reaction_rule.strip()
+        if rule1 != "" and rule2 != "":
             self.gene_reaction_rule = (
                 f"({self.gene_reaction_rule}) and " f"({other.gene_reaction_rule})"
             )
-        elif gpr1 != "" and gpr2 == "":
-            self.gene_reaction_rule = gpr1
-        elif gpr1 == "" and gpr2 != "":
-            self.gene_reaction_rule = gpr2
+        elif rule1 != "" and rule2 == "":
+            self.gene_reaction_rule = rule1
+        elif rule1 == "" and rule2 != "":
+            self.gene_reaction_rule = rule2
         return self
 
     def __sub__(self, other: "Reaction") -> "Reaction":
