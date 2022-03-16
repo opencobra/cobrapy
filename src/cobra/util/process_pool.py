@@ -79,8 +79,14 @@ class ProcessPool:
         exc_tb: Optional[TracebackType],
     ) -> Optional[bool]:
         """Clean up resources when leaving a context."""
+        # The `multiprocessing.Pool.__exit__` only terminates pool processes. For a
+        # clean exit, we close the pool and join the pool processes first.
+        try:
+            self._pool.close()
+            self._pool.join()
+        finally:
+            self._clean_up()
         result = self._pool.__exit__(exc_type, exc_val, exc_tb)
-        self._clean_up()
         return result
 
     def close(self) -> None:
