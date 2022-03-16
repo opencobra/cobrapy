@@ -632,18 +632,19 @@ class Reaction(Object):
                 new_gene = model_genes.get_by_id(g_id)
                 self._genes.add(new_gene)
                 new_genes.add(new_gene)
-                if context:
-                    # Remove the gene later
-                    context(partial(self._genes.remove, model_genes.get_by_id(g_id)))
 
         # Make the genes aware that it is involved in this reaction
         for g in self._genes:
             self._associate_gene(g)
+            if context:
+                context(partial(self._dissociate_gene, g))
 
         # make the old genes aware they are no longer involved in this reaction
         for g in old_genes.difference(new_genes):
             try:
                 self._dissociate_gene(g)
+                if context:
+                    context(partial(self._associate_gene, g))
             except KeyError:
                 warn(f"could not remove old gene {g.id} from reaction {self.id}")
             if g in self._genes:  # if an old gene is still a new gene
@@ -663,6 +664,7 @@ class Reaction(Object):
         return self._gpr.to_string()
 
     @gene_reaction_rule.setter
+    @resettable
     def gene_reaction_rule(self, new_rule: str) -> None:
         """Set a new GPR for the reaction, using a str expression.
 
@@ -710,6 +712,7 @@ class Reaction(Object):
         return self._gpr
 
     @gpr.setter
+    @resettable
     def gpr(self, value: GPR) -> None:
         """Set a new GPR for the reaction, using GPR() class.
 
