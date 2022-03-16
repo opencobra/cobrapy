@@ -681,10 +681,6 @@ class Reaction(Object):
         _update_genes_from_gpr()
 
         """
-        # TODO: Do this :)
-        if get_context(self):
-            warn("Context management not implemented for gene reaction rules.")
-
         self._gpr = GPR.from_string(new_rule)
         self._update_genes_from_gpr()
 
