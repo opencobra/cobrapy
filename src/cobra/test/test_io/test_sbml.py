@@ -71,7 +71,15 @@ trial_names: list = [node.name for node in trials]
 
 @pytest.mark.parametrize("trial", trials)
 def test_validate(trial: IOTrial, data_directory: str) -> None:
-    """Test validation function."""
+    """Test validation function.
+
+    Parameters
+    ----------
+    IOTrial:
+        Which model trial to check.
+    data_directory: str
+        Directory where the data is.
+    """
     if trial.validation_function is None:
         pytest.skip("not implemented")
     test_file = join(data_directory, trial.test_file)
@@ -83,7 +91,15 @@ class TestCobraIO:
 
     @classmethod
     def compare_models(cls, name: str, model1: Model, model2: Model) -> None:
-        """Compare two models."""
+        """Compare two models.
+
+        name, str
+            name of models to compare.
+        model1: Model
+            First model to compare.
+        model2: Model
+            Second model to compare.
+        """
         print(name)
         assert len(model1.reactions) == len(model2.reactions)
         assert len(model1.metabolites) == len(model2.metabolites)
@@ -139,7 +155,15 @@ class TestCobraIO:
 
     @classmethod
     def extra_comparisons(cls, name: str, model1: Model, model2: Model) -> None:
-        """Compare additional features of the model."""
+        """Compare additional features of the model.
+
+        name, str
+            name of models to compare.
+        model1: Model
+            First model to compare.
+        model2: Model
+            Second model to compare.
+        """
         print(name)
         assert model1.compartments == model2.compartments
 
@@ -163,7 +187,11 @@ class TestCobraIO:
             assert getattr(model1.genes[-1], attr) == getattr(model2.genes[-1], attr)
 
     def test_read_1(self, io_trial: Tuple[str, Model, Model, Model]) -> None:
-        """Read the first model from IOTrial."""
+        """Read the first model from a processed IOTrial via io_trial().
+
+        io_trial: [str, Model, Model, Model]
+            A tuple containing name, reference_model, test_model, rewritten_model.
+        """
         name, reference_model, test_model, _ = io_trial
         if name in ["fbc1"]:
             pytest.xfail("not supported")
@@ -171,7 +199,11 @@ class TestCobraIO:
             self.compare_models(name, reference_model, test_model)
 
     def test_read_2(self, io_trial: Tuple[str, Model, Model, Model]) -> None:
-        """Read the second model from IOTrial."""
+        """Read the second model from a processed IOTrial via io_trial().
+
+        io_trial: [str, Model, Model, Model]
+            A tuple containing name, reference_model, test_model, rewritten_model.
+        """
         name, reference_model, test_model, _ = io_trial
         if name in ["fbc1", "mat", "cobra", "raven-mat"]:
             pytest.xfail("not supported")
@@ -179,7 +211,11 @@ class TestCobraIO:
             self.extra_comparisons(name, reference_model, test_model)
 
     def test_write_1(self, io_trial: Tuple[str, Model, Model, Model]) -> None:
-        """Test writing the first model from IOTrail."""
+        """Test writing the first model from a processed IOTrial via io_trial().
+
+        io_trial: [str, Model, Model, Model]
+            A tuple containing name, reference_model, test_model, rewritten_model.
+        """
         name, _, test_model, reread_model = io_trial
         if name in ["fbc1", "raven-mat"]:
             pytest.xfail("not supported")
@@ -187,7 +223,11 @@ class TestCobraIO:
         self.compare_models(name, test_model, reread_model)
 
     def test_write_2(self, io_trial: Tuple[str, Model, Model, Model]) -> None:
-        """Test writing the second model from IOTrail."""
+        """Test writing the second model from a processed IOTrial via io_trial().
+
+        io_trial: [str, Model, Model, Model]
+            A tuple containing name, reference_model, test_model, rewritten_model.
+        """
         name, _, test_model, reread_model = io_trial
         if name in ["fbc1", "mat", "cobra", "raven-mat"]:
             pytest.xfail("not supported")
@@ -204,6 +244,7 @@ def io_trial(
     ----------
     request: IOTrail
     data_directory: str
+        Directory where the data is.
 
     This function will read the reference model, the test model. It will then write
     the test model based on the write_function() in IOTrial, and read the written test
@@ -236,7 +277,15 @@ def io_trial(
 
 
 def test_filehandle(data_directory: str, tmp_path: str) -> None:
-    """Test reading and writing to file handle."""
+    """Test reading and writing to file handle.
+
+    Parameters
+    ----------
+    data_directory: str
+        Directory where the data is.
+    tmp_path: str
+        Directory to use for temporary data.
+    """
     with open(join(data_directory, "mini_fbc2.xml"), "r") as f_in:
         model1 = read_sbml_model(f_in)
         assert model1 is not None
@@ -252,7 +301,13 @@ def test_filehandle(data_directory: str, tmp_path: str) -> None:
 
 
 def test_from_sbml_string(data_directory: str) -> None:
-    """Test reading from SBML string."""
+    """Test reading from SBML string.
+
+    Parameters
+    ----------
+    data_directory: str
+        Directory where the data is.
+    """
     sbml_path = join(data_directory, "mini_fbc2.xml")
     with open(sbml_path, "r") as f_in:
         sbml_str = f_in.read()
@@ -264,7 +319,13 @@ def test_from_sbml_string(data_directory: str) -> None:
 
 @pytest.mark.skip(reason="Model history currently not written")
 def test_model_history(tmp_path: str) -> None:
-    """Testing reading and writing of ModelHistory."""
+    """Testing reading and writing of ModelHistory.
+
+    Parameters
+    ----------
+    tmp_path: str
+        Directory to use for temporary data.
+    """
     model = Model("test")
     model._sbml = {
         "creators": [
@@ -294,7 +355,15 @@ def test_model_history(tmp_path: str) -> None:
 
 
 def test_groups(data_directory: str, tmp_path: str) -> None:
-    """Testing reading and writing of groups."""
+    """Testing reading and writing of groups.
+
+    Parameters
+    ----------
+    data_directory: str
+        Directory where the data is.
+    tmp_path: str
+        Directory to use for temporary data.
+    """
     sbml_path = join(data_directory, "e_coli_core.xml")
     model = read_sbml_model(sbml_path)
     assert model.groups is not None
@@ -316,7 +385,13 @@ def test_groups(data_directory: str, tmp_path: str) -> None:
 
 
 def test_missing_flux_bounds1(data_directory: str) -> None:
-    """Test missing flux bounds in an incorrect model."""
+    """Test missing flux bounds in an incorrect model.
+
+    Parameters
+    ----------
+    data_directory: str
+        Directory where the data is.
+    """
     sbml_path = join(data_directory, "annotation.xml")
     with open(sbml_path, "r") as f_in:
         # missing flux bounds are set to cobra.configuration.bounds
@@ -327,8 +402,14 @@ def test_missing_flux_bounds1(data_directory: str) -> None:
         assert r1.upper_bound == config.upper_bound
 
 
-def test_missing_flux_bounds2(data_directory):
-    """Test missing flux bounds set to [-INF, INF]."""
+def test_missing_flux_bounds2(data_directory: str) -> None:
+    """Test missing flux bounds set to [-INF, INF].
+
+    Parameters
+    ----------
+    data_directory: str
+        Directory where the data is.
+    """
     sbml_path = join(data_directory, "annotation.xml")
     with open(sbml_path, "r") as f_in:
         # missing flux bounds are set to [-INF, INF]
@@ -340,7 +421,13 @@ def test_missing_flux_bounds2(data_directory):
 
 
 def test_validate2(data_directory: str) -> None:
-    """Test the validation code."""
+    """Test the validation code.
+
+    Parameters
+    ----------
+    data_directory: str
+        Directory where the data is.
+    """
     sbml_path = join(data_directory, "mini_fbc2.xml")
     with open(sbml_path, "r") as f_in:
         # noinspection PyTupleAssignmentBalance
@@ -351,7 +438,13 @@ def test_validate2(data_directory: str) -> None:
 
 
 def test_validation_warnings(data_directory: str) -> None:
-    """Test the validation warnings."""
+    """Test the validation warnings.
+
+    Parameters
+    ----------
+    data_directory: str
+        Directory where the data is.
+    """
     sbml_path = join(data_directory, "validation.xml")
     with open(sbml_path, "r") as f_in:
         # noinspection PyTupleAssignmentBalance
@@ -363,13 +456,21 @@ def test_validation_warnings(data_directory: str) -> None:
 
 
 def test_infinity_bounds(data_directory: str, tmp_path: str) -> None:
-    """Test infinity bound example."""
+    """Test infinity bound example.
+
+    Parameters
+    ----------
+    data_directory: str
+        Directory where the data is.
+    tmp_path: str
+        Directory to use for temporary data.
+    """
     sbml_path = join(data_directory, "fbc_ex1.xml")
     model = read_sbml_model(sbml_path)
 
     # check that simulation works
     solution = model.optimize()
-    assert solution
+    assert solution is not None
 
     # check that values are set
     r = model.reactions.get_by_id("EX_X")
@@ -388,7 +489,13 @@ def test_infinity_bounds(data_directory: str, tmp_path: str) -> None:
 
 
 def test_boundary_conditions(data_directory: str) -> None:
-    """Test infinity bound example."""
+    """Test infinity bound example.
+
+    Parameters
+    ----------
+    data_directory: str
+        Directory where the data is.
+    """
     sbml_path1 = join(data_directory, "fbc_ex1.xml")
     model1 = read_sbml_model(sbml_path1)
     sol1 = model1.optimize()
@@ -406,7 +513,15 @@ def test_boundary_conditions(data_directory: str) -> None:
 
 
 def test_gprs(data_directory: str, tmp_path: str) -> None:
-    """Test that GPRs are written and read correctly."""
+    """Test that GPRs are written and read correctly.
+
+    Parameters
+    ----------
+    data_directory: str
+        Directory where the data is.
+    tmp_path: str
+        Directory to use for temporary data.
+    """
     model1 = read_sbml_model(join(data_directory, "iJO1366.xml.gz"))
 
     sbml_path = join(str(tmp_path), "test.xml")
@@ -460,7 +575,15 @@ def test_identifiers_annotation() -> None:
 
 
 def test_smbl_with_notes(data_directory: str, tmp_path: str) -> None:
-    """Test that NOTES in the RECON 2.2 style are written and read correctly."""
+    """Test that NOTES in the RECON 2.2 style are written and read correctly.
+
+    Parameters
+    ----------
+    data_directory: str
+        Directory where the data is.
+    tmp_path: str
+        Directory to use for temporary data.
+    """
     sbml_path = join(data_directory, "example_notes.xml")
     model = read_sbml_model(sbml_path)
     assert model.metabolites is not None
@@ -567,7 +690,15 @@ def test_smbl_with_notes(data_directory: str, tmp_path: str) -> None:
 
 
 def test_stable_gprs(data_directory: str, tmp_path: str) -> None:
-    """Test that GPRs are written correctly after manual changes."""
+    """Test that GPRs are written correctly after manual changes.
+
+    Parameters
+    ----------
+    data_directory: str
+        Directory where the data is.
+    tmp_path: str
+        Directory to use for temporary data.
+    """
     mini = read_sbml_model(join(data_directory, "mini_fbc2.xml"))
     mini.reactions.GLCpts.gene_reaction_rule = "((b2415 and b2417)or (b2416))"
     fixed = join(str(tmp_path), "fixed_gpr.xml")

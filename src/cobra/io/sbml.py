@@ -144,7 +144,7 @@ def _clip(sid: str, prefix: str) -> str:
     ----------
     sid: str
         String to clip.
-    prefix:
+    prefix: str
         Prefix to remove.
 
     Returns
@@ -162,8 +162,8 @@ def _f_gene(sid: str, prefix: str = "G_") -> str:
     ----------
     sid: str
         String to process
-    prefix: str
-        Prefix for gene, default "G_".
+    prefix: str, optional
+        Prefix for gene (default "G_").
 
     Returns
     -------
@@ -189,8 +189,8 @@ def _f_gene_rev(sid: str, prefix: str = "G_") -> str:
     ----------
     sid: str
         String to process
-    prefix: str
-        Prefix for gene, default "G_".
+    prefix: str, optional
+        Prefix for gene (default "G_").
 
     Returns
     -------
@@ -216,8 +216,8 @@ def _f_specie(sid: str, prefix: str = "M_") -> str:
     ----------
     sid: str
         String to process
-    prefix: str
-        Prefix for specie/metabolite, default "M_".
+    prefix: str, optional
+        Prefix for species/metabolite (default "M_").
 
     Returns
     -------
@@ -242,8 +242,8 @@ def _f_specie_rev(sid: str, prefix: str = "M_") -> str:
     ----------
     sid: str
         String to process
-    prefix: str
-        Prefix for metabolite, default "M_".
+    prefix: str, optional
+        Prefix for metabolite (default "M_").
 
     Returns
     -------
@@ -269,8 +269,8 @@ def _f_reaction(sid: str, prefix: str = "R_") -> str:
     ----------
     sid: str
         String to process
-    prefix: str
-        Prefix for reaction, default "R_".
+    prefix: str, optional
+        Prefix for reaction (default "R_").
 
     Returns
     -------
@@ -295,8 +295,8 @@ def _f_reaction_rev(sid: str, prefix: str = "R_") -> str:
     ----------
     sid: str
         String to process
-    prefix: str
-        Prefix for reaction, default "R_".
+    prefix: str, optional
+        Prefix for reaction (default "R_").
 
     Returns
     -------
@@ -322,8 +322,8 @@ def _f_group(sid: str, prefix: str = "G_") -> str:
     ----------
     sid: str
         String to process
-    prefix: str
-        Prefix for group, default "G_".
+    prefix: str, optional
+        Prefix for group (default "G_").
 
     Returns
     -------
@@ -348,8 +348,8 @@ def _f_group_rev(sid: str, prefix: str = "G_") -> str:
     ----------
     sid: str
         String to process
-    prefix: str
-        Prefix for group, default "G_".
+    prefix: str, optional
+        Prefix for group (default "G_").
 
     Returns
     -------
@@ -563,7 +563,7 @@ def _sbml_to_model(
 
     """
     if f_replace is None:
-        f_replace = dict()
+        f_replace = {}
 
     # SBML model
     model: "libsbml.Model" = doc.getModel()
@@ -1939,12 +1939,12 @@ def validate_sbml_model(
     check_model: boolean {True, False}, default True
         Whether to also check some basic model properties such as reaction
         boundaries and compartment formulas.
-    internal_consistency: boolean {True, False}, default True
-        Check internal consistency.
-    check_units_consistency: boolean {True, False}, default True
-        Check consistency of units.
-    check_modeling_practice: boolean {True, False}, default True
-        Check modeling practise.
+    internal_consistency: bool, optional
+        Check internal consistency (default True).
+    check_units_consistency: bool, optional
+        Check consistency of units (default True).
+    check_modeling_practice: bool, optional
+        Check modeling practise (defualt True).
     **kwargs:
         Further keyword arguments are passed on to the called function (_sbml_to_model).
 
@@ -2070,7 +2070,7 @@ def _error_string(error: "libsbml.SBMLError", k: Optional[int] = None):
     ----------
     error : libsbml.SBMLError
     k : int, optional
-        index of error
+        index of error (default None).
 
     Returns
     -------
