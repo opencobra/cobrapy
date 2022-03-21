@@ -589,7 +589,7 @@ class Reaction(Object):
         """
         return frozenset(self._genes)
 
-    def _update_genes_from_gpr(self) -> None:
+    def update_genes_from_gpr(self) -> None:
         """Update genes of reation based on GPR.
 
         If the reaction has a model, and new genes appear in the GPR, they will be
@@ -678,11 +678,11 @@ class Reaction(Object):
 
         See Also
         --------
-        _update_genes_from_gpr()
+        update_genes_from_gpr()
 
         """
         self._gpr = GPR.from_string(new_rule)
-        self._update_genes_from_gpr()
+        self.update_genes_from_gpr()
 
     @property
     def gene_name_reaction_rule(self):
@@ -721,10 +721,10 @@ class Reaction(Object):
         See Also
         --------
         cobra.core.gene.GPR()
-        _update_genes_from_gpr()
+        update_genes_from_gpr()
         """
         self._gpr = value
-        self._update_genes_from_gpr()
+        self.update_genes_from_gpr()
 
     @property
     def functional(self) -> bool:

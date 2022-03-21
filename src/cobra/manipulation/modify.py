@@ -193,7 +193,7 @@ def rename_genes(model: "Model", rename_dict: Dict[str, str]) -> None:
             gene_renamer.visit(rxn.gpr)
             if context:
                 context(partial(setattr, rxn, "gpr", old_gpr))
-                context(partial(rxn._update_genes_from_gpr))
+                context(partial(rxn.update_genes_from_gpr))
 
     model.repair()
 

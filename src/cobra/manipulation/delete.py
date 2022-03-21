@@ -355,9 +355,9 @@ def remove_genes(
                 rxn._genes = set()
             else:
                 rxns_to_revisit.add(rxn)
-        if context:
-            context(partial(setattr, rxn, "gpr", old_gpr))
-            context(partial(rxn._update_genes_from_gpr))
+            if context:
+                context(partial(setattr, rxn, "gpr", old_gpr))
+                context(partial(rxn.update_genes_from_gpr))
     for gene in gene_set:
         model.genes.remove(gene)
         gene._model = None
@@ -370,4 +370,4 @@ def remove_genes(
             group.remove_members(gene)
     model.remove_reactions(target_reactions)
     for rxn in rxns_to_revisit:
-        rxn._update_genes_from_gpr()
+        rxn.update_genes_from_gpr()

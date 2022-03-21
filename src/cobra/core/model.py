@@ -17,7 +17,11 @@ from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.core.reaction import Reaction
 from cobra.core.solution import get_solution
-from cobra.medium import find_boundary_types, find_external_compartment, sbo_terms
+from cobra.medium import (
+    find_boundary_types,
+    find_external_compartment,
+    sbo_terms,
+)
 from cobra.util.context import HistoryManager, get_context, resettable
 from cobra.util.solver import (
     add_cons_vars_to_problem,
@@ -371,7 +375,7 @@ class Model(Object):
                 new_met = new.metabolites.get_by_id(metabolite.id)
                 new_reaction._metabolites[new_met] = stoic
                 new_met._reaction.add(new_reaction)
-            new_reaction._update_genes_from_gpr()
+            new_reaction.update_genes_from_gpr()
 
         new.groups = DictList()
         do_not_copy_by_ref = {"_model", "_members"}
@@ -1116,7 +1120,7 @@ class Model(Object):
             for gene in self.genes:
                 gene._reaction.clear()
             for rxn in self.reactions:
-                rxn._update_genes_from_gpr()
+                rxn.update_genes_from_gpr()
                 for met in rxn._metabolites:
                     met._reaction.add(rxn)
 
