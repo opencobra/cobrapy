@@ -8,7 +8,7 @@ from ruamel.yaml import YAML
 
 from cobra import Model
 from cobra import io as cio
-from cobra.test.test_io.conftest import compare_models
+from tests.test_io.conftest import compare_models
 
 
 def test_load_yaml_model(data_directory: str, mini_model: Model) -> None:

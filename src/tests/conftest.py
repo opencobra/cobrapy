@@ -5,7 +5,7 @@ from os.path import join
 import pytest
 
 from cobra import Metabolite, Model, Reaction
-from cobra.test import create_test_model, data_dir
+from . import create_test_model, data_dir
 from cobra.util import solver as sutil
 
 

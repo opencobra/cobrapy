@@ -18,7 +18,7 @@ except ImportError:
 
 cobra_directory = abspath(join(dirname(abspath(__file__)), ".."))
 cobra_location = abspath(join(cobra_directory, ".."))
-data_dir = join(cobra_directory, "test", "data", "")
+data_dir = join(cobra_directory, "tests", "data", "")
 
 
 def create_test_model(model_name="salmonella"):

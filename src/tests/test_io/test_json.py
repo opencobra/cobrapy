@@ -9,7 +9,7 @@ from importlib_resources import open_text
 
 from cobra import Model
 from cobra import io as cio
-from cobra.test.test_io.conftest import compare_models
+from tests.test_io.conftest import compare_models
 
 
 @pytest.fixture(scope="module")

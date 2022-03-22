@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from cobra import io
-from cobra.test.test_io.conftest import compare_models
+from tests.test_io.conftest import compare_models
 
 
 try:

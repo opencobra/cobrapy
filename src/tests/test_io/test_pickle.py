@@ -9,7 +9,7 @@ from pickle import dump, load
 
 import pytest
 
-from cobra.test.test_io.conftest import compare_models
+from tests.test_io.conftest import compare_models
 
 
 try:
