@@ -1,27 +1,49 @@
-# -*- coding: utf-8 -*-
-
 """Contains module level fixtures and utility functions."""
-
-from __future__ import absolute_import
 
 from os.path import join
 from pickle import load
+from typing import Callable
 
 import pytest
 from optlang.interface import OPTIMAL
 
+from cobra import Model
+
 
 @pytest.fixture(scope="module")
-def mini_model(data_directory):
+def mini_model(data_directory: str):
     """Fixture for mini model."""
     with open(join(data_directory, "mini.pickle"), "rb") as infile:
         return load(infile)
 
 
 @pytest.fixture
-def compare_models():
-    def _compare_models(model_1, model_2):
-        """Compare two models (only for testing purposes)."""
+def compare_models() -> Callable:
+    """Compare models as a fixture.
+
+    Returns
+    -------
+    _compare_models: Callable
+        A function that will assert that the models are identical.
+
+    """
+
+    def _compare_models(model_1: Model, model_2: Model) -> None:
+        """Compare two models (only for testing purposes).
+
+        Parameters
+        ----------
+        model_1: Model
+            First model to compare.
+
+        model_2: Model
+            Second model to compare.
+
+        This function does not return anything, and does a series of asserts on the
+        two models. If the models are not identical, the asserts, and the test that
+        called them will fail.
+
+        """
         assert len(model_1.reactions) == len(model_2.reactions)
         assert len(model_1.metabolites) == len(model_2.metabolites)
         assert len(model_1.genes) == len(model_2.genes)
