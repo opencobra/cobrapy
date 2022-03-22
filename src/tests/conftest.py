@@ -5,6 +5,7 @@ from pickle import load as _load
 
 from cobra import Metabolite, Model, Reaction
 from cobra.io import read_sbml_model
+from . import create_test_model, data_dir
 from cobra.util import solver as sutil
 
 
