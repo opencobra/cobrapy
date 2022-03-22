@@ -170,11 +170,11 @@ def rename_genes(model: "Model", rename_dict: Dict[str, str]) -> None:
             # rename old gene to new gene
             gene = model.genes[gene_index]
             # trick DictList into updating index
-            model.genes._dict.pop(gene.id)  # ugh
+            model.genes._dict.pop(gene.id)
             gene.id = new_name
             model.genes[gene_index] = gene
             if context:
-                model.genes._dict.pop(gene.id)  # ugh
+                model.genes._dict.pop(gene.id)
                 gene.id = old_name
                 model.genes[gene_index] = gene
         elif not old_gene_present and new_gene_present:
