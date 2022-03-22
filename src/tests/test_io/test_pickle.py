@@ -9,8 +9,6 @@ from pickle import dump, load
 
 import pytest
 
-from tests.test_io.conftest import compare_models
-
 
 try:
     import cPickle
@@ -23,7 +21,7 @@ except ImportError:
 
 
 @pytest.mark.parametrize("load_function", [load, cload])
-def test_read_pickle(data_directory, mini_model, load_function):
+def test_read_pickle(compare_models, data_directory, mini_model, load_function):
     """Test the reading of model from pickle."""
     if load_function is None:
         pytest.skip()

@@ -2,16 +2,18 @@
 
 import json
 from os.path import join
+from typing import Callable
 
 import pytest
 from ruamel.yaml import YAML
 
 from cobra import Model
 from cobra import io as cio
-from tests.test_io.conftest import compare_models
 
 
-def test_load_yaml_model(data_directory: str, mini_model: Model) -> None:
+def test_load_yaml_model(
+    compare_models: Callable, data_directory: str, mini_model: Model
+) -> None:
     """Test the reading of YAML model."""
     yaml_model = cio.load_yaml_model(join(data_directory, "mini.yml"))
     assert compare_models(mini_model, yaml_model) is None

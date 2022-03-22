@@ -2,14 +2,13 @@
 
 import json
 from os.path import join
-from typing import Any, Dict, Union
+from typing import Any, Callable, Dict, Union
 
 import pytest
 from importlib_resources import open_text
 
 from cobra import Model
 from cobra import io as cio
-from tests.test_io.conftest import compare_models
 
 
 @pytest.fixture(scope="module")
@@ -30,7 +29,9 @@ def test_validate_json(
     assert jsonschema.validate(loaded, json_schema_v1) is None
 
 
-def test_load_json_model(data_directory: str, mini_model: Model) -> None:
+def test_load_json_model(
+    compare_models: Callable, data_directory: str, mini_model: Model
+) -> None:
     """Test the reading of JSON model."""
     json_model = cio.load_json_model(join(data_directory, "mini.json"))
     assert compare_models(mini_model, json_model) is None

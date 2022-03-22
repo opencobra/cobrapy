@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 import pytest
 
 from cobra import io
-from tests.test_io.conftest import compare_models
 
 
 try:
@@ -20,6 +19,7 @@ if TYPE_CHECKING:
     import py.path
 
     from cobra import Model
+    from typing import Callable
 
 
 @pytest.fixture(scope="function")
@@ -37,7 +37,10 @@ def raven_model(data_directory: str) -> "Model":
 #                            "raven.mat")])
 # TODO: wait for pytest.fixture_request() to get approved
 def test_load_matlab_model(
-    data_directory: str, mini_model: "Model", raven_model: "Model"
+    compare_models: Callable,
+    data_directory: str,
+    mini_model: "Model",
+    raven_model: "Model",
 ) -> None:
     """Test the reading of MAT model."""
     mini_mat_model = io.load_matlab_model(join(data_directory, "mini.mat"))
