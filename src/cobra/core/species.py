@@ -45,6 +45,7 @@ class Species(Object):
         self._model = None
         # references to reactions that operate on this species
         self._reaction = set()
+        self._comparment = None
 
     @property
     def reactions(self) -> FrozenSet:

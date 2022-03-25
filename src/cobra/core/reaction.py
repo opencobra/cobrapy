@@ -111,6 +111,8 @@ class Reaction(Object):
         # contains self
         self._model = None
 
+        self._compartment = None
+
         # from cameo ...
         self._lower_bound = (
             lower_bound if lower_bound is not None else config.lower_bound
@@ -1417,9 +1419,12 @@ class Reaction(Object):
         set
             A set of compartments the metabolites are in.
         """
-        return {
-            met.compartment for met in self._metabolites if met.compartment is not None
-        }
+        if self._compartment:
+            return set(self._compartment.id)
+        else:
+            return {
+                met.compartment for met in self._metabolites if met.compartment is not None
+            }
 
     def get_compartments(self) -> list:
         """List compartments the metabolites are in.
