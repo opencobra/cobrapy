@@ -1,10 +1,10 @@
 """Test functionalities of I/O in MATLAB (.mat) format."""
 
+import pathlib
 from os.path import join
 from pickle import load
 from typing import TYPE_CHECKING
 
-import pathlib
 import pytest
 
 from cobra import io
@@ -68,7 +68,7 @@ def test_save_matlab_model(
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
-def test_large_bounds(tmpdir: pathlib.Path, model: "Model"):
+def test_large_bounds(tmpdir: pathlib.Path, model: "Model") -> None:
     """Verify that mat bounds don't get broken by the config defaults."""
     model.reactions[0].bounds = -1e6, 1e6
     filepath = str(tmpdir.join("model.mat"))

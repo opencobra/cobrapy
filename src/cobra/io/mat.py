@@ -260,7 +260,7 @@ def from_mat_struct(
 
     """
     m = mat_struct
-    print(m.dtype.names)
+
     if m.dtype.names is None or not {"rxns", "mets", "S", "lb", "ub"} <= set(
         m.dtype.names
     ):
@@ -287,7 +287,7 @@ def from_mat_struct(
 
     for i, name in enumerate(m["mets"][0, 0]):
         new_metabolite = Metabolite()
-        new_metabolite.id = str(name[0][0])
+        new_metabolite.id = str(name[0][0]).strip()
         if all(var in m.dtype.names for var in ["metComps", "comps", "compNames"]):
             comp_index = m["metComps"][0, 0][i][0] - 1
             new_metabolite.compartment = m["comps"][0, 0][comp_index][0][0]
@@ -324,7 +324,7 @@ def from_mat_struct(
     coefficients = {}
     for i, name in enumerate(m["rxns"][0, 0]):
         new_reaction = Reaction()
-        new_reaction.id = str(name[0][0])
+        new_reaction.id = str(name[0][0]).strip()
         new_reaction.bounds = float(m["lb"][0, 0][i][0]), float(m["ub"][0, 0][i][0])
         if np.isinf(new_reaction.lower_bound) and new_reaction.lower_bound < 0:
             new_reaction.lower_bound = -inf
@@ -333,17 +333,17 @@ def from_mat_struct(
         if c_vec is not None:
             coefficients[new_reaction] = float(c_vec[i][0])
         try:
-            new_reaction.gene_reaction_rule = str(m["grRules"][0, 0][i][0][0])
+            new_reaction.gene_reaction_rule = str(m["grRules"][0, 0][i][0][0]).strip()
         except (IndexError, ValueError):
             # TODO: use custom cobra exception to handle exception
             pass
         try:
-            new_reaction.name = str(m["rxnNames"][0, 0][i][0][0])
+            new_reaction.name = str(m["rxnNames"][0, 0][i][0][0]).strip()
         except (IndexError, ValueError):
             # TODO: use custom cobra exception to handle exception
             pass
         try:
-            new_reaction.subsystem = str(m["subSystems"][0, 0][i][0][0])
+            new_reaction.subsystem = str(m["subSystems"][0, 0][i][0][0]).strip()
         except (IndexError, ValueError):
             # TODO: use custom cobra exception to handle exception
             pass
