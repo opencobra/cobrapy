@@ -6,6 +6,9 @@
 
 `model.copy()` will now correctly copy GPRs.
 
+Fixed an error where matlab models can not be read if their bounds exceed the configuration
+default in some cases.
+
 ## Other
 
 ## Deprecated features
