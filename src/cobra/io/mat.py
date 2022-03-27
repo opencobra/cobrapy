@@ -325,8 +325,7 @@ def from_mat_struct(
     for i, name in enumerate(m["rxns"][0, 0]):
         new_reaction = Reaction()
         new_reaction.id = str(name[0][0])
-        new_reaction.lower_bound = float(m["lb"][0, 0][i][0])
-        new_reaction.upper_bound = float(m["ub"][0, 0][i][0])
+        new_reaction.bounds = float(m["lb"][0, 0][i][0]), float(m["ub"][0, 0][i][0])
         if np.isinf(new_reaction.lower_bound) and new_reaction.lower_bound < 0:
             new_reaction.lower_bound = -inf
         if np.isinf(new_reaction.upper_bound) and new_reaction.upper_bound > 0:
