@@ -1,5 +1,6 @@
 """Test functionalities of I/O in MATLAB (.mat) format."""
 
+import pathlib
 from os.path import join
 from pickle import load
 from typing import TYPE_CHECKING
@@ -53,7 +54,7 @@ def test_load_matlab_model(
 #                            "raven.mat")])
 # TODO: wait for pytest.fixture_request() to get approved
 def test_save_matlab_model(
-    tmpdir: str, mini_model: "Model", raven_model: "Model"
+    tmpdir: pathlib.Path, mini_model: "Model", raven_model: "Model"
 ) -> None:
     """Test the writing of MAT model."""
     mini_output_file = tmpdir.join("mini.mat")
@@ -64,3 +65,13 @@ def test_save_matlab_model(
     io.save_matlab_model(raven_model, str(raven_output_file))
     assert mini_output_file.check()
     assert raven_output_file.check()
+
+
+@pytest.mark.skipif(scipy is None, reason="scipy unavailable")
+def test_large_bounds(tmpdir: pathlib.Path, model: "Model") -> None:
+    """Verify that mat bounds don't get broken by the config defaults."""
+    model.reactions[0].bounds = -1e6, 1e6
+    filepath = str(tmpdir.join("model.mat"))
+    io.save_matlab_model(model, filepath)
+    read = io.load_matlab_model(filepath)
+    assert read.reactions[0].bounds == (-1e6, 1e6)
