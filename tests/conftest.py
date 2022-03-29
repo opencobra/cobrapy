@@ -5,7 +5,6 @@ from pickle import load as _load
 
 from cobra import Metabolite, Model, Reaction
 from cobra.io import read_sbml_model
-from . import create_test_model, data_dir
 from cobra.util import solver as sutil
 
 
@@ -51,7 +50,13 @@ def test_all(args=None):
         args = args if args else []
 
         return pytest.main(
-            [str(abspath(join(cobra_directory, 'tests'))) , " --benchmark-skip", "-v", "-rs"] + args
+            [
+                str(abspath(join(cobra_directory, "tests"))),
+                "--benchmark-skip",
+                "-v",
+                "-rs",
+            ]
+            + args
         )
     else:
         raise ImportError(
