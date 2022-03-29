@@ -176,8 +176,8 @@ class Compartment(Group):
         FrozenSet of cobra.Reactions
             Reactions that belong to this compartment, both assigned and inferred.
         """
-        direct_set = set(self.assigned_reactions)
-        return frozenset(direct_set.union(self.inferred_reactions))
+        assigned_reactions = set(self.assigned_reactions)
+        return frozenset(assigned_reactions.union(self.inferred_reactions))
 
     def __contains__(self, member: Union[Metabolite, Reaction]):
         return self.members.__contains__(member)

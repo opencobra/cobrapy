@@ -23,6 +23,7 @@ from typing import (
 )
 from warnings import warn
 
+from .compartment import Compartment
 
 if TYPE_CHECKING:
     from optlang.interface import Variable
@@ -1438,6 +1439,18 @@ class Reaction(Object):
         """
         warn("use Reaction.compartments instead", DeprecationWarning)
         return list(self.compartments)
+
+    @property
+    def location(self) -> Optional[Compartment]:
+        """Get assigned compartment, if any.
+
+        Returns
+        -------
+        Compartment
+            Gets the compartment this reaction was explicitly assigned to, if one
+            exists. If no compartment was assigned, return None.
+        """
+        return self._compartment
 
     def _associate_gene(self, cobra_gene: Gene) -> None:
         """Associates a cobra.Gene object with a cobra.Reaction.
