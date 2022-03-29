@@ -17,7 +17,7 @@ except ImportError:
 
 
 cobra_directory = abspath(join(dirname(abspath(__file__)), ".."))
-cobra_location = abspath(join(cobra_directory, ".."))
+cobra_location = abspath(join(cobra_directory, "src"))
 data_dir = join(cobra_directory, "tests", "data", "")
 
 
@@ -51,7 +51,7 @@ def test_all(args=None):
         args = args if args else []
 
         return pytest.main(
-            ["--pyargs", "cobra", "--benchmark-skip", "-v", "-rs"] + args
+            [str(abspath(join(cobra_directory, 'tests'))) , " --benchmark-skip", "-v", "-rs"] + args
         )
     else:
         raise ImportError(
