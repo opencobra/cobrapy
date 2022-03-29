@@ -1,13 +1,8 @@
 """Provide functions for loading metabolic models from local package data."""
 
 
-import gzip
-from io import BytesIO
-from typing import List
-
 import importlib_resources
 from .abstract_model_repository import AbstractModelRepository
-
 
 
 class Cobrapy(AbstractModelRepository):
