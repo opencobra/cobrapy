@@ -10,7 +10,7 @@ from .. import Metabolite, Reaction, Model
 
 class Compartment(Group):
     """
-    Manage groups via this implementation of the SBML group specification.
+    Manage compartments via this implementation of the SBML group specification.
 
     `Compartment` is a class for holding information regarding a bounded space in
     which species are located. You can think of it as a location in a model,
@@ -29,13 +29,14 @@ class Compartment(Group):
     dimensions: float, optional
         Compartments can have dimensions defined, if they are volume (3 dimensions) or
         2 (a two-dimensional compartment, a surface, like a membrane). In theory, this
-        can be 1 or 0 dimensions, and even partial dimensions, but that will needlessly
-        complicate the math. The number of dimensions influences the size and units
-        used.
+        can be 1 or 0 dimensions, and even partial dimensions (fractal dimensions for
+        trees and vessels). For almost every application in constraint based modeling
+        this will be an integer. The number of dimensions influences the size and
+        units used.
     """
     def __init__(self, id: str, name: str = "", members: Optional[Iterable] = None,
                  dimensions: Optional[float] = None):
-        """Initialize the group object.
+        """Initialize the Compartment object.
 
          id : str
             The identifier to associate with this group
@@ -57,8 +58,8 @@ class Compartment(Group):
         super().__init__(id, name, members)
         for x in members:
             if not isinstance(x, (Metabolite, Reaction)):
-                raise(TypeError, f"Compartments should have only "
-                                 f"reactions or metabolites. {x} is a {type(x)}.")
+                raise(TypeError, f"Compartments should only have reactions or "
+                                 f"metabolites as members. {x} is a {type(x)}.")
         self._members = DictList() if members is None else DictList(members)
         self._compartment_type = None
         self.__delattr__("kind") # Compartments don't have kind
@@ -162,22 +163,6 @@ class Compartment(Group):
             Reactions that were assigned to this compartment, if any.
         """
         return frozenset(self._members.query(lambda x: isinstance(x, Reaction)))
-
-    @property
-    def reactions(self) -> FrozenSet[Reaction]:
-        """Return the reactions who belong to this compartment.
-
-        This is returned as a FrozenSet of reactions for each metabolite in the
-        compartment, if any, and the reactions that were assigned to this compartment
-        directly.
-
-        Returns
-        -------
-        FrozenSet of cobra.Reactions
-            Reactions that belong to this compartment, both assigned and inferred.
-        """
-        assigned_reactions = set(self.assigned_reactions)
-        return frozenset(assigned_reactions.union(self.inferred_reactions))
 
     def __contains__(self, member: Union[Metabolite, Reaction]):
         return self.members.__contains__(member)
