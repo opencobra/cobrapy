@@ -9,8 +9,6 @@ from pickle import dump, load
 
 import pytest
 
-from tests.test_io.conftest import compare_models
-
 
 try:
     import cPickle

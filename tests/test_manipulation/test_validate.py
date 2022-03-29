@@ -3,7 +3,10 @@
 import pytest
 
 from cobra.core import Metabolite, Model, Reaction
-from cobra.manipulation import check_mass_balance, check_metabolite_compartment_formula
+from cobra.manipulation import (
+    check_mass_balance,
+    check_metabolite_compartment_formula,
+)
 
 
 def test_validate_mass_balance(model: Model) -> None:
