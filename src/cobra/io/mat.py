@@ -285,6 +285,7 @@ def from_mat_struct(
     else:
         model.id = "imported_model"
 
+    new_metabolites = list()
     for i, name in enumerate(m["mets"][0, 0]):
         new_metabolite = Metabolite()
         new_metabolite.id = str(name[0][0]).strip()
@@ -318,7 +319,8 @@ def from_mat_struct(
         except (IndexError, ValueError):
             # TODO: use custom cobra exception to handle exception
             pass
-        model.add_metabolites([new_metabolite])
+        new_metabolites.append(new_metabolite)
+    model.add_metabolites(new_metabolites)
 
     new_reactions = []
     coefficients = {}
@@ -351,9 +353,12 @@ def from_mat_struct(
     model.add_reactions(new_reactions)
     set_objective(model, coefficients)
 
-    coo = scipy_sparse.coo_matrix(m["S"][0, 0])
-    for i, j, v in zip(coo.row, coo.col, coo.data):
-        model.reactions[j].add_metabolites({model.metabolites[i]: v})
+    csc = scipy_sparse.csc_matrix(m["S"][0, 0])
+    for i in range(csc.shape[1]):
+        stoic_dict = {}
+        for j in csc.getcol(i).nonzero()[0]:
+            stoic_dict[model.metabolites[j]] = csc[j, i]
+        model.reactions[i].add_metabolites(stoic_dict)
     return model
 
 
