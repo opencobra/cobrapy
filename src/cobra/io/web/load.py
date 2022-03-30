@@ -14,6 +14,7 @@ from ..sbml import _sbml_to_model
 from .abstract_model_repository import AbstractModelRepository
 from .bigg_models_repository import BiGGModels
 from .biomodels_repository import BioModels
+from .cobrapy_repository import Cobrapy
 
 
 if TYPE_CHECKING:
@@ -26,7 +27,7 @@ configuration = Configuration()
 
 def load_model(
     model_id: str,
-    repositories: Iterable[AbstractModelRepository] = (BiGGModels(), BioModels()),
+    repositories: Iterable[AbstractModelRepository] = (BiGGModels(), BioModels(), Cobrapy()),
     cache: bool = True,
 ) -> "Model":
     """
