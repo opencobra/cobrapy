@@ -27,7 +27,11 @@ configuration = Configuration()
 
 def load_model(
     model_id: str,
-    repositories: Iterable[AbstractModelRepository] = (BiGGModels(), BioModels(), Cobrapy()),
+    repositories: Iterable[AbstractModelRepository] = (
+        BiGGModels(),
+        BioModels(),
+        Cobrapy(),
+    ),
     cache: bool = True,
 ) -> "Model":
     """
