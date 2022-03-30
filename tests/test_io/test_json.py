@@ -5,7 +5,7 @@ from os.path import join
 from typing import Any, Callable, Dict, Union
 
 import pytest
-from importlib_resources import open_text
+from importlib_resources import files
 
 from cobra import Model
 from cobra import io as cio
@@ -14,7 +14,7 @@ from cobra import io as cio
 @pytest.fixture(scope="module")
 def json_schema_v1() -> Dict[str, Union[str, bool, Any]]:
     """Fixture for cobra JSON-schema."""
-    with open_text(cio, "schema_v1.json") as handle:
+    with files(cio).joinpath("schema_v1.json").open('r') as handle:
         schema_v1 = json.load(handle)
     return schema_v1
 

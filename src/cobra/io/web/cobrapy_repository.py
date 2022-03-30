@@ -9,7 +9,14 @@ from .abstract_model_repository import AbstractModelRepository
 class Cobrapy(AbstractModelRepository):
     """
     Define a concrete implementation of the cobrapy (local package) repository.
+
+     Attributes
+    ----------
+    name : str
+        The name of the Cobrapy repository.
     """
+
+    name: str = "Cobrapy"
 
     def __init__(
         self,
@@ -40,12 +47,6 @@ class Cobrapy(AbstractModelRepository):
         -------
         bytes
             A gzip-compressed, UTF-8 encoded SBML document.
-
-        Raises
-        ------
-        httpx.HTTPError
-            In case there are any connection problems.
-
         """
         cobra_data_dir = importlib_resources.files("cobra.data")
         model_file = cobra_data_dir.joinpath(f"{model_id}.xml.gz")

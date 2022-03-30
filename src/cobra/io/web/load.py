@@ -28,14 +28,16 @@ configuration = Configuration()
 def load_model(
     model_id: str,
     repositories: Iterable[AbstractModelRepository] = (
+        Cobrapy(),
         BiGGModels(),
         BioModels(),
-        Cobrapy(),
     ),
     cache: bool = True,
 ) -> "Model":
     """
     Download an SBML model from a remote repository.
+
+    It will try the local repository first.
 
     Downloaded SBML documents are by default stored in a cache on disk such that future
     access is much faster. By default, models can be loaded from the following
@@ -155,6 +157,11 @@ def _fetch_model(
         )
         try:
             return repository.get_sbml(model_id=model_id)
+        except FileNotFoundError:
+            logger.debug(
+                f"Model '{model_id} not found in the local "
+                f"repository {repository.name}.'"
+            )
         except httpx.HTTPStatusError as error:
             if error.response.status_code == 404:
                 logger.debug(
