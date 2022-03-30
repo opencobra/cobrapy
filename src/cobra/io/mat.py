@@ -355,9 +355,8 @@ def from_mat_struct(
 
     csc = scipy_sparse.csc_matrix(m["S"][0, 0])
     for i in range(csc.shape[1]):
-        stoic_dict = {}
-        for j in csc.getcol(i).nonzero()[0]:
-            stoic_dict[model.metabolites[j]] = csc[j, i]
+        stoic_dict = {model.metabolites[j]: csc[j, i] for j in
+                      csc.getcol(i).nonzero()[0]}
         model.reactions[i].add_metabolites(stoic_dict)
     return model
 
