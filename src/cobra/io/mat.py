@@ -12,6 +12,7 @@ from ..core import Metabolite, Model, Reaction
 from ..util import create_stoichiometric_matrix
 from ..util.solver import set_objective
 
+
 try:
     import scipy.io as scipy_io
     import scipy.sparse as scipy_sparse
@@ -285,11 +286,13 @@ def from_mat_struct(
     ):
         raise ValueError("Invalid MATLAB struct.")
 
-    if 'metCharge' in m.dtype.names and 'metCharges' not in m.dtype.names:
-        warn('This model seems to have metCharge instead of metCharges field. Will use'
-             'metCharge for metabolite charges.')
+    if "metCharge" in m.dtype.names and "metCharges" not in m.dtype.names:
+        warn(
+            "This model seems to have metCharge instead of metCharges field. Will use"
+            "metCharge for metabolite charges."
+        )
         new_names = list(m.dtype.names)
-        new_names[new_names.index('metCharge')] = 'metCharges'
+        new_names[new_names.index("metCharge")] = "metCharges"
         m.dtype.names = new_names
 
     if "c" in m.dtype.names:
@@ -344,10 +347,9 @@ def from_mat_struct(
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass
-    annotation_providers = set(m.dtype.names).intersection(
-        MET_MATLAB_TO_PROVIDERS.keys()
+    annotation_providers = list(
+        set(m.dtype.names).intersection(MET_MATLAB_TO_PROVIDERS.keys())
     )
-    annotation_providers = list(annotation_providers)
     annotation_lists = [[None]] * len(annotation_providers)
     for i in range(len(annotation_providers)):
         annotation_lists[i] = [
@@ -374,31 +376,54 @@ def from_mat_struct(
     model.add_metabolites(new_metabolites)
 
     new_reactions = []
-    for i, name in enumerate(m["rxns"][0, 0]):
-        new_reaction = Reaction()
-        new_reaction.id = str(name[0][0]).strip()
-        new_reaction.bounds = float(m["lb"][0, 0][i][0]), float(m["ub"][0, 0][i][0])
-        if np.isinf(new_reaction.lower_bound) and new_reaction.lower_bound < 0:
-            new_reaction.lower_bound = -inf
-        if np.isinf(new_reaction.upper_bound) and new_reaction.upper_bound > 0:
-            new_reaction.upper_bound = inf
-        try:
-            new_reaction.gene_reaction_rule = str(m["grRules"][0, 0][i][0][0]).strip()
-        except (IndexError, ValueError):
-            # TODO: use custom cobra exception to handle exception
-            pass
-        try:
-            new_reaction.name = str(m["rxnNames"][0, 0][i][0][0]).strip()
-        except (IndexError, ValueError):
-            # TODO: use custom cobra exception to handle exception
-            pass
-        try:
-            new_reaction.subsystem = str(m["subSystems"][0, 0][i][0][0]).strip()
-        except (IndexError, ValueError):
-            # TODO: use custom cobra exception to handle exception
-            pass
+    rxn_ids = [str(x[0][0]).strip() for x in m["rxns"][0, 0]]
+    rxn_lbs = [float(x[0]) for x in m["lb"][0, 0]]
+    rxn_lbs = [-inf if np.isinf(x) and x < 0 else x for x in rxn_lbs]
+    rxn_ubs = [float(x[0]) for x in m["ub"][0, 0]]
+    rxn_ubs = [-inf if np.isinf(x) and x > 0 else x for x in rxn_ubs]
+    rxn_gene_rules, rxn_names, rxn_subsystems = None, None, None
+    try:
+        rxn_gene_rules = [
+            str(x[0][0]).strip() if np.size(x[0]) else "" for x in m["grRules"][0, 0]
+        ]
+    except (IndexError, ValueError):
+        # TODO: use custom cobra exception to handle exception
+        pass
+    try:
+        rxn_names = [
+            str(x[0][0]).strip() if np.size(x[0]) else "" for x in m["rxnNames"][0, 0]
+        ]
+    except (IndexError, ValueError):
+        # TODO: use custom cobra exception to handle exception
+        pass
+    try:
+        rxn_subsystems = [
+            str(x[0][0]).strip() if np.size(x[0]) else None
+            for x in m["subSystems"][0, 0]
+        ]
+    except (IndexError, ValueError):
+        # TODO: use custom cobra exception to handle exception
+        pass
+    for i in range(len(rxn_ids)):
+        new_reaction = Reaction(
+            id=rxn_ids[i], lower_bound=rxn_lbs[i], upper_bound=rxn_ubs[i]
+        )
+        if rxn_names:
+            new_reaction.name = rxn_names[i]
+        if rxn_subsystems:
+            new_reaction.subsystem = rxn_subsystems[i]
+        if rxn_gene_rules:
+            new_reaction.gene_reaction_rule = rxn_gene_rules[i]
         new_reactions.append(new_reaction)
     model.add_reactions(new_reactions)
+
+    csc = scipy_sparse.csc_matrix(m["S"][0, 0])
+    for i in range(csc.shape[1]):
+        stoic_dict = {
+            model.metabolites[j]: csc[j, i] for j in csc.getcol(i).nonzero()[0]
+        }
+        model.reactions[i].add_metabolites(stoic_dict)
+
     if c_vec is not None:
         coefficients = dict(zip(new_reactions, c_vec))
         set_objective(model, coefficients)
@@ -410,13 +435,6 @@ def from_mat_struct(
         if osense > 0:
             objective_direction_str = "min"
         model.objective_direction = objective_direction_str
-
-    csc = scipy_sparse.csc_matrix(m["S"][0, 0])
-    for i in range(csc.shape[1]):
-        stoic_dict = {
-            model.metabolites[j]: csc[j, i] for j in csc.getcol(i).nonzero()[0]
-        }
-        model.reactions[i].add_metabolites(stoic_dict)
     return model
 
 
