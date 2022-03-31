@@ -91,6 +91,9 @@ def _cell(x: Iterable[str]) -> np.ndarray:
     return np.array(x_no_none, dtype=object)
 
 
+def _cell_to_str_list(m_cell: np.ndarray, empty_value: Optional[str] = None) -> list:
+    return [str(x[0][0]).strip() if np.size(x) else empty_value for x in m_cell]
+
 def load_matlab_model(
     infile_path: str, variable_name: Optional[str] = None, inf: float = np.inf
 ) -> Model:
@@ -314,11 +317,11 @@ def from_mat_struct(
     else:
         model.id = "imported_model"
 
-    met_ids = [str(x[0][0]).strip() for x in m["mets"][0, 0]]
+    met_ids = _cell_to_str_list(m["mets"][0, 0])
     if all(var in m.dtype.names for var in ["metComps", "comps", "compNames"]):
         met_comp_index = [x[0] - 1 for x in m["metComps"][0][0]]
-        comps = [x[0][0] for x in m["comps"][0, 0]]
-        comp_names = [x[0][0] for x in m["compNames"][0][0]]
+        comps = _cell_to_str_list(m["comps"][0, 0])
+        comp_names = _cell_to_str_list(m["compNames"][0][0])
         met_comps = [comps[i] for i in met_comp_index]
         met_comp_names = [comp_names[i] for i in met_comp_index]
     else:
@@ -327,16 +330,12 @@ def from_mat_struct(
     model.compartments.update(dict(zip(met_comps, met_comp_names)))
     met_names, met_formulas, met_charges = None, None, None
     try:
-        met_names = [
-            str(x[0][0]) if np.size(x[0]) else None for x in m["metNames"][0, 0]
-        ]
+        met_names = _cell_to_str_list(m["metNames"][0, 0])
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass
     try:
-        met_formulas = [
-            str(x[0][0]) if np.size(x[0]) else None for x in m["metFormulas"][0, 0]
-        ]
+        met_formulas = _cell_to_str_list(m["metFormulas"][0, 0])
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass
@@ -352,10 +351,7 @@ def from_mat_struct(
     )
     annotation_lists = [[None]] * len(annotation_providers)
     for i in range(len(annotation_providers)):
-        annotation_lists[i] = [
-            str(x[0][0]) if np.size(x[0]) else None
-            for x in m[annotation_providers[i]][0, 0]
-        ]
+        annotation_lists[i] = _cell_to_str_list(m[annotation_providers[i]][0, 0])
     new_metabolites = list()
     for i in range(len(met_ids)):
         new_metabolite = Metabolite(met_ids[i], compartment=met_comps[i])
@@ -376,31 +372,24 @@ def from_mat_struct(
     model.add_metabolites(new_metabolites)
 
     new_reactions = []
-    rxn_ids = [str(x[0][0]).strip() for x in m["rxns"][0, 0]]
+    rxn_ids = _cell_to_str_list(m["rxns"][0, 0])
     rxn_lbs = [float(x[0]) for x in m["lb"][0, 0]]
     rxn_lbs = [-inf if np.isinf(x) and x < 0 else x for x in rxn_lbs]
     rxn_ubs = [float(x[0]) for x in m["ub"][0, 0]]
     rxn_ubs = [-inf if np.isinf(x) and x > 0 else x for x in rxn_ubs]
     rxn_gene_rules, rxn_names, rxn_subsystems = None, None, None
     try:
-        rxn_gene_rules = [
-            str(x[0][0]).strip() if np.size(x[0]) else "" for x in m["grRules"][0, 0]
-        ]
+        rxn_gene_rules = _cell_to_str_list(m["grRules"][0, 0], "")
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass
     try:
-        rxn_names = [
-            str(x[0][0]).strip() if np.size(x[0]) else "" for x in m["rxnNames"][0, 0]
-        ]
+        rxn_names = _cell_to_str_list(m["rxnNames"][0, 0], "")
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass
     try:
-        rxn_subsystems = [
-            str(x[0][0]).strip() if np.size(x[0]) else None
-            for x in m["subSystems"][0, 0]
-        ]
+        rxn_subsystems = _cell_to_str_list(m["subSystems"][0, 0])
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass
