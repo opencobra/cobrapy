@@ -92,7 +92,11 @@ def _cell(x: Iterable[str]) -> np.ndarray:
 
 
 def _cell_to_str_list(m_cell: np.ndarray, empty_value: Optional[str] = None) -> list:
-    return [str(x[0][0]).strip() if np.size(x) else empty_value for x in m_cell]
+    return [str(x[0][0]).strip() if np.size(x[0]) else empty_value for x in m_cell]
+
+
+def _cell_to_float_list(m_cell: np.ndarray, empty_value: Optional[float] = None) -> list:
+    return [float(x[0]) if np.size(x[0]) else empty_value for x in m_cell]
 
 def load_matlab_model(
     infile_path: str, variable_name: Optional[str] = None, inf: float = np.inf
@@ -299,7 +303,7 @@ def from_mat_struct(
         m.dtype.names = new_names
 
     if "c" in m.dtype.names:
-        c_vec = [float(x[0]) for x in m["c"][0, 0]]
+        c_vec = _cell_to_float_list(m["c"][0, 0])
     else:
         c_vec = None
         warn("Objective vector `c` not found.")
@@ -340,9 +344,7 @@ def from_mat_struct(
         # TODO: use custom cobra exception to handle exception
         pass
     try:
-        met_charges = [
-            float(x[0]) if np.size(x[0]) else None for x in m["metCharges"][0, 0]
-        ]
+        met_charges = _cell_to_float_list(m["metCharges"][0, 0])
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass
@@ -373,9 +375,9 @@ def from_mat_struct(
 
     new_reactions = []
     rxn_ids = _cell_to_str_list(m["rxns"][0, 0])
-    rxn_lbs = [float(x[0]) for x in m["lb"][0, 0]]
+    rxn_lbs = _cell_to_float_list(m["lb"][0, 0])
     rxn_lbs = [-inf if np.isinf(x) and x < 0 else x for x in rxn_lbs]
-    rxn_ubs = [float(x[0]) for x in m["ub"][0, 0]]
+    rxn_ubs = _cell_to_float_list(m["ub"][0, 0])
     rxn_ubs = [-inf if np.isinf(x) and x > 0 else x for x in rxn_ubs]
     rxn_gene_rules, rxn_names, rxn_subsystems = None, None, None
     try:
