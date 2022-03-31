@@ -12,7 +12,6 @@ from ..core import Metabolite, Model, Reaction
 from ..util import create_stoichiometric_matrix
 from ..util.solver import set_objective
 
-
 try:
     import scipy.io as scipy_io
     import scipy.sparse as scipy_sparse
@@ -20,10 +19,30 @@ except ImportError:
     scipy_sparse = None
     scipy_io = None
 
-
 if TYPE_CHECKING:
     import pymatbridge
 
+MET_MATLAB_TO_PROVIDERS = {
+    "metHMDBID": "hmdb",
+    "metInChIString": "inchi",
+    "metKEGGID": "kegg.compound",
+    "metPubChemID": "pubchem",
+    "metCHEBIID": "CHEBI",
+    "metMetaNetXID": "metanetx.chemical",
+    "metSEEDID": "seed.compound",
+    "metBiGGID": "bigg.metabolite",
+    "metBioCycID": "biocyc",
+    "metEnviPathID": "envipath",
+    "metLIPIDMAPSID": "lipidmaps",
+    "metReactomeID": "reactome",
+    "metSABIORKID": "sabiork.compound",
+    "metSLMID": "SLM",
+    "metSMILES": "SMILES",
+}
+
+MET_PROVIDERS_TO_MATLAB = {
+    MET_MATLAB_TO_PROVIDERS[k]: k for k in MET_MATLAB_TO_PROVIDERS.keys()
+}
 
 # precompiled regular expressions (kept globally for caching)
 _bracket_re = re.compile(r"\[(?P<compartment>[a-z]+)\]$")
@@ -233,6 +252,175 @@ def create_mat_dict(model: Model) -> OrderedDict:
 
 
 def from_mat_struct(
+    mat_struct: np.ndarray,
+    model_id: Optional[str] = None,
+    inf: float = np.inf,
+) -> Model:
+    """Create a model from the cobratoolbox struct.
+
+    Parameters
+    ----------
+    mat_struct : numpy.ndarray
+        The `numpy.ndarray` that most likely contains the model, being chosen by
+        load_matlab_file after loading the matlab structure via scipy_io.loadmat.
+    model_id : str, optional
+        The ID of the model generated. If None, will try to look for ID in
+        model's description. If multiple IDs are found, the first one is
+        used. If no IDs are found, will use 'imported_model' (default None).
+    inf : float, optional
+        The value to use for infinite bounds. Some solvers do not handle
+        infinite values so for using those, set this to a high numeric value
+        (default `numpy.inf`).
+
+    Returns
+    -------
+    cobra.Model
+        The model as represented in .mat file.
+
+    """
+    m = mat_struct
+
+    if m.dtype.names is None or not {"rxns", "mets", "S", "lb", "ub"} <= set(
+        m.dtype.names
+    ):
+        raise ValueError("Invalid MATLAB struct.")
+
+    if 'metCharge' in m.dtype.names and 'metCharges' not in m.dtype.names:
+        warn('This model seems to have metCharge instead of metCharges field. Will use'
+             'metCharge for metabolite charges.')
+        new_names = list(m.dtype.names)
+        new_names[new_names.index('metCharge')] = 'metCharges'
+        m.dtype.names = new_names
+
+    if "c" in m.dtype.names:
+        c_vec = [float(x[0]) for x in m["c"][0, 0]]
+    else:
+        c_vec = None
+        warn("Objective vector `c` not found.")
+
+    model = Model()
+    if model_id is not None:
+        model.id = model_id
+    elif "description" in m.dtype.names:
+        description = m["description"][0, 0][0]
+        if not isinstance(description, str) and len(description) > 1:
+            model.id = description[0]
+            warn("Several IDs detected, only using the first.")
+        else:
+            model.id = description
+    else:
+        model.id = "imported_model"
+
+    met_ids = [str(x[0][0]).strip() for x in m["mets"][0, 0]]
+    if all(var in m.dtype.names for var in ["metComps", "comps", "compNames"]):
+        met_comp_index = [x[0] - 1 for x in m["metComps"][0][0]]
+        comps = [x[0][0] for x in m["comps"][0, 0]]
+        comp_names = [x[0][0] for x in m["compNames"][0][0]]
+        met_comps = [comps[i] for i in met_comp_index]
+        met_comp_names = [comp_names[i] for i in met_comp_index]
+    else:
+        met_comps = [_get_id_compartment(x) for x in met_ids]
+        met_comp_names = met_comps
+    model.compartments.update(dict(zip(met_comps, met_comp_names)))
+    met_names, met_formulas, met_charges = None, None, None
+    try:
+        met_names = [
+            str(x[0][0]) if np.size(x[0]) else None for x in m["metNames"][0, 0]
+        ]
+    except (IndexError, ValueError):
+        # TODO: use custom cobra exception to handle exception
+        pass
+    try:
+        met_formulas = [
+            str(x[0][0]) if np.size(x[0]) else None for x in m["metFormulas"][0, 0]
+        ]
+    except (IndexError, ValueError):
+        # TODO: use custom cobra exception to handle exception
+        pass
+    try:
+        met_charges = [
+            float(x[0]) if np.size(x[0]) else None for x in m["metCharges"][0, 0]
+        ]
+    except (IndexError, ValueError):
+        # TODO: use custom cobra exception to handle exception
+        pass
+    annotation_providers = set(m.dtype.names).intersection(
+        MET_MATLAB_TO_PROVIDERS.keys()
+    )
+    annotation_providers = list(annotation_providers)
+    annotation_lists = [[None]] * len(annotation_providers)
+    for i in range(len(annotation_providers)):
+        annotation_lists[i] = [
+            str(x[0][0]) if np.size(x[0]) else None
+            for x in m[annotation_providers[i]][0, 0]
+        ]
+    new_metabolites = list()
+    for i in range(len(met_ids)):
+        new_metabolite = Metabolite(met_ids[i], compartment=met_comps[i])
+        if met_names:
+            new_metabolite.name = met_names[i]
+        if met_charges:
+            new_metabolite.charge = met_charges[i]
+        if met_formulas:
+            new_metabolite.formula = met_formulas[i]
+        annotation_dict = {
+            annotation_providers[j]: annotation_lists[j][i]
+            for j in range(len(annotation_providers))
+            if annotation_lists[j][i]
+        }
+        if len(annotation_dict):
+            new_metabolite.annotation = annotation_dict
+        new_metabolites.append(new_metabolite)
+    model.add_metabolites(new_metabolites)
+
+    new_reactions = []
+    for i, name in enumerate(m["rxns"][0, 0]):
+        new_reaction = Reaction()
+        new_reaction.id = str(name[0][0]).strip()
+        new_reaction.bounds = float(m["lb"][0, 0][i][0]), float(m["ub"][0, 0][i][0])
+        if np.isinf(new_reaction.lower_bound) and new_reaction.lower_bound < 0:
+            new_reaction.lower_bound = -inf
+        if np.isinf(new_reaction.upper_bound) and new_reaction.upper_bound > 0:
+            new_reaction.upper_bound = inf
+        try:
+            new_reaction.gene_reaction_rule = str(m["grRules"][0, 0][i][0][0]).strip()
+        except (IndexError, ValueError):
+            # TODO: use custom cobra exception to handle exception
+            pass
+        try:
+            new_reaction.name = str(m["rxnNames"][0, 0][i][0][0]).strip()
+        except (IndexError, ValueError):
+            # TODO: use custom cobra exception to handle exception
+            pass
+        try:
+            new_reaction.subsystem = str(m["subSystems"][0, 0][i][0][0]).strip()
+        except (IndexError, ValueError):
+            # TODO: use custom cobra exception to handle exception
+            pass
+        new_reactions.append(new_reaction)
+    model.add_reactions(new_reactions)
+    if c_vec is not None:
+        coefficients = dict(zip(new_reactions, c_vec))
+        set_objective(model, coefficients)
+    if "osenseStr" in m.dtype.names:
+        model.objective_direction = str(m["osenseStr"][0, 0][0][0])
+    elif "osense" in m.dtype.names:
+        osense = float(m["osense"][0, 0][0][0])
+        objective_direction_str = "max"
+        if osense > 0:
+            objective_direction_str = "min"
+        model.objective_direction = objective_direction_str
+
+    csc = scipy_sparse.csc_matrix(m["S"][0, 0])
+    for i in range(csc.shape[1]):
+        stoic_dict = {
+            model.metabolites[j]: csc[j, i] for j in csc.getcol(i).nonzero()[0]
+        }
+        model.reactions[i].add_metabolites(stoic_dict)
+    return model
+
+
+def from_mat_struct_orig(
     mat_struct: Dict[str, np.ndarray],
     model_id: Optional[str] = None,
     inf: float = np.inf,
@@ -355,8 +543,9 @@ def from_mat_struct(
 
     csc = scipy_sparse.csc_matrix(m["S"][0, 0])
     for i in range(csc.shape[1]):
-        stoic_dict = {model.metabolites[j]: csc[j, i] for j in
-                      csc.getcol(i).nonzero()[0]}
+        stoic_dict = {
+            model.metabolites[j]: csc[j, i] for j in csc.getcol(i).nonzero()[0]
+        }
         model.reactions[i].add_metabolites(stoic_dict)
     return model
 
