@@ -2,7 +2,7 @@
 
 import re
 from collections import OrderedDict
-from typing import TYPE_CHECKING, Dict, Iterable, Optional
+from typing import TYPE_CHECKING, Dict, Iterable, Optional, List
 from uuid import uuid4
 from warnings import warn
 
@@ -91,12 +91,41 @@ def _cell(x: Iterable[str]) -> np.ndarray:
     return np.array(x_no_none, dtype=object)
 
 
-def _cell_to_str_list(m_cell: np.ndarray, empty_value: Optional[str] = None) -> list:
+def _cell_to_str_list(m_cell: np.ndarray, empty_value: Optional[str] = None) -> List:
+    """Turn an ndarray (cell) to a list of strings.
+
+    Parameters
+    ----------
+    m_cell: np.ndarray
+    empty_value: str, optional
+        What value to replace empty cells with. Default None.
+
+    Returns
+    -------
+    List
+        A list of processed strings.
+    """
     return [str(x[0][0]).strip() if np.size(x[0]) else empty_value for x in m_cell]
 
 
-def _cell_to_float_list(m_cell: np.ndarray, empty_value: Optional[float] = None) -> list:
+def _cell_to_float_list(
+    m_cell: np.ndarray, empty_value: Optional[float] = None
+) -> List:
+    """Turn an ndarray (cell) to a list of floats.
+
+    Parameters
+    ----------
+    m_cell: np.ndarray
+    empty_value: float, optional
+        What value to replace empty cells with. Default None.
+
+    Returns
+    -------
+    List
+        A list of processed floats.
+    """
     return [float(x[0]) if np.size(x[0]) else empty_value for x in m_cell]
+
 
 def load_matlab_model(
     infile_path: str, variable_name: Optional[str] = None, inf: float = np.inf
