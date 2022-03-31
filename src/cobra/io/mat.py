@@ -2,7 +2,7 @@
 
 import re
 from collections import OrderedDict
-from typing import TYPE_CHECKING, Dict, Iterable, Optional, List
+from typing import TYPE_CHECKING, Dict, Iterable, List, Optional
 from uuid import uuid4
 from warnings import warn
 
@@ -39,10 +39,31 @@ MET_MATLAB_TO_PROVIDERS = {
     "metSABIORKID": "sabiork.compound",
     "metSLMID": "SLM",
     "metSMILES": "SMILES",
+    "metSBOTerm": "SBO",
 }
 
 MET_PROVIDERS_TO_MATLAB = {
     MET_MATLAB_TO_PROVIDERS[k]: k for k in MET_MATLAB_TO_PROVIDERS.keys()
+}
+
+RXN_MATLAB_TO_PROVIDERS = {
+    "rxnECNumbers": "ec-code",
+    "rxnReferences": "pubmed",
+    "rxnKEGGID": "kegg.reaction",
+    "rxnKEGGPathways": "kegg.pathway",
+    "rxnMetaNetXID": "metanetx.reaction",
+    "rxnSEEDID": "seed.reaction",
+    "rxnBiGGID": "bigg.reaction",
+    "rxnBioCycID": "biocyc",
+    "rxnRheaID": "rhea",
+    "rxnReactomeID": "reactome",
+    "rxnSABIORKID": "sabiork.reaction",
+    "rxnBRENDAID": "brenda",
+    "rxnSBOTerms": "SBO",
+}
+
+RXN_PROVIDERS_TO_MATLAB = {
+    RXN_MATLAB_TO_PROVIDERS[k]: k for k in RXN_MATLAB_TO_PROVIDERS.keys()
 }
 
 # precompiled regular expressions (kept globally for caching)
@@ -349,6 +370,8 @@ def from_mat_struct(
             model.id = description
     else:
         model.id = "imported_model"
+    if "modelName" in m.dtype.names:
+        model.name = m["modelName"][0, 0][0]
 
     met_ids = _cell_to_str_list(m["mets"][0, 0])
     if all(var in m.dtype.names for var in ["metComps", "comps", "compNames"]):
@@ -377,12 +400,13 @@ def from_mat_struct(
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass
-    annotation_providers = list(
+    annotation_matlab = list(
         set(m.dtype.names).intersection(MET_MATLAB_TO_PROVIDERS.keys())
     )
-    annotation_lists = [[None]] * len(annotation_providers)
-    for i in range(len(annotation_providers)):
-        annotation_lists[i] = _cell_to_str_list(m[annotation_providers[i]][0, 0])
+    annotation_lists = [[None]] * len(annotation_matlab)
+    annotation_providers = [MET_MATLAB_TO_PROVIDERS[x] for x in annotation_matlab]
+    for i in range(len(annotation_matlab)):
+        annotation_lists[i] = _cell_to_str_list(m[annotation_matlab[i]][0, 0])
     new_metabolites = list()
     for i in range(len(met_ids)):
         new_metabolite = Metabolite(met_ids[i], compartment=met_comps[i])
@@ -424,6 +448,26 @@ def from_mat_struct(
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass
+    annotation_matlab = list(
+        set(m.dtype.names).intersection(RXN_MATLAB_TO_PROVIDERS.keys())
+    )
+    annotation_lists = [[None]] * len(annotation_matlab)
+    annotation_providers = [RXN_MATLAB_TO_PROVIDERS[x] for x in annotation_matlab]
+    for i in range(len(annotation_matlab)):
+        annotation_lists[i] = _cell_to_str_list(m[annotation_matlab[i]][0, 0])
+    if "rxnReferences" in annotation_matlab:
+        pubmed_ind = annotation_matlab.index("rxnReferences")
+        # noinspection PyUnresolvedReferences
+        annotation_lists[pubmed_ind] = [
+            x.replace("PMID:", "") if x else None for x in annotation_lists[pubmed_ind]
+        ]
+    if "rxnECNumbers" in annotation_matlab:
+        ec_ind = annotation_matlab.index("rxnECNumbers")
+        # if there are more than one ec code, take the first one
+        # noinspection PyUnresolvedReferences
+        annotation_lists[ec_ind] = [
+            x.split("or")[0].strip() if x else x for x in annotation_lists[ec_ind]
+        ]
     for i in range(len(rxn_ids)):
         new_reaction = Reaction(
             id=rxn_ids[i], lower_bound=rxn_lbs[i], upper_bound=rxn_ubs[i]
@@ -434,6 +478,13 @@ def from_mat_struct(
             new_reaction.subsystem = rxn_subsystems[i]
         if rxn_gene_rules:
             new_reaction.gene_reaction_rule = rxn_gene_rules[i]
+        annotation_dict = {
+            annotation_providers[j]: annotation_lists[j][i]
+            for j in range(len(annotation_providers))
+            if annotation_lists[j][i]
+        }
+        if len(annotation_dict):
+            new_reaction.annotation = annotation_dict
         new_reactions.append(new_reaction)
     model.add_reactions(new_reactions)
 
@@ -452,7 +503,7 @@ def from_mat_struct(
     elif "osense" in m.dtype.names:
         osense = float(m["osense"][0, 0][0][0])
         objective_direction_str = "max"
-        if osense > 0:
+        if osense == 1:
             objective_direction_str = "min"
         model.objective_direction = objective_direction_str
     return model
