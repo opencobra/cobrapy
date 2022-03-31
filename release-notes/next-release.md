@@ -2,6 +2,9 @@
 
 ## New features
 
+Improve reading of matlab models, which will include metaboilte
+and reaction annotations.
+
 ## Fixes
 
 `model.copy()` will now correctly copy GPRs.
