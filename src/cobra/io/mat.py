@@ -8,7 +8,7 @@ from warnings import warn
 
 import numpy as np
 
-from .. import Object
+from .. import Gene, Object
 from ..core import Metabolite, Model, Reaction
 from ..util import create_stoichiometric_matrix
 from ..util.solver import set_objective
@@ -342,7 +342,9 @@ def create_mat_dict(model: Model) -> OrderedDict:
     return mat
 
 
-def mat_annotations(target_list: List[Object],  mat_struct: np.ndarray, _d_replace: str=D_MET) -> None:
+def mat_annotations(
+    target_list: List[Object], mat_struct: np.ndarray, _d_replace: str = D_MET
+) -> None:
     """Process mat structure annotations in place.
 
     Will process mat structured annotations and add them to a list of new entities
@@ -363,14 +365,15 @@ def mat_annotations(target_list: List[Object],  mat_struct: np.ndarray, _d_repla
         set(mat_struct.dtype.names).intersection(D_REPLACE[_d_replace].keys())
     )
     annotation_lists = [[None]] * len(annotation_matlab)
-    annotation_providers = [D_REPLACE[_d_replace + "_REV"][x] for x in annotation_matlab]
+    annotation_providers = [
+        D_REPLACE[_d_replace + "_REV"][x] for x in annotation_matlab
+    ]
     for i in range(len(annotation_matlab)):
         annotation_lists[i] = _cell_to_str_list(mat_struct[annotation_matlab[i]][0, 0])
         if annotation_matlab[i] == "rxnReferences":
             # noinspection PyUnresolvedReferences
             annotation_lists[i] = [
-                x.replace("PMID:", "") if x else None for x in
-                annotation_lists[i]
+                x.replace("PMID:", "") if x else None for x in annotation_lists[i]
             ]
         if annotation_matlab[i] == "rxnECNumbers":
             # if there are more than one ec code, turn them to a comma separated str
@@ -383,8 +386,7 @@ def mat_annotations(target_list: List[Object],  mat_struct: np.ndarray, _d_repla
             # if there are more than one ec code, turn them to a comma separated str
             # noinspection PyUnresolvedReferences,PyTypeChecker
             annotation_lists[i] = [
-                x.replace("CHEBI:", "") if x else None for x in
-                annotation_lists[i]
+                x.replace("CHEBI:", "") if x else None for x in annotation_lists[i]
             ]
     for i in range(len(target_list)):
         annotation_dict = {
@@ -481,13 +483,6 @@ def from_mat_struct(
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass
-    annotation_matlab = list(
-        set(m.dtype.names).intersection(MET_MATLAB_TO_PROVIDERS.keys())
-    )
-    annotation_lists = [[None]] * len(annotation_matlab)
-    annotation_providers = [MET_MATLAB_TO_PROVIDERS[x] for x in annotation_matlab]
-    for i in range(len(annotation_matlab)):
-        annotation_lists[i] = _cell_to_str_list(m[annotation_matlab[i]][0, 0])
     new_metabolites = list()
     for i in range(len(met_ids)):
         new_metabolite = Metabolite(met_ids[i], compartment=met_comps[i])
@@ -497,19 +492,25 @@ def from_mat_struct(
             new_metabolite.charge = met_charges[i]
         if met_formulas:
             new_metabolite.formula = met_formulas[i]
-        annotation_dict = {
-            annotation_providers[j]: annotation_lists[j][i]
-            for j in range(len(annotation_providers))
-            if annotation_lists[j][i]
-        }
-        if len(annotation_dict):
-            new_metabolite.annotation = annotation_dict
         new_metabolites.append(new_metabolite)
+    mat_annotations(new_metabolites, m, _d_replace=D_MET)
     model.add_metabolites(new_metabolites)
 
     new_genes = []
-    gene_ids = _cell_to_str_list(m["genes"])
     gene_names = None
+    gene_ids = _cell_to_str_list(m["genes"][0, 0])
+    try:
+        gene_names = _cell_to_str_list(m["geneNames"][0, 0])
+    except (IndexError, ValueError):
+        # TODO: use custom cobra exception to handle exception
+        pass
+    for i in range(len(gene_ids)):
+        if gene_names:
+            new_gene = Gene(gene_ids[i], name=gene_names[i])
+        else:
+            new_gene = Gene(gene_ids[i])
+        new_genes.append(new_gene)
+    mat_annotations(new_genes, m, _d_replace=D_GENE)
 
     new_reactions = []
     rxn_ids = _cell_to_str_list(m["rxns"][0, 0])
@@ -533,26 +534,6 @@ def from_mat_struct(
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass
-    annotation_matlab = list(
-        set(m.dtype.names).intersection(RXN_MATLAB_TO_PROVIDERS.keys())
-    )
-    annotation_lists = [[None]] * len(annotation_matlab)
-    annotation_providers = [RXN_MATLAB_TO_PROVIDERS[x] for x in annotation_matlab]
-    for i in range(len(annotation_matlab)):
-        annotation_lists[i] = _cell_to_str_list(m[annotation_matlab[i]][0, 0])
-    if "rxnReferences" in annotation_matlab:
-        pubmed_ind = annotation_matlab.index("rxnReferences")
-        # noinspection PyUnresolvedReferences
-        annotation_lists[pubmed_ind] = [
-            x.replace("PMID:", "") if x else None for x in annotation_lists[pubmed_ind]
-        ]
-    if "rxnECNumbers" in annotation_matlab:
-        ec_ind = annotation_matlab.index("rxnECNumbers")
-        # if there are more than one ec code, take the first one
-        # noinspection PyUnresolvedReferences
-        annotation_lists[ec_ind] = [
-            x.split("or")[0].strip() if x and "or" in x else None for x in annotation_lists[ec_ind]
-        ]
     for i in range(len(rxn_ids)):
         new_reaction = Reaction(
             id=rxn_ids[i], lower_bound=rxn_lbs[i], upper_bound=rxn_ubs[i]
@@ -564,6 +545,7 @@ def from_mat_struct(
         if rxn_gene_rules:
             new_reaction.gene_reaction_rule = rxn_gene_rules[i]
         new_reactions.append(new_reaction)
+    mat_annotations(new_reactions, m, _d_replace=D_REACTION)
     model.add_reactions(new_reactions)
 
     csc = scipy_sparse.csc_matrix(m["S"][0, 0])
@@ -588,136 +570,6 @@ def from_mat_struct(
         if osense == 1:
             objective_direction_str = "min"
         model.objective_direction = objective_direction_str
-    return model
-
-
-def from_mat_struct_orig(
-    mat_struct: Dict[str, np.ndarray],
-    model_id: Optional[str] = None,
-    inf: float = np.inf,
-) -> Model:
-    """Create a model from the cobratoolbox struct.
-
-    Parameters
-    ----------
-    mat_struct : dict
-        The dictionary loaded via `scipy.io.loadmat`, having str as keys
-        and `numpy.ndarray` as values.
-    model_id : str, optional
-        The ID of the model generated. If None, will try to look for ID in
-        model's description. If multiple IDs are found, the first one is
-        used. If no IDs are found, will use 'imported_model' (default None).
-    inf : float, optional
-        The value to use for infinite bounds. Some solvers do not handle
-        infinite values so for using those, set this to a high numeric value
-        (default `numpy.inf`).
-
-    Returns
-    -------
-    cobra.Model
-        The model as represented in .mat file.
-
-    """
-    m = mat_struct
-
-    if m.dtype.names is None or not {"rxns", "mets", "S", "lb", "ub"} <= set(
-        m.dtype.names
-    ):
-        raise ValueError("Invalid MATLAB struct.")
-
-    if "c" in m.dtype.names:
-        c_vec = m["c"][0, 0]
-    else:
-        c_vec = None
-        warn("Objective vector `c` not found.")
-
-    model = Model()
-    if model_id is not None:
-        model.id = model_id
-    elif "description" in m.dtype.names:
-        description = m["description"][0, 0][0]
-        if not isinstance(description, str) and len(description) > 1:
-            model.id = description[0]
-            warn("Several IDs detected, only using the first.")
-        else:
-            model.id = description
-    else:
-        model.id = "imported_model"
-
-    new_metabolites = list()
-    for i, name in enumerate(m["mets"][0, 0]):
-        new_metabolite = Metabolite()
-        new_metabolite.id = str(name[0][0]).strip()
-        if all(var in m.dtype.names for var in ["metComps", "comps", "compNames"]):
-            comp_index = m["metComps"][0, 0][i][0] - 1
-            new_metabolite.compartment = m["comps"][0, 0][comp_index][0][0]
-            if new_metabolite.compartment not in model.compartments:
-                comp_name = m["compNames"][0, 0][comp_index][0][0]
-                model.compartments[new_metabolite.compartment] = comp_name
-        else:
-            new_metabolite.compartment = _get_id_compartment(new_metabolite.id)
-            if new_metabolite.compartment not in model.compartments:
-                model.compartments[
-                    new_metabolite.compartment
-                ] = new_metabolite.compartment
-        try:
-            new_metabolite.name = str(m["metNames"][0, 0][i][0][0])
-        except (IndexError, ValueError):
-            # TODO: use custom cobra exception to handle exception
-            pass
-        try:
-            new_metabolite.formula = str(m["metFormulas"][0][0][i][0][0])
-        except (IndexError, ValueError):
-            # TODO: use custom cobra exception to handle exception
-            pass
-        try:
-            new_metabolite.charge = float(m["metCharge"][0, 0][i][0])
-            int_charge = int(new_metabolite.charge)
-            if new_metabolite.charge == int_charge:
-                new_metabolite.charge = int_charge
-        except (IndexError, ValueError):
-            # TODO: use custom cobra exception to handle exception
-            pass
-        new_metabolites.append(new_metabolite)
-    model.add_metabolites(new_metabolites)
-
-    new_reactions = []
-    coefficients = {}
-    for i, name in enumerate(m["rxns"][0, 0]):
-        new_reaction = Reaction()
-        new_reaction.id = str(name[0][0]).strip()
-        new_reaction.bounds = float(m["lb"][0, 0][i][0]), float(m["ub"][0, 0][i][0])
-        if np.isinf(new_reaction.lower_bound) and new_reaction.lower_bound < 0:
-            new_reaction.lower_bound = -inf
-        if np.isinf(new_reaction.upper_bound) and new_reaction.upper_bound > 0:
-            new_reaction.upper_bound = inf
-        if c_vec is not None:
-            coefficients[new_reaction] = float(c_vec[i][0])
-        try:
-            new_reaction.gene_reaction_rule = str(m["grRules"][0, 0][i][0][0]).strip()
-        except (IndexError, ValueError):
-            # TODO: use custom cobra exception to handle exception
-            pass
-        try:
-            new_reaction.name = str(m["rxnNames"][0, 0][i][0][0]).strip()
-        except (IndexError, ValueError):
-            # TODO: use custom cobra exception to handle exception
-            pass
-        try:
-            new_reaction.subsystem = str(m["subSystems"][0, 0][i][0][0]).strip()
-        except (IndexError, ValueError):
-            # TODO: use custom cobra exception to handle exception
-            pass
-        new_reactions.append(new_reaction)
-    model.add_reactions(new_reactions)
-    set_objective(model, coefficients)
-
-    csc = scipy_sparse.csc_matrix(m["S"][0, 0])
-    for i in range(csc.shape[1]):
-        stoic_dict = {
-            model.metabolites[j]: csc[j, i] for j in csc.getcol(i).nonzero()[0]
-        }
-        model.reactions[i].add_metabolites(stoic_dict)
     return model
 
 
