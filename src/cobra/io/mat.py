@@ -8,6 +8,7 @@ from warnings import warn
 
 import numpy as np
 
+from .. import Object
 from ..core import Metabolite, Model, Reaction
 from ..util import create_stoichiometric_matrix
 from ..util.solver import set_objective
@@ -27,7 +28,7 @@ MET_MATLAB_TO_PROVIDERS = {
     "metHMDBID": "hmdb",
     "metInChIString": "inchi",
     "metKEGGID": "kegg.compound",
-    "metPubChemID": "pubchem",
+    "metPubChemID": "pubchem.compound",
     "metCHEBIID": "CHEBI",
     "metMetaNetXID": "metanetx.chemical",
     "metSEEDID": "seed.compound",
@@ -64,6 +65,38 @@ RXN_MATLAB_TO_PROVIDERS = {
 
 RXN_PROVIDERS_TO_MATLAB = {
     RXN_MATLAB_TO_PROVIDERS[k]: k for k in RXN_MATLAB_TO_PROVIDERS.keys()
+}
+
+GENE_MATLAB_TO_PROVIDERS = {
+    "geneEntrezID": "ncbigene",
+    "geneRefSeqID": "refseq",
+    "geneUniprotID": "uniprot",
+    "geneEcoGeneID": "ecogene",
+    "geneKEGGID": "kegg.gene",
+    "geneHPRDID": "hprd",
+    "geneASAPID": "asap",
+    "geneCCDSID": "ccds",
+    "geneNCBIProteinID": "ncbiprotein",
+}
+
+GENE_PROVIDERS_TO_MATLAB = {
+    GENE_MATLAB_TO_PROVIDERS[k]: k for k in GENE_MATLAB_TO_PROVIDERS.keys()
+}
+
+D_GENE = "D_GENE"
+D_GENE_REV = "D_GENE_REV"
+D_MET = "D_MET"
+D_MET_REV = "D_MET_REV"
+D_REACTION = "D_REACTION"
+D_REACTION_REV = "D_REACTION_REV"
+
+D_REPLACE: dict = {
+    D_GENE: GENE_PROVIDERS_TO_MATLAB,
+    D_GENE_REV: GENE_MATLAB_TO_PROVIDERS,
+    D_MET: MET_MATLAB_TO_PROVIDERS,
+    D_MET_REV: MET_PROVIDERS_TO_MATLAB,
+    D_REACTION: RXN_MATLAB_TO_PROVIDERS,
+    D_REACTION_REV: RXN_PROVIDERS_TO_MATLAB,
 }
 
 # precompiled regular expressions (kept globally for caching)
@@ -309,6 +342,60 @@ def create_mat_dict(model: Model) -> OrderedDict:
     return mat
 
 
+def mat_annotations(target_list: List[Object],  mat_struct: np.ndarray, _d_replace: str=D_MET) -> None:
+    """Process mat structure annotations in place.
+
+    Will process mat structured annotations and add them to a list of new entities
+    (metabolites, reactions, genes) in a format based on identifiers.org.
+
+    Parameters
+    ----------
+    target_list: list[cobra.Object]
+        A list of cobra objects, including metabolites, reactions or genes. The
+        annotations will be added to these lists.
+    mat_struct: np.ndarray
+        A darray that includes the data imported from matlab file.
+    cobra_type: str
+        A string that points to the dictionary of converstions between MATLAB and
+        providers. Default D_MET (for metabolite).
+    """
+    annotation_matlab = list(
+        set(mat_struct.dtype.names).intersection(D_REPLACE[_d_replace].keys())
+    )
+    annotation_lists = [[None]] * len(annotation_matlab)
+    annotation_providers = [D_REPLACE[_d_replace + "_REV"][x] for x in annotation_matlab]
+    for i in range(len(annotation_matlab)):
+        annotation_lists[i] = _cell_to_str_list(mat_struct[annotation_matlab[i]][0, 0])
+        if annotation_matlab[i] == "rxnReferences":
+            # noinspection PyUnresolvedReferences
+            annotation_lists[i] = [
+                x.replace("PMID:", "") if x else None for x in
+                annotation_lists[i]
+            ]
+        if annotation_matlab[i] == "rxnECNumbers":
+            # if there are more than one ec code, turn them to a comma separated str
+            # noinspection PyUnresolvedReferences,PyTypeChecker
+            annotation_lists[i] = [
+                ", ".join(x.split("or").strip()) if x and "or" in x else None
+                for x in annotation_lists[i]
+            ]
+        if annotation_matlab[i] == "metCHEBIID":
+            # if there are more than one ec code, turn them to a comma separated str
+            # noinspection PyUnresolvedReferences,PyTypeChecker
+            annotation_lists[i] = [
+                x.replace("CHEBI:", "") if x else None for x in
+                annotation_lists[i]
+            ]
+    for i in range(len(target_list)):
+        annotation_dict = {
+            annotation_providers[j]: annotation_lists[j][i]
+            for j in range(len(annotation_providers))
+            if annotation_lists[j][i]
+        }
+        if len(annotation_dict):
+            target_list[i].annotation = annotation_dict
+
+
 def from_mat_struct(
     mat_struct: np.ndarray,
     model_id: Optional[str] = None,
@@ -351,12 +438,6 @@ def from_mat_struct(
         new_names = list(m.dtype.names)
         new_names[new_names.index("metCharge")] = "metCharges"
         m.dtype.names = new_names
-
-    if "c" in m.dtype.names:
-        c_vec = _cell_to_float_list(m["c"][0, 0])
-    else:
-        c_vec = None
-        warn("Objective vector `c` not found.")
 
     model = Model()
     if model_id is not None:
@@ -426,6 +507,10 @@ def from_mat_struct(
         new_metabolites.append(new_metabolite)
     model.add_metabolites(new_metabolites)
 
+    new_genes = []
+    gene_ids = _cell_to_str_list(m["genes"])
+    gene_names = None
+
     new_reactions = []
     rxn_ids = _cell_to_str_list(m["rxns"][0, 0])
     rxn_lbs = _cell_to_float_list(m["lb"][0, 0])
@@ -466,7 +551,7 @@ def from_mat_struct(
         # if there are more than one ec code, take the first one
         # noinspection PyUnresolvedReferences
         annotation_lists[ec_ind] = [
-            x.split("or")[0].strip() if x else x for x in annotation_lists[ec_ind]
+            x.split("or")[0].strip() if x and "or" in x else None for x in annotation_lists[ec_ind]
         ]
     for i in range(len(rxn_ids)):
         new_reaction = Reaction(
@@ -478,13 +563,6 @@ def from_mat_struct(
             new_reaction.subsystem = rxn_subsystems[i]
         if rxn_gene_rules:
             new_reaction.gene_reaction_rule = rxn_gene_rules[i]
-        annotation_dict = {
-            annotation_providers[j]: annotation_lists[j][i]
-            for j in range(len(annotation_providers))
-            if annotation_lists[j][i]
-        }
-        if len(annotation_dict):
-            new_reaction.annotation = annotation_dict
         new_reactions.append(new_reaction)
     model.add_reactions(new_reactions)
 
@@ -495,9 +573,13 @@ def from_mat_struct(
         }
         model.reactions[i].add_metabolites(stoic_dict)
 
-    if c_vec is not None:
+    if "c" in m.dtype.names:
+        c_vec = _cell_to_float_list(m["c"][0, 0])
         coefficients = dict(zip(new_reactions, c_vec))
         set_objective(model, coefficients)
+    else:
+        warn("Objective vector `c` not found.")
+
     if "osenseStr" in m.dtype.names:
         model.objective_direction = str(m["osenseStr"][0, 0][0][0])
     elif "osense" in m.dtype.names:
