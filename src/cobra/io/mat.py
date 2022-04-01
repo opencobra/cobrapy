@@ -357,7 +357,7 @@ def mat_annotations(
         annotations will be added to these lists.
     mat_struct: np.ndarray
         A darray that includes the data imported from matlab file.
-    cobra_type: str
+    _d_replace: str
         A string that points to the dictionary of converstions between MATLAB and
         providers. Default D_MET (for metabolite).
     """
@@ -365,9 +365,7 @@ def mat_annotations(
         set(mat_struct.dtype.names).intersection(D_REPLACE[_d_replace].keys())
     )
     annotation_lists = [[None]] * len(annotation_matlab)
-    annotation_providers = [
-        D_REPLACE[_d_replace + "_REV"][x] for x in annotation_matlab
-    ]
+    annotation_providers = [D_REPLACE[_d_replace][x] for x in annotation_matlab]
     for i in range(len(annotation_matlab)):
         annotation_lists[i] = _cell_to_str_list(mat_struct[annotation_matlab[i]][0, 0])
         if annotation_matlab[i] == "rxnReferences":
@@ -379,7 +377,9 @@ def mat_annotations(
             # if there are more than one ec code, turn them to a comma separated str
             # noinspection PyUnresolvedReferences,PyTypeChecker
             annotation_lists[i] = [
-                ", ".join(x.split("or").strip()) if x and "or" in x else None
+                ", ".join([y.strip() for y in x.split("or")])
+                if x and "or" in x
+                else None
                 for x in annotation_lists[i]
             ]
         if annotation_matlab[i] == "metCHEBIID":
