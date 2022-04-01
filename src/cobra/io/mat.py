@@ -289,6 +289,56 @@ def create_mat_metabolite_id(model: Model) -> str:
             yield met.id
 
 
+def mat_annotations(
+    target_list: List[Object], mat_struct: np.ndarray, _d_replace: str = D_MET
+) -> None:
+    """Process mat structure annotations in place.
+
+    Will process mat structured annotations and add them to a list of new entities
+    (metabolites, reactions, genes) in a format based on identifiers.org.
+
+    Parameters
+    ----------
+    target_list: list[cobra.Object]
+        A list of cobra objects, including metabolites, reactions or genes. The
+        annotations will be added to these lists.
+    mat_struct: np.ndarray
+        A darray that includes the data imported from matlab file.
+    _d_replace: str
+        A string that points to the dictionary of converstions between MATLAB and
+        providers. Default D_MET (for metabolite).
+    """
+    annotation_matlab = list(
+        set(mat_struct.dtype.names).intersection(D_REPLACE[_d_replace].keys())
+    )
+    providers = [D_REPLACE[_d_replace][x] for x in annotation_matlab]
+    annotations = dict.fromkeys(providers, None)
+    for name, mat_key in zip(providers, annotation_matlab):
+        annotations[name] = _cell_to_str_list(mat_struct[mat_key][0, 0])
+        if mat_key == "rxnReferences":
+            # noinspection PyUnresolvedReferences
+            annotations[name] = [
+                x.replace("PMID:", "") if x else None for x in annotations[name]
+            ]
+        elif mat_key == "rxnECNumbers":
+            # if there are more than one ec code, turn them to a list
+            # noinspection PyUnresolvedReferences,PyTypeChecker
+            annotations[name] = [
+                ", ".join([y.strip() for y in x.split("or")])
+                if x and "or" in x
+                else None
+                for x in annotations[name]
+            ]
+        elif mat_key == "metCHEBIID":
+            # if there are more than one ec code, turn them to a comma separated str
+            # noinspection PyUnresolvedReferences,PyTypeChecker
+            annotations[name] = [
+                x.replace("CHEBI:", "") if x else None for x in annotations[name]
+            ]
+    for i, obj in enumerate(target_list):
+        obj.annotation = {prov: annotations[prov][i]
+                          for prov in providers
+                          if annotations[prov][i]}
 
 
 def annotations_to_mat(
@@ -545,14 +595,15 @@ def from_mat_struct(
             new_reaction.gene_reaction_rule = rxn_gene_rules[i]
         new_reactions.append(new_reaction)
     mat_annotations(new_reactions, m, _d_replace=D_REACTION)
-    model.add_reactions(new_reactions)
 
     csc = scipy_sparse.csc_matrix(m["S"][0, 0])
     for i in range(csc.shape[1]):
         stoic_dict = {
             model.metabolites[j]: csc[j, i] for j in csc.getcol(i).nonzero()[0]
         }
-        model.reactions[i].add_metabolites(stoic_dict)
+        new_reactions[i].add_metabolites(stoic_dict)
+
+    model.add_reactions(new_reactions)
 
     if "c" in m.dtype.names:
         c_vec = _cell_to_float_list(m["c"][0, 0])
