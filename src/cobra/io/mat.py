@@ -289,6 +289,61 @@ def create_mat_metabolite_id(model: Model) -> str:
             yield met.id
 
 
+
+
+def annotations_to_mat(
+    mat_struct: np.ndarray, annotation_list: List[Dict], _d_replace: str = D_MET_REV
+) -> None:
+    """Process mat structure annotations in place.
+
+    Will process mat structured annotations and add them to a list of new entities
+    (metabolites, reactions, genes) in a format based on identifiers.org.
+
+    Parameters
+    ----------
+    mat_struct: np.ndarray
+        A darray that includes the data imported from matlab file.
+    annotation_list: list[Dict]
+        A list of cobra annotations, in the form of a dictionary.
+    _d_replace: str
+        A string that points to the dictionary of converstions between MATLAB and
+        providers. Default D_MET (for metabolite).
+    """
+    providers_used = set()
+    for i in range(len(annotation_list)):
+        if annotation_list[i]:
+            providers_used.update(annotation_list[i].keys())
+    providers_used = list(providers_used)
+    annotation_matlab = [D_REPLACE[_d_replace][x] for x in providers_used]
+    annotation_cells_to_be = [[None] * len(annotation_matlab) for x in annotation_list]
+    for i in range(len(annotation_list)):
+        if annotation_list[i]:
+            for provider_key, v in annotation_list[i].items():
+                provider_ind = providers_used.index(provider_key)
+                annotation_cells_to_be[i][provider_ind] = v
+        annotation_cells_to_be[i] = _cell(mat_struct[annotation_matlab[i]][0, 0])
+        if annotation_matlab[i] == "rxnReferences":
+            # noinspection PyUnresolvedReferences
+            annotation_cells_to_be[i] = [
+                x.replace("PMID:", "") if x else None for x in annotation_cells_to_be[i]
+            ]
+        if annotation_matlab[i] == "rxnECNumbers":
+            # if there are more than one ec code, turn them to a comma separated str
+            # noinspection PyUnresolvedReferences,PyTypeChecker
+            annotation_cells_to_be[i] = [
+                ", ".join([y.strip() for y in x.split("or")])
+                if x and "or" in x
+                else None
+                for x in annotation_cells_to_be[i]
+            ]
+        if annotation_matlab[i] == "metCHEBIID":
+            # if there are more than one ec code, turn them to a comma separated str
+            # noinspection PyUnresolvedReferences,PyTypeChecker
+            annotation_cells_to_be[i] = [
+                x.replace("CHEBI:", "") if x else None for x in annotation_cells_to_be[i]
+            ]
+
+
 def create_mat_dict(model: Model) -> OrderedDict:
     """Create a dictionary mapping model attributes to arrays.
 
@@ -340,62 +395,6 @@ def create_mat_dict(model: Model) -> OrderedDict:
     mat["rev"] = np.array(rxns.list_attr("reversibility")) * 1
     mat["description"] = str(model.id)
     return mat
-
-
-def mat_annotations(
-    target_list: List[Object], mat_struct: np.ndarray, _d_replace: str = D_MET
-) -> None:
-    """Process mat structure annotations in place.
-
-    Will process mat structured annotations and add them to a list of new entities
-    (metabolites, reactions, genes) in a format based on identifiers.org.
-
-    Parameters
-    ----------
-    target_list: list[cobra.Object]
-        A list of cobra objects, including metabolites, reactions or genes. The
-        annotations will be added to these lists.
-    mat_struct: np.ndarray
-        A darray that includes the data imported from matlab file.
-    _d_replace: str
-        A string that points to the dictionary of converstions between MATLAB and
-        providers. Default D_MET (for metabolite).
-    """
-    annotation_matlab = list(
-        set(mat_struct.dtype.names).intersection(D_REPLACE[_d_replace].keys())
-    )
-    annotation_lists = [[None]] * len(annotation_matlab)
-    annotation_providers = [D_REPLACE[_d_replace][x] for x in annotation_matlab]
-    for i in range(len(annotation_matlab)):
-        annotation_lists[i] = _cell_to_str_list(mat_struct[annotation_matlab[i]][0, 0])
-        if annotation_matlab[i] == "rxnReferences":
-            # noinspection PyUnresolvedReferences
-            annotation_lists[i] = [
-                x.replace("PMID:", "") if x else None for x in annotation_lists[i]
-            ]
-        if annotation_matlab[i] == "rxnECNumbers":
-            # if there are more than one ec code, turn them to a comma separated str
-            # noinspection PyUnresolvedReferences,PyTypeChecker
-            annotation_lists[i] = [
-                ", ".join([y.strip() for y in x.split("or")])
-                if x and "or" in x
-                else None
-                for x in annotation_lists[i]
-            ]
-        if annotation_matlab[i] == "metCHEBIID":
-            # if there are more than one ec code, turn them to a comma separated str
-            # noinspection PyUnresolvedReferences,PyTypeChecker
-            annotation_lists[i] = [
-                x.replace("CHEBI:", "") if x else None for x in annotation_lists[i]
-            ]
-    for i in range(len(target_list)):
-        annotation_dict = {
-            annotation_providers[j]: annotation_lists[j][i]
-            for j in range(len(annotation_providers))
-            if annotation_lists[j][i]
-        }
-        if len(annotation_dict):
-            target_list[i].annotation = annotation_dict
 
 
 def from_mat_struct(
