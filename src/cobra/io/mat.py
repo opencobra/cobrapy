@@ -316,13 +316,11 @@ def mat_annotations(
     for name, mat_key in zip(providers, annotation_matlab):
         annotations[name] = _cell_to_str_list(mat_struct[mat_key][0, 0])
         if mat_key == "rxnReferences":
-            # noinspection PyUnresolvedReferences
             annotations[name] = [
                 x.replace("PMID:", "") if x else None for x in annotations[name]
             ]
         elif mat_key == "rxnECNumbers":
             # if there are more than one ec code, turn them to a list
-            # noinspection PyUnresolvedReferences,PyTypeChecker
             annotations[name] = [
                 ", ".join([y.strip() for y in x.split("or")])
                 if x and "or" in x
@@ -331,14 +329,19 @@ def mat_annotations(
             ]
         elif mat_key == "metCHEBIID":
             # if there are more than one ec code, turn them to a comma separated str
-            # noinspection PyUnresolvedReferences,PyTypeChecker
             annotations[name] = [
                 x.replace("CHEBI:", "") if x else None for x in annotations[name]
             ]
+        else:
+            # If it something else, which may have commas, turn it into a list
+            annotations[name] = [
+                [y.strip() for y in x.split(", ")] if x else None
+                for x in annotations[name]
+            ]
     for i, obj in enumerate(target_list):
-        obj.annotation = {prov: annotations[prov][i]
-                          for prov in providers
-                          if annotations[prov][i]}
+        obj.annotation = {
+            prov: annotations[prov][i] for prov in providers if annotations[prov][i]
+        }
 
 
 def annotations_to_mat(
@@ -390,7 +393,8 @@ def annotations_to_mat(
             # if there are more than one ec code, turn them to a comma separated str
             # noinspection PyUnresolvedReferences,PyTypeChecker
             annotation_cells_to_be[i] = [
-                x.replace("CHEBI:", "") if x else None for x in annotation_cells_to_be[i]
+                x.replace("CHEBI:", "") if x else None
+                for x in annotation_cells_to_be[i]
             ]
 
 
