@@ -2,7 +2,7 @@
 
 import re
 from collections import OrderedDict
-from typing import TYPE_CHECKING, Dict, Iterable, List, Optional
+from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Pattern
 from uuid import uuid4
 from warnings import warn
 
@@ -145,7 +145,9 @@ def _cell(x: Iterable[str]) -> np.ndarray:
     return np.array(x_no_none, dtype=object)
 
 
-def _cell_to_str_list(m_cell: np.ndarray, empty_value: Optional[str] = None) -> List:
+def _cell_to_str_list(
+    m_cell: np.ndarray, empty_value: Optional[str] = None, _re: Optional[Pattern] = None
+) -> List:
     """Turn an ndarray (cell) to a list of strings.
 
     Parameters
@@ -153,13 +155,27 @@ def _cell_to_str_list(m_cell: np.ndarray, empty_value: Optional[str] = None) -> 
     m_cell: np.ndarray
     empty_value: str, optional
         What value to replace empty cells with. Default None.
+    _re: Pattern, optional
+        Regular expression to use to split the expression. Used for annotations.
+        Default None.
 
     Returns
     -------
     List
         A list of processed strings.
     """
-    return [str(x[0][0]).strip() if np.size(x[0]) else empty_value for x in m_cell]
+    if _re:
+        return [
+            _re.findall(str(_each_cell[0][0]))
+            if np.size(_each_cell[0])
+            else empty_value
+            for _each_cell in m_cell
+        ]
+    else:
+        return [
+            str(_each_cell[0][0]).strip() if np.size(_each_cell[0]) else empty_value
+            for _each_cell in m_cell
+        ]
 
 
 def _cell_to_float_list(
@@ -313,30 +329,28 @@ def mat_annotations(
     )
     providers = [D_REPLACE[_d_replace][x] for x in annotation_matlab]
     annotations = dict.fromkeys(providers, None)
+    _pumbed_re = re.compile("PMID:(\\d+)")
+    _ec_re = re.compile(r"([\d\-]+.[\d\-]+.[\d\-]+.[\d-]+)")
+    _chebi_re = re.compile(r"\D*(\d+)")
     for name, mat_key in zip(providers, annotation_matlab):
-        annotations[name] = _cell_to_str_list(mat_struct[mat_key][0, 0])
         if mat_key == "rxnReferences":
-            annotations[name] = [
-                x.replace("PMID:", "") if x else None for x in annotations[name]
-            ]
+            # This only picks up PMID: style references. Sometimes there are other
+            # things like PMC or OMIM, but those are ignored for now,
+            annotations[name] = _cell_to_str_list(mat_struct[mat_key][0, 0], None,
+                                                  _pumbed_re)
         elif mat_key == "rxnECNumbers":
-            # if there are more than one ec code, turn them to a list
-            annotations[name] = [
-                ", ".join([y.strip() for y in x.split("or")])
-                if x and "or" in x
-                else None
-                for x in annotations[name]
-            ]
+            # turn EC codes to a list
+            annotations[name] = _cell_to_str_list(mat_struct[mat_key][0, 0], None,
+                                                  _ec_re)
         elif mat_key == "metCHEBIID":
-            # if there are more than one ec code, turn them to a comma separated str
-            annotations[name] = [
-                x.replace("CHEBI:", "") if x else None for x in annotations[name]
-            ]
+            # if there are more than one CHEBI code, turn them to a comma separated str
+            annotations[name] = _cell_to_str_list(mat_struct[mat_key][0, 0], None,
+                                                  _chebi_re)
         else:
             # If it something else, which may have commas, turn it into a list
             annotations[name] = [
-                [y.strip() for y in x.split(", ")] if x else None
-                for x in annotations[name]
+                [y.strip() for y in _each_cell.split(", ")] if _each_cell else None
+                for _each_cell in _cell_to_str_list(mat_struct[mat_key][0, 0])
             ]
     for i, obj in enumerate(target_list):
         obj.annotation = {
