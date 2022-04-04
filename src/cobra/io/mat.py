@@ -24,6 +24,11 @@ except ImportError:
 if TYPE_CHECKING:
     import pymatbridge
 
+# The following dictionaries are based on
+# https://github.com/opencobra/cobratoolbox/blob/docs/source/notes/COBRAModelFields.md
+# at commit 83d26938a9babff79289d40e20f5f50dd5b710fa
+# Which is the most updated master as of April 4th, 2022
+
 MET_MATLAB_TO_PROVIDERS = {
     "metHMDBID": "hmdb",
     "metInChIString": "inchi",
@@ -317,7 +322,7 @@ def create_mat_metabolite_id(model: Model) -> str:
             yield met.id
 
 
-def mat_annotations(
+def mat_parse_annotations(
     target_list: List[Object], mat_struct: np.ndarray, _d_replace: str = D_MET
 ) -> None:
     """Process mat structure annotations in place.
@@ -406,7 +411,9 @@ def mat_parse_notes(
             # things like PMC or OMIM, but those are ignored for now,
             _notes = _cell_to_str_list(mat_struct[mat_key][0, 0])
             notes[name] = [
-                _pumbed_re.sub("", x) if len(_pumbed_re.sub("", x)) else None
+                _pumbed_re.sub("", x).strip()
+                if x and len(_pumbed_re.sub("", x).strip())
+                else None
                 for x in _notes
             ]
         elif mat_key == "rxnConfidenceScores":
@@ -455,7 +462,21 @@ def annotations_to_mat(
             for provider_key, v in annotation_list[i].items():
                 annotation_cells_to_be[annotation_matlab[provider_key]][i] = v
     for annotation_key, _list in annotation_cells_to_be.items():
-        mat_dict[annotation_key] = _cell(_list)
+        if annotation_key not in mat_dict:
+            mat_dict[annotation_key] = _cell(_list)
+        else:
+            # If there are two types of references that will end up in the same mat
+            # struct key/field.
+            _tmp_list = _cell_to_str_list(mat_dict[annotation_key])
+            _tmp_list2 = _tmp_list
+            for i, _list_val in enumerate(_tmp_list):
+                if _tmp_list[i] and _list_val:
+                    _tmp_list2 = _tmp_list[i] + " " + _list_val
+                elif _tmp_list[i] and not _list[i]:
+                    _tmp_list2[i] = _tmp_list[i]
+                elif not _tmp_list[i] and _list[i]:
+                    _tmp_list2[i] = _list_val
+            mat_dict[annotation_key] = _cell(_tmp_list2)
 
 
 def create_mat_dict(model: Model) -> OrderedDict:
@@ -500,6 +521,7 @@ def create_mat_dict(model: Model) -> OrderedDict:
     mat["rxns"] = _cell(rxns.list_attr("id"))
     mat["rxnNames"] = _cell(rxns.list_attr("name"))
     annotations_to_mat(mat, rxns.list_attr("annotation"), D_REACTION_REV)
+    annotations_to_mat(mat, rxns.list_attr("notes"), D_REACTION_NOTES_REV)
     mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
     stoich_mat = create_stoichiometric_matrix(model)
     mat["S"] = stoich_mat if stoich_mat is not None else [[]]
@@ -609,7 +631,7 @@ def from_mat_struct(
         if met_formulas:
             new_metabolite.formula = met_formulas[i]
         new_metabolites.append(new_metabolite)
-    mat_annotations(new_metabolites, m, _d_replace=D_MET)
+    mat_parse_annotations(new_metabolites, m, _d_replace=D_MET)
     model.add_metabolites(new_metabolites)
 
     new_genes = []
@@ -626,7 +648,7 @@ def from_mat_struct(
         else:
             new_gene = Gene(gene_ids[i])
         new_genes.append(new_gene)
-    mat_annotations(new_genes, m, _d_replace=D_GENE)
+    mat_parse_annotations(new_genes, m, _d_replace=D_GENE)
 
     new_reactions = []
     rxn_ids = _cell_to_str_list(m["rxns"][0, 0])
@@ -665,7 +687,8 @@ def from_mat_struct(
         if rxn_gene_rules:
             new_reaction.gene_reaction_rule = rxn_gene_rules[i]
         new_reactions.append(new_reaction)
-    mat_annotations(new_reactions, m, _d_replace=D_REACTION)
+    mat_parse_annotations(new_reactions, m, _d_replace=D_REACTION)
+    mat_parse_notes(new_reactions, m, _d_replace=D_REACTION_NOTES)
 
     csc = scipy_sparse.csc_matrix(m["S"][0, 0])
     for i in range(csc.shape[1]):
