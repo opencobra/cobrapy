@@ -67,6 +67,14 @@ RXN_PROVIDERS_TO_MATLAB = {
     RXN_MATLAB_TO_PROVIDERS[k]: k for k in RXN_MATLAB_TO_PROVIDERS.keys()
 }
 
+RXN_MATLAB_TO_NOTES = {
+    "rxnReferences": "References",
+    "rxnNotes": "NOTES",
+    "rxnConfidenceScores": "Confidence Level",
+}
+
+RXN_NOTES_TO_MATLAB = {RXN_MATLAB_TO_NOTES[k]: k for k in RXN_MATLAB_TO_NOTES.keys()}
+
 GENE_MATLAB_TO_PROVIDERS = {
     "geneEntrezID": "ncbigene",
     "geneRefSeqID": "refseq",
@@ -89,6 +97,8 @@ D_MET = "D_MET"
 D_MET_REV = "D_MET_REV"
 D_REACTION = "D_REACTION"
 D_REACTION_REV = "D_REACTION_REV"
+D_REACTION_NOTES = "D_REACTION_NOTES"
+D_REACTION_NOTES_REV = "D_REACTION_NOTES_REV"
 
 D_REPLACE: dict = {
     D_GENE: GENE_PROVIDERS_TO_MATLAB,
@@ -97,6 +107,8 @@ D_REPLACE: dict = {
     D_MET_REV: MET_PROVIDERS_TO_MATLAB,
     D_REACTION: RXN_MATLAB_TO_PROVIDERS,
     D_REACTION_REV: RXN_PROVIDERS_TO_MATLAB,
+    D_REACTION_NOTES: RXN_MATLAB_TO_NOTES,
+    D_REACTION_NOTES_REV: RXN_NOTES_TO_MATLAB,
 }
 
 # precompiled regular expressions (kept globally for caching)
@@ -329,23 +341,26 @@ def mat_annotations(
     )
     providers = [D_REPLACE[_d_replace][x] for x in annotation_matlab]
     annotations = dict.fromkeys(providers, None)
-    _pumbed_re = re.compile("PMID:(\\d+)")
+    _pumbed_re = re.compile("PMID: ?(\\d+)")
     _ec_re = re.compile(r"([\d\-]+.[\d\-]+.[\d\-]+.[\d-]+)")
     _chebi_re = re.compile(r"\D*(\d+)")
     for name, mat_key in zip(providers, annotation_matlab):
         if mat_key == "rxnReferences":
             # This only picks up PMID: style references. Sometimes there are other
             # things like PMC or OMIM, but those are ignored for now,
-            annotations[name] = _cell_to_str_list(mat_struct[mat_key][0, 0], None,
-                                                  _pumbed_re)
+            annotations[name] = _cell_to_str_list(
+                mat_struct[mat_key][0, 0], None, _pumbed_re
+            )
         elif mat_key == "rxnECNumbers":
             # turn EC codes to a list
-            annotations[name] = _cell_to_str_list(mat_struct[mat_key][0, 0], None,
-                                                  _ec_re)
+            annotations[name] = _cell_to_str_list(
+                mat_struct[mat_key][0, 0], None, _ec_re
+            )
         elif mat_key == "metCHEBIID":
             # if there are more than one CHEBI code, turn them to a comma separated str
-            annotations[name] = _cell_to_str_list(mat_struct[mat_key][0, 0], None,
-                                                  _chebi_re)
+            annotations[name] = _cell_to_str_list(
+                mat_struct[mat_key][0, 0], None, _chebi_re
+            )
         else:
             # If it something else, which may have commas, turn it into a list
             annotations[name] = [
@@ -358,8 +373,57 @@ def mat_annotations(
         }
 
 
+def mat_parse_notes(
+    target_list: List[Object],
+    mat_struct: np.ndarray,
+    _d_replace: str = D_REACTION_NOTES,
+) -> None:
+    """Process mat structure notes in place.
+
+    Will process mat structured notes and add them to a list of new entities
+    (metabolites, reactions, genes) in a format based on identifiers.org.
+
+    Parameters
+    ----------
+    target_list: list[cobra.Object]
+        A list of cobra objects, including metabolites, reactions or genes. The
+        notes will be added to these lists.
+    mat_struct: np.ndarray
+        A darray that includes the data imported from matlab file.
+    _d_replace: str
+        A string that points to the dictionary of converstions between MATLAB and
+        notes. Default D_REACTION_NOTES (for reactions).
+    """
+    annotation_matlab = list(
+        set(mat_struct.dtype.names).intersection(D_REPLACE[_d_replace].keys())
+    )
+    note_providers = [D_REPLACE[_d_replace][x] for x in annotation_matlab]
+    notes = dict.fromkeys(note_providers, None)
+    _pumbed_re = re.compile("PMID: ?(\\d+),?")
+    for name, mat_key in zip(note_providers, annotation_matlab):
+        if mat_key == "rxnReferences":
+            # This only picks up PMID: style references. Sometimes there are other
+            # things like PMC or OMIM, but those are ignored for now,
+            _notes = _cell_to_str_list(mat_struct[mat_key][0, 0])
+            notes[name] = [
+                _pumbed_re.sub("", x) if len(_pumbed_re.sub("", x)) else None
+                for x in _notes
+            ]
+        elif mat_key == "rxnConfidenceScores":
+            # If it something else, which may have commas, turn it into a list
+            notes[name] = [
+                str(confidence)
+                for confidence in _cell_to_float_list(mat_struct[mat_key][0, 0])
+            ]
+        else:
+            # If it something else, which may have commas, turn it into a list
+            notes[name] = _cell_to_str_list(mat_struct[mat_key][0, 0])
+    for i, obj in enumerate(target_list):
+        obj.notes = {prov: notes[prov][i] for prov in note_providers if notes[prov][i]}
+
+
 def annotations_to_mat(
-    mat_struct: np.ndarray, annotation_list: List[Dict], _d_replace: str = D_MET_REV
+    mat_dict: OrderedDict, annotation_list: List[Dict], _d_replace: str = D_MET_REV
 ) -> None:
     """Process mat structure annotations in place.
 
@@ -368,48 +432,30 @@ def annotations_to_mat(
 
     Parameters
     ----------
-    mat_struct: np.ndarray
-        A darray that includes the data imported from matlab file.
+    mat_dict: OrderedDict
+        An ordered dictionary having model attributes as keys and their
+        respective values represented as arrays, as the values. Annotations will
+        be inserted into this OrderdDict.
     annotation_list: list[Dict]
         A list of cobra annotations, in the form of a dictionary.
     _d_replace: str
         A string that points to the dictionary of converstions between MATLAB and
-        providers. Default D_MET (for metabolite).
+        providers. Default D_MET_REV (for metabolite).
     """
     providers_used = set()
     for i in range(len(annotation_list)):
         if annotation_list[i]:
             providers_used.update(annotation_list[i].keys())
     providers_used = list(providers_used)
-    annotation_matlab = [D_REPLACE[_d_replace][x] for x in providers_used]
-    annotation_cells_to_be = [[None] * len(annotation_matlab) for x in annotation_list]
+    annotation_matlab = {prov: D_REPLACE[_d_replace][prov] for prov in providers_used}
+    empty_lists = [[None] * len(annotation_list) for x in annotation_matlab]
+    annotation_cells_to_be = dict(zip(annotation_matlab.values(), empty_lists))
     for i in range(len(annotation_list)):
         if annotation_list[i]:
             for provider_key, v in annotation_list[i].items():
-                provider_ind = providers_used.index(provider_key)
-                annotation_cells_to_be[i][provider_ind] = v
-        annotation_cells_to_be[i] = _cell(mat_struct[annotation_matlab[i]][0, 0])
-        if annotation_matlab[i] == "rxnReferences":
-            # noinspection PyUnresolvedReferences
-            annotation_cells_to_be[i] = [
-                x.replace("PMID:", "") if x else None for x in annotation_cells_to_be[i]
-            ]
-        if annotation_matlab[i] == "rxnECNumbers":
-            # if there are more than one ec code, turn them to a comma separated str
-            # noinspection PyUnresolvedReferences,PyTypeChecker
-            annotation_cells_to_be[i] = [
-                ", ".join([y.strip() for y in x.split("or")])
-                if x and "or" in x
-                else None
-                for x in annotation_cells_to_be[i]
-            ]
-        if annotation_matlab[i] == "metCHEBIID":
-            # if there are more than one ec code, turn them to a comma separated str
-            # noinspection PyUnresolvedReferences,PyTypeChecker
-            annotation_cells_to_be[i] = [
-                x.replace("CHEBI:", "") if x else None
-                for x in annotation_cells_to_be[i]
-            ]
+                annotation_cells_to_be[annotation_matlab[provider_key]][i] = v
+    for annotation_key, _list in annotation_cells_to_be.items():
+        mat_dict[annotation_key] = _cell(_list)
 
 
 def create_mat_dict(model: Model) -> OrderedDict:
@@ -439,7 +485,9 @@ def create_mat_dict(model: Model) -> OrderedDict:
         # can't have any None entries for charge, or this will fail
         # TODO: use custom cobra exception to handle exception
         pass
+    annotations_to_mat(mat, mets.list_attr("annotation"), D_MET_REV)
     mat["genes"] = _cell(model.genes.list_attr("id"))
+    annotations_to_mat(mat, model.genes.list_attr("annotation"), D_GENE_REV)
     # make a matrix for rxnGeneMat
     # reactions are rows, genes are columns
     rxn_gene = scipy_sparse.dok_matrix((len(model.reactions), len(model.genes)))
@@ -451,6 +499,7 @@ def create_mat_dict(model: Model) -> OrderedDict:
     mat["grRules"] = _cell(rxns.list_attr("gene_reaction_rule"))
     mat["rxns"] = _cell(rxns.list_attr("id"))
     mat["rxnNames"] = _cell(rxns.list_attr("name"))
+    annotations_to_mat(mat, rxns.list_attr("annotation"), D_REACTION_REV)
     mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
     stoich_mat = create_stoichiometric_matrix(model)
     mat["S"] = stoich_mat if stoich_mat is not None else [[]]
@@ -533,7 +582,7 @@ def from_mat_struct(
     else:
         met_comps = [_get_id_compartment(x) for x in met_ids]
         met_comp_names = met_comps
-    model.compartments.update(dict(zip(met_comps, met_comp_names)))
+    model.compartments = dict(zip(met_comps, met_comp_names))
     met_names, met_formulas, met_charges = None, None, None
     try:
         met_names = _cell_to_str_list(m["metNames"][0, 0])
@@ -597,7 +646,11 @@ def from_mat_struct(
         # TODO: use custom cobra exception to handle exception
         pass
     try:
-        rxn_subsystems = _cell_to_str_list(m["subSystems"][0, 0])
+        # RECON3.0 mat has an array within an array.
+        # TODO - Check if this is true for other mat files.
+        rxn_subsystems = [
+            _each_cell[0][0][0][0] for _each_cell in m["subSystems"][0, 0]
+        ]
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass
