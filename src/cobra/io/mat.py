@@ -34,7 +34,7 @@ MET_MATLAB_TO_PROVIDERS = {
     "metKEGGDrugID": "kegg.drug",
     "metUniPathway": "unipathway.compound",
     "metPubChemID": "pubchem.compound",
-    "metPubChemSubstance" : "pubchem.substance",
+    "metPubChemSubstance": "pubchem.substance",
     "metCHEBIID": "CHEBI",
     "metMetaNetXID": "metanetx.chemical",
     "metSEEDID": "seed.compound",
@@ -55,7 +55,7 @@ MET_PROVIDERS_TO_MATLAB = {
 }
 
 # Some models seem to have some fields  slightly wrong
-MET_PROVIDERS_TO_MATLAB.update({"chebi" : "metCHEBIID"})
+MET_PROVIDERS_TO_MATLAB.update({"chebi": "metCHEBIID"})
 
 RXN_MATLAB_TO_PROVIDERS = {
     "rxnECNumbers": "ec-code",
