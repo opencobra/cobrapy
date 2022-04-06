@@ -55,6 +55,7 @@ def test_rename_genes_with_context(model: Model) -> None:
         "bar": "2935",
     }
     genes_in_old_model = set()
+    print(model.genes.b1241.reactions)
     for i in rename_dict.keys():
         if i not in rename_dict.values() and i in model.genes:
             genes_in_old_model.add(i)
@@ -79,10 +80,13 @@ def test_rename_genes_with_context(model: Model) -> None:
         assert model.genes.b3919.reactions == {
             model.reactions.get_by_id(i) for i in ("TKT1", "TKT2", "TPI")
         }
+        print(model.genes._dict)
+        print(model.genes)
     for i in genes_in_old_model:
         if i not in rename_dict.values():
             assert i in model.genes
-
+    print(model.genes._dict)
+    print(model.genes)
     assert "b3115" in model.genes
     assert "foo" not in model.genes
     assert "world" not in model.genes
