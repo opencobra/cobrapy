@@ -14,6 +14,9 @@ default in some cases.
 
 ## Other
 
+Removed pymatlib direct transfer of models to matlab process. 
+Please use save_matlab_model() and then read the model in matlab.
+
 ## Deprecated features
 
 ## Backwards incompatible changes
