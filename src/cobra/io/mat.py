@@ -30,7 +30,11 @@ MET_MATLAB_TO_PROVIDERS = {
     "metHMDBID": "hmdb",
     "metInChIString": "inchi",
     "metKEGGID": "kegg.compound",
+    "metKEGGGlycanID": "kegg.glycan",
+    "metKEGGDrugID": "kegg.drug",
+    "metUniPathway": "unipathway.compound",
     "metPubChemID": "pubchem.compound",
+    "metPubChemSubstance" : "pubchem.substance",
     "metCHEBIID": "CHEBI",
     "metMetaNetXID": "metanetx.chemical",
     "metSEEDID": "seed.compound",
@@ -43,11 +47,15 @@ MET_MATLAB_TO_PROVIDERS = {
     "metSLMID": "SLM",
     "metSMILES": "SMILES",
     "metSBOTerm": "SBO",
+    "metCasNumber": "cas",
 }
 
 MET_PROVIDERS_TO_MATLAB = {
     MET_MATLAB_TO_PROVIDERS[k]: k for k in MET_MATLAB_TO_PROVIDERS.keys()
 }
+
+# Some models seem to have some fields  slightly wrong
+MET_PROVIDERS_TO_MATLAB.update({"chebi" : "metCHEBIID"})
 
 RXN_MATLAB_TO_PROVIDERS = {
     "rxnECNumbers": "ec-code",
@@ -103,8 +111,8 @@ D_REACTION_NOTES = "D_REACTION_NOTES"
 D_REACTION_NOTES_REV = "D_REACTION_NOTES_REV"
 
 D_REPLACE: dict = {
-    D_GENE: GENE_PROVIDERS_TO_MATLAB,
-    D_GENE_REV: GENE_MATLAB_TO_PROVIDERS,
+    D_GENE: GENE_MATLAB_TO_PROVIDERS,
+    D_GENE_REV: GENE_PROVIDERS_TO_MATLAB,
     D_MET: MET_MATLAB_TO_PROVIDERS,
     D_MET_REV: MET_PROVIDERS_TO_MATLAB,
     D_REACTION: RXN_MATLAB_TO_PROVIDERS,
@@ -475,6 +483,7 @@ def annotations_to_mat(
     for i in range(len(annotation_list)):
         if annotation_list[i]:
             providers_used.update(annotation_list[i].keys())
+    providers_used = providers_used.intersection(D_REPLACE[_d_replace].keys())
     providers_used = list(providers_used)
     annotation_matlab = {prov: D_REPLACE[_d_replace][prov] for prov in providers_used}
     empty_lists = [[""] * len(annotation_list) for x in annotation_matlab]
@@ -490,6 +499,8 @@ def annotations_to_mat(
                     v = " or ".join(v)
                 else:
                     v = ", ".join(v)
+                if provider_key not in providers_used:
+                    continue
                 annotation_cells_to_be[annotation_matlab[provider_key]][i] = v
     for annotation_key, _list in annotation_cells_to_be.items():
         if annotation_key not in mat_dict:
@@ -739,6 +750,8 @@ def from_mat_struct(
         pass
     try:
         # RECON3.0 mat has an array within an array for subsystems.
+        # If we find a model that has multiple subsytems per reaction, this should be
+        # modified
         if isinstance(m["subSystems"][0, 0][0][0][0], np.ndarray):
             rxn_subsystems = [
                 _each_cell[0][0][0][0] if _each_cell else None
