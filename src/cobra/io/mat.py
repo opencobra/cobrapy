@@ -794,7 +794,10 @@ def from_mat_struct(
         warn("Objective vector `c` not found.")
 
     if "osenseStr" in m.dtype.names:
-        model.objective_direction = str(m["osenseStr"][0, 0][0][0])
+        if isinstance(m["osenseStr"][0, 0][0], np.str_):
+            model.objective_direction = str(m["osenseStr"][0, 0][0])
+        elif isinstance(m["osenseStr"][0, 0][0], np.ndarray):
+            model.objective_direction = str(m["osenseStr"][0, 0][0][0])
     elif "osense" in m.dtype.names:
         osense = float(m["osense"][0, 0][0][0])
         objective_direction_str = "max"
