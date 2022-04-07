@@ -228,12 +228,13 @@ def _multi_deletion(
             )[entity]
             chunk_size = len(args) // processes
 
-            with ProcessPool(
-                processes, initializer=_init_worker, initargs=(model,)
-            ) as pool:
-                results = extract_knockout_results(
-                    pool.imap_unordered(worker, args, chunksize=chunk_size)
-                )
+            if __name__ == "__main__":
+                with ProcessPool(
+                    processes, initializer=_init_worker, initargs=(model,)
+                ) as pool:
+                    results = extract_knockout_results(
+                        pool.imap_unordered(worker, args, chunksize=chunk_size)
+                    )
         else:
             worker = dict(gene=_gene_deletion, reaction=_reaction_deletion)[entity]
             results = extract_knockout_results(map(partial(worker, model), args))

@@ -236,15 +236,16 @@ def flux_variability_analysis(
                 # objective direction for all reactions. This creates a
                 # slight overhead but seems the most clean.
                 chunk_size = len(reaction_ids) // processes
-                with ProcessPool(
-                    processes,
-                    initializer=_init_worker,
-                    initargs=(model, loopless, what[:3]),
-                ) as pool:
-                    for rxn_id, value in pool.imap_unordered(
-                        _fva_step, reaction_ids, chunksize=chunk_size
-                    ):
-                        fva_result.at[rxn_id, what] = value
+                if __name__ == "__main__":
+                    with ProcessPool(
+                        processes,
+                        initializer=_init_worker,
+                        initargs=(model, loopless, what[:3]),
+                    ) as pool:
+                        for rxn_id, value in pool.imap_unordered(
+                            _fva_step, reaction_ids, chunksize=chunk_size
+                        ):
+                            fva_result.at[rxn_id, what] = value
             else:
                 _init_worker(model, loopless, what[:3])
                 for rxn_id, value in map(_fva_step, reaction_ids):
