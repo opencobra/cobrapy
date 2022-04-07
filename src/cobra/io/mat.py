@@ -119,8 +119,8 @@ D_REPLACE: dict = {
 }
 
 # precompiled regular expressions (kept globally for caching)
-_bracket_re = re.compile(r"\[(?P<compartment>[a-z]+)\]$")
-_underscore_re = re.compile(r"_(?P<compartment>[a-z]+)$")
+_bracket_re = re.compile(r"\[(?P<compartment>[a-zA-Z]+)\]$")
+_underscore_re = re.compile(r"_(?P<compartment>[a-zA-Z]+)$")
 
 
 def _get_id_compartment(_id: str) -> str:
@@ -289,7 +289,8 @@ def load_matlab_model(
     for possible_name in possible_names:
         try:
             return from_mat_struct(data[possible_name], model_id=possible_name, inf=inf)
-        except ValueError:
+        except ValueError as e:
+            print(f"Some problem with the model, causing error {e}")
             # TODO: use custom cobra exception to handle exception
             pass
     # If code here is executed, then no model was found.
@@ -682,6 +683,8 @@ def from_mat_struct(
     else:
         met_comps = [_get_id_compartment(x) for x in met_ids]
         met_comp_names = met_comps
+    if None in met_comps or "" in met_comps:
+        raise(ValueError, "Some compartments were empty. Check the model!")
     model.compartments = dict(zip(met_comps, met_comp_names))
     met_names, met_formulas, met_charges = None, None, None
     try:
