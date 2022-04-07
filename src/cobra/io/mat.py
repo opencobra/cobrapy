@@ -684,7 +684,7 @@ def from_mat_struct(
         met_comps = [_get_id_compartment(x) for x in met_ids]
         met_comp_names = met_comps
     if None in met_comps or "" in met_comps:
-        raise(ValueError, "Some compartments were empty. Check the model!")
+        raise (ValueError, "Some compartments were empty. Check the model!")
     model.compartments = dict(zip(met_comps, met_comp_names))
     met_names, met_formulas, met_charges = None, None, None
     try:
