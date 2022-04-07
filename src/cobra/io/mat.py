@@ -54,9 +54,6 @@ MET_PROVIDERS_TO_MATLAB = {
     MET_MATLAB_TO_PROVIDERS[k]: k for k in MET_MATLAB_TO_PROVIDERS.keys()
 }
 
-# Some models seem to have some fields  slightly wrong
-MET_PROVIDERS_TO_MATLAB.update({"chebi": "metCHEBIID"})
-
 RXN_MATLAB_TO_PROVIDERS = {
     "rxnECNumbers": "ec-code",
     "rxnReferences": "pubmed",
@@ -805,23 +802,3 @@ def from_mat_struct(
             objective_direction_str = "min"
         model.objective_direction = objective_direction_str
     return model
-
-
-def _check(result: Dict[str, str]) -> None:
-    """Ensure success of a `pymatbridge` operation.
-
-    Parameters
-    ----------
-    result : dict
-        The dictionary obtained from `pymatbridge` with keys as 'message',
-        'result', and 'success'.
-
-    Raises
-    ------
-    RuntimeError
-        If setting variable via `pymatbridge` fails.
-
-    """
-    if result["success"] is not True:
-        # TODO: verify if key 'content' is valid as docs don't state about it
-        raise RuntimeError(result["content"]["stdout"])
