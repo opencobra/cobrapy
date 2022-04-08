@@ -1,5 +1,6 @@
 """Provide functions for I/O in MATLAB (.mat) format."""
 
+import logging
 import re
 from collections import OrderedDict
 from typing import Dict, Iterable, List, Optional, Pattern
@@ -19,6 +20,8 @@ try:
 except ImportError:
     scipy_sparse = None
     scipy_io = None
+
+logger = logging.getLogger(__name__)
 
 
 # The following dictionaries are based on
@@ -681,6 +684,11 @@ def from_mat_struct(
         met_comps = [comps[i] for i in met_comp_index]
         met_comp_names = [comp_names[i] for i in met_comp_index]
     else:
+        logger.warning(
+            f"No defined compartments in model {model.id}. "
+            f"Compartments will be deduced heuristically "
+            f"using regular expressions."
+        )
         met_comps = [_get_id_compartment(x) for x in met_ids]
         met_comp_names = met_comps
     if None in met_comps or "" in met_comps:
