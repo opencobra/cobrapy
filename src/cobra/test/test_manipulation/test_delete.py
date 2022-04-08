@@ -7,7 +7,6 @@ from cobra.core import GPR, Gene, Metabolite, Model, Reaction
 from cobra.manipulation import (
     delete_model_genes,
     find_gene_knockout_reactions,
-    get_compiled_gene_reaction_rules,
     prune_unused_metabolites,
     prune_unused_reactions,
     remove_genes,
@@ -72,7 +71,7 @@ def _find_gene_knockout_reactions_fast(
     m: Model, gene_list: List[Gene]
 ) -> List[Reaction]:
     """Quickly find gene knockout reactions."""
-    compiled_rules = get_compiled_gene_reaction_rules(m)
+    compiled_rules = {r: r.gpr for r in m.reactions}
     return find_gene_knockout_reactions(
         m, gene_list, compiled_gene_reaction_rules=compiled_rules
     )

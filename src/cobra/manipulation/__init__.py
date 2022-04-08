@@ -2,7 +2,6 @@ from .annotate import add_SBO
 from .delete import (
     delete_model_genes,
     find_gene_knockout_reactions,
-    get_compiled_gene_reaction_rules,
     prune_unused_metabolites,
     prune_unused_reactions,
     remove_genes,

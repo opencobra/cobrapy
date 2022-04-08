@@ -83,37 +83,6 @@ def undelete_model_genes(model: "Model") -> None:
     model._trimmed = False
 
 
-def get_compiled_gene_reaction_rules(model: "Model") -> Dict["Reaction", Module]:
-    """Generate a dictionary of compiled gene-reaction rules.
-
-    Any gene-reaction rule expression which cannot be compiled or do not
-    evaluate after compiling will be excluded. The result can be used in the
-    `find_gene_knockout_reactions` function to speed up evaluation of these
-    rules.
-
-    Parameters
-    ----------
-    model: cobra.Model
-        The model to get gene-reaction rules for.
-
-    Returns
-    -------
-    dict of cobra.Reaction, ast.Module
-        The dictionary of cobra.Reaction objects as keys and ast.Module
-        objects as keys.
-
-    .. deprecated::
-        Internal function that has outlived its purpose.
-
-    """
-    warn(
-        "The function `get_compiled_gene_reaction_rules` has outlived its purpose. "
-        "It will be removed soon.",
-        DeprecationWarning,
-    )
-    return {r: r.gpr for r in model.reactions}
-
-
 def find_gene_knockout_reactions(
     model: "Model",
     gene_list: List["Gene"],
