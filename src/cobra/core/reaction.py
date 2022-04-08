@@ -257,7 +257,6 @@ class Reaction(Object):
         cop = copy(super(Reaction, self))
         return cop
 
-    # Unclear what memo should be
     def __deepcopy__(self, memo: dict) -> "Reaction":
         """Copy the reaction with memo.
 
@@ -590,46 +589,66 @@ class Reaction(Object):
         """
         return frozenset(self._genes)
 
-    def _update_genes_from_gpr(self, new_gene_names: Optional[Set] = None) -> None:
+    def update_genes_from_gpr(self) -> None:
         """Update genes of reation based on GPR.
 
-        Parameters
-        ----------
-        new_gene_names: set
+        If the reaction has a model, and new genes appear in the GPR, they will be
+        created as Gene() entities and added to the model. If the reaction doesn't have
+        a model, genes will be created without a model.
+
+        Genes that no longer appear in the GPR will be removed from the reaction, but
+        not the model. If you want to remove them expliclty, use model.remove_genes().
         """
-        if new_gene_names is None:
-            if self._gpr.body is not None:
-                new_gene_names = self._gpr.genes
-            else:
-                new_gene_names = set()
+        context = get_context(self)
+        if self._gpr.body is not None:
+            new_gene_names = self._gpr.genes
+        else:
+            new_gene_names = set()
         old_genes = self._genes.copy()
+        new_genes = set()
         if self._model is None:
             self._genes = {Gene(i) for i in new_gene_names}
         else:
             model_genes = self._model.genes
             self._genes = set()
             for g_id in new_gene_names:
-                if model_genes.has_id(g_id):
-                    self._genes.add(model_genes.get_by_id(g_id))
-                else:
+                if not model_genes.has_id(g_id):
                     new_gene = Gene(g_id)
                     new_gene._model = self._model
-                    self._genes.add(new_gene)
                     model_genes.append(new_gene)
+                    if context:
+                        # Remove the gene later
+                        context(
+                            partial(
+                                remove_genes,
+                                model=self._model,
+                                gene_list=[model_genes.get_by_id(g_id)],
+                                remove_reactions=False,
+                            )
+                        )
+                        context(partial(setattr, new_gene, "_model", None))
+                        # Maybe should be
+                        # context(partial(self._model.genes.__isub__, [new_gene]))
+                new_gene = model_genes.get_by_id(g_id)
+                self._genes.add(new_gene)
+                new_genes.add(new_gene)
 
         # Make the genes aware that it is involved in this reaction
         for g in self._genes:
-            g._reaction.add(self)
+            self._associate_gene(g)
+            if context:
+                context(partial(self._dissociate_gene, g))
 
         # make the old genes aware they are no longer involved in this reaction
-        for g in old_genes:
-            if g not in self._genes:  # if an old gene is not a new gene
-                try:
-                    g._reaction.remove(self)
-                    if not len(g.reactions) and self.model and g in self.model.genes:
-                        remove_genes(self.model, [g], False)
-                except KeyError:
-                    warn(f"could not remove old gene {g.id} from reaction {self.id}")
+        for g in old_genes.difference(new_genes):
+            try:
+                self._dissociate_gene(g)
+                if context:
+                    context(partial(self._associate_gene, g))
+            except KeyError:
+                warn(f"could not remove old gene {g.id} from reaction {self.id}")
+            if g in self._genes:  # if an old gene is still a new gene
+                raise Exception("something wrong with sets. Shouldn't happen.")
 
     @property
     def gene_reaction_rule(self) -> str:
@@ -645,8 +664,11 @@ class Reaction(Object):
         return self._gpr.to_string()
 
     @gene_reaction_rule.setter
+    @resettable
     def gene_reaction_rule(self, new_rule: str) -> None:
         """Set a new GPR for the reaction, using a str expression.
+
+        Will use the new GPR to update reaction genes.
 
         Parameters
         ----------
@@ -654,13 +676,13 @@ class Reaction(Object):
             which will be parsed by the string parser in GPR, GPR.from_string(new_rule).
             It makes a new GPR, and does not modify the existing one.
 
-        """
-        # TODO: Do this :)
-        if get_context(self):
-            warn("Context management not implemented for gene reaction rules.")
+        See Also
+        --------
+        update_genes_from_gpr()
 
+        """
         self._gpr = GPR.from_string(new_rule)
-        self._update_genes_from_gpr()
+        self.update_genes_from_gpr()
 
     @property
     def gene_name_reaction_rule(self):
@@ -686,6 +708,7 @@ class Reaction(Object):
         return self._gpr
 
     @gpr.setter
+    @resettable
     def gpr(self, value: GPR) -> None:
         """Set a new GPR for the reaction, using GPR() class.
 
@@ -698,9 +721,10 @@ class Reaction(Object):
         See Also
         --------
         cobra.core.gene.GPR()
+        update_genes_from_gpr()
         """
         self._gpr = value
-        self._update_genes_from_gpr()
+        self.update_genes_from_gpr()
 
     @property
     def functional(self) -> bool:
@@ -970,16 +994,16 @@ class Reaction(Object):
         Reaction - original reaction (self) with the added properties.
         """
         self.add_metabolites(other._metabolites, combine=True)
-        gpr1 = self.gene_reaction_rule.strip()
-        gpr2 = other.gene_reaction_rule.strip()
-        if gpr1 != "" and gpr2 != "":
+        rule1 = self.gene_reaction_rule.strip()
+        rule2 = other.gene_reaction_rule.strip()
+        if rule1 != "" and rule2 != "":
             self.gene_reaction_rule = (
                 f"({self.gene_reaction_rule}) and " f"({other.gene_reaction_rule})"
             )
-        elif gpr1 != "" and gpr2 == "":
-            self.gene_reaction_rule = gpr1
-        elif gpr1 == "" and gpr2 != "":
-            self.gene_reaction_rule = gpr2
+        elif rule1 != "" and rule2 == "":
+            self.gene_reaction_rule = rule1
+        elif rule1 == "" and rule2 != "":
+            self.gene_reaction_rule = rule2
         return self
 
     def __sub__(self, other: "Reaction") -> "Reaction":

@@ -3,7 +3,7 @@
 from itertools import chain
 from typing import List, Set, Union
 
-from cobra.core import Gene, Metabolite, Model, Reaction
+from cobra.core import GPR, Gene, Metabolite, Model, Reaction
 from cobra.manipulation import (
     delete_model_genes,
     find_gene_knockout_reactions,
@@ -196,4 +196,68 @@ def test_remove_genes() -> None:
     assert rxns.r6.gene_reaction_rule == "y"
     assert rxns.r7.gene_reaction_rule == "z"
     assert rxns.r7.genes == {m.genes.z}
+    assert rxns.r8.gene_reaction_rule == ""
+
+
+def test_remove_genes_with_context() -> None:
+    """Test gene removal is reversed in context."""
+    m = Model("test")
+    m.add_reactions([Reaction("r" + str(i + 1)) for i in range(8)])
+    assert len(m.reactions) == 8
+    rxns = m.reactions
+    rxns.r1.gene_reaction_rule = "(a and b) or (c and a)"
+    rxns.r2.gene_reaction_rule = "(a and b and d and e)"
+    rxns.r3.gene_reaction_rule = "(a and b) or (b and c)"
+    rxns.r4.gene_reaction_rule = "(f and b) or (b and c)"
+    rxns.r5.gene_reaction_rule = "x"
+    rxns.r6.gene_reaction_rule = "y"
+    rxns.r7.gene_reaction_rule = "x or     z"
+    rxns.r8.gene_reaction_rule = ""
+    with m:
+        remove_genes(m, ["a"], remove_reactions=False)
+        assert "a" not in m.genes
+        assert "x" in m.genes
+        assert rxns.r1.gene_reaction_rule == ""
+        assert rxns.r2.gene_reaction_rule == ""
+        assert rxns.r3.gene_reaction_rule == "b and c"
+        assert rxns.r4.gene_reaction_rule == "(f and b) or (b and c)"
+        assert rxns.r5.gene_reaction_rule == "x"
+        assert rxns.r6.gene_reaction_rule == "y"
+        assert rxns.r7.genes == {m.genes.x, m.genes.z}
+        assert rxns.r8.gene_reaction_rule == ""
+    assert "a" in m.genes
+    assert "x" in m.genes
+    assert rxns.r1.gene_reaction_rule == "(a and b) or (c and a)"
+    assert rxns.r2.gpr == GPR.from_string("(a and b and d and e)")
+    assert rxns.r3.gene_reaction_rule == "(a and b) or (b and c)"
+    assert rxns.r4.gene_reaction_rule == "(f and b) or (b and c)"
+    assert rxns.r5.gene_reaction_rule == "x"
+    assert rxns.r6.gene_reaction_rule == "y"
+    assert rxns.r7.genes == {m.genes.x, m.genes.z}
+    assert rxns.r8.gene_reaction_rule == ""
+    with m:
+        remove_genes(m, ["a"], remove_reactions=False)
+        assert "a" not in m.genes
+        remove_genes(m, ["x"], remove_reactions=True)
+        assert len(m.reactions) == 7
+        assert "r5" not in m.reactions
+        assert "x" not in m.genes
+        assert rxns.r1.gene_reaction_rule == ""
+        assert rxns.r2.gene_reaction_rule == ""
+        assert rxns.r3.gene_reaction_rule == "b and c"
+        assert rxns.r4.gene_reaction_rule == "(f and b) or (b and c)"
+        assert rxns.r6.gene_reaction_rule == "y"
+        assert rxns.r7.gene_reaction_rule == "z"
+        assert rxns.r7.genes == {m.genes.z}
+        assert rxns.r8.gene_reaction_rule == ""
+    assert "a" in m.genes
+    assert "x" in m.genes
+    assert len(m.reactions) == 8
+    assert rxns.r1.gene_reaction_rule == "(a and b) or (c and a)"
+    assert rxns.r2.gpr == GPR.from_string("(a and b and d and e)")
+    assert rxns.r3.gene_reaction_rule == "(a and b) or (b and c)"
+    assert rxns.r4.gene_reaction_rule == "(f and b) or (b and c)"
+    assert rxns.r5.gene_reaction_rule == "x"
+    assert rxns.r6.gene_reaction_rule == "y"
+    assert rxns.r7.genes == {m.genes.x, m.genes.z}
     assert rxns.r8.gene_reaction_rule == ""

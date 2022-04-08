@@ -6,6 +6,7 @@ from typing import Iterable
 import numpy as np
 import pytest
 
+from cobra import Gene
 from cobra.core import GPR, Configuration, Metabolite, Model, Reaction
 
 
@@ -81,10 +82,10 @@ def test_gpr_modification(model: Model) -> None:
     assert new_gene in reaction.genes
     assert reaction in new_gene.reactions
 
-    # Remove old gene correctly
+    # Remove old gene correctly, keep it in model
     assert old_gene not in reaction.genes
     assert reaction not in old_gene.reactions
-    assert old_gene not in model.genes
+    assert old_gene in model.genes
 
     # Add a new 'gene' to the GPR
     reaction.gene_reaction_rule = "fake_gene"
@@ -94,6 +95,62 @@ def test_gpr_modification(model: Model) -> None:
     assert reaction in fake_gene.reactions
     fake_gene.name = "foo_gene"
     assert reaction.gene_name_reaction_rule == fake_gene.name
+
+
+def test_gpr_modification_with_context(model: Model) -> None:
+    """Test GPR manipulations are reversed in context."""
+    empty_model = Model()
+    reaction = Reaction("test")
+    reaction.gene_reaction_rule = "(g1 or g2) and g3"
+    assert reaction.gene_reaction_rule == "(g1 or g2) and g3"
+    assert len(reaction.genes) == 3
+
+    with empty_model:
+        # Adding reaction with a GPR propagates to the model
+        empty_model.add_reactions([reaction])
+        assert len(empty_model.genes) == 3
+    assert len(empty_model.reactions) == 0
+    assert len(empty_model.genes) == 0
+    assert reaction._model is None
+
+    reaction = model.reactions.get_by_id("PGI")
+    old_reaction_rule = reaction.gene_reaction_rule
+    old_gene = list(reaction.genes)[0]
+    new_gene = model.genes.get_by_id("s0001")
+
+    with model:
+        # Add an existing 'gene' to the GPR
+        reaction.gene_reaction_rule = "s0001"
+        assert new_gene in reaction.genes
+        assert reaction in new_gene.reactions
+
+        # Remove old gene correctly, keep it in model
+        assert old_gene not in reaction.genes
+        assert reaction not in old_gene.reactions
+        assert old_gene in model.genes
+
+    assert reaction.gene_reaction_rule == old_reaction_rule
+    assert new_gene not in reaction.genes
+    assert reaction not in new_gene.reactions
+
+    # Remove old gene correctly, keep it in model
+    assert old_gene in reaction.genes
+    assert reaction in old_gene.reactions
+    assert old_gene in model.genes
+
+    with model:
+        # Add a new 'gene' to the GPR
+        reaction.gene_reaction_rule = "fake_gene"
+        assert model.genes.has_id("fake_gene")
+        fake_gene = model.genes.get_by_id("fake_gene")
+        assert fake_gene in reaction.genes
+        assert reaction in fake_gene.reactions
+        fake_gene.name = "foo_gene"
+        assert reaction.gene_name_reaction_rule == fake_gene.name
+    assert not model.genes.has_id("fake_gene")
+    fake_gene = Gene("fake_gene")
+    assert fake_gene not in reaction.genes
+    assert reaction not in fake_gene.reactions
 
 
 def test_gene_knock_out(model: Model) -> None:
@@ -374,6 +431,36 @@ def test_iadd(model: Model) -> None:
     expected_rule = "(b2296 or b3115 or b1849) and (b0118 or b1276)"
     assert model.reactions.ACKr.gene_reaction_rule == expected_rule
     assert len(model.reactions.ACKr.genes) == 5
+
+
+def test_iadd_with_context(model: Model) -> None:
+    """Test in-place addition of reaction is reversed with context."""
+    PGI = model.reactions.PGI
+    EX_h2o = model.reactions.EX_h2o_e
+    original_PGI_gene_reaction_rule = PGI.gene_reaction_rule
+    with model:
+        PGI += EX_h2o
+        assert PGI.gene_reaction_rule == original_PGI_gene_reaction_rule
+        assert PGI.metabolites[model.metabolites.h2o_e] == -1.0
+    assert PGI.gene_reaction_rule == original_PGI_gene_reaction_rule
+    assert model.metabolites.h2o_e not in PGI.metabolites.keys()
+    # Add a reaction not in the model
+    new_reaction = Reaction("test")
+    new_reaction.add_metabolites({Metabolite("A"): -1, Metabolite("B"): 1})
+    with model:
+        PGI += new_reaction
+    assert PGI.gene_reaction_rule == original_PGI_gene_reaction_rule
+    assert len(PGI.gene_reaction_rule) == 5
+    # Combine two GPRs
+    expected_rule = "(b2296 or b3115 or b1849) and (b0118 or b1276)"
+    old_rule = model.reactions.ACKr.gene_reaction_rule
+    with model:
+        model.reactions.ACKr += model.reactions.ACONTa
+        assert model.reactions.ACKr.gene_reaction_rule == expected_rule
+        assert len(model.reactions.ACKr.genes) == 5
+    assert model.reactions.ACKr.gene_reaction_rule == old_rule
+    assert old_rule != expected_rule
+    assert len(model.reactions.ACKr.genes) == 3
 
 
 def test_add(model: Model) -> None:

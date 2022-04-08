@@ -371,10 +371,7 @@ class Model(Object):
                 new_met = new.metabolites.get_by_id(metabolite.id)
                 new_reaction._metabolites[new_met] = stoic
                 new_met._reaction.add(new_reaction)
-            for gene in reaction._genes:
-                new_gene = new.genes.get_by_id(gene.id)
-                new_reaction._genes.add(new_gene)
-                new_gene._reaction.add(new_reaction)
+            new_reaction.update_genes_from_gpr()
 
         new.groups = DictList()
         do_not_copy_by_ref = {"_model", "_members"}
@@ -670,6 +667,8 @@ class Model(Object):
         # Add reactions. Also take care of genes and metabolites in the loop.
         for reaction in pruned:
             reaction._model = self
+            if context:
+                context(partial(setattr, reaction, "_model", None))
             # Build a `list()` because the dict will be modified in the loop.
             for metabolite in list(reaction.metabolites):
                 # TODO: Should we add a copy of the metabolite instead?
@@ -1117,11 +1116,9 @@ class Model(Object):
             for gene in self.genes:
                 gene._reaction.clear()
             for rxn in self.reactions:
-                rxn._update_genes_from_gpr()
+                rxn.update_genes_from_gpr()
                 for met in rxn._metabolites:
                     met._reaction.add(rxn)
-                for gene in rxn._genes:
-                    gene._reaction.add(rxn)
 
         # point _model to self
         for l in (self.reactions, self.genes, self.metabolites, self.groups):

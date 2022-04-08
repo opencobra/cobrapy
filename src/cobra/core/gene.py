@@ -17,7 +17,7 @@ from ast import (
 from ast import parse as ast_parse
 from copy import deepcopy
 from keyword import kwlist
-from typing import FrozenSet, Iterable, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, FrozenSet, Iterable, Optional, Set, Tuple, Union
 from warnings import warn
 
 import sympy.logic.boolalg as spl
@@ -28,6 +28,9 @@ from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
 
+
+if TYPE_CHECKING:
+    from cobra import Model
 
 # TODO - When https://github.com/symengine/symengine.py/issues/334 is resolved,
 #  change sympy.Symbol (above in imports) to optlang.symbolics.Symbol
@@ -268,7 +271,11 @@ class Gene(Species):
             the model.
 
         """
-        warn("Use cobra.manipulation.remove_genes instead")
+        warn(
+            "Use cobra.manipulation.remove_genes instead to remove genes "
+            "from the model."
+        )
+        warn("Use cobra.manipulation.delete_model_genes to simulate knockouts.")
         if model is not None:
             if model != self._model:
                 raise Exception(
@@ -277,41 +284,10 @@ class Gene(Species):
                 )
         if self._model is None:
             raise Exception(f"{repr(self)} is not in a model")
+        from cobra.manipulation import remove_genes
 
-        if make_dependent_reactions_nonfunctional:
-            gene_state = "False"
-        else:
-            gene_state = "True"
-        the_gene_re = re.compile(rf"(^|(?<=( |\())){re.escape(self.id)}(?=( |\)|$))")
-
-        # remove reference to the gene in all groups
-        associated_groups = self._model.get_associated_groups(self)
-        for group in associated_groups:
-            group.remove_members(self)
-
-        self._model.genes.remove(self)
+        remove_genes(self._model, [self])
         self._model = None
-
-        for the_reaction in list(self._reaction):
-            the_reaction._gene_reaction_rule = the_gene_re.sub(
-                gene_state, the_reaction.gene_reaction_rule
-            )
-            the_reaction._genes.remove(self)
-            # Now, deactivate the reaction if its gene association evaluates
-            # to False
-            the_gene_reaction_relation = the_reaction.gene_reaction_rule
-            for other_gene in the_reaction._genes:
-                other_gene_re = re.compile(
-                    rf"(^|(?<=( |\())){re.escape(other_gene.id)}(?=( |\)|$))"
-                )
-                the_gene_reaction_relation = other_gene_re.sub(
-                    "True", the_gene_reaction_relation
-                )
-
-            if not eval(the_gene_reaction_relation):
-                the_reaction.lower_bound = 0
-                the_reaction.upper_bound = 0
-        self._reaction.clear()
 
     def _repr_html_(self):
         return f"""
