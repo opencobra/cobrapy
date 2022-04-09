@@ -22,8 +22,9 @@ def test_single_optgp(model: Model) -> None:
 
 def test_multi_optgp(model: Model) -> None:
     """Test OptGP sampling (multi sample)."""
-    s = sample(model, 10, processes=2)
-    assert s.shape == (10, len(model.reactions))
+    if __name__ == "__main__":
+        s = sample(model, 10, processes=2)
+        assert s.shape == (10, len(model.reactions))
 
 
 def test_wrong_method(model: Model) -> None:

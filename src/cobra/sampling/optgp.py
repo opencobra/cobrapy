@@ -169,13 +169,10 @@ class OptGPSampler(HRSampler):
             # limit errors, something weird going on with multiprocessing
             args = list(zip([n_process] * self.processes, range(self.processes)))
 
-            if __name__ == "__main__":
-                with ProcessPool(
-                    self.processes, initializer=mp_init, initargs=(self,)
-                ) as pool:
-                    results = pool.map(_sample_chain, args, chunksize=1)
-            else:
-                return None
+            with ProcessPool(
+                self.processes, initializer=mp_init, initargs=(self,)
+            ) as pool:
+                results = pool.map(_sample_chain, args, chunksize=1)
 
             chains = np.vstack([r[1] for r in results])
             self.retries += sum(r[0] for r in results)
