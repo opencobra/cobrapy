@@ -93,9 +93,6 @@ class Model(Object):
             self._solver = id_or_model.solver
         else:
             Object.__init__(self, id_or_model, name=name)
-            self._trimmed = False
-            self._trimmed_genes = []
-            self._trimmed_reactions = {}
             self.genes = DictList()
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
