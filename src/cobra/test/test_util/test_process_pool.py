@@ -8,7 +8,6 @@ from pytest_mock import MockerFixture
 
 from cobra.util import ProcessPool
 
-
 def dummy_initializer(*args: Iterable) -> Tuple:
     """Implement a 'do nothing' function that accepts initialization arguments."""
     return args
@@ -76,8 +75,9 @@ def test_apply_async() -> None:
 
 def test_map() -> None:
     """Test that a function can be mapped over an iterable of values."""
-    with ProcessPool(processes=3) as pool:
-        assert sum(pool.map(square, [2] * 6)) == 24
+    if __name__ == "__main":
+        with ProcessPool(processes=3) as pool:
+            assert sum(pool.map(square, [2] * 6)) == 24
 
 
 def test_map_async() -> None:
@@ -115,8 +115,9 @@ def test_starmap() -> None:
 
 def test_starmap_async() -> None:
     """Test that a function can be starmapped over many iterables asynchronously."""
-    with ProcessPool(processes=3) as pool:
-        assert (
-            sum(pool.starmap_async(summation, [range(10), range(10), range(10)]).get())
-            == 135
-        )
+    if __name__ == "__main":
+        with ProcessPool(processes=3) as pool:
+            assert (
+                sum(pool.starmap_async(summation, [range(10), range(10), range(10)]).get())
+                == 135
+            )
