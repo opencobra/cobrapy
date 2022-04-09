@@ -57,6 +57,42 @@ def prune_unused_reactions(model: "Model") -> Tuple["Model", List["Reaction"]]:
     return output_model, reactions_to_prune
 
 
+def knock_out_model_genes(
+    model: "Model",
+    gene_list: Union[List["Gene"], Set["Gene"], List[str], Set[str]],
+) -> List["Reaction"]:
+    """Temporarily remove the effect of genes in `gene_list`.
+
+    It sets the bounds to "zero" for reactions catalysed by the genes in
+    `gene_list` if deleting the genes stops the reactions from proceeding.
+
+    The changes are reverted upon exit if executed within the model as context.
+
+    Parameters
+    ----------
+    model: cobra.Model
+        The model whose reaction bounds are to be set.
+    gene_list: list of cobra.Gene
+        The list of genes to knock-out.
+
+    Returns
+    -------
+    reaction_list: list[cobra.Reaction]
+        A list of cobra.Reactions that had the bounds turned to zero.
+    """
+    orig_bounds = model.reactions.list_attr('bounds')
+    for gene in gene_list:
+        if isinstance(gene, str):
+            gene = model.genes.get_by_id(gene)
+        gene.knock_out()
+    new_bounds = model.reactions.list_attr('bounds')
+    reaction_list = list()
+    for i, rxn in enumerate(model.reactions):
+        if orig_bounds[i] != new_bounds[i]:
+            reaction_list.append(rxn)
+    return reaction_list
+
+
 def undelete_model_genes(model: "Model") -> None:
     """Undo the effects of a call to `delete_model_genes` in place.
 
@@ -83,58 +119,6 @@ def undelete_model_genes(model: "Model") -> None:
     model._trimmed = False
 
 
-def find_gene_knockout_reactions(
-    model: "Model",
-    gene_list: List["Gene"],
-    compiled_gene_reaction_rules: Optional[Dict["Reaction", Module]] = None,
-) -> List["Reaction"]:
-    """Identify reactions which will be disabled when genes are knocked out.
-
-    Parameters
-    ----------
-    model: cobra.Model
-        The model for which to find gene knock-out reactions.
-    gene_list: list of cobra.Gene
-        The list of genes to knock-out.
-    compiled_gene_reaction_rules: dict of {reaction: compiled_string},
-                                  optional
-        If provided, this gives pre-compiled gene-reaction rule strings.
-        The compiled rule strings can be evaluated much faster. If a rule
-        is not provided, the regular expression evaluation will be used.
-        Because not all gene-reaction rule strings can be evaluated, this
-        dict must exclude any rules which can not be used with eval
-        (default None).
-
-    Returns
-    -------
-    list of cobra.Reaction
-       The list of cobra.Reaction objects which will be disabled.
-
-    .. deprecated:: 0.22.1
-        Internal function that has outlived its purpose.
-
-    """
-    warn(
-        "The function `find_gene_knockout_reactions` has outlived its purpose. "
-        "It will be removed in the next minor version (0.23.0).",
-        DeprecationWarning,
-    )
-    potential_reactions = set()
-    for gene in gene_list:
-        if isinstance(gene, str):
-            gene = model.genes.get_by_id(gene)
-        potential_reactions.update(gene._reaction)
-    gene_set = {str(i) for i in gene_list}
-    if compiled_gene_reaction_rules is None:
-        compiled_gene_reaction_rules = {r: r.gpr for r in potential_reactions}
-
-    return [
-        r
-        for r in potential_reactions
-        if not compiled_gene_reaction_rules[r].eval(gene_set)
-    ]
-
-
 def delete_model_genes(
     model: "Model",
     gene_list: Union[List["Gene"], Set["Gene"], List[str], Set[str]],
@@ -159,7 +143,17 @@ def delete_model_genes(
         If True, then orphan reactions will be disabled. Currently, this
         is not implemented (default False).
 
+    .. deprecated :: 0.25
+        Use cobra.manipulation.delete_model_genes to simulate knockouts
+        and cobra.manipulation.remove_genes to remove genes from
+        the model.
+
     """
+    warn(
+            "Use cobra.manipulation.remove_genes instead to remove genes "
+            "from the model."
+        )
+    warn("Use cobra.manipulation.delete_model_genes to simulate knockouts.")
     if disable_orphans:
         raise NotImplementedError("disable_orphans not implemented")
     if not hasattr(model, "_trimmed"):
