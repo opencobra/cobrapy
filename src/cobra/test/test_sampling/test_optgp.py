@@ -25,7 +25,8 @@ def optgp(model: "Model") -> OptGPSampler:
 
 def test_optgp_init_benchmark(model: "Model", benchmark: Callable) -> None:
     """Benchmark inital OptGP sampling."""
-    benchmark(lambda: OptGPSampler(model, processes=2))
+    if __name__ == "__main__":
+        benchmark(lambda: OptGPSampler(model, processes=2))
 
 
 def test_optgp_sample_benchmark(optgp: "Model", benchmark: Callable) -> None:
