@@ -1,14 +1,16 @@
 """Provide functions for pruning reactions, metabolites and genes."""
-from ast import And, BoolOp, Module, Name, NodeTransformer
+import logging
+from ast import And, BoolOp, Name, NodeTransformer
 from functools import partial
-from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple, Union
-from warnings import warn
+from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
 
 from cobra.util import get_context
 
 
 if TYPE_CHECKING:
     from cobra import Gene, Metabolite, Model, Reaction
+
+logger = logging.getLogger(__name__)
 
 
 def prune_unused_metabolites(model: "Model") -> Tuple["Model", List["Metabolite"]]:
@@ -80,43 +82,17 @@ def knock_out_model_genes(
     reaction_list: list[cobra.Reaction]
         A list of cobra.Reactions that had the bounds turned to zero.
     """
-    orig_bounds = model.reactions.list_attr('bounds')
+    orig_bounds = model.reactions.list_attr("bounds")
     for gene in gene_list:
         if isinstance(gene, str):
             gene = model.genes.get_by_id(gene)
         gene.knock_out()
-    new_bounds = model.reactions.list_attr('bounds')
+    new_bounds = model.reactions.list_attr("bounds")
     reaction_list = list()
     for i, rxn in enumerate(model.reactions):
         if orig_bounds[i] != new_bounds[i]:
             reaction_list.append(rxn)
     return reaction_list
-
-
-def undelete_model_genes(model: "Model") -> None:
-    """Undo the effects of a call to `delete_model_genes` in place.
-
-    Parameters
-    ----------
-    model: cobra.Model
-        The model which will be modified in place.
-
-    """
-    if model._trimmed_genes is not None:
-        for x in model._trimmed_genes:
-            x.functional = True
-
-    if model._trimmed_reactions is not None:
-        for (
-            the_reaction,
-            (lower_bound, upper_bound),
-        ) in model._trimmed_reactions.items():
-            the_reaction.lower_bound = lower_bound
-            the_reaction.upper_bound = upper_bound
-
-    model._trimmed_genes = []
-    model._trimmed_reactions = {}
-    model._trimmed = False
 
 
 def delete_model_genes(
@@ -138,72 +114,39 @@ def delete_model_genes(
         The list of genes to knock-out.
     cumulative_deletions: bool, optional
         If True, then any previous deletions will be maintained in the
-        model (default True).
+        model (default True). Unused, ignored.
     disable_orphans: bool, optional
         If True, then orphan reactions will be disabled. Currently, this
-        is not implemented (default False).
+        is not implemented (default False). Unused, ignored.
 
     .. deprecated :: 0.25
         Use cobra.manipulation.delete_model_genes to simulate knockouts
         and cobra.manipulation.remove_genes to remove genes from
         the model.
 
+    See Also
+    --------
+    knock_out_model_genes()
+    remove_model_genes()
+
     """
-    warn(
-            "Use cobra.manipulation.remove_genes instead to remove genes "
-            "from the model."
-        )
-    warn("Use cobra.manipulation.delete_model_genes to simulate knockouts.")
-    if disable_orphans:
-        raise NotImplementedError("disable_orphans not implemented")
-    if not hasattr(model, "_trimmed"):
-        model._trimmed = False
-        model._trimmed_genes = []
-        model._trimmed_reactions = {}  # Store the old bounds in here.
-    # older models have this
-    if model._trimmed_genes is None:
-        model._trimmed_genes = []
-    if model._trimmed_reactions is None:
-        model._trimmed_reactions = {}
-    # Allow a single gene to be fed in as a string instead of a list.
-    if not hasattr(gene_list, "__iter__") or hasattr(
-        gene_list, "id"
-    ):  # cobra.Gene has __iter__
-        gene_list = [gene_list]
-
-    if not hasattr(gene_list[0], "id"):
-        if gene_list[0] in model.genes:
-            tmp_gene_dict = dict([(x.id, x) for x in model.genes])
-        else:
-            # assume we're dealing with names if no match to an id
-            tmp_gene_dict = dict([(x.name, x) for x in model.genes])
-        gene_list = [tmp_gene_dict[x] for x in gene_list]
-
-    # Make the genes non-functional
-    for x in gene_list:
-        x.functional = False
-
-    if cumulative_deletions:
-        gene_list.extend(model._trimmed_genes)
-    else:
-        undelete_model_genes(model)
-
-    for the_reaction in find_gene_knockout_reactions(model, gene_list):
-        # Running this on an already deleted reaction will overwrite the
-        # stored reaction bounds.
-        if the_reaction in model._trimmed_reactions:
-            continue
-        old_lower_bound = the_reaction.lower_bound
-        old_upper_bound = the_reaction.upper_bound
-        model._trimmed_reactions[the_reaction] = (
-            old_lower_bound,
-            old_upper_bound,
-        )
-        the_reaction.lower_bound = 0.0
-        the_reaction.upper_bound = 0.0
-        model._trimmed = True
-
-    model._trimmed_genes = list(set(model._trimmed_genes + gene_list))
+    logger.warning(
+        "delete_model_genes and undelete_model_genes were deprecated "
+        "and should not be used. undelete_model_genes was removed."
+        "Use cobra.manipulation.remove_genes instead to remove genes "
+        "from the model."
+    )
+    logger.warning(
+        f"Use cobra.manipulation.knock_out_model_genes({model}, {gene_list})"
+        f" to cause knockouts."
+    )
+    logger.warning(
+        f"If you want to temporarily knock out genes (like undelete_model_genes) did, "
+        f"run it in model context, for example"
+        f"with({model}):"
+        f"    knocked_out_rxns = knock_out_model_genes({model}, {gene_list})"
+        f" since it will be reset when leaving the context."
+    )
 
 
 class _GeneRemover(NodeTransformer):

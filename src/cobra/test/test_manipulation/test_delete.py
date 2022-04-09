@@ -1,16 +1,13 @@
 """Test functionalities of model component pruning functions."""
 
 from itertools import chain
-from typing import List, Set, Union
 
-from cobra.core import GPR, Gene, Metabolite, Model, Reaction
+from cobra.core import GPR, Metabolite, Model, Reaction
 from cobra.manipulation import (
-    delete_model_genes,
     knock_out_model_genes,
     prune_unused_metabolites,
     prune_unused_reactions,
     remove_genes,
-    undelete_model_genes,
 )
 
 
@@ -105,7 +102,9 @@ def test_gene_knockout(salmonella: Model) -> None:
         assert expected_reactions == knocked_out_reactions
     knocked_out_reactions = knock_out_model_genes(salmonella, gene_list)
     assert len(knocked_out_reactions) == 13
-    expected_reactions = [salmonella.reactions.get_by_id(r) for r in dependent_reactions]
+    expected_reactions = [
+        salmonella.reactions.get_by_id(r) for r in dependent_reactions
+    ]
     assert knocked_out_reactions == expected_reactions
     knocked_out_reactions.extend(knock_out_model_genes(salmonella, ["STM4221"]))
     expected_reactions.append(salmonella.reactions.get_by_id("PGI"))
@@ -120,7 +119,7 @@ def test_gene_knockout(salmonella: Model) -> None:
         assert knocked_out_reactions == list()
     with test_model:
         knocked_out_reactions = knock_out_model_genes(test_model, ["eggs", "spam"])
-        expected_reactions = [test_model.reactions.get_by_id('test1')]
+        expected_reactions = [test_model.reactions.get_by_id("test1")]
         assert knocked_out_reactions == expected_reactions
     # test computation with nested boolean expression
     test_reaction_1.gene_reaction_rule = "g1 and g2 and (g3 or g4 or (g5 and g6))"
@@ -156,7 +155,9 @@ def test_gene_knockout(salmonella: Model) -> None:
         knocked_out_reactions = knock_out_model_genes(test_model, ["try:'"])
         assert knocked_out_reactions == []
     with test_model:
-        knocked_out_reactions = knock_out_model_genes(test_model, ["try:'", "'except:1"])
+        knocked_out_reactions = knock_out_model_genes(
+            test_model, ["try:'", "'except:1"]
+        )
         assert knocked_out_reactions == [test_reaction_1]
 
 

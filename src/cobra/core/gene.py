@@ -264,9 +264,14 @@ class Gene(Species):
            If True then replace the gene with 'False' in the gene
            association, else replace the gene with 'True'
 
+        See Also
+        --------
+        cobra.manipulation.remove_genes()
+        cobra.manipulation.knock_out_model_genes()
+
 
         .. deprecated :: 0.4
-            Use cobra.manipulation.delete_model_genes to simulate knockouts
+            Use cobra.manipulation.knock_out_model_genes to simulate knockouts
             and cobra.manipulation.remove_genes to remove genes from
             the model.
 
@@ -275,7 +280,7 @@ class Gene(Species):
             "Use cobra.manipulation.remove_genes instead to remove genes "
             "from the model."
         )
-        warn("Use cobra.manipulation.delete_model_genes to simulate knockouts.")
+        warn("Use cobra.manipulation.knock_out_model_genes to simulate knockouts.")
         if model is not None:
             if model != self._model:
                 raise Exception(
