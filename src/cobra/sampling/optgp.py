@@ -173,6 +173,8 @@ class OptGPSampler(HRSampler):
                     self.processes, initializer=mp_init, initargs=(self,)
                 ) as pool:
                     results = pool.map(_sample_chain, args, chunksize=1)
+            else:
+                results = []
 
             chains = np.vstack([r[1] for r in results])
             self.retries += sum(r[0] for r in results)
