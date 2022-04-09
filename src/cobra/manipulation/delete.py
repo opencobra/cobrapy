@@ -137,11 +137,6 @@ def delete_model_genes(
         "Use cobra.manipulation.remove_genes instead to remove genes "
         "from the model."
     )
-    warn(
-        "delete_model_genes and undelete_model_genes were deprecated and should not be"
-        " used.",
-        DeprecationWarning,
-    )
     logger.warning(
         f"Use cobra.manipulation.knock_out_model_genes({model}, {gene_list})"
         f" to cause knockouts."
