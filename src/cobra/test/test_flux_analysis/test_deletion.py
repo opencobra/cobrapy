@@ -365,15 +365,16 @@ def test_double_gene_deletion(model: Model) -> None:
             "b4025": 0.863,
         },
     }
-    solution = double_gene_deletion(model, gene_list1=genes, processes=3)
-    solution_one_process = double_gene_deletion(model, gene_list1=genes, processes=1)
+    if __name__ == "__main__":
+        solution = double_gene_deletion(model, gene_list1=genes, processes=3)
+        solution_one_process = double_gene_deletion(model, gene_list1=genes, processes=1)
 
-    for rxn_a, sub in growth_dict.items():
-        for rxn_b, growth in sub.items():
-            sol = solution.knockout[{rxn_a, rxn_b}]
-            sol_one = solution_one_process.knockout[{rxn_a, rxn_b}]
-            assert np.isclose(sol.growth, growth, atol=1e-3)
-            assert np.isclose(sol_one.growth, growth, atol=1e-3)
+        for rxn_a, sub in growth_dict.items():
+            for rxn_b, growth in sub.items():
+                sol = solution.knockout[{rxn_a, rxn_b}]
+                sol_one = solution_one_process.knockout[{rxn_a, rxn_b}]
+                assert np.isclose(sol.growth, growth, atol=1e-3)
+                assert np.isclose(sol_one.growth, growth, atol=1e-3)
 
 
 def test_double_gene_knockout_bug(large_model: Model) -> None:
@@ -421,20 +422,21 @@ def test_double_reaction_deletion(model: Model) -> None:
         "ENO": {"FRUpts2": 0.0},
     }
 
-    solution = double_reaction_deletion(model, reaction_list1=reactions, processes=3)
-    solution_one_process = double_reaction_deletion(
-        model, reaction_list1=reactions, processes=1
-    )
-    for (rxn_a, sub) in growth_dict.items():
-        for rxn_b, growth in sub.items():
-            sol = solution.knockout[{rxn_a, rxn_b}]
-            sol_one = solution_one_process.knockout[{rxn_a, rxn_b}]
-            if math.isnan(growth):
-                assert math.isnan(sol.growth)
-                assert math.isnan(sol_one.growth)
-            else:
-                assert np.isclose(sol.growth, growth, atol=1e-3)
-                assert np.isclose(sol_one.growth, growth, atol=1e-3)
+    if __name__ == "__main__":
+        solution = double_reaction_deletion(model, reaction_list1=reactions, processes=3)
+        solution_one_process = double_reaction_deletion(
+            model, reaction_list1=reactions, processes=1
+        )
+        for (rxn_a, sub) in growth_dict.items():
+            for rxn_b, growth in sub.items():
+                sol = solution.knockout[{rxn_a, rxn_b}]
+                sol_one = solution_one_process.knockout[{rxn_a, rxn_b}]
+                if math.isnan(growth):
+                    assert math.isnan(sol.growth)
+                    assert math.isnan(sol_one.growth)
+                else:
+                    assert np.isclose(sol.growth, growth, atol=1e-3)
+                    assert np.isclose(sol_one.growth, growth, atol=1e-3)
 
 
 def test_deletion_accessor(small_model: Model) -> None:
