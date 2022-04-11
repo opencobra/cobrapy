@@ -205,7 +205,9 @@ class TestCobraIO:
             A tuple containing name, reference_model, test_model, rewritten_model.
         """
         name, reference_model, test_model, _ = io_trial
-        if name in ["fbc1",]:
+        if name in [
+            "fbc1",
+        ]:
             pytest.xfail("not supported")
         if reference_model:
             self.extra_comparisons(name, reference_model, test_model)
@@ -217,7 +219,9 @@ class TestCobraIO:
             A tuple containing name, reference_model, test_model, rewritten_model.
         """
         name, _, test_model, reread_model = io_trial
-        if name in ["fbc1",]:
+        if name in [
+            "fbc1",
+        ]:
             pytest.xfail("not supported")
 
         self.compare_models(name, test_model, reread_model)
@@ -229,7 +233,9 @@ class TestCobraIO:
             A tuple containing name, reference_model, test_model, rewritten_model.
         """
         name, _, test_model, reread_model = io_trial
-        if name in ["fbc1",]:
+        if name in [
+            "fbc1",
+        ]:
             pytest.xfail("not supported")
         self.extra_comparisons(name, test_model, reread_model)
 
