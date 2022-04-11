@@ -4,7 +4,6 @@ import logging
 import re
 from collections import OrderedDict
 from typing import Dict, Iterable, List, Optional, Pattern
-from warnings import warn
 
 import numpy as np
 
@@ -377,7 +376,7 @@ def mat_parse_annotations(
     )
     providers = [D_REPLACE[_d_replace][x] for x in annotation_matlab]
     annotations = dict.fromkeys(providers, None)
-    _pumbed_re = re.compile("PMID: ?(\\d+),?")
+    _pubmed_re = re.compile("PMID: ?(\\d+),?")
     _ec_re = re.compile(r"([\d\-]+.[\d\-]+.[\d\-]+.[\d-]+)")
     _chebi_re = re.compile(r"\D*(\d+),?")
     for name, mat_key in zip(providers, annotation_matlab):
@@ -385,7 +384,7 @@ def mat_parse_annotations(
             # This only picks up PMID: style references. Sometimes there are other
             # things like PMC or OMIM, but those are ignored for now,
             annotations[name] = _cell_to_str_list(
-                mat_struct[mat_key][0, 0], None, _pumbed_re
+                mat_struct[mat_key][0, 0], None, _pubmed_re
             )
         elif mat_key == "rxnECNumbers":
             # turn EC codes to a list
@@ -435,15 +434,15 @@ def mat_parse_notes(
     )
     note_providers = [D_REPLACE[_d_replace][x] for x in annotation_matlab]
     notes = dict.fromkeys(note_providers, None)
-    _pumbed_re = re.compile("PMID: ?(\\d+),?")
+    _pubmed_re = re.compile("PMID: ?(\\d+),?")
     for name, mat_key in zip(note_providers, annotation_matlab):
         if mat_key == "rxnReferences":
-            # This only picks up PMID: style references. Sometimes there are other
-            # things like PMC or OMIM, but those are ignored for now,
+            # This only removes PMID: style references. Sometimes there are other
+            # things like PMC or OMIM, but those are placed as string in notes.
             _notes = _cell_to_str_list(mat_struct[mat_key][0, 0])
             notes[name] = [
-                _pumbed_re.sub("", x).strip()
-                if x and len(_pumbed_re.sub("", x).strip())
+                _pubmed_re.sub("", x).strip()
+                if x and len(_pubmed_re.sub("", x).strip())
                 else None
                 for x in _notes
             ]
@@ -653,7 +652,7 @@ def from_mat_struct(
         raise ValueError("Invalid MATLAB struct.")
 
     if "metCharge" in m.dtype.names and "metCharges" not in m.dtype.names:
-        warn(
+        logger.warning(
             "This model seems to have metCharge instead of metCharges field. Will use"
             " metCharge for metabolite charges."
         )
@@ -668,7 +667,7 @@ def from_mat_struct(
         description = m["description"][0, 0][0]
         if not isinstance(description, str) and len(description) > 1:
             model.id = description[0]
-            warn("Several IDs detected, only using the first.")
+            logger.warning("Several IDs detected, only using the first.")
         else:
             model.id = description
     else:
@@ -691,10 +690,9 @@ def from_mat_struct(
         )
         met_comps = [_get_id_compartment(x) for x in met_ids]
         met_comp_names = met_comps
-        _met_comps = set(met_comps)
         logger.warning(
             f"Using regular expression found the following compartments:"
-            f"{', '.join(sorted(_met_comps))}"
+            f"{', '.join(sorted(met_comps))}"
         )
     if None in met_comps or "" in met_comps:
         raise (ValueError, "Some compartments were empty. Check the model!")
@@ -804,7 +802,7 @@ def from_mat_struct(
         coefficients = dict(zip(new_reactions, c_vec))
         set_objective(model, coefficients)
     else:
-        warn("Objective vector `c` not found.")
+        logger.warning("Objective vector `c` not found.")
 
     if "osenseStr" in m.dtype.names:
         if isinstance(m["osenseStr"][0, 0][0], np.str_):
