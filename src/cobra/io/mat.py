@@ -56,6 +56,12 @@ MET_PROVIDERS_TO_MATLAB = {
     MET_MATLAB_TO_PROVIDERS[k]: k for k in MET_MATLAB_TO_PROVIDERS.keys()
 }
 
+MET_NOTES_TO_MATLAB = {
+    "metNotes": "metNotes",
+}
+
+MET_MATLAB_TO_NOTES = {MET_NOTES_TO_MATLAB[k]: k for k in MET_NOTES_TO_MATLAB.keys()}
+
 RXN_MATLAB_TO_PROVIDERS = {
     "rxnECNumbers": "ec-code",
     "rxnReferences": "pubmed",
@@ -82,7 +88,11 @@ RXN_MATLAB_TO_NOTES = {
     "rxnConfidenceScores": "Confidence Level",
 }
 
-RXN_NOTES_TO_MATLAB = {RXN_MATLAB_TO_NOTES[k]: k for k in RXN_MATLAB_TO_NOTES.keys()}
+RXN_NOTES_TO_MATLAB = {
+    "Confidence Level": "rxnConfidenceScores",
+    "NOTES": "rxnNotes",
+    "References": "rxnNotes",
+}
 
 GENE_MATLAB_TO_PROVIDERS = {
     "geneEntrezID": "ncbigene",
@@ -104,6 +114,8 @@ D_GENE = "D_GENE"
 D_GENE_REV = "D_GENE_REV"
 D_MET = "D_MET"
 D_MET_REV = "D_MET_REV"
+D_MET_NOTES = "D_MET_NOTES"
+D_MET_NOTES_REV = "D_MET_NOTES_REV"
 D_REACTION = "D_REACTION"
 D_REACTION_REV = "D_REACTION_REV"
 D_REACTION_NOTES = "D_REACTION_NOTES"
@@ -114,6 +126,8 @@ D_REPLACE: dict = {
     D_GENE_REV: GENE_PROVIDERS_TO_MATLAB,
     D_MET: MET_MATLAB_TO_PROVIDERS,
     D_MET_REV: MET_PROVIDERS_TO_MATLAB,
+    D_MET_NOTES: MET_MATLAB_TO_NOTES,
+    D_MET_NOTES_REV: MET_NOTES_TO_MATLAB,
     D_REACTION: RXN_MATLAB_TO_PROVIDERS,
     D_REACTION_REV: RXN_PROVIDERS_TO_MATLAB,
     D_REACTION_NOTES: RXN_MATLAB_TO_NOTES,
@@ -407,6 +421,9 @@ def mat_parse_annotations(
             prov: annotations[prov][i] for prov in providers if annotations[prov][i]
         }
 
+    # TODO - When cobrapy.notes are revised not be a dictionary (possibly when
+    #  annotations are fully SBML compliant, revise this function.
+
 
 def mat_parse_notes(
     target_list: List[Object],
@@ -506,6 +523,9 @@ def annotations_to_mat(
         if annotation_key not in mat_dict:
             mat_dict[annotation_key] = _cell(_list)
 
+    # TODO - When cobrapy.notes are revised not be a dictionary (possibly when
+    #  annotations are fully SBML compliant, revise this function.
+
 
 def notes_to_mat(
     mat_dict: OrderedDict, note_list: List[Dict], _d_replace: str = D_MET_REV
@@ -540,24 +560,16 @@ def notes_to_mat(
             for provider_key, v in note_list[i].items():
                 if provider_key == "Confidence Level":
                     v = float(v)
-                annotation_cells_to_be[annotation_matlab[provider_key]][i] = v
+                if not len(annotation_cells_to_be[annotation_matlab[provider_key]][i]):
+                    annotation_cells_to_be[annotation_matlab[provider_key]][i] = v
+                else:
+                    # References that aren't MIRIAM compliant will go to rxnNotes
+                    annotation_cells_to_be[annotation_matlab[provider_key]][i] = (
+                        annotation_cells_to_be[annotation_matlab[provider_key]][i]
+                        + f"; {v}"
+                    )
     for annotation_key, _list in annotation_cells_to_be.items():
-        if annotation_key not in mat_dict:
-            mat_dict[annotation_key] = _cell(_list)
-        else:
-            # If there are two types of references that will end up in the same mat
-            # struct key/field.
-            _tmp_list = [
-                str(_each_annot) if _each_annot else ""
-                for _each_annot in mat_dict[annotation_key]
-            ]
-            _tmp_list2 = _tmp_list
-            for i, _list_val in enumerate(_list):
-                if _tmp_list[i] and _list_val:
-                    _tmp_list2[i] = _tmp_list[i] + " " + _list_val
-                elif not _tmp_list[i] and _list_val:
-                    _tmp_list2[i] = _list_val
-            mat_dict[annotation_key] = _cell(_tmp_list2)
+        mat_dict[annotation_key] = _cell(_list)
 
 
 def create_mat_dict(model: Model) -> OrderedDict:
@@ -588,6 +600,9 @@ def create_mat_dict(model: Model) -> OrderedDict:
         # TODO: use custom cobra exception to handle exception
         pass
     annotations_to_mat(mat, mets.list_attr("annotation"), D_MET_REV)
+    # TODO - When cobrapy.notes are revised not be a dictionary (possibly when
+    #  annotations are fully SBML compliant, revise this function.
+    notes_to_mat(mat, mets.list_attr("notes"), D_MET_NOTES_REV)
     mat["genes"] = _cell(model.genes.list_attr("id"))
     annotations_to_mat(mat, model.genes.list_attr("annotation"), D_GENE_REV)
     # make a matrix for rxnGeneMat
@@ -724,6 +739,7 @@ def from_mat_struct(
             new_metabolite.formula = met_formulas[i]
         new_metabolites.append(new_metabolite)
     mat_parse_annotations(new_metabolites, m, _d_replace=D_MET)
+    mat_parse_notes(new_metabolites, m, _d_replace=D_MET_NOTES)
     model.add_metabolites(new_metabolites)
 
     new_genes = []
@@ -786,6 +802,8 @@ def from_mat_struct(
             new_reaction.gene_reaction_rule = rxn_gene_rules[i]
         new_reactions.append(new_reaction)
     mat_parse_annotations(new_reactions, m, _d_replace=D_REACTION)
+    # TODO - When cobrapy.notes are revised not be a dictionary (possibly when
+    #  annotations are fully SBML compliant, revise this function.
     mat_parse_notes(new_reactions, m, _d_replace=D_REACTION_NOTES)
 
     csc = scipy_sparse.csc_matrix(m["S"][0, 0])
