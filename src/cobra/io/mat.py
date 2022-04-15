@@ -135,7 +135,7 @@ D_REPLACE: dict = {
 }
 
 # precompiled regular expressions (kept globally for caching)
-_bracket_re = re.compile(r"\[(?P<compartment>[a-zA-Z]+)\]$")
+_bracket_re = re.compile(r"[[(](?P<compartment>[a-zA-Z]+)[])]$")
 _underscore_re = re.compile(r"_(?P<compartment>[a-zA-Z]+)$")
 
 
@@ -452,6 +452,8 @@ def mat_parse_notes(
     note_providers = [D_REPLACE[_d_replace][x] for x in annotation_matlab]
     notes = dict.fromkeys(note_providers, None)
     _pubmed_re = re.compile("PMID: ?(\\d+),?")
+    _punctuation_re = re.compile(r"^[;,.'\"]+")
+    _double_punctuation_re = re.compile(r"[;,.'\"]{2,}")
     for name, mat_key in zip(note_providers, annotation_matlab):
         if mat_key == "rxnReferences":
             # This only removes PMID: style references. Sometimes there are other
@@ -472,6 +474,8 @@ def mat_parse_notes(
         else:
             # If it something else, which may have commas, turn it into a list
             notes[name] = _cell_to_str_list(mat_struct[mat_key][0, 0])
+        notes[name] = [_punctuation_re.sub('', _double_punctuation_re.sub('', x))
+                       if x else None for x in notes[name]]
     for i, obj in enumerate(target_list):
         obj.notes = {prov: notes[prov][i] for prov in note_providers if notes[prov][i]}
 
@@ -707,14 +711,14 @@ def from_mat_struct(
         met_comp_names = met_comps
         logger.warning(
             f"Using regular expression found the following compartments:"
-            f"{', '.join(sorted(met_comps))}"
+            f"{', '.join(sorted(set(met_comps)))}"
         )
     if None in met_comps or "" in met_comps:
         raise (ValueError, "Some compartments were empty. Check the model!")
     model.compartments = dict(zip(met_comps, met_comp_names))
     met_names, met_formulas, met_charges = None, None, None
     try:
-        met_names = _cell_to_str_list(m["metNames"][0, 0])
+        met_names = _cell_to_str_list(m["metNames"][0, 0], "")
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass
@@ -742,21 +746,22 @@ def from_mat_struct(
     mat_parse_notes(new_metabolites, m, _d_replace=D_MET_NOTES)
     model.add_metabolites(new_metabolites)
 
-    new_genes = []
-    gene_names = None
-    gene_ids = _cell_to_str_list(m["genes"][0, 0])
-    try:
-        gene_names = _cell_to_str_list(m["geneNames"][0, 0])
-    except (IndexError, ValueError):
-        # TODO: use custom cobra exception to handle exception
-        pass
-    for i in range(len(gene_ids)):
-        if gene_names:
-            new_gene = Gene(gene_ids[i], name=gene_names[i])
-        else:
-            new_gene = Gene(gene_ids[i])
-        new_genes.append(new_gene)
-    mat_parse_annotations(new_genes, m, _d_replace=D_GENE)
+    if "genes" in m.dtype.names:
+        new_genes = []
+        gene_names = None
+        gene_ids = _cell_to_str_list(m["genes"][0, 0])
+        try:
+            gene_names = _cell_to_str_list(m["geneNames"][0, 0])
+        except (IndexError, ValueError):
+            # TODO: use custom cobra exception to handle exception
+            pass
+        for i in range(len(gene_ids)):
+            if gene_names:
+                new_gene = Gene(gene_ids[i], name=gene_names[i])
+            else:
+                new_gene = Gene(gene_ids[i])
+            new_genes.append(new_gene)
+        mat_parse_annotations(new_genes, m, _d_replace=D_GENE)
 
     new_reactions = []
     rxn_ids = _cell_to_str_list(m["rxns"][0, 0])
