@@ -208,12 +208,21 @@ def test_wrong_input_gpr_error(test_input: Union[list, set]) -> None:
         GPR(test_input)
 
 
-@pytest.mark.parametrize("test_input", ["a |", "a &"])
+@pytest.mark.parametrize("test_input", ["a |", "a &", "a and ()", "a or ()"])
 def test_wrong_input_gpr_warning(test_input: str) -> None:
     with pytest.warns(SyntaxWarning):
         gpr1 = GPR.from_string(test_input)
         assert gpr1.body is None
         assert len(gpr1.genes) == 0
+
+
+def test_gpr_that_needs_two_replacements() -> None:
+    gpr1 = GPR.from_string('(591001.3.peg.1891 AND 591001.3.peg.1892 '
+                           'AND 591001.3.peg.1893)')
+    assert(len(gpr1.genes) == 3)
+    assert '591001.3.peg.1891' in gpr1.genes
+    assert '591001.3.peg.1892' in gpr1.genes
+    assert '591001.3.peg.1893' in gpr1.genes
 
 
 def test_deprecated_gpr() -> None:
