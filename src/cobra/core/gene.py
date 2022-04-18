@@ -19,6 +19,7 @@ from ast import parse as ast_parse
 from copy import deepcopy
 from keyword import kwlist
 from typing import TYPE_CHECKING, FrozenSet, Iterable, Optional, Set, Tuple, Union
+from warnings import warn
 
 import sympy.logic.boolalg as spl
 from sympy import Symbol
@@ -185,7 +186,6 @@ def parse_gpr(str_expr: str) -> Tuple:
     logger.warning(
         "parse_gpr() will be removed soon."
         "Use GPR(string_gpr=str_expr) in the future",
-        DeprecationWarning,
     )
     gpr_tree = GPR.from_string(str_expr)
     return gpr_tree, gpr_tree.genes
@@ -396,17 +396,20 @@ class GPR(Module):
                 logger.warning(
                     f"Uppercase AND/OR found in rule '{string_gpr}'.", exc_info=1
                 )
+                logger.warning(e.msg)
+                warn(f"Uppercase AND/OR found in rule '{string_gpr}'.", SyntaxWarning)
                 escaped_str = uppercase_AND.sub("and", escaped_str)
                 escaped_str = uppercase_OR.sub("or", escaped_str)
             try:
                 tree = ast_parse(escaped_str, "<string>", "eval")
-            except SyntaxError as e:
+            except SyntaxError:
                 # noinspection PyTypeChecker
                 logger.warning(
-                    f"Malformed gene_reaction_rule '{escaped_str}' for {repr(gpr)}",
+                    f"Malformed gene_reaction_rule '{escaped_str}' for {string_gpr}",
                     exc_info=1,
                 )
                 logger.warning("GPR will be empty")
+                warn(f"Malformed gene_reaction_rule '{escaped_str}'", SyntaxWarning)
                 return gpr
         gpr = cls(tree)
         gpr.update_genes()
@@ -786,7 +789,6 @@ def eval_gpr(expr: Union[Expression, GPR], knockouts: Union[DictList, set]) -> b
     """
     logger.warning(
         "eval_gpr() will be removed soon." "Use GPR().eval(knockouts) in the future",
-        DeprecationWarning,
     )
     if isinstance(expr, GPR):
         return expr.eval(knockouts=knockouts)
@@ -821,7 +823,6 @@ def ast2str(expr: Union[Expression, GPR], level: int = 0, names: dict = None) ->
     """
     logger.warning(
         "ast2satr() will be removed soon. Use gpr.to_string(names=names) in the future",
-        DeprecationWarning,
     )
     if isinstance(expr, GPR):
         return expr.to_string(names=names)
