@@ -468,7 +468,7 @@ def mat_parse_notes(
         elif mat_key == "rxnConfidenceScores":
             # If it something else, which may have commas, turn it into a list
             notes[name] = [
-                str(confidence)
+                str(confidence) if confidence else ""
                 for confidence in _cell_to_float_list(mat_struct[mat_key][0, 0])
             ]
         else:
