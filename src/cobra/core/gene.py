@@ -1,5 +1,6 @@
 """Provide functions for dealing with genes and gene product rules (GPR)."""
 
+import logging
 import re
 from ast import (
     AST,
@@ -18,7 +19,6 @@ from ast import parse as ast_parse
 from copy import deepcopy
 from keyword import kwlist
 from typing import TYPE_CHECKING, FrozenSet, Iterable, Optional, Set, Tuple, Union
-from warnings import warn
 
 import sympy.logic.boolalg as spl
 from sympy import Symbol
@@ -35,6 +35,7 @@ if TYPE_CHECKING:
 # TODO - When https://github.com/symengine/symengine.py/issues/334 is resolved,
 #  change sympy.Symbol (above in imports) to optlang.symbolics.Symbol
 
+logger = logging.getLogger(__name__)
 
 keywords = list(kwlist)
 keywords.remove("and")
@@ -181,7 +182,7 @@ def parse_gpr(str_expr: str) -> Tuple:
     Use GPR(string_gpr=str_expr) in the future. Because of the GPR() class,
     this function will be removed.
     """
-    warn(
+    logger.warning(
         "parse_gpr() will be removed soon."
         "Use GPR(string_gpr=str_expr) in the future",
         DeprecationWarning,
@@ -271,11 +272,13 @@ class Gene(Species):
             the model.
 
         """
-        warn(
+        logger.warning(
             "Use cobra.manipulation.remove_genes instead to remove genes "
             "from the model."
         )
-        warn("Use cobra.manipulation.delete_model_genes to simulate knockouts.")
+        logger.warning(
+            "Use cobra.manipulation.delete_model_genes to simulate knockouts."
+        )
         if model is not None:
             if model != self._model:
                 raise Exception(
@@ -382,27 +385,28 @@ class GPR(Module):
                 str_expr = str_expr.replace(char, escaped)
         escaped_str = keyword_re.sub("__cobra_escape__", str_expr)
         escaped_str = number_start_re.sub("__cobra_escape__", escaped_str)
+        # Some mat models have () in gr_rules which leads to a complicated error later
+        escaped_str = escaped_str.replace("()", "")
 
         try:
             tree = ast_parse(escaped_str, "<string>", "eval")
         except (SyntaxError, TypeError) as e:
-            if "AND" in string_gpr or "OR" in string_gpr:
-                warn(
-                    f"Uppercase AND/OR found in rule '{string_gpr}'.",
-                    SyntaxWarning,
+            if "AND" in escaped_str or "OR" in escaped_str:
+                # noinspection PyTypeChecker
+                logger.warning(
+                    f"Uppercase AND/OR found in rule '{string_gpr}'.", exc_info=1
                 )
-                warn(e.msg)
-                string_gpr = uppercase_AND.sub("and", string_gpr)
-                string_gpr = uppercase_OR.sub("or", string_gpr)
+                escaped_str = uppercase_AND.sub("and", escaped_str)
+                escaped_str = uppercase_OR.sub("or", escaped_str)
             try:
-                tree = ast_parse(string_gpr, "<string>", "eval")
+                tree = ast_parse(escaped_str, "<string>", "eval")
             except SyntaxError as e:
-                warn(
-                    f"Malformed gene_reaction_rule '{string_gpr}' for {repr(gpr)}",
-                    SyntaxWarning,
+                # noinspection PyTypeChecker
+                logger.warning(
+                    f"Malformed gene_reaction_rule '{escaped_str}' for {repr(gpr)}",
+                    exc_info=1,
                 )
-                warn("GPR will be empty")
-                warn(e.msg)
+                logger.warning("GPR will be empty")
                 return gpr
         gpr = cls(tree)
         gpr.update_genes()
@@ -733,12 +737,12 @@ class GPR(Module):
         try:
             tree = Expression(_sympy_to_ast(sympy_gpr))
         except SyntaxError as e:
-            warn(
+            logger.warning(
                 f"Problem with sympy expression '{sympy_gpr}' for {repr(gpr)}",
                 SyntaxWarning,
             )
-            warn("GPR will be empty")
-            warn(e.msg)
+            logger.warning("GPR will be empty")
+            logger.warning(e.msg)
             return gpr
         gpr = cls(tree)
         gpr.update_genes()
@@ -780,7 +784,7 @@ def eval_gpr(expr: Union[Expression, GPR], knockouts: Union[DictList, set]) -> b
         True if the gene reaction rule is true with the given knockouts
         otherwise false
     """
-    warn(
+    logger.warning(
         "eval_gpr() will be removed soon." "Use GPR().eval(knockouts) in the future",
         DeprecationWarning,
     )
@@ -815,7 +819,7 @@ def ast2str(expr: Union[Expression, GPR], level: int = 0, names: dict = None) ->
     Use GPR.to_string(names=) in the future. Because of the GPR() class,
     this function will be removed.
     """
-    warn(
+    logger.warning(
         "ast2satr() will be removed soon. Use gpr.to_string(names=names) in the future",
         DeprecationWarning,
     )
