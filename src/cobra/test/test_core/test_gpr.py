@@ -217,39 +217,29 @@ def test_wrong_input_gpr_warning(test_input: str) -> None:
 
 
 def test_gpr_that_needs_two_replacements() -> None:
-    gpr1 = GPR.from_string('(591001.3.peg.1891 AND 591001.3.peg.1892 '
-                           'AND 591001.3.peg.1893)')
-    assert(len(gpr1.genes) == 3)
-    assert '591001.3.peg.1891' in gpr1.genes
-    assert '591001.3.peg.1892' in gpr1.genes
-    assert '591001.3.peg.1893' in gpr1.genes
+    gpr1 = GPR.from_string(
+        "(591001.3.peg.1891 AND 591001.3.peg.1892 " "AND 591001.3.peg.1893)"
+    )
+    assert len(gpr1.genes) == 3
+    assert "591001.3.peg.1891" in gpr1.genes
+    assert "591001.3.peg.1892" in gpr1.genes
+    assert "591001.3.peg.1893" in gpr1.genes
 
 
 def test_deprecated_gpr() -> None:
     gpr1 = GPR.from_string("(a | b) & c")
-    with pytest.deprecated_call():
-        assert ast2str(gpr1) == "(a or b) and c"
-    with pytest.deprecated_call():
-        assert eval_gpr(gpr1, set())
-    with pytest.deprecated_call():
-        assert eval_gpr(gpr1, {"a"})
-    with pytest.deprecated_call():
-        assert eval_gpr(gpr1, {"b"})
-    with pytest.deprecated_call():
-        assert not eval_gpr(gpr1, {"c"})
-    with pytest.deprecated_call():
-        gpr1, genes = parse_gpr("(a | b) & c")
-        assert genes == {"a", "b", "c"}
-    with pytest.deprecated_call():
-        assert ast2str(gpr1) == "(a or b) and c"
-    with pytest.deprecated_call():
-        assert eval_gpr(gpr1, set())
-    with pytest.deprecated_call():
-        assert eval_gpr(gpr1, {"a"})
-    with pytest.deprecated_call():
-        assert eval_gpr(gpr1, {"b"})
-    with pytest.deprecated_call():
-        assert not eval_gpr(gpr1, {"c"})
+    assert ast2str(gpr1) == "(a or b) and c"
+    assert eval_gpr(gpr1, set())
+    assert eval_gpr(gpr1, {"a"})
+    assert eval_gpr(gpr1, {"b"})
+    assert not eval_gpr(gpr1, {"c"})
+    gpr1, genes = parse_gpr("(a | b) & c")
+    assert genes == {"a", "b", "c"}
+    assert ast2str(gpr1) == "(a or b) and c"
+    assert eval_gpr(gpr1, set())
+    assert eval_gpr(gpr1, {"a"})
+    assert eval_gpr(gpr1, {"b"})
+    assert not eval_gpr(gpr1, {"c"})
 
 
 def test_gpr_as_symbolic() -> None:
