@@ -367,7 +367,9 @@ def test_double_gene_deletion(model: Model) -> None:
     }
     if __name__ == "__main__":
         solution = double_gene_deletion(model, gene_list1=genes, processes=3)
-        solution_one_process = double_gene_deletion(model, gene_list1=genes, processes=1)
+        solution_one_process = double_gene_deletion(
+            model, gene_list1=genes, processes=1
+        )
 
         for rxn_a, sub in growth_dict.items():
             for rxn_b, growth in sub.items():
@@ -423,7 +425,9 @@ def test_double_reaction_deletion(model: Model) -> None:
     }
 
     if __name__ == "__main__":
-        solution = double_reaction_deletion(model, reaction_list1=reactions, processes=3)
+        solution = double_reaction_deletion(
+            model, reaction_list1=reactions, processes=3
+        )
         solution_one_process = double_reaction_deletion(
             model, reaction_list1=reactions, processes=1
         )
