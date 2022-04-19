@@ -16,6 +16,7 @@ from optlang.symbolics import Zero
 
 from cobra.core import Group, Metabolite, Model, Reaction
 from cobra.exceptions import OptimizationError
+from cobra.manipulation.delete import remove_genes
 from cobra.util import solver as su
 from cobra.util.solver import SolverNotFound, set_objective, solvers
 
@@ -323,7 +324,7 @@ def test_remove_gene(model):
     gene_reactions = list(target_gene.reactions)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        target_gene.remove_from_model()
+        remove_genes(model, [target_gene])
     assert target_gene.model is None
 
     # Make sure the reaction was removed from the model
@@ -395,7 +396,7 @@ def test_group_loss_of_elements(model):
     remove_rxn = model.reactions[0]
     model.remove_reactions([remove_rxn])
     remove_gene = model.genes[0]
-    remove_gene.remove_from_model()
+    remove_genes(model, [remove_gene])
     assert remove_met not in group.members
     assert remove_rxn not in group.members
     assert remove_gene not in group.members
