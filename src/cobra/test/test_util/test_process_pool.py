@@ -8,6 +8,7 @@ from pytest_mock import MockerFixture
 
 from cobra.util import ProcessPool
 
+
 def dummy_initializer(*args: Iterable) -> Tuple:
     """Implement a 'do nothing' function that accepts initialization arguments."""
     return args
