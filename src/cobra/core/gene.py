@@ -183,9 +183,10 @@ def parse_gpr(str_expr: str) -> Tuple:
     Use GPR(string_gpr=str_expr) in the future. Because of the GPR() class,
     this function will be removed.
     """
-    logger.warning(
+    warn(
         "parse_gpr() will be removed soon."
         "Use GPR(string_gpr=str_expr) in the future",
+        DeprecationWarning,
     )
     gpr_tree = GPR.from_string(str_expr)
     return gpr_tree, gpr_tree.genes
@@ -399,10 +400,13 @@ class GPR(Module):
             if "AND" in escaped_str or "OR" in escaped_str:
                 # noinspection PyTypeChecker
                 logger.warning(
-                    f"Uppercase AND/OR found in rule '{string_gpr}'.", exc_info=1
+                    f"Uppercase AND/OR found in rule '{string_gpr}'.",
                 )
                 logger.warning(e.msg)
-                warn(f"Uppercase AND/OR found in rule '{string_gpr}'.", SyntaxWarning)
+                warn(
+                    "Uppercase AND/OR found in rule '{}'.".format(string_gpr),
+                    SyntaxWarning,
+                )
                 escaped_str = uppercase_AND.sub("and", escaped_str)
                 escaped_str = uppercase_OR.sub("or", escaped_str)
             try:
@@ -414,7 +418,10 @@ class GPR(Module):
                     exc_info=1,
                 )
                 logger.warning("GPR will be empty")
-                warn(f"Malformed gene_reaction_rule '{escaped_str}'", SyntaxWarning)
+                warn(
+                    "Malformed gene_reaction_rule '{}'".format(escaped_str),
+                    SyntaxWarning,
+                )
                 return gpr
         gpr = cls(tree)
         gpr.update_genes()
@@ -747,7 +754,6 @@ class GPR(Module):
         except SyntaxError as e:
             logger.warning(
                 f"Problem with sympy expression '{sympy_gpr}' for {repr(gpr)}",
-                SyntaxWarning,
             )
             logger.warning("GPR will be empty")
             logger.warning(e.msg)
@@ -792,8 +798,9 @@ def eval_gpr(expr: Union[Expression, GPR], knockouts: Union[DictList, set]) -> b
         True if the gene reaction rule is true with the given knockouts
         otherwise false
     """
-    logger.warning(
+    warn(
         "eval_gpr() will be removed soon." "Use GPR().eval(knockouts) in the future",
+        DeprecationWarning,
     )
     if isinstance(expr, GPR):
         return expr.eval(knockouts=knockouts)
@@ -826,8 +833,9 @@ def ast2str(expr: Union[Expression, GPR], level: int = 0, names: dict = None) ->
     Use GPR.to_string(names=) in the future. Because of the GPR() class,
     this function will be removed.
     """
-    logger.warning(
+    warn(
         "ast2satr() will be removed soon. Use gpr.to_string(names=names) in the future",
+        DeprecationWarning,
     )
     if isinstance(expr, GPR):
         return expr.to_string(names=names)
