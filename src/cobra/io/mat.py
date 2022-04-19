@@ -7,8 +7,7 @@ from typing import Dict, Iterable, List, Optional, Pattern
 
 import numpy as np
 
-from .. import Gene, Object
-from ..core import Metabolite, Model, Reaction
+from ..core import Gene, Group, Metabolite, Model, Object, Reaction
 from ..util import create_stoichiometric_matrix
 from ..util.solver import set_objective
 
@@ -135,7 +134,7 @@ D_REPLACE: dict = {
 }
 
 # precompiled regular expressions (kept globally for caching)
-_bracket_re = re.compile(r"[[(](?P<compartment>[a-zA-Z]+)[])]$")
+_bracket_re = re.compile(r"[\[(](?P<compartment>[a-zA-Z]+)[])]$")
 _underscore_re = re.compile(r"_(?P<compartment>[a-zA-Z]+)$")
 
 
@@ -468,14 +467,16 @@ def mat_parse_notes(
         elif mat_key == "rxnConfidenceScores":
             # If it something else, which may have commas, turn it into a list
             notes[name] = [
-                str(confidence) if confidence else ""
+                str(confidence) if confidence is not None else ""
                 for confidence in _cell_to_float_list(mat_struct[mat_key][0, 0])
             ]
         else:
             # If it something else, which may have commas, turn it into a list
             notes[name] = _cell_to_str_list(mat_struct[mat_key][0, 0])
-        notes[name] = [_punctuation_re.sub('', _double_punctuation_re.sub('', x))
-                       if x else None for x in notes[name]]
+        notes[name] = [
+            _punctuation_re.sub("", _double_punctuation_re.sub("", x)) if x else None
+            for x in notes[name]
+        ]
     for i, obj in enumerate(target_list):
         obj.notes = {prov: notes[prov][i] for prov in note_providers if notes[prov][i]}
 
@@ -819,6 +820,19 @@ def from_mat_struct(
         new_reactions[i].add_metabolites(stoic_dict)
 
     model.add_reactions(new_reactions)
+
+    # Make subsystems into groups alphabetically by name
+    if rxn_subsystems:
+        rxn_group_names = set(rxn_subsystems).difference({None})
+        new_groups = []
+        for ind, g_name in enumerate(sorted(rxn_group_names)):
+            group_members = [rxn for rxn in new_reactions if rxn.subsystem == g_name]
+            new_group = Group(
+                id=f"group{ind+1}", name=g_name, members=group_members, kind="partonomy"
+            )
+            new_group.annotation["sbo"] = "SBO:0000633"
+            new_groups.append(new_group)
+        model.add_groups(new_groups)
 
     if "c" in m.dtype.names:
         c_vec = _cell_to_float_list(m["c"][0, 0])
