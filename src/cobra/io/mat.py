@@ -800,7 +800,7 @@ def from_mat_struct(
     if rxn_subsystems:
         rxn_group_names = set(rxn_subsystems).difference({None})
         new_groups = []
-        for ind, g_name in enumerate(sorted(rxn_group_names)):
+        for g_name in sorted(rxn_group_names):
             group_members = [rxn for rxn in new_reactions if rxn.subsystem == g_name]
             new_group = Group(
                 id=g_name, name=g_name, members=group_members, kind="partonomy"
