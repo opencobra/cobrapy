@@ -119,6 +119,10 @@ def test_starmap_async() -> None:
     if __name__ == "__main":
         with ProcessPool(processes=3) as pool:
             assert (
-                sum(pool.starmap_async(summation, [range(10), range(10), range(10)]).get())
+                sum(
+                    pool.starmap_async(
+                        summation, [range(10), range(10), range(10)]
+                    ).get()
+                )
                 == 135
             )
