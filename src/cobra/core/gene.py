@@ -253,46 +253,6 @@ class Gene(Species):
             if not reaction.functional:
                 reaction.bounds = (0, 0)
 
-    def remove_from_model(
-        self, model: "Model" = None, make_dependent_reactions_nonfunctional: bool = True
-    ) -> None:
-        """Remove the association of gene from a model.
-
-        Parameters
-        ----------
-        model : cobra model
-           The model to remove the gene from
-        make_dependent_reactions_nonfunctional : bool
-           If True then replace the gene with 'False' in the gene
-           association, else replace the gene with 'True'
-
-
-        .. deprecated :: 0.4
-            Use cobra.manipulation.delete_model_genes to simulate knockouts
-            and cobra.manipulation.remove_genes to remove genes from
-            the model.
-
-        """
-        logger.warning(
-            "Use cobra.manipulation.remove_genes instead to remove genes "
-            "from the model."
-        )
-        logger.warning(
-            "Use cobra.manipulation.delete_model_genes to simulate knockouts."
-        )
-        if model is not None:
-            if model != self._model:
-                raise Exception(
-                    f"{repr(self)} is a member of {repr(self._model)}, "
-                    f"not {repr(model)}"
-                )
-        if self._model is None:
-            raise Exception(f"{repr(self)} is not in a model")
-        from cobra.manipulation import remove_genes
-
-        remove_genes(self._model, [self])
-        self._model = None
-
     def _repr_html_(self):
         return f"""
         <table>
