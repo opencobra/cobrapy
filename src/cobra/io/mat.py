@@ -179,31 +179,6 @@ def _cell(x: Iterable[str]) -> np.ndarray:
     return np.array(x_no_none, dtype=object)
 
 
-def _mat_dict_to_str_list(mat_dict, empty_value: Optional[str] = None):
-    """Turn an dict to a list of strings.
-
-    Parameters
-    ----------
-    mat_dict: dict
-    empty_value: str, optional
-        What value to replace empty cells with. Default None.
-
-    Notes
-    -----
-    This is used when modifying a mat dict in the process of writing a model to
-    a mat file.
-
-    Returns
-    -------
-    List
-        A list of processed strings.
-    """
-    return [
-        str(_each_cell).strip() if np.size(_each_cell) else empty_value
-        for _each_cell in mat_dict
-    ]
-
-
 def _cell_to_str_list(
     m_cell: np.ndarray, empty_value: Optional[str] = None, _re: Optional[Pattern] = None
 ) -> List:
@@ -828,7 +803,7 @@ def from_mat_struct(
         for ind, g_name in enumerate(sorted(rxn_group_names)):
             group_members = [rxn for rxn in new_reactions if rxn.subsystem == g_name]
             new_group = Group(
-                id=f"group{ind+1}", name=g_name, members=group_members, kind="partonomy"
+                id=g_name, name=g_name, members=group_members, kind="partonomy"
             )
             new_group.annotation["sbo"] = "SBO:0000633"
             new_groups.append(new_group)
