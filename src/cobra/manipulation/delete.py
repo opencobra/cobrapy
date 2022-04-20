@@ -3,6 +3,7 @@ import logging
 from ast import And, BoolOp, Name, NodeTransformer
 from functools import partial
 from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
+from warnings import warn
 
 from cobra.util import get_context
 
@@ -135,6 +136,11 @@ def delete_model_genes(
         "and should not be used. undelete_model_genes was removed."
         "Use cobra.manipulation.remove_genes instead to remove genes "
         "from the model."
+    )
+    warn(
+        "delete_model_genes and undelete_model_genes were deprecated and should not be"
+        " used.",
+        DeprecationWarning,
     )
     logger.warning(
         f"Use cobra.manipulation.knock_out_model_genes({model}, {gene_list})"
