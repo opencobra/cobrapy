@@ -1,5 +1,6 @@
 """Test functionalities of I/O in MATLAB (.mat) format."""
 
+import pathlib
 from os.path import join
 from pickle import load
 from typing import TYPE_CHECKING
@@ -76,3 +77,31 @@ def test_large_bounds(tmpdir: "py.path.local", model: "Model") -> None:
     io.save_matlab_model(model, filepath)
     read = io.load_matlab_model(filepath)
     assert read.reactions[0].bounds == (-1e6, 1e6)
+
+
+@pytest.mark.skipif(scipy is None, reason="scipy unavailable")
+def test_read_rewrite_matlab_model(tmpdir: "py.path.local", data_directory: str) -> None:
+    """Verify that rewritten matlab model is identical to original."""
+    mini_mat_model = io.load_matlab_model(join(data_directory, "mini.mat"))
+    raven_mat_model = io.load_matlab_model(join(data_directory, "raven.mat"))
+    mini_output_file = tmpdir.join("mini.mat")
+    raven_output_file = tmpdir.join("raven.mat")
+    # scipy.io.savemat() doesn't support anything other than
+    # str or file-stream object, hence the str conversion
+    io.save_matlab_model(mini_mat_model, str(mini_output_file))
+    io.save_matlab_model(raven_mat_model, str(raven_output_file))
+    mini_mat_model_reload = io.load_matlab_model(str(mini_output_file))
+    raven_mat_model_reload = io.load_matlab_model(str(raven_output_file))
+    assert compare_models(mini_mat_model, mini_mat_model_reload) is None
+    assert compare_models(raven_mat_model, raven_mat_model_reload) is None
+
+
+@pytest.mark.skipif(scipy is None, reason="scipy unavailable")
+def test_compare_xml_to_written_matlab_model(data_directory: str, tmpdir: "py.path.local") -> None:
+    """Verify that xml rewritten as mat file is written and read correctly."""
+    for xml_file in pathlib.Path(data_directory).glob('.xml'):
+        xml_model = io.read_sbml_model(str(xml_file))
+        mat_output_file = tmpdir.join(xml_file.name.replace('.xml', '.mat'))
+        io.save_matlab_model(xml_model, str(mat_output_file))
+        mat_model = io.load_matlab_model(str(mat_output_file))
+        assert compare_models(xml_model, mat_model) is None
