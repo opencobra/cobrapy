@@ -157,7 +157,7 @@ def _fetch_model(
         )
         try:
             return repository.get_sbml(model_id=model_id)
-        except FileNotFoundError:
+        except (FileNotFoundError, OSError):
             logger.debug(
                 f"Model '{model_id} not found in the local "
                 f"repository {repository.name}.'"
