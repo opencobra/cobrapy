@@ -105,3 +105,31 @@ def test_compare_xml_to_written_matlab_model(data_directory: str, tmpdir: "py.pa
         io.save_matlab_model(xml_model, str(mat_output_file))
         mat_model = io.load_matlab_model(str(mat_output_file))
         assert compare_models(xml_model, mat_model) is None
+
+
+@pytest.mark.skipif(scipy is None, reason="scipy unavailable")
+def test_fail_on_problematic_compartments(data_directory: str) -> None:
+    """Test that mat import will fail if there are problems in compartments."""
+    with pytest.raises(IOError):
+        # AntCore does not have defined compartments
+        ant_core_model = io.load_matlab_model(join(data_directory, 'AntCore.mat'))
+    with pytest.raises(IOError):
+        # Ec_iAF1260_flux1 has underscore in compartment names which is not allowed
+        Ec_iAF1260_flux1_model = io.load_matlab_model(join(data_directory,
+                                                           'Ec_iAF1260_flux1.mat'))
+
+
+# Test for lots of letters in compartments (short Harvey)
+
+# Test for lots of annotations. short RECON3?
+
+@pytest.mark.skipif(scipy is None, reason="scipy unavailable")
+def test_mat_model_with_no_genes(data_directory: str, tmpdir: "py.path.local") -> None:
+    """Test that a model with no genes is loaded and reloaded correctly."""
+    model_no_genes = io.load_matlab_model(join(data_directory,
+                                               'cardiac_mit_glcuptake_atpmax.mat'))
+    assert not len(model_no_genes.genes)
+    output_file = tmpdir.join("cardiac_mit_glcuptake_atpmax.mat")
+    io.save_matlab_model(model_no_genes, str(output_file))
+    model_no_genes_reloaded = io.load_matlab_model(str(output_file))
+    assert compare_models(model_no_genes, model_no_genes_reloaded) is None

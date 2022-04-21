@@ -570,7 +570,12 @@ def create_mat_dict(model: Model) -> OrderedDict:
     rxns = model.reactions
     mets = model.metabolites
     mat = OrderedDict()
-    mat["mets"] = _cell([met_id for met_id in create_mat_metabolite_id(model)])
+    mat["mets"] = _cell(mets.list_attr('id'))
+    if set([_get_id_compartment(met_id) for met_id in mets.list_attr('id')]) == {None}:
+        comps = list(model.compartments.keys())
+        mat["comps"] = _cell(comps)
+        mat["compNames"] = _cell([model.compartments[comp] for comp in comps])
+        mat["metComps"] = [comps.index(x) + 1 for x in mets.list_attr('compartment')]
     mat["metNames"] = _cell(mets.list_attr("name"))
     mat["metFormulas"] = _cell([str(m.formula) if m.formula else "" for m in mets])
     try:
@@ -685,12 +690,14 @@ def from_mat_struct(
         )
         met_comps = [_get_id_compartment(x) for x in met_ids]
         met_comp_names = met_comps
+        if None in met_comps or "" in met_comps:
+            raise ValueError("Some compartments were empty. Check the model!")
         logger.warning(
             f"Using regular expression found the following compartments:"
             f"{', '.join(sorted(set(met_comps)))}"
         )
     if None in met_comps or "" in met_comps:
-        raise (ValueError, "Some compartments were empty. Check the model!")
+        raise ValueError("Some compartments were empty. Check the model!")
     model.compartments = dict(zip(met_comps, met_comp_names))
     met_names, met_formulas, met_charges = None, None, None
     try:
