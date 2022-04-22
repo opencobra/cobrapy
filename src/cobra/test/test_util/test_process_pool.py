@@ -1,9 +1,9 @@
 """Test the behaviour of the ProcessPool class."""
 
 
+import os
 from typing import Iterable, Tuple
 
-import os
 import pytest
 from pytest_mock import MockerFixture
 

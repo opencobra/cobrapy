@@ -1,9 +1,9 @@
 """Test functionalities of OptGPSampler."""
 
+import os
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
-import os
 import pytest
 
 from cobra.sampling import OptGPSampler
