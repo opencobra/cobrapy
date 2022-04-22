@@ -1,6 +1,7 @@
 """Test functionalities of flux sampling methods."""
 
 import numpy as np
+import os
 import pytest
 
 from cobra.core import Metabolite, Model, Reaction
@@ -20,11 +21,12 @@ def test_single_optgp(model: Model) -> None:
     assert s.shape == (10, len(model.reactions))
 
 
-def test_multi_optgp(model: Model) -> None:
+@pytest.mark.skipif("SKIP_MP" in os.environ, reason="unsafe for parallel execution")
+def test_multi_optgp(model: Model) -> None:  # pragma: no cover
     """Test OptGP sampling (multi sample)."""
-    if __name__ == "__main__":
-        s = sample(model, 10, processes=2)
-        assert s.shape == (10, len(model.reactions))
+    s = sample(model, 10, processes=2)
+    assert s.shape == (10, len(model.reactions))
+    raise ValueError(__name__)
 
 
 def test_wrong_method(model: Model) -> None:

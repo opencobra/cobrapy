@@ -3,6 +3,7 @@
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
+import os
 import pytest
 
 from cobra.sampling import OptGPSampler
@@ -23,10 +24,10 @@ def optgp(model: "Model") -> OptGPSampler:
     return sampler
 
 
+@pytest.mark.skipif("SKIP_MP" in os.environ, reason="unsafe for parallel execution")
 def test_optgp_init_benchmark(model: "Model", benchmark: Callable) -> None:
     """Benchmark inital OptGP sampling."""
-    if __name__ == "__main__":
-        benchmark(lambda: OptGPSampler(model, processes=2))
+    benchmark(lambda: OptGPSampler(model, processes=2))
 
 
 def test_optgp_sample_benchmark(optgp: "Model", benchmark: Callable) -> None:
