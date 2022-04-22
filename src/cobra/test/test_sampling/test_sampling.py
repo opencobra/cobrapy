@@ -26,7 +26,6 @@ def test_multi_optgp(model: Model) -> None:  # pragma: no cover
     """Test OptGP sampling (multi sample)."""
     s = sample(model, 10, processes=2)
     assert s.shape == (10, len(model.reactions))
-    raise ValueError(__name__)
 
 
 def test_wrong_method(model: Model) -> None:
