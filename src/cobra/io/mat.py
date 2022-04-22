@@ -359,36 +359,39 @@ def mat_parse_annotations(
         A string that points to the dictionary of converstions between MATLAB and
         providers. Default D_MET (for metabolite).
     """
-    annotation_matlab = list(
-        set(mat_struct.dtype.names).intersection(D_REPLACE[_d_replace].keys())
-    )
-    providers = [D_REPLACE[_d_replace][x] for x in annotation_matlab]
+    struct_names = [x.casefold() for x in mat_struct.dtype.names]
+    matlab_field_dict = {
+        x.casefold(): D_REPLACE[_d_replace][x] for x in D_REPLACE[_d_replace].keys()
+    }
+    _caseunfold = {x.casefold(): x for x in mat_struct.dtype.names}
+    annotation_matlab = list(set(struct_names).intersection(matlab_field_dict.keys()))
+    providers = [matlab_field_dict[x] for x in annotation_matlab]
     annotations = dict.fromkeys(providers, None)
     _pubmed_re = re.compile("PMID: ?(\\d+),?")
     _ec_re = re.compile(r"([\d\-]+.[\d\-]+.[\d\-]+.[\d-]+)")
     _chebi_re = re.compile(r"\D*(\d+),?")
     for name, mat_key in zip(providers, annotation_matlab):
-        if mat_key == "rxnReferences":
+        if mat_key == "rxnReferences".casefold():
             # This only picks up PMID: style references. Sometimes there are other
             # things like PMC or OMIM, but those are ignored for now,
             annotations[name] = _cell_to_str_list(
-                mat_struct[mat_key][0, 0], None, _pubmed_re
+                mat_struct[_caseunfold[mat_key]][0, 0], None, _pubmed_re
             )
-        elif mat_key == "rxnECNumbers":
+        elif mat_key == "rxnECNumbers".casefold():
             # turn EC codes to a list
             annotations[name] = _cell_to_str_list(
-                mat_struct[mat_key][0, 0], None, _ec_re
+                mat_struct[_caseunfold[mat_key]][0, 0], None, _ec_re
             )
-        elif mat_key == "metCHEBIID":
+        elif mat_key == "metCHEBIID".casefold():
             # if there are more than one CHEBI code, turn them to a comma separated str
             annotations[name] = _cell_to_str_list(
-                mat_struct[mat_key][0, 0], None, _chebi_re
+                mat_struct[_caseunfold[mat_key]][0, 0], None, _chebi_re
             )
         else:
             # If it something else, which may have commas, turn it into a list
             annotations[name] = [
                 [y.strip() for y in _each_cell.split(", ")] if _each_cell else None
-                for _each_cell in _cell_to_str_list(mat_struct[mat_key][0, 0])
+                for _each_cell in _cell_to_str_list(mat_struct[_caseunfold[mat_key]][0, 0])
             ]
     for i, obj in enumerate(target_list):
         obj.annotation = {
@@ -420,34 +423,37 @@ def mat_parse_notes(
         A string that points to the dictionary of converstions between MATLAB and
         notes. Default D_REACTION_NOTES (for reactions).
     """
-    annotation_matlab = list(
-        set(mat_struct.dtype.names).intersection(D_REPLACE[_d_replace].keys())
-    )
-    note_providers = [D_REPLACE[_d_replace][x] for x in annotation_matlab]
+    struct_names = [x.casefold() for x in mat_struct.dtype.names]
+    matlab_field_dict = {
+        x.casefold(): D_REPLACE[_d_replace][x] for x in D_REPLACE[_d_replace].keys()
+    }
+    _caseunfold = {x.casefold(): x for x in mat_struct.dtype.names}
+    annotation_matlab = list(set(struct_names).intersection(matlab_field_dict.keys()))
+    note_providers = [matlab_field_dict[x] for x in annotation_matlab]
     notes = dict.fromkeys(note_providers, None)
     _pubmed_re = re.compile("PMID: ?(\\d+),?")
-    _punctuation_re = re.compile(r"^[;,.'\"]+")
+    _punctuation_re = re.compile(r"^[;,.'\"]+$")
     _double_punctuation_re = re.compile(r"[;,.'\"]{2,}")
     for name, mat_key in zip(note_providers, annotation_matlab):
-        if mat_key == "rxnReferences":
+        if mat_key == "rxnReferences".casefold():
             # This only removes PMID: style references. Sometimes there are other
             # things like PMC or OMIM, but those are placed as string in notes.
-            _notes = _cell_to_str_list(mat_struct[mat_key][0, 0])
+            _notes = _cell_to_str_list(mat_struct[_caseunfold[mat_key]][0, 0])
             notes[name] = [
                 _pubmed_re.sub("", x).strip()
                 if x and len(_pubmed_re.sub("", x).strip())
                 else None
                 for x in _notes
             ]
-        elif mat_key == "rxnConfidenceScores":
+        elif mat_key == "rxnConfidenceScores".casefold():
             # If it something else, which may have commas, turn it into a list
             notes[name] = [
                 str(confidence) if confidence is not None else ""
-                for confidence in _cell_to_float_list(mat_struct[mat_key][0, 0])
+                for confidence in _cell_to_float_list(mat_struct[_caseunfold[mat_key]][0, 0])
             ]
         else:
             # If it something else, which may have commas, turn it into a list
-            notes[name] = _cell_to_str_list(mat_struct[mat_key][0, 0])
+            notes[name] = _cell_to_str_list(mat_struct[_caseunfold[mat_key]][0, 0])
         notes[name] = [
             _punctuation_re.sub("", _double_punctuation_re.sub("", x)) if x else None
             for x in notes[name]
@@ -570,12 +576,12 @@ def create_mat_dict(model: Model) -> OrderedDict:
     rxns = model.reactions
     mets = model.metabolites
     mat = OrderedDict()
-    mat["mets"] = _cell(mets.list_attr('id'))
-    if set([_get_id_compartment(met_id) for met_id in mets.list_attr('id')]) == {None}:
+    mat["mets"] = _cell(mets.list_attr("id"))
+    if set([_get_id_compartment(met_id) for met_id in mets.list_attr("id")]) == {None}:
         comps = list(model.compartments.keys())
         mat["comps"] = _cell(comps)
         mat["compNames"] = _cell([model.compartments[comp] for comp in comps])
-        mat["metComps"] = [comps.index(x) + 1 for x in mets.list_attr('compartment')]
+        mat["metComps"] = [comps.index(x) + 1 for x in mets.list_attr("compartment")]
     mat["metNames"] = _cell(mets.list_attr("name"))
     mat["metFormulas"] = _cell([str(m.formula) if m.formula else "" for m in mets])
     try:
@@ -808,7 +814,7 @@ def from_mat_struct(
         rxn_group_names = set(rxn_subsystems).difference({None})
         new_groups = []
         for g_name in sorted(rxn_group_names):
-            group_members = [rxn for rxn in new_reactions if rxn.subsystem == g_name]
+            group_members = model.reactions.query(lambda x: x.subsystem == g_name)
             new_group = Group(
                 id=g_name, name=g_name, members=group_members, kind="partonomy"
             )
