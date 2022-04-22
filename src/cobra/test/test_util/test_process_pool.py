@@ -110,9 +110,7 @@ def test_imap_unordered() -> None:
 def test_starmap() -> None:
     """Test that a function can be starmapped over many iterables."""
     with ProcessPool(processes=3) as pool:
-        assert (
-            sum(pool.starmap(summation, [range(10), range(10), range(10)])) == 135
-        )
+        assert sum(pool.starmap(summation, [range(10), range(10), range(10)])) == 135
 
 
 @pytest.mark.skipif("SKIP_MP" in os.environ, reason="unsafe for parallel execution")
@@ -120,10 +118,6 @@ def test_starmap_async() -> None:
     """Test that a function can be starmapped over many iterables asynchronously."""
     with ProcessPool(processes=3) as pool:
         assert (
-            sum(
-                pool.starmap_async(
-                    summation, [range(10), range(10), range(10)]
-                ).get()
-            )
+            sum(pool.starmap_async(summation, [range(10), range(10), range(10)]).get())
             == 135
         )
