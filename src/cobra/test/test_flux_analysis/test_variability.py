@@ -1,9 +1,9 @@
 """Test functionalities of Flux Variability Analysis."""
 
+import os
 from typing import Callable, List
 
 import numpy as np
-import os
 import pandas as pd
 import pytest
 
