@@ -117,7 +117,7 @@ def test_starmap() -> None:
 
 @pytest.mark.skipif("SKIP_MP" in os.environ, reason="unsafe for parallel execution")
 def test_starmap_async() -> None:
-"""Test that a function can be starmapped over many iterables asynchronously."""
+    """Test that a function can be starmapped over many iterables asynchronously."""
     with ProcessPool(processes=3) as pool:
         assert (
             sum(

@@ -90,10 +90,10 @@ def test_parallel_flux_variability(
     model: Model, fva_results: pd.DataFrame, all_solvers: List[str]
 ) -> None:
     """Test parallel FVA."""
-        model.solver = all_solvers
-        fva_out = flux_variability_analysis(model, processes=2)
-        fva_out.sort_index(inplace=True)
-        assert np.allclose(fva_out, fva_results)
+    model.solver = all_solvers
+    fva_out = flux_variability_analysis(model, processes=2)
+    fva_out.sort_index(inplace=True)
+    assert np.allclose(fva_out, fva_results)
 
 
 # Loopless FVA
