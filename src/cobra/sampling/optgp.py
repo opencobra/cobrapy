@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Dict, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from pydantic import NoneIsAllowedError
 
 from ..core.configuration import Configuration
 from ..util import ProcessPool
