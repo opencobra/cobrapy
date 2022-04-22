@@ -1,7 +1,8 @@
 """Test functionalities of flux sampling methods."""
 
-import numpy as np
 import os
+
+import numpy as np
 import pytest
 
 from cobra.core import Metabolite, Model, Reaction
