@@ -319,27 +319,6 @@ def save_matlab_model(
     scipy_io.savemat(file_name, {varname: mat}, appendmat=True, oned_as="column")
 
 
-def create_mat_metabolite_id(model: Model) -> str:
-    """Obtain all metabolite IDs from a MATLAB model.
-
-    Parameters
-    ----------
-    model : cobra.Model
-        The model to obtain metabolite IDs from.
-
-    Yields
-    ------
-    str
-        The metabolite ID along with compartment (if found).
-
-    """
-    for met in model.metabolites:
-        if not _get_id_compartment(met.id) and met.compartment:
-            yield "{}[{}]".format(met.id, model.compartments[met.compartment].lower())
-        else:
-            yield met.id
-
-
 def mat_parse_annotations(
     target_list: List[Object], mat_struct: np.ndarray, _d_replace: str = D_MET
 ) -> None:
@@ -369,7 +348,6 @@ def mat_parse_annotations(
     annotations = dict.fromkeys(providers, None)
     _pubmed_re = re.compile("PMID: ?(\\d+),?")
     _ec_re = re.compile(r"([\d\-]+.[\d\-]+.[\d\-]+.[\d-]+)")
-    _chebi_re = re.compile(r"\D*(\d+),?")
     for name, mat_key in zip(providers, annotation_matlab):
         if mat_key == "rxnReferences".casefold():
             # This only picks up PMID: style references. Sometimes there are other
@@ -381,11 +359,6 @@ def mat_parse_annotations(
             # turn EC codes to a list
             annotations[name] = _cell_to_str_list(
                 mat_struct[_caseunfold[mat_key]][0, 0], None, _ec_re
-            )
-        elif mat_key == "metCHEBIID".casefold():
-            # if there are more than one CHEBI code, turn them to a comma separated str
-            annotations[name] = _cell_to_str_list(
-                mat_struct[_caseunfold[mat_key]][0, 0], None, _chebi_re
             )
         else:
             # If it something else, which may have commas, turn it into a list
@@ -537,6 +510,7 @@ def notes_to_mat(
     for i in range(len(note_list)):
         if note_list[i]:
             providers_used.update(note_list[i].keys())
+    providers_used = providers_used.intersection(D_REPLACE[_d_replace].keys())
     providers_used = list(providers_used)
     annotation_matlab = {prov: D_REPLACE[_d_replace][prov] for prov in providers_used}
     empty_lists = [[""] * len(note_list) for x in annotation_matlab]
@@ -544,6 +518,8 @@ def notes_to_mat(
     for i in range(len(note_list)):
         if note_list[i]:
             for provider_key, v in note_list[i].items():
+                if provider_key not in providers_used:
+                    continue
                 if provider_key == "Confidence Level":
                     v = float(v)
                 if not len(annotation_cells_to_be[annotation_matlab[provider_key]][i]):
