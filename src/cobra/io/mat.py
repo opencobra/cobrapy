@@ -135,7 +135,8 @@ D_REPLACE: dict = {
 
 # precompiled regular expressions (kept globally for caching)
 _bracket_re = re.compile(r"[\[(](?P<compartment>[a-zA-Z]+)[])]$")
-_underscore_re = re.compile(r"_(?P<compartment>[a-zA-Z]+)$")
+# Some older models have _boundary for (some) exchange reactions
+_underscore_re = re.compile(r"_(?P<compartment>[a-zA-Z]+)(_boundary)?$")
 
 
 def _get_id_compartment(_id: str) -> str:
@@ -180,7 +181,10 @@ def _cell(x: Iterable[str]) -> np.ndarray:
 
 
 def _cell_to_str_list(
-    m_cell: np.ndarray, empty_value: Optional[str] = None, _re: Optional[Pattern] = None
+    m_cell: np.ndarray,
+    empty_value: Optional[str] = None,
+    _re: Optional[Pattern] = None,
+    _prefix: str = "",
 ) -> List:
     """Turn an ndarray (cell) to a list of strings.
 
@@ -192,6 +196,8 @@ def _cell_to_str_list(
     _re: Pattern, optional
         Regular expression to use to split the expression. Used for annotations.
         Default None.
+    _prefix: str, optional
+        A prefix that will be added to each value in the list if present. Default "".
 
     Returns
     -------
@@ -200,7 +206,11 @@ def _cell_to_str_list(
     """
     if _re:
         return [
-            _re.findall(str(_each_cell[0][0]))
+            [
+                _prefix + _found
+                for _found in _re.findall(str(_each_cell[0][0]))
+                if _prefix not in _found
+            ]
             if np.size(_each_cell[0])
             else empty_value
             for _each_cell in m_cell
@@ -348,6 +358,7 @@ def mat_parse_annotations(
     annotations = dict.fromkeys(providers, None)
     _pubmed_re = re.compile("PMID: ?(\\d+),?")
     _ec_re = re.compile(r"([\d\-]+.[\d\-]+.[\d\-]+.[\d-]+)")
+    _chebi_re = re.compile(r"\D*(\d+),?")  # CHEBI: shouldn't be removed. HOW?
     for name, mat_key in zip(providers, annotation_matlab):
         if mat_key == "rxnReferences".casefold():
             # This only picks up PMID: style references. Sometimes there are other
@@ -359,6 +370,10 @@ def mat_parse_annotations(
             # turn EC codes to a list
             annotations[name] = _cell_to_str_list(
                 mat_struct[_caseunfold[mat_key]][0, 0], None, _ec_re
+            )
+        elif mat_key == "metCHEBIID".casefold():
+            annotations[name] = _cell_to_str_list(
+                mat_struct[_caseunfold[mat_key]][0, 0], None, _chebi_re, "CHEBI:"
             )
         else:
             # If it something else, which may have commas, turn it into a list
@@ -419,10 +434,11 @@ def mat_parse_notes(
                 for x in _notes
             ]
         elif mat_key == "rxnConfidenceScores".casefold():
-            # If it something else, which may have commas, turn it into a list
             notes[name] = [
                 str(confidence) if confidence is not None else ""
-                for confidence in _cell_to_float_list(mat_struct[_caseunfold[mat_key]][0, 0])
+                for confidence in _cell_to_float_list(
+                    mat_struct[_caseunfold[mat_key]][0, 0]
+                )
             ]
         else:
             # If it something else, which may have commas, turn it into a list
@@ -467,10 +483,18 @@ def annotations_to_mat(
     for i in range(len(annotation_list)):
         if annotation_list[i]:
             for provider_key, v in annotation_list[i].items():
+                if isinstance(v, str):
+                    v = [v]
                 if provider_key == "pubmed":
-                    v = ", ".join(["PMID:" + annot for annot in v])
+                    v = ", ".join(
+                        ["PMID:" + annot if "PMID:" not in annot
+                         else annot for annot in v]
+                    )
                 elif provider_key == "CHEBI":
-                    v = ", ".join(["CHEBI:" + annot for annot in v])
+                    v = ", ".join(
+                        ["CHEBI:" + annot if "CHBEI:" not in annot
+                         else annot for annot in v]
+                    )
                 elif provider_key == "ec-code":
                     v = " or ".join(v)
                 else:
