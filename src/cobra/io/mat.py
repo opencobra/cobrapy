@@ -640,7 +640,8 @@ def create_mat_dict(model: Model) -> OrderedDict:
     mat["b"] = np.array(mets.list_attr("_bound")) * 1.0
     mat["c"] = np.array(rxns.list_attr("objective_coefficient")) * 1.0
     mat["rev"] = np.array(rxns.list_attr("reversibility")) * 1
-    mat["modelName"] = str(model.name)
+    if model.name:
+        mat["modelName"] = str(model.name)
     mat["description"] = str(model.id)
     return mat
 
