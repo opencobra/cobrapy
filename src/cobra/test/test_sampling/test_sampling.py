@@ -1,5 +1,7 @@
 """Test functionalities of flux sampling methods."""
 
+import os
+
 import numpy as np
 import pytest
 
@@ -20,7 +22,8 @@ def test_single_optgp(model: Model) -> None:
     assert s.shape == (10, len(model.reactions))
 
 
-def test_multi_optgp(model: Model) -> None:
+@pytest.mark.skipif("SKIP_MP" in os.environ, reason="unsafe for parallel execution")
+def test_multi_optgp(model: Model) -> None:  # pragma: no cover
     """Test OptGP sampling (multi sample)."""
     s = sample(model, 10, processes=2)
     assert s.shape == (10, len(model.reactions))

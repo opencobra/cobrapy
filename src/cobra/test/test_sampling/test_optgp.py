@@ -1,5 +1,6 @@
 """Test functionalities of OptGPSampler."""
 
+import os
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
@@ -23,6 +24,7 @@ def optgp(model: "Model") -> OptGPSampler:
     return sampler
 
 
+@pytest.mark.skipif("SKIP_MP" in os.environ, reason="unsafe for parallel execution")
 def test_optgp_init_benchmark(model: "Model", benchmark: Callable) -> None:
     """Benchmark inital OptGP sampling."""
     benchmark(lambda: OptGPSampler(model, processes=2))

@@ -2,6 +2,7 @@
 
 
 import math
+import os
 from typing import Callable, List
 
 import numpy as np
@@ -288,6 +289,7 @@ def test_double_gene_deletion_benchmark(
     benchmark(double_gene_deletion, large_model, gene_list1=genes, processes=1)
 
 
+@pytest.mark.skipif("SKIP_MP" in os.environ, reason="unsafe for parallel execution")
 def test_double_gene_deletion(model: Model) -> None:
     """Test double gene deletion."""
     genes = [
@@ -412,6 +414,7 @@ def test_double_reaction_deletion_benchmark(
     benchmark(double_reaction_deletion, large_model, reaction_list1=reactions)
 
 
+@pytest.mark.skipif("SKIP_MP" in os.environ, reason="unsafe for parallel execution")
 def test_double_reaction_deletion(model: Model) -> None:
     """Test double reaction deletion."""
     reactions = ["FBA", "ATPS4r", "ENO", "FRUpts2"]

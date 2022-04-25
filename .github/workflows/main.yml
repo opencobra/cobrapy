@@ -35,7 +35,7 @@ jobs:
         python -m pip install tox tox-gh-actions
     - name: Test with tox
       run:
-        tox -- --cov-report=xml --benchmark-skip
+        tox -- --benchmark-skip
       timeout-minutes: 60
     - name: Report coverage
       shell: bash
