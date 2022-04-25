@@ -1,12 +1,12 @@
 """Comparing models, reactions, metabolites, genes and groups."""
 
-from typing import Dict, Optional, Tuple, TypeVar
-
-from cobra import Model, Object, Reaction
-from cobra.core import Group
+from typing import TYPE_CHECKING, Dict, Optional, Tuple, TypeVar
 
 
-TObject = TypeVar("TObject", bound=Object)
+if TYPE_CHECKING:
+    from cobra import Group, Model, Object, Reaction
+
+    TObject = TypeVar("TObject", bound=Object)
 
 
 def dict_compare(d1: Dict, d2: Dict, _dont_compare: Optional[set] = None):
@@ -38,7 +38,7 @@ def dict_compare(d1: Dict, d2: Dict, _dont_compare: Optional[set] = None):
 
 
 def compare_state(
-    obj1: TObject, obj2: TObject, ignore_keys: Optional[set] = None
+    obj1: "TObject", obj2: "TObject", ignore_keys: Optional[set] = None
 ) -> Tuple[bool, Dict]:
     """Will compare two cobra Objects (and what is derived from them).
 
@@ -71,7 +71,7 @@ def compare_state(
 
 
 def compare_reaction_state(
-    rxn1: Reaction, rxn2: Reaction, ignore_keys: Optional[set] = None
+    rxn1: "Reaction", rxn2: "Reaction", ignore_keys: Optional[set] = None
 ) -> Tuple[bool, Dict]:
     """Will compare two cobra Reactions.
 
@@ -106,7 +106,7 @@ def compare_reaction_state(
 
 
 def compare_group_state(
-    group1: Group, group2: Group, ignore_keys: Optional[set] = None
+    group1: "Group", group2: "Group", ignore_keys: Optional[set] = None
 ) -> Tuple[bool, Dict]:
     """Will compare two cobra Groups.
 
@@ -138,8 +138,8 @@ def compare_group_state(
 
 
 def compare_model_state(
-    model1: Model,
-    model2: Model,
+    model1: "Model",
+    model2: "Model",
     ignore_notes: bool = True,
     ignore_keys: Optional[set] = None,
 ):
