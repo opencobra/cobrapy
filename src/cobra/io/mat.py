@@ -21,7 +21,6 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-
 # The following dictionaries are based on
 # https://github.com/opencobra/cobratoolbox/blob/docs/source/notes/COBRAModelFields.md
 # at commit 83d26938a9babff79289d40e20f5f50dd5b710fa
@@ -204,13 +203,19 @@ def _cell_to_str_list(
     List
         A list of processed strings.
     """
-    if _re:
+    if _prefix and _re:
         return [
             [
-                _prefix + _found
+                _prefix + _found if _prefix not in _found else _found
                 for _found in _re.findall(str(_each_cell[0][0]))
-                if _prefix not in _found
             ]
+            if np.size(_each_cell[0])
+            else empty_value
+            for _each_cell in m_cell
+        ]
+    elif _re:
+        return [
+            _re.findall(str(_each_cell[0][0]))
             if np.size(_each_cell[0])
             else empty_value
             for _each_cell in m_cell
@@ -379,7 +384,9 @@ def mat_parse_annotations(
             # If it something else, which may have commas, turn it into a list
             annotations[name] = [
                 [y.strip() for y in _each_cell.split(", ")] if _each_cell else None
-                for _each_cell in _cell_to_str_list(mat_struct[_caseunfold[mat_key]][0, 0])
+                for _each_cell in _cell_to_str_list(
+                    mat_struct[_caseunfold[mat_key]][0, 0]
+                )
             ]
     for i, obj in enumerate(target_list):
         obj.annotation = {
@@ -487,13 +494,17 @@ def annotations_to_mat(
                     v = [v]
                 if provider_key == "pubmed":
                     v = ", ".join(
-                        ["PMID:" + annot if "PMID:" not in annot
-                         else annot for annot in v]
+                        [
+                            "PMID:" + annot if "PMID:" not in annot else annot
+                            for annot in v
+                        ]
                     )
                 elif provider_key == "CHEBI":
                     v = ", ".join(
-                        ["CHEBI:" + annot if "CHBEI:" not in annot
-                         else annot for annot in v]
+                        [
+                            "CHEBI:" + annot if "CHBEI:" not in annot else annot
+                            for annot in v
+                        ]
                     )
                 elif provider_key == "ec-code":
                     v = " or ".join(v)
@@ -577,7 +588,14 @@ def create_mat_dict(model: Model) -> OrderedDict:
     mets = model.metabolites
     mat = OrderedDict()
     mat["mets"] = _cell(mets.list_attr("id"))
-    if set([_get_id_compartment(met_id) for met_id in mets.list_attr("id")]) == {None}:
+    model_has_compartment_names = False
+    for comp, compName in model.compartments.items():
+        if comp != compName:
+            model_has_compartment_names = True
+    if (
+        set([_get_id_compartment(met_id) for met_id in mets.list_attr("id")]) == {None}
+        or model_has_compartment_names
+    ):
         comps = list(model.compartments.keys())
         mat["comps"] = _cell(comps)
         mat["compNames"] = _cell([model.compartments[comp] for comp in comps])
@@ -595,8 +613,8 @@ def create_mat_dict(model: Model) -> OrderedDict:
     #  annotations are fully SBML compliant, revise this function.
     notes_to_mat(mat, mets.list_attr("notes"), D_MET_NOTES_REV)
     mat["genes"] = _cell(model.genes.list_attr("id"))
-    gene_names = model.genes.list_attr('name')
-    if not all(_name == '' for _name in gene_names):
+    gene_names = model.genes.list_attr("name")
+    if not all(_name == "" for _name in gene_names):
         mat["geneNames"] = _cell(gene_names)
     annotations_to_mat(mat, model.genes.list_attr("annotation"), D_GENE_REV)
     # make a matrix for rxnGeneMat
@@ -612,7 +630,7 @@ def create_mat_dict(model: Model) -> OrderedDict:
     mat["rxnNames"] = _cell(rxns.list_attr("name"))
     annotations_to_mat(mat, rxns.list_attr("annotation"), D_REACTION_REV)
     notes_to_mat(mat, rxns.list_attr("notes"), D_REACTION_NOTES_REV)
-    mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
+    mat["subSystems"] = _cell(rxns.list_attr("subsystem"))  # TODO - output groups
     stoich_mat = create_stoichiometric_matrix(model)
     mat["S"] = stoich_mat if stoich_mat is not None else [[]]
     # multiply by 1 to convert to float, working around scipy bug
@@ -622,6 +640,7 @@ def create_mat_dict(model: Model) -> OrderedDict:
     mat["b"] = np.array(mets.list_attr("_bound")) * 1.0
     mat["c"] = np.array(rxns.list_attr("objective_coefficient")) * 1.0
     mat["rev"] = np.array(rxns.list_attr("reversibility")) * 1
+    mat["modelName"] = str(model.name)
     mat["description"] = str(model.id)
     return mat
 
@@ -660,14 +679,31 @@ def from_mat_struct(
     ):
         raise ValueError("Invalid MATLAB struct.")
 
-    if "metCharge" in m.dtype.names and "metCharges" not in m.dtype.names:
-        logger.warning(
-            "This model seems to have metCharge instead of metCharges field. Will use"
-            " metCharge for metabolite charges."
-        )
-        new_names = list(m.dtype.names)
-        new_names[new_names.index("metCharge")] = "metCharges"
-        m.dtype.names = new_names
+    old_cobratoolbox_fields = [
+        "confidenceScores",
+        "metCharge",
+        "ecNumbers",
+        "KEGGID",
+        "metSmile",
+        "metHMDB",
+    ]
+    new_cobratoolbox_fields = [
+        "rxnConfidenceScores",
+        "metCharges",
+        "rxnECNumbers",
+        "metKEGGID",
+        "metSmiles",
+        "metHMDBID",
+    ]
+    for _old, _new in zip(old_cobratoolbox_fields, new_cobratoolbox_fields):
+        if _old in m.dtype.names and _new not in m.dtype.names:
+            logger.warning(
+                f"This model seems to have {_old} instead of {_new} field. Will use "
+                f"{_old} for what {_new} represents."
+            )
+            new_names = list(m.dtype.names)
+            new_names[new_names.index(_old)] = _new
+            m.dtype.names = new_names
 
     model = Model()
     if model_id is not None:
@@ -681,7 +717,7 @@ def from_mat_struct(
             model.id = description
     else:
         model.id = "imported_model"
-    if "modelName" in m.dtype.names:
+    if "modelName" in m.dtype.names and np.size(m["modelName"][0, 0]):
         model.name = m["modelName"][0, 0][0]
 
     met_ids = _cell_to_str_list(m["mets"][0, 0])
@@ -815,7 +851,7 @@ def from_mat_struct(
 
     model.add_reactions(new_reactions)
 
-    # Make subsystems into groups alphabetically by name
+    # Make subsystems into groups
     if rxn_subsystems:
         rxn_group_names = set(rxn_subsystems).difference({None})
         new_groups = []
