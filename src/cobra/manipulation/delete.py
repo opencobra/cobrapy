@@ -3,7 +3,8 @@ import logging
 from ast import And, BoolOp, Name, NodeTransformer
 from functools import partial
 from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
-from warnings import warn
+
+import numpy as np
 
 from cobra.util import get_context
 
@@ -64,10 +65,10 @@ def knock_out_model_genes(
     model: "Model",
     gene_list: Union[List["Gene"], Set["Gene"], List[str], Set[str]],
 ) -> List["Reaction"]:
-    """Temporarily remove the effect of genes in `gene_list`.
+    """ "Disable the genes in `gene_list`.
 
     It sets the bounds to "zero" for reactions catalysed by the genes in
-    `gene_list` if deleting the genes stops the reactions from proceeding.
+    `gene_list` if deleting the genes would stop the reactions from proceeding.
 
     The changes are reverted upon exit if executed within the model as context.
 
@@ -91,7 +92,7 @@ def knock_out_model_genes(
     new_bounds = model.reactions.list_attr("bounds")
     reaction_list = list()
     for i, rxn in enumerate(model.reactions):
-        if orig_bounds[i] != new_bounds[i]:
+        if not np.isclose(orig_bounds[i], new_bounds[i]):
             reaction_list.append(rxn)
     return reaction_list
 
