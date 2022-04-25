@@ -595,6 +595,9 @@ def create_mat_dict(model: Model) -> OrderedDict:
     #  annotations are fully SBML compliant, revise this function.
     notes_to_mat(mat, mets.list_attr("notes"), D_MET_NOTES_REV)
     mat["genes"] = _cell(model.genes.list_attr("id"))
+    gene_names = model.genes.list_attr('name')
+    if not all(_name == '' for _name in gene_names):
+        mat["geneNames"] = _cell(gene_names)
     annotations_to_mat(mat, model.genes.list_attr("annotation"), D_GENE_REV)
     # make a matrix for rxnGeneMat
     # reactions are rows, genes are columns
@@ -751,13 +754,16 @@ def from_mat_struct(
                 new_gene = Gene(gene_ids[i])
             new_genes.append(new_gene)
         mat_parse_annotations(new_genes, m, _d_replace=D_GENE)
+        for _gene in new_genes:
+            _gene._model = model
+        model.genes += new_genes
 
     new_reactions = []
     rxn_ids = _cell_to_str_list(m["rxns"][0, 0])
     rxn_lbs = _cell_to_float_list(m["lb"][0, 0])
     rxn_lbs = [-inf if np.isinf(x) and x < 0 else x for x in rxn_lbs]
     rxn_ubs = _cell_to_float_list(m["ub"][0, 0])
-    rxn_ubs = [-inf if np.isinf(x) and x > 0 else x for x in rxn_ubs]
+    rxn_ubs = [inf if np.isinf(x) and x > 0 else x for x in rxn_ubs]
     rxn_gene_rules, rxn_names, rxn_subsystems = None, None, None
     try:
         rxn_gene_rules = _cell_to_str_list(m["grRules"][0, 0], "")
