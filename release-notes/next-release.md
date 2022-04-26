@@ -18,8 +18,6 @@ fail more comprehensibly.
 
 ## Other
 
-Removed pymatlib direct transfer of models to matlab process. 
-Please use save_matlab_model() and then read the model in matlab.
 Added two tests for GPR fixes
 test_gpr_wrong_input()
 test_gpr_that_needs_two_replacements()
@@ -27,3 +25,6 @@ test_gpr_that_needs_two_replacements()
 ## Deprecated features
 
 ## Backwards incompatible changes
+
+Removed pymatlib direct transfer of models to matlab process. 
+Please use save_matlab_model() and then read the model in matlab.

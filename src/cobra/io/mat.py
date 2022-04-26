@@ -108,34 +108,39 @@ GENE_PROVIDERS_TO_MATLAB = {
     GENE_MATLAB_TO_PROVIDERS[k]: k for k in GENE_MATLAB_TO_PROVIDERS.keys()
 }
 
-D_GENE = "D_GENE"
-D_GENE_REV = "D_GENE_REV"
-D_MET = "D_MET"
-D_MET_REV = "D_MET_REV"
-D_MET_NOTES = "D_MET_NOTES"
-D_MET_NOTES_REV = "D_MET_NOTES_REV"
-D_REACTION = "D_REACTION"
-D_REACTION_REV = "D_REACTION_REV"
-D_REACTION_NOTES = "D_REACTION_NOTES"
-D_REACTION_NOTES_REV = "D_REACTION_NOTES_REV"
+DICT_GENE = "DICT_GENE"
+DICT_GENE_REV = "DICT_GENE_REV"
+DICT_MET = "DICT_MET"
+DICT_MET_REV = "DICT_MET_REV"
+DICT_MET_NOTES = "DICT_MET_NOTES"
+DICT_MET_NOTES_REV = "DICT_MET_NOTES_REV"
+DICT_REACTION = "DICT_REACTION"
+DICT_REACTION_REV = "DICT_REACTION_REV"
+DICT_REACTION_NOTES = "DICT_REACTION_NOTES"
+DICT_REACTION_NOTES_REV = "DICT_REACTION_NOTES_REV"
 
-D_REPLACE: dict = {
-    D_GENE: GENE_MATLAB_TO_PROVIDERS,
-    D_GENE_REV: GENE_PROVIDERS_TO_MATLAB,
-    D_MET: MET_MATLAB_TO_PROVIDERS,
-    D_MET_REV: MET_PROVIDERS_TO_MATLAB,
-    D_MET_NOTES: MET_MATLAB_TO_NOTES,
-    D_MET_NOTES_REV: MET_NOTES_TO_MATLAB,
-    D_REACTION: RXN_MATLAB_TO_PROVIDERS,
-    D_REACTION_REV: RXN_PROVIDERS_TO_MATLAB,
-    D_REACTION_NOTES: RXN_MATLAB_TO_NOTES,
-    D_REACTION_NOTES_REV: RXN_NOTES_TO_MATLAB,
+DICT_REPLACE: dict = {
+    DICT_GENE: GENE_MATLAB_TO_PROVIDERS,
+    DICT_GENE_REV: GENE_PROVIDERS_TO_MATLAB,
+    DICT_MET: MET_MATLAB_TO_PROVIDERS,
+    DICT_MET_REV: MET_PROVIDERS_TO_MATLAB,
+    DICT_MET_NOTES: MET_MATLAB_TO_NOTES,
+    DICT_MET_NOTES_REV: MET_NOTES_TO_MATLAB,
+    DICT_REACTION: RXN_MATLAB_TO_PROVIDERS,
+    DICT_REACTION_REV: RXN_PROVIDERS_TO_MATLAB,
+    DICT_REACTION_NOTES: RXN_MATLAB_TO_NOTES,
+    DICT_REACTION_NOTES_REV: RXN_NOTES_TO_MATLAB,
 }
 
 # precompiled regular expressions (kept globally for caching)
 _bracket_re = re.compile(r"[\[(](?P<compartment>[a-zA-Z]+)[])]$")
 # Some older models have _boundary for (some) exchange reactions
 _underscore_re = re.compile(r"_(?P<compartment>[a-zA-Z]+)(_boundary)?$")
+_pubmed_re = re.compile("PMID: ?(\\d+),?")
+_punctuation_re = re.compile(r"^[;,.'\"]+$")
+_double_punctuation_re = re.compile(r"[;,.'\"]{2,}")
+_ec_re = re.compile(r"([\d\-]+.[\d\-]+.[\d\-]+.[\d-]+)")
+_chebi_re = re.compile(r"\D*(\d+),?")
 
 
 def _get_id_compartment(_id: str) -> str:
@@ -182,8 +187,8 @@ def _cell(x: Iterable[str]) -> np.ndarray:
 def _cell_to_str_list(
     m_cell: np.ndarray,
     empty_value: Optional[str] = None,
-    _re: Optional[Pattern] = None,
-    _prefix: str = "",
+    pattern_split: Optional[Pattern] = None,
+    str_prefix: str = "",
 ) -> List:
     """Turn an ndarray (cell) to a list of strings.
 
@@ -192,10 +197,10 @@ def _cell_to_str_list(
     m_cell: np.ndarray
     empty_value: str, optional
         What value to replace empty cells with. Default None.
-    _re: Pattern, optional
+    pattern_split: Pattern, optional
         Regular expression to use to split the expression. Used for annotations.
         Default None.
-    _prefix: str, optional
+    str_prefix: str, optional
         A prefix that will be added to each value in the list if present. Default "".
 
     Returns
@@ -203,27 +208,27 @@ def _cell_to_str_list(
     List
         A list of processed strings.
     """
-    if _prefix and _re:
+    if str_prefix and pattern_split:
         return [
             [
-                _prefix + _found if _prefix not in _found else _found
-                for _found in _re.findall(str(_each_cell[0][0]))
+                str_prefix + str_found if str_prefix not in str_found else str_found
+                for str_found in pattern_split.findall(str(each_cell[0][0]))
             ]
-            if np.size(_each_cell[0])
+            if np.size(each_cell[0])
             else empty_value
-            for _each_cell in m_cell
+            for each_cell in m_cell
         ]
-    elif _re:
+    elif pattern_split:
         return [
-            _re.findall(str(_each_cell[0][0]))
-            if np.size(_each_cell[0])
+            pattern_split.findall(str(each_cell[0][0]))
+            if np.size(each_cell[0])
             else empty_value
-            for _each_cell in m_cell
+            for each_cell in m_cell
         ]
     else:
         return [
-            str(_each_cell[0][0]).strip() if np.size(_each_cell[0]) else empty_value
-            for _each_cell in m_cell
+            str(each_cell[0][0]).strip() if np.size(each_cell[0]) else empty_value
+            for each_cell in m_cell
         ]
 
 
@@ -335,7 +340,7 @@ def save_matlab_model(
 
 
 def mat_parse_annotations(
-    target_list: List[Object], mat_struct: np.ndarray, _d_replace: str = D_MET
+    target_list: List[Object], mat_struct: np.ndarray, d_replace: str = DICT_MET
 ) -> None:
     """Process mat structure annotations in place.
 
@@ -349,43 +354,40 @@ def mat_parse_annotations(
         annotations will be added to these lists.
     mat_struct: np.ndarray
         A darray that includes the data imported from matlab file.
-    _d_replace: str
+    d_replace: str
         A string that points to the dictionary of converstions between MATLAB and
-        providers. Default D_MET (for metabolite).
+        providers. Default DICT_MET (for metabolite).
     """
     struct_names = [x.casefold() for x in mat_struct.dtype.names]
     matlab_field_dict = {
-        x.casefold(): D_REPLACE[_d_replace][x] for x in D_REPLACE[_d_replace].keys()
+        x.casefold(): DICT_REPLACE[d_replace][x] for x in DICT_REPLACE[d_replace].keys()
     }
-    _caseunfold = {x.casefold(): x for x in mat_struct.dtype.names}
+    caseunfold = {x.casefold(): x for x in mat_struct.dtype.names}
     annotation_matlab = list(set(struct_names).intersection(matlab_field_dict.keys()))
     providers = [matlab_field_dict[x] for x in annotation_matlab]
     annotations = dict.fromkeys(providers, None)
-    _pubmed_re = re.compile("PMID: ?(\\d+),?")
-    _ec_re = re.compile(r"([\d\-]+.[\d\-]+.[\d\-]+.[\d-]+)")
-    _chebi_re = re.compile(r"\D*(\d+),?")  # CHEBI: shouldn't be removed. HOW?
     for name, mat_key in zip(providers, annotation_matlab):
         if mat_key == "rxnReferences".casefold():
             # This only picks up PMID: style references. Sometimes there are other
             # things like PMC or OMIM, but those are ignored for now,
             annotations[name] = _cell_to_str_list(
-                mat_struct[_caseunfold[mat_key]][0, 0], None, _pubmed_re
+                mat_struct[caseunfold[mat_key]][0, 0], None, _pubmed_re
             )
         elif mat_key == "rxnECNumbers".casefold():
             # turn EC codes to a list
             annotations[name] = _cell_to_str_list(
-                mat_struct[_caseunfold[mat_key]][0, 0], None, _ec_re
+                mat_struct[caseunfold[mat_key]][0, 0], None, _ec_re
             )
         elif mat_key == "metCHEBIID".casefold():
             annotations[name] = _cell_to_str_list(
-                mat_struct[_caseunfold[mat_key]][0, 0], None, _chebi_re, "CHEBI:"
+                mat_struct[caseunfold[mat_key]][0, 0], None, _chebi_re, "CHEBI:"
             )
         else:
             # If it something else, which may have commas, turn it into a list
             annotations[name] = [
-                [y.strip() for y in _each_cell.split(", ")] if _each_cell else None
-                for _each_cell in _cell_to_str_list(
-                    mat_struct[_caseunfold[mat_key]][0, 0]
+                [y.strip() for y in each_cell.split(", ")] if each_cell else None
+                for each_cell in _cell_to_str_list(
+                    mat_struct[caseunfold[mat_key]][0, 0]
                 )
             ]
     for i, obj in enumerate(target_list):
@@ -400,7 +402,7 @@ def mat_parse_annotations(
 def mat_parse_notes(
     target_list: List[Object],
     mat_struct: np.ndarray,
-    _d_replace: str = D_REACTION_NOTES,
+    d_replace: str = DICT_REACTION_NOTES,
 ) -> None:
     """Process mat structure notes in place.
 
@@ -414,26 +416,23 @@ def mat_parse_notes(
         notes will be added to these lists.
     mat_struct: np.ndarray
         A darray that includes the data imported from matlab file.
-    _d_replace: str
+    d_replace: str
         A string that points to the dictionary of converstions between MATLAB and
-        notes. Default D_REACTION_NOTES (for reactions).
+        notes. Default DICT_REACTION_NOTES (for reactions).
     """
     struct_names = [x.casefold() for x in mat_struct.dtype.names]
     matlab_field_dict = {
-        x.casefold(): D_REPLACE[_d_replace][x] for x in D_REPLACE[_d_replace].keys()
+        x.casefold(): DICT_REPLACE[d_replace][x] for x in DICT_REPLACE[d_replace].keys()
     }
-    _caseunfold = {x.casefold(): x for x in mat_struct.dtype.names}
+    caseunfold = {x.casefold(): x for x in mat_struct.dtype.names}
     annotation_matlab = list(set(struct_names).intersection(matlab_field_dict.keys()))
     note_providers = [matlab_field_dict[x] for x in annotation_matlab]
     notes = dict.fromkeys(note_providers, None)
-    _pubmed_re = re.compile("PMID: ?(\\d+),?")
-    _punctuation_re = re.compile(r"^[;,.'\"]+$")
-    _double_punctuation_re = re.compile(r"[;,.'\"]{2,}")
     for name, mat_key in zip(note_providers, annotation_matlab):
         if mat_key == "rxnReferences".casefold():
             # This only removes PMID: style references. Sometimes there are other
             # things like PMC or OMIM, but those are placed as string in notes.
-            _notes = _cell_to_str_list(mat_struct[_caseunfold[mat_key]][0, 0])
+            _notes = _cell_to_str_list(mat_struct[caseunfold[mat_key]][0, 0])
             notes[name] = [
                 _pubmed_re.sub("", x).strip()
                 if x and len(_pubmed_re.sub("", x).strip())
@@ -444,12 +443,12 @@ def mat_parse_notes(
             notes[name] = [
                 str(confidence) if confidence is not None else ""
                 for confidence in _cell_to_float_list(
-                    mat_struct[_caseunfold[mat_key]][0, 0]
+                    mat_struct[caseunfold[mat_key]][0, 0]
                 )
             ]
         else:
             # If it something else, which may have commas, turn it into a list
-            notes[name] = _cell_to_str_list(mat_struct[_caseunfold[mat_key]][0, 0])
+            notes[name] = _cell_to_str_list(mat_struct[caseunfold[mat_key]][0, 0])
         notes[name] = [
             _punctuation_re.sub("", _double_punctuation_re.sub("", x)) if x else None
             for x in notes[name]
@@ -459,7 +458,7 @@ def mat_parse_notes(
 
 
 def annotations_to_mat(
-    mat_dict: OrderedDict, annotation_list: List[Dict], _d_replace: str = D_MET_REV
+    mat_dict: OrderedDict, annotation_list: List[Dict], d_replace: str = DICT_MET_REV
 ) -> None:
     """Process mat structure annotations in place.
 
@@ -474,17 +473,17 @@ def annotations_to_mat(
         be inserted into this OrderdDict.
     annotation_list: list[Dict]
         A list of cobra annotations, in the form of a dictionary.
-    _d_replace: str
+    d_replace: str
         A string that points to the dictionary of converstions between MATLAB and
-        providers. Default D_MET_REV (for metabolite).
+        providers. Default DICT_MET_REV (for metabolite).
     """
     providers_used = set()
     for i in range(len(annotation_list)):
         if annotation_list[i]:
             providers_used.update(annotation_list[i].keys())
-    providers_used = providers_used.intersection(D_REPLACE[_d_replace].keys())
+    providers_used = providers_used.intersection(DICT_REPLACE[d_replace].keys())
     providers_used = list(providers_used)
-    annotation_matlab = {prov: D_REPLACE[_d_replace][prov] for prov in providers_used}
+    annotation_matlab = {prov: DICT_REPLACE[d_replace][prov] for prov in providers_used}
     empty_lists = [[""] * len(annotation_list) for x in annotation_matlab]
     annotation_cells_to_be = dict(zip(annotation_matlab.values(), empty_lists))
     for i in range(len(annotation_list)):
@@ -513,16 +512,16 @@ def annotations_to_mat(
                 if provider_key not in providers_used:
                     continue
                 annotation_cells_to_be[annotation_matlab[provider_key]][i] = v
-    for annotation_key, _list in annotation_cells_to_be.items():
+    for annotation_key, item_list in annotation_cells_to_be.items():
         if annotation_key not in mat_dict:
-            mat_dict[annotation_key] = _cell(_list)
+            mat_dict[annotation_key] = _cell(item_list)
 
     # TODO - When cobrapy.notes are revised not be a dictionary (possibly when
     #  annotations are fully SBML compliant, revise this function.
 
 
 def notes_to_mat(
-    mat_dict: OrderedDict, note_list: List[Dict], _d_replace: str = D_MET_REV
+    mat_dict: OrderedDict, note_list: List[Dict], d_replace: str = DICT_MET_REV
 ) -> None:
     """Process mat structure notes in place.
 
@@ -537,17 +536,17 @@ def notes_to_mat(
         be inserted into this OrderdDict.
     note_list: list[Dict]
         A list of cobra annotations, in the form of a dictionary.
-    _d_replace: str
+    d_replace: str
         A string that points to the dictionary of converstions between MATLAB and
-        providers. Default D_MET_REV (for metabolite).
+        providers. Default DICT_MET_REV (for metabolite).
     """
     providers_used = set()
     for i in range(len(note_list)):
         if note_list[i]:
             providers_used.update(note_list[i].keys())
-    providers_used = providers_used.intersection(D_REPLACE[_d_replace].keys())
+    providers_used = providers_used.intersection(DICT_REPLACE[d_replace].keys())
     providers_used = list(providers_used)
-    annotation_matlab = {prov: D_REPLACE[_d_replace][prov] for prov in providers_used}
+    annotation_matlab = {prov: DICT_REPLACE[d_replace][prov] for prov in providers_used}
     empty_lists = [[""] * len(note_list) for x in annotation_matlab]
     annotation_cells_to_be = dict(zip(annotation_matlab.values(), empty_lists))
     for i in range(len(note_list)):
@@ -565,8 +564,8 @@ def notes_to_mat(
                         annotation_cells_to_be[annotation_matlab[provider_key]][i]
                         + f"; {v}"
                     )
-    for annotation_key, _list in annotation_cells_to_be.items():
-        mat_dict[annotation_key] = _cell(_list)
+    for annotation_key, item_list in annotation_cells_to_be.items():
+        mat_dict[annotation_key] = _cell(item_list)
 
 
 def create_mat_dict(model: Model) -> OrderedDict:
@@ -608,15 +607,15 @@ def create_mat_dict(model: Model) -> OrderedDict:
         # can't have any None entries for charge, or this will fail
         # TODO: use custom cobra exception to handle exception
         pass
-    annotations_to_mat(mat, mets.list_attr("annotation"), D_MET_REV)
+    annotations_to_mat(mat, mets.list_attr("annotation"), DICT_MET_REV)
     # TODO - When cobrapy.notes are revised not be a dictionary (possibly when
     #  annotations are fully SBML compliant, revise this function.
-    notes_to_mat(mat, mets.list_attr("notes"), D_MET_NOTES_REV)
+    notes_to_mat(mat, mets.list_attr("notes"), DICT_MET_NOTES_REV)
     mat["genes"] = _cell(model.genes.list_attr("id"))
     gene_names = model.genes.list_attr("name")
     if not all(_name == "" for _name in gene_names):
         mat["geneNames"] = _cell(gene_names)
-    annotations_to_mat(mat, model.genes.list_attr("annotation"), D_GENE_REV)
+    annotations_to_mat(mat, model.genes.list_attr("annotation"), DICT_GENE_REV)
     # make a matrix for rxnGeneMat
     # reactions are rows, genes are columns
     rxn_gene = scipy_sparse.dok_matrix((len(model.reactions), len(model.genes)))
@@ -628,8 +627,8 @@ def create_mat_dict(model: Model) -> OrderedDict:
     mat["grRules"] = _cell(rxns.list_attr("gene_reaction_rule"))
     mat["rxns"] = _cell(rxns.list_attr("id"))
     mat["rxnNames"] = _cell(rxns.list_attr("name"))
-    annotations_to_mat(mat, rxns.list_attr("annotation"), D_REACTION_REV)
-    notes_to_mat(mat, rxns.list_attr("notes"), D_REACTION_NOTES_REV)
+    annotations_to_mat(mat, rxns.list_attr("annotation"), DICT_REACTION_REV)
+    notes_to_mat(mat, rxns.list_attr("notes"), DICT_REACTION_NOTES_REV)
     mat["subSystems"] = _cell(rxns.list_attr("subsystem"))  # TODO - output groups
     stoich_mat = create_stoichiometric_matrix(model)
     mat["S"] = stoich_mat if stoich_mat is not None else [[]]
@@ -696,14 +695,14 @@ def from_mat_struct(
         "metSmiles",
         "metHMDBID",
     ]
-    for _old, _new in zip(old_cobratoolbox_fields, new_cobratoolbox_fields):
-        if _old in m.dtype.names and _new not in m.dtype.names:
+    for old_field, new_field in zip(old_cobratoolbox_fields, new_cobratoolbox_fields):
+        if old_field in m.dtype.names and new_field not in m.dtype.names:
             logger.warning(
-                f"This model seems to have {_old} instead of {_new} field. Will use "
-                f"{_old} for what {_new} represents."
+                f"This model seems to have {old_field} instead of {new_field} field. Will use "
+                f"{old_field} for what {new_field} represents."
             )
             new_names = list(m.dtype.names)
-            new_names[new_names.index(_old)] = _new
+            new_names[new_names.index(old_field)] = new_field
             m.dtype.names = new_names
 
     model = Model()
@@ -771,8 +770,8 @@ def from_mat_struct(
         if met_formulas:
             new_metabolite.formula = met_formulas[i]
         new_metabolites.append(new_metabolite)
-    mat_parse_annotations(new_metabolites, m, _d_replace=D_MET)
-    mat_parse_notes(new_metabolites, m, _d_replace=D_MET_NOTES)
+    mat_parse_annotations(new_metabolites, m, d_replace=DICT_MET)
+    mat_parse_notes(new_metabolites, m, d_replace=DICT_MET_NOTES)
     model.add_metabolites(new_metabolites)
 
     if "genes" in m.dtype.names:
@@ -790,9 +789,9 @@ def from_mat_struct(
             else:
                 new_gene = Gene(gene_ids[i])
             new_genes.append(new_gene)
-        mat_parse_annotations(new_genes, m, _d_replace=D_GENE)
-        for _gene in new_genes:
-            _gene._model = model
+        mat_parse_annotations(new_genes, m, d_replace=DICT_GENE)
+        for current_gene in new_genes:
+            current_gene._model = model
         model.genes += new_genes
 
     new_reactions = []
@@ -818,8 +817,8 @@ def from_mat_struct(
         # modified
         if isinstance(m["subSystems"][0, 0][0][0][0], np.ndarray):
             rxn_subsystems = [
-                _each_cell[0][0][0][0] if _each_cell else None
-                for _each_cell in m["subSystems"][0, 0]
+                each_cell[0][0][0][0] if each_cell else None
+                for each_cell in m["subSystems"][0, 0]
             ]
         # Other matlab files seem normal.
         else:
@@ -838,10 +837,10 @@ def from_mat_struct(
         if rxn_gene_rules:
             new_reaction.gene_reaction_rule = rxn_gene_rules[i]
         new_reactions.append(new_reaction)
-    mat_parse_annotations(new_reactions, m, _d_replace=D_REACTION)
+    mat_parse_annotations(new_reactions, m, d_replace=DICT_REACTION)
     # TODO - When cobrapy.notes are revised not be a dictionary (possibly when
     #  annotations are fully SBML compliant, revise this function.
-    mat_parse_notes(new_reactions, m, _d_replace=D_REACTION_NOTES)
+    mat_parse_notes(new_reactions, m, d_replace=DICT_REACTION_NOTES)
 
     csc = scipy_sparse.csc_matrix(m["S"][0, 0])
     for i in range(csc.shape[1]):
