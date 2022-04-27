@@ -63,7 +63,7 @@ def prune_unused_reactions(model: "Model") -> Tuple["Model", List["Reaction"]]:
 
 def knock_out_model_genes(
     model: "Model",
-    gene_list: Union[List["Gene"], Set["Gene"], List[str], Set[str]],
+    gene_list: Iterable[Union["Gene", int, str]],
 ) -> List["Reaction"]:
     """Disable the genes in `gene_list`.
 
@@ -81,13 +81,11 @@ def knock_out_model_genes(
 
     Returns
     -------
-    reaction_list: list[cobra.Reaction]
+    list[cobra.Reaction]
         A list of cobra.Reactions that had the bounds turned to zero.
     """
     orig_bounds = model.reactions.list_attr("bounds")
-    for gene in gene_list:
-        if isinstance(gene, str):
-            gene = model.genes.get_by_id(gene)
+    for gene in model.genes.get_by_any(set(gene_list)):
         gene.knock_out()
     new_bounds = model.reactions.list_attr("bounds")
     reaction_list = list()
@@ -125,7 +123,7 @@ def delete_model_genes(
         is not implemented (default False). Unused, ignored.
 
     .. deprecated :: 0.25
-        Use cobra.manipulation.delete_model_genes to simulate knockouts
+        Use cobra.manipulation.knock_out_model_genes to simulate knockouts
         and cobra.manipulation.remove_genes to remove genes from
         the model.
 
