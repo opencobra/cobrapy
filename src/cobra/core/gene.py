@@ -18,7 +18,7 @@ from ast import (
 from ast import parse as ast_parse
 from copy import deepcopy
 from keyword import kwlist
-from typing import TYPE_CHECKING, FrozenSet, Iterable, Optional, Set, Tuple, Union
+from typing import FrozenSet, Iterable, Optional, Set, Tuple, Union
 from warnings import warn
 
 import sympy.logic.boolalg as spl
@@ -29,9 +29,6 @@ from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
 
-
-if TYPE_CHECKING:
-    from cobra import Model
 
 # TODO - When https://github.com/symengine/symengine.py/issues/334 is resolved,
 #  change sympy.Symbol (above in imports) to optlang.symbolics.Symbol

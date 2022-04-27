@@ -65,7 +65,7 @@ def knock_out_model_genes(
     model: "Model",
     gene_list: Union[List["Gene"], Set["Gene"], List[str], Set[str]],
 ) -> List["Reaction"]:
-    """ "Disable the genes in `gene_list`.
+    """Disable the genes in `gene_list`.
 
     It sets the bounds to "zero" for reactions catalysed by the genes in
     `gene_list` if deleting the genes would stop the reactions from proceeding.
