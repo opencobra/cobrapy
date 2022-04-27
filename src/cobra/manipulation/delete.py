@@ -2,7 +2,7 @@
 import logging
 from ast import And, BoolOp, Name, NodeTransformer
 from functools import partial
-from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Iterable, List, Optional, Set, Tuple, Union
 
 import numpy as np
 
@@ -85,7 +85,7 @@ def knock_out_model_genes(
         A list of cobra.Reactions that had the bounds turned to zero.
     """
     orig_bounds = model.reactions.list_attr("bounds")
-    for gene in model.genes.get_by_any(set(gene_list)):
+    for gene in model.genes.get_by_any(gene_list):
         gene.knock_out()
     new_bounds = model.reactions.list_attr("bounds")
     reaction_list = list()
