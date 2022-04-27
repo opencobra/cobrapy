@@ -35,7 +35,7 @@ MET_MATLAB_TO_PROVIDERS = {
     "metUniPathway": "unipathway.compound",
     "metPubChemID": "pubchem.compound",
     "metPubChemSubstance": "pubchem.substance",
-    "metCHEBIID": "CHEBI",
+    "metCHEBIID": "chebi",
     "metMetaNetXID": "metanetx.chemical",
     "metSEEDID": "seed.compound",
     "metBiGGID": "bigg.metabolite",
@@ -44,9 +44,9 @@ MET_MATLAB_TO_PROVIDERS = {
     "metLIPIDMAPSID": "lipidmaps",
     "metReactomeID": "reactome",
     "metSABIORKID": "sabiork.compound",
-    "metSLMID": "SLM",
+    "metSLMID": "slm",
     "metSMILES": "SMILES",
-    "metSBOTerm": "SBO",
+    "metSBOTerms": "sbo",
     "metCasNumber": "cas",
 }
 
@@ -73,7 +73,7 @@ RXN_MATLAB_TO_PROVIDERS = {
     "rxnReactomeID": "reactome",
     "rxnSABIORKID": "sabiork.reaction",
     "rxnBRENDAID": "brenda",
-    "rxnSBOTerms": "SBO",
+    "rxnSBOTerms": "sbo",
 }
 
 RXN_PROVIDERS_TO_MATLAB = {
@@ -141,6 +141,7 @@ _punctuation_re = re.compile(r"^[;,.'\"]+$")
 _double_punctuation_re = re.compile(r"[;,.'\"]{2,}")
 _ec_re = re.compile(r"([\d\-]+.[\d\-]+.[\d\-]+.[\d-]+)")
 _chebi_re = re.compile(r"\D*(\d+),?")
+_sbo_re = re.compile(r"\D*(\d+),?")
 
 
 def _get_id_compartment(_id: str) -> str:
@@ -381,6 +382,18 @@ def mat_parse_annotations(
         elif mat_key == "metCHEBIID".casefold():
             annotations[name] = _cell_to_str_list(
                 mat_struct[caseunfold[mat_key]][0, 0], None, _chebi_re, "CHEBI:"
+            )
+        elif mat_key == "metSBOTerms".casefold():
+            annotations[name] = _cell_to_str_list(
+                mat_struct[caseunfold[mat_key]][0, 0], None, _sbo_re, "SBO:"
+            )
+        elif mat_key == "rxnSBOTerms".casefold():
+            annotations[name] = _cell_to_str_list(
+                mat_struct[caseunfold[mat_key]][0, 0], None, _sbo_re, "SBO:"
+            )
+        elif mat_key == "metSLMID".casefold():
+            annotations[name] = _cell_to_str_list(
+                mat_struct[caseunfold[mat_key]][0, 0], None, _sbo_re, "SLM:"
             )
         else:
             # If it something else, which may have commas, turn it into a list
@@ -629,7 +642,23 @@ def create_mat_dict(model: Model) -> OrderedDict:
     mat["rxnNames"] = _cell(rxns.list_attr("name"))
     annotations_to_mat(mat, rxns.list_attr("annotation"), DICT_REACTION_REV)
     notes_to_mat(mat, rxns.list_attr("notes"), DICT_REACTION_NOTES_REV)
-    mat["subSystems"] = _cell(rxns.list_attr("subsystem"))  # TODO - output groups
+    rxn_subsystems = _cell(rxns.list_attr("subsystem"))
+    group_ids = model.groups.list_attr('id')
+    group_members_list = model.groups.list_attr('members')
+    if set(rxn_subsystems) == {''} and set(group_ids) != {''}:
+        subsystems = [[] for rxn in rxns]
+        for group_id, group_members in zip(group_ids, group_members_list):
+            group = model.groups.get_by_id(group_id)
+            if group.kind == 'partonomy':
+                for member in group_members:
+                    if isinstance(member, Reaction):
+                        rxn_ind = model.reactions.index(member)
+                        # noinspection PyTypeChecker
+                        subsystems[rxn_ind].append(group_id)
+        mat["subSystems"] = _cell([', '.join(subsystem_list)
+                                   for subsystem_list in subsystems])
+    else:
+        mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
     stoich_mat = create_stoichiometric_matrix(model)
     mat["S"] = stoich_mat if stoich_mat is not None else [[]]
     # multiply by 1 to convert to float, working around scipy bug
@@ -705,7 +734,7 @@ def from_mat_struct(
             new_names[new_names.index(old_field)] = new_field
             m.dtype.names = new_names
 
-    model = Model()
+    model = Model() # TODO - Model() creates models with name=None, while SBML creates them with name=''
     if model_id is not None:
         model.id = model_id
     elif "description" in m.dtype.names:

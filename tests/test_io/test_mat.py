@@ -214,7 +214,6 @@ def test_compare_xml_to_written_matlab_model(
 
     """
     xml_model = read_sbml_model(str((data_directory / xml_file).resolve()))
-    _fix_xml_annotation_to_identifiers(xml_model)
     mat_output_file = tmp_path / xml_file.replace(".xml", ".mat")
     save_matlab_model(
         xml_model, str(mat_output_file.resolve())

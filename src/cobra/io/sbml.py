@@ -726,7 +726,7 @@ def _sbml_to_model(
         ex_rid = f"EX_{met.id}"
         ex_reaction = Reaction(ex_rid)
         ex_reaction.name = ex_rid
-        ex_reaction.annotation = {"sbo": SBO_EXCHANGE_REACTION}
+        ex_reaction.annotation = {"sbo": [SBO_EXCHANGE_REACTION]}
         ex_reaction.lower_bound = config.lower_bound
         ex_reaction.upper_bound = config.upper_bound
         LOGGER.warning(
@@ -829,7 +829,7 @@ def _sbml_to_model(
         if f_replace and F_REACTION in f_replace:
             rid = f_replace[F_REACTION](rid)
         cobra_reaction = Reaction(rid)
-        cobra_reaction.name = reaction.getName()
+        cobra_reaction.name = reaction.getName().strip()
         cobra_reaction.annotation = _parse_annotations(reaction)
         cobra_reaction.notes = _parse_notes_dict(reaction)
 
@@ -1110,6 +1110,7 @@ def _sbml_to_model(
         for cobra_reaction in cobra_model.reactions:
             if "SUBSYSTEM" in cobra_reaction.notes:
                 g_name = cobra_reaction.notes["SUBSYSTEM"]
+                # partonomy?
                 if g_name in groups_dict:
                     groups_dict[g_name].append(cobra_reaction)
                 else:
@@ -1118,7 +1119,7 @@ def _sbml_to_model(
         for gid, cobra_members in groups_dict.items():
             if f_replace and F_GROUP in f_replace:
                 gid = f_replace[F_GROUP](gid)
-            cobra_group = Group(gid, name=gid, kind="collection")
+            cobra_group = Group(gid, name=gid, kind="partonomy")
             cobra_group.add_members(cobra_members)
             groups.append(cobra_group)
 
@@ -1776,7 +1777,7 @@ def _parse_annotations(sbase: libsbml.SBase) -> dict:
     # SBO term
     if sbase.isSetSBOTerm():
         # FIXME: correct handling of annotations
-        annotation["sbo"] = sbase.getSBOTermID()
+        annotation["sbo"] = [sbase.getSBOTermID()]
 
     # RDF annotation
     cvterms = sbase.getCVTerms()
@@ -1798,12 +1799,10 @@ def _parse_annotations(sbase: libsbml.SBase) -> dict:
             if provider in annotation:
                 if isinstance(annotation[provider], str):
                     annotation[provider] = [annotation[provider]]
-                # FIXME: use a list
                 if identifier not in annotation[provider]:
                     annotation[provider].append(identifier)
             else:
-                # FIXME: always in list
-                annotation[provider] = identifier
+                annotation[provider] = [identifier]
 
     return annotation
 
