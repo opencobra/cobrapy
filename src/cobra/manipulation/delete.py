@@ -92,7 +92,10 @@ def knock_out_model_genes(
     new_bounds = model.reactions.list_attr("bounds")
     reaction_list = list()
     for i, rxn in enumerate(model.reactions):
-        if not np.isclose(orig_bounds[i], new_bounds[i]):
+        if not (
+            np.isclose(orig_bounds[i][0], new_bounds[i][0])
+            and np.isclose(orig_bounds[i][1], new_bounds[i][1])
+        ):
             reaction_list.append(rxn)
     return reaction_list
 
