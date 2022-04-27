@@ -1110,7 +1110,6 @@ def _sbml_to_model(
         for cobra_reaction in cobra_model.reactions:
             if "SUBSYSTEM" in cobra_reaction.notes:
                 g_name = cobra_reaction.notes["SUBSYSTEM"]
-                # partonomy?
                 if g_name in groups_dict:
                     groups_dict[g_name].append(cobra_reaction)
                 else:
@@ -1120,6 +1119,7 @@ def _sbml_to_model(
             if f_replace and F_GROUP in f_replace:
                 gid = f_replace[F_GROUP](gid)
             cobra_group = Group(gid, name=gid, kind="partonomy")
+            cobra_group.annotation["sbo"] = "SBO:0000633"
             cobra_group.add_members(cobra_members)
             groups.append(cobra_group)
 

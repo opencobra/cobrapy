@@ -26,9 +26,9 @@
         },
         {
             "annotation": {
-                "ncbigi": [
-                    "GI:1208453",
-                    "GI:1652654"
+                "ncbiprotein": [
+                    "1208453",
+                    "1652654"
                 ]
             },
             "id": "b1676",
@@ -84,7 +84,9 @@
         },
         {
             "annotation": {
-                "ncbigi": "GI:1653839"
+                "ncbiprotein": [
+                    "1653839"
+                ]
             },
             "id": "b2779",
             "name": "eno"
@@ -95,7 +97,9 @@
         },
         {
             "annotation": {
-                "ncbigi": "GI:1653609"
+                "ncbiprotein": [
+                    "1653609"
+                ]
             },
             "id": "b2926",
             "name": "pgk"
@@ -114,9 +118,9 @@
         },
         {
             "annotation": {
-                "ncbigi": [
-                    "GI:1006614",
-                    "GI:1651919"
+                "ncbiprotein": [
+                    "1006614",
+                    "1651919"
                 ]
             },
             "id": "b3916",
@@ -128,7 +132,9 @@
         },
         {
             "annotation": {
-                "ncbigi": "GI:1653253"
+                "ncbiprotein": [
+                    "1653253"
+                ]
             },
             "id": "b4025",
             "name": "pgi"
@@ -146,8 +152,12 @@
     "metabolites": [
         {
             "annotation": {
-                "bigg.metabolite": "13dpg",
-                "biocyc": "DPG",
+                "bigg.metabolite": [
+                    "13dpg"
+                ],
+                "biocyc": [
+                    "DPG"
+                ],
                 "chebi": [
                     "CHEBI:16001",
                     "CHEBI:1658",
@@ -155,12 +165,24 @@
                     "CHEBI:57604",
                     "CHEBI:11881"
                 ],
-                "hmdb": "HMDB01270",
-                "kegg.compound": "C00236",
-                "pubchem.substance": "3535",
-                "reactome": "REACT_29800",
-                "seed.compound": "cpd00203",
-                "unipathway.compound": "UPC00236"
+                "hmdb": [
+                    "HMDB01270"
+                ],
+                "kegg.compound": [
+                    "C00236"
+                ],
+                "pubchem.substance": [
+                    "3535"
+                ],
+                "reactome": [
+                    "REACT_29800"
+                ],
+                "seed.compound": [
+                    "cpd00203"
+                ],
+                "unipathway.compound": [
+                    "UPC00236"
+                ]
             },
             "charge": -4,
             "compartment": "c",
@@ -170,8 +192,12 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "2pg",
-                "biocyc": "2-PG",
+                "bigg.metabolite": [
+                    "2pg"
+                ],
+                "biocyc": [
+                    "2-PG"
+                ],
                 "chebi": [
                     "CHEBI:1267",
                     "CHEBI:58289",
@@ -186,11 +212,21 @@
                     "HMDB03391",
                     "HMDB00362"
                 ],
-                "kegg.compound": "C00631",
-                "pubchem.substance": "3904",
-                "reactome": "REACT_30485",
-                "seed.compound": "cpd00482",
-                "unipathway.compound": "UPC00631"
+                "kegg.compound": [
+                    "C00631"
+                ],
+                "pubchem.substance": [
+                    "3904"
+                ],
+                "reactome": [
+                    "REACT_30485"
+                ],
+                "seed.compound": [
+                    "cpd00482"
+                ],
+                "unipathway.compound": [
+                    "UPC00631"
+                ]
             },
             "charge": -3,
             "compartment": "c",
@@ -200,8 +236,12 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "3pg",
-                "biocyc": "G3P",
+                "bigg.metabolite": [
+                    "3pg"
+                ],
+                "biocyc": [
+                    "G3P"
+                ],
                 "chebi": [
                     "CHEBI:40016",
                     "CHEBI:58272",
@@ -217,14 +257,22 @@
                     "CHEBI:17794",
                     "CHEBI:24345"
                 ],
-                "hmdb": "HMDB00807",
+                "hmdb": [
+                    "HMDB00807"
+                ],
                 "kegg.compound": [
                     "C00197",
                     "C00597"
                 ],
-                "pubchem.substance": "3497",
-                "reactome": "REACT_29728",
-                "seed.compound": "cpd00169",
+                "pubchem.substance": [
+                    "3497"
+                ],
+                "reactome": [
+                    "REACT_29728"
+                ],
+                "seed.compound": [
+                    "cpd00169"
+                ],
                 "unipathway.compound": [
                     "UPC00597",
                     "UPC00197"
@@ -238,7 +286,9 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "adp",
+                "bigg.metabolite": [
+                    "adp"
+                ],
                 "biocyc": [
                     "ADP",
                     "ADP-GROUP"
@@ -254,10 +304,18 @@
                     "CHEBI:40553",
                     "CHEBI:456216"
                 ],
-                "hmdb": "HMDB01341",
-                "kegg.compound": "C00008",
-                "kegg.glycan": "G11113",
-                "pubchem.substance": "3310",
+                "hmdb": [
+                    "HMDB01341"
+                ],
+                "kegg.compound": [
+                    "C00008"
+                ],
+                "kegg.glycan": [
+                    "G11113"
+                ],
+                "pubchem.substance": [
+                    "3310"
+                ],
                 "reactome": [
                     "REACT_190072",
                     "REACT_481002",
@@ -271,8 +329,12 @@
                     "REACT_114565",
                     "REACT_429153"
                 ],
-                "seed.compound": "cpd00008",
-                "unipathway.compound": "UPC00008"
+                "seed.compound": [
+                    "cpd00008"
+                ],
+                "unipathway.compound": [
+                    "UPC00008"
+                ]
             },
             "charge": -3,
             "compartment": "c",
@@ -282,8 +344,12 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "atp",
-                "biocyc": "ATP",
+                "bigg.metabolite": [
+                    "atp"
+                ],
+                "biocyc": [
+                    "ATP"
+                ],
                 "cas": [
                     "56-65-5"
                 ],
@@ -298,10 +364,18 @@
                     "CHEBI:10841",
                     "CHEBI:2359"
                 ],
-                "hmdb": "HMDB00538",
-                "kegg.compound": "C00002",
-                "kegg.drug": "D08646",
-                "pubchem.substance": "3304",
+                "hmdb": [
+                    "HMDB00538"
+                ],
+                "kegg.compound": [
+                    "C00002"
+                ],
+                "kegg.drug": [
+                    "D08646"
+                ],
+                "pubchem.substance": [
+                    "3304"
+                ],
                 "reactome": [
                     "REACT_190078",
                     "REACT_113592",
@@ -312,8 +386,12 @@
                     "REACT_139836",
                     "REACT_211579"
                 ],
-                "seed.compound": "cpd00002",
-                "unipathway.compound": "UPC00002"
+                "seed.compound": [
+                    "cpd00002"
+                ],
+                "unipathway.compound": [
+                    "UPC00002"
+                ]
             },
             "charge": -4,
             "compartment": "c",
@@ -323,8 +401,12 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "dhap",
-                "biocyc": "DIHYDROXY-ACETONE-PHOSPHATE",
+                "bigg.metabolite": [
+                    "dhap"
+                ],
+                "biocyc": [
+                    "DIHYDROXY-ACETONE-PHOSPHATE"
+                ],
                 "cas": [
                     "57-04-5"
                 ],
@@ -341,15 +423,23 @@
                     "HMDB01473",
                     "HMDB11735"
                 ],
-                "kegg.compound": "C00111",
-                "pubchem.substance": "3411",
+                "kegg.compound": [
+                    "C00111"
+                ],
+                "pubchem.substance": [
+                    "3411"
+                ],
                 "reactome": [
                     "REACT_188451",
                     "REACT_75970",
                     "REACT_390404"
                 ],
-                "seed.compound": "cpd00095",
-                "unipathway.compound": "UPC00111"
+                "seed.compound": [
+                    "cpd00095"
+                ],
+                "unipathway.compound": [
+                    "UPC00111"
+                ]
             },
             "charge": -2,
             "compartment": "c",
@@ -359,8 +449,12 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "f6p",
-                "biocyc": "FRUCTOSE-6P",
+                "bigg.metabolite": [
+                    "f6p"
+                ],
+                "biocyc": [
+                    "FRUCTOSE-6P"
+                ],
                 "cas": [
                     "643-13-0"
                 ],
@@ -375,13 +469,19 @@
                     "CHEBI:42378",
                     "CHEBI:22768"
                 ],
-                "hmdb": "HMDB03971",
+                "hmdb": [
+                    "HMDB03971"
+                ],
                 "kegg.compound": [
                     "C05345",
                     "C00085"
                 ],
-                "pubchem.substance": "3385",
-                "seed.compound": "cpd00072",
+                "pubchem.substance": [
+                    "3385"
+                ],
+                "seed.compound": [
+                    "cpd00072"
+                ],
                 "unipathway.compound": [
                     "UPC05345",
                     "UPC00085"
@@ -395,8 +495,12 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "fdp",
-                "biocyc": "FRUCTOSE-16-DIPHOSPHATE",
+                "bigg.metabolite": [
+                    "fdp"
+                ],
+                "biocyc": [
+                    "FRUCTOSE-16-DIPHOSPHATE"
+                ],
                 "cas": [
                     "488-69-7"
                 ],
@@ -418,9 +522,15 @@
                     "C05378",
                     "C00354"
                 ],
-                "pubchem.substance": "3647",
-                "seed.compound": "cpd00290",
-                "unipathway.compound": "UPC00354"
+                "pubchem.substance": [
+                    "3647"
+                ],
+                "seed.compound": [
+                    "cpd00290"
+                ],
+                "unipathway.compound": [
+                    "UPC00354"
+                ]
             },
             "charge": -4,
             "compartment": "c",
@@ -430,7 +540,9 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "g3p",
+                "bigg.metabolite": [
+                    "g3p"
+                ],
                 "cas": [
                     "142-10-9"
                 ],
@@ -440,13 +552,19 @@
                     "CHEBI:5446",
                     "CHEBI:58027"
                 ],
-                "hmdb": "HMDB01112",
+                "hmdb": [
+                    "HMDB01112"
+                ],
                 "kegg.compound": [
                     "C00661",
                     "C00118"
                 ],
-                "pubchem.substance": "3930",
-                "seed.compound": "cpd00102",
+                "pubchem.substance": [
+                    "3930"
+                ],
+                "seed.compound": [
+                    "cpd00102"
+                ],
                 "unipathway.compound": [
                     "UPC00661",
                     "UPC00118"
@@ -460,7 +578,9 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "g6p",
+                "bigg.metabolite": [
+                    "g6p"
+                ],
                 "biocyc": [
                     "D-glucose-6-phosphate",
                     "GLC-6-P"
@@ -488,10 +608,18 @@
                     "C00092",
                     "C01172"
                 ],
-                "pubchem.substance": "3392",
-                "reactome": "REACT_1629756",
-                "seed.compound": "cpd00079",
-                "unipathway.compound": "UPC00092"
+                "pubchem.substance": [
+                    "3392"
+                ],
+                "reactome": [
+                    "REACT_1629756"
+                ],
+                "seed.compound": [
+                    "cpd00079"
+                ],
+                "unipathway.compound": [
+                    "UPC00092"
+                ]
             },
             "charge": -2,
             "compartment": "c",
@@ -501,12 +629,18 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "glc__D",
+                "bigg.metabolite": [
+                    "glc__D"
+                ],
                 "cas": [
                     "50-99-7"
                 ],
-                "kegg.compound": "C00031",
-                "pubchem.substance": "3333"
+                "kegg.compound": [
+                    "C00031"
+                ],
+                "pubchem.substance": [
+                    "3333"
+                ]
             },
             "charge": 0,
             "compartment": "e",
@@ -516,7 +650,9 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "h2o",
+                "bigg.metabolite": [
+                    "h2o"
+                ],
                 "biocyc": [
                     "WATER",
                     "OH",
@@ -570,7 +706,9 @@
                     "D06322",
                     "D03703"
                 ],
-                "pubchem.substance": "3303",
+                "pubchem.substance": [
+                    "3303"
+                ],
                 "reactome": [
                     "REACT_947593",
                     "REACT_189422",
@@ -601,7 +739,9 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "h2o",
+                "bigg.metabolite": [
+                    "h2o"
+                ],
                 "biocyc": [
                     "WATER",
                     "OH",
@@ -655,7 +795,9 @@
                     "D06322",
                     "D03703"
                 ],
-                "pubchem.substance": "3303",
+                "pubchem.substance": [
+                    "3303"
+                ],
                 "reactome": [
                     "REACT_947593",
                     "REACT_189422",
@@ -686,8 +828,12 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "h",
-                "biocyc": "PROTON",
+                "bigg.metabolite": [
+                    "h"
+                ],
+                "biocyc": [
+                    "PROTON"
+                ],
                 "cas": [
                     "12408-02-5"
                 ],
@@ -698,8 +844,12 @@
                     "CHEBI:13357",
                     "CHEBI:5584"
                 ],
-                "kegg.compound": "C00080",
-                "pubchem.substance": "3380",
+                "kegg.compound": [
+                    "C00080"
+                ],
+                "pubchem.substance": [
+                    "3380"
+                ],
                 "reactome": [
                     "REACT_194688",
                     "REACT_425978",
@@ -721,8 +871,12 @@
                     "REACT_351626",
                     "REACT_427899"
                 ],
-                "seed.compound": "cpd00067",
-                "unipathway.compound": "UPC00080"
+                "seed.compound": [
+                    "cpd00067"
+                ],
+                "unipathway.compound": [
+                    "UPC00080"
+                ]
             },
             "charge": 1,
             "compartment": "c",
@@ -732,8 +886,12 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "h",
-                "biocyc": "PROTON",
+                "bigg.metabolite": [
+                    "h"
+                ],
+                "biocyc": [
+                    "PROTON"
+                ],
                 "cas": [
                     "12408-02-5"
                 ],
@@ -744,8 +902,12 @@
                     "CHEBI:13357",
                     "CHEBI:5584"
                 ],
-                "kegg.compound": "C00080",
-                "pubchem.substance": "3380",
+                "kegg.compound": [
+                    "C00080"
+                ],
+                "pubchem.substance": [
+                    "3380"
+                ],
                 "reactome": [
                     "REACT_194688",
                     "REACT_425978",
@@ -767,8 +929,12 @@
                     "REACT_351626",
                     "REACT_427899"
                 ],
-                "seed.compound": "cpd00067",
-                "unipathway.compound": "UPC00080"
+                "seed.compound": [
+                    "cpd00067"
+                ],
+                "unipathway.compound": [
+                    "UPC00080"
+                ]
             },
             "charge": 1,
             "compartment": "e",
@@ -778,8 +944,12 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "lac__D",
-                "biocyc": "META:D-LACTATE",
+                "bigg.metabolite": [
+                    "lac__D"
+                ],
+                "biocyc": [
+                    "META:D-LACTATE"
+                ],
                 "chebi": [
                     "CHEBI:11001",
                     "CHEBI:16004",
@@ -793,9 +963,15 @@
                     "HMDB00171",
                     "HMDB01311"
                 ],
-                "kegg.compound": "C00256",
-                "metanetx.chemical": "MNXM285",
-                "seed.compound": "cpd00221"
+                "kegg.compound": [
+                    "C00256"
+                ],
+                "metanetx.chemical": [
+                    "MNXM285"
+                ],
+                "seed.compound": [
+                    "cpd00221"
+                ]
             },
             "charge": -1,
             "compartment": "c",
@@ -805,8 +981,12 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "lac__D",
-                "biocyc": "META:D-LACTATE",
+                "bigg.metabolite": [
+                    "lac__D"
+                ],
+                "biocyc": [
+                    "META:D-LACTATE"
+                ],
                 "chebi": [
                     "CHEBI:11001",
                     "CHEBI:16004",
@@ -820,9 +1000,15 @@
                     "HMDB00171",
                     "HMDB01311"
                 ],
-                "kegg.compound": "C00256",
-                "metanetx.chemical": "MNXM285",
-                "seed.compound": "cpd00221"
+                "kegg.compound": [
+                    "C00256"
+                ],
+                "metanetx.chemical": [
+                    "MNXM285"
+                ],
+                "seed.compound": [
+                    "cpd00221"
+                ]
             },
             "charge": -1,
             "compartment": "e",
@@ -832,8 +1018,12 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "nad",
-                "biocyc": "NAD",
+                "bigg.metabolite": [
+                    "nad"
+                ],
+                "biocyc": [
+                    "NAD"
+                ],
                 "cas": [
                     "53-84-9"
                 ],
@@ -849,10 +1039,18 @@
                     "CHEBI:57540",
                     "CHEBI:44281"
                 ],
-                "hmdb": "HMDB00902",
-                "kegg.compound": "C00003",
-                "kegg.drug": "D00002",
-                "pubchem.substance": "3305",
+                "hmdb": [
+                    "HMDB00902"
+                ],
+                "kegg.compound": [
+                    "C00003"
+                ],
+                "kegg.drug": [
+                    "D00002"
+                ],
+                "pubchem.substance": [
+                    "3305"
+                ],
                 "reactome": [
                     "REACT_192307",
                     "REACT_29360",
@@ -860,8 +1058,12 @@
                     "REACT_194653",
                     "REACT_113526"
                 ],
-                "seed.compound": "cpd00003",
-                "unipathway.compound": "UPC00003"
+                "seed.compound": [
+                    "cpd00003"
+                ],
+                "unipathway.compound": [
+                    "UPC00003"
+                ]
             },
             "charge": -1,
             "compartment": "c",
@@ -871,8 +1073,12 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "nadh",
-                "biocyc": "NADH",
+                "bigg.metabolite": [
+                    "nadh"
+                ],
+                "biocyc": [
+                    "NADH"
+                ],
                 "cas": [
                     "58-68-4"
                 ],
@@ -885,17 +1091,27 @@
                     "CHEBI:57945",
                     "CHEBI:13396"
                 ],
-                "hmdb": "HMDB01487",
-                "kegg.compound": "C00004",
-                "pubchem.substance": "3306",
+                "hmdb": [
+                    "HMDB01487"
+                ],
+                "kegg.compound": [
+                    "C00004"
+                ],
+                "pubchem.substance": [
+                    "3306"
+                ],
                 "reactome": [
                     "REACT_192305",
                     "REACT_73473",
                     "REACT_194697",
                     "REACT_29362"
                 ],
-                "seed.compound": "cpd00004",
-                "unipathway.compound": "UPC00004"
+                "seed.compound": [
+                    "cpd00004"
+                ],
+                "unipathway.compound": [
+                    "UPC00004"
+                ]
             },
             "charge": -2,
             "compartment": "c",
@@ -905,8 +1121,12 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "pep",
-                "biocyc": "PHOSPHO-ENOL-PYRUVATE",
+                "bigg.metabolite": [
+                    "pep"
+                ],
+                "biocyc": [
+                    "PHOSPHO-ENOL-PYRUVATE"
+                ],
                 "cas": [
                     "138-08-9"
                 ],
@@ -920,15 +1140,25 @@
                     "CHEBI:58702",
                     "CHEBI:18021"
                 ],
-                "hmdb": "HMDB00263",
-                "kegg.compound": "C00074",
-                "pubchem.substance": "3374",
+                "hmdb": [
+                    "HMDB00263"
+                ],
+                "kegg.compound": [
+                    "C00074"
+                ],
+                "pubchem.substance": [
+                    "3374"
+                ],
                 "reactome": [
                     "REACT_29492",
                     "REACT_372364"
                 ],
-                "seed.compound": "cpd00061",
-                "unipathway.compound": "UPC00074"
+                "seed.compound": [
+                    "cpd00061"
+                ],
+                "unipathway.compound": [
+                    "UPC00074"
+                ]
             },
             "charge": -3,
             "compartment": "c",
@@ -938,7 +1168,9 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "pi",
+                "bigg.metabolite": [
+                    "pi"
+                ],
                 "biocyc": [
                     "Pi",
                     "PHOSPHATE-GROUP",
@@ -973,14 +1205,20 @@
                     "CHEBI:39745",
                     "CHEBI:24838"
                 ],
-                "hmdb": "HMDB02142",
+                "hmdb": [
+                    "HMDB02142"
+                ],
                 "kegg.compound": [
                     "C13556",
                     "C13558",
                     "C00009"
                 ],
-                "kegg.drug": "D05467",
-                "pubchem.substance": "3311",
+                "kegg.drug": [
+                    "D05467"
+                ],
+                "pubchem.substance": [
+                    "3311"
+                ],
                 "reactome": [
                     "REACT_947590",
                     "REACT_109277",
@@ -995,7 +1233,9 @@
                     "cpd09463",
                     "cpd00009"
                 ],
-                "unipathway.compound": "UPC00009"
+                "unipathway.compound": [
+                    "UPC00009"
+                ]
             },
             "charge": -2,
             "compartment": "c",
@@ -1005,7 +1245,9 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "pi",
+                "bigg.metabolite": [
+                    "pi"
+                ],
                 "biocyc": [
                     "Pi",
                     "PHOSPHATE-GROUP",
@@ -1040,14 +1282,20 @@
                     "CHEBI:39745",
                     "CHEBI:24838"
                 ],
-                "hmdb": "HMDB02142",
+                "hmdb": [
+                    "HMDB02142"
+                ],
                 "kegg.compound": [
                     "C13556",
                     "C13558",
                     "C00009"
                 ],
-                "kegg.drug": "D05467",
-                "pubchem.substance": "3311",
+                "kegg.drug": [
+                    "D05467"
+                ],
+                "pubchem.substance": [
+                    "3311"
+                ],
                 "reactome": [
                     "REACT_947590",
                     "REACT_109277",
@@ -1062,7 +1310,9 @@
                     "cpd09463",
                     "cpd00009"
                 ],
-                "unipathway.compound": "UPC00009"
+                "unipathway.compound": [
+                    "UPC00009"
+                ]
             },
             "charge": -2,
             "compartment": "e",
@@ -1072,8 +1322,12 @@
         },
         {
             "annotation": {
-                "bigg.metabolite": "pyr",
-                "biocyc": "PYRUVATE",
+                "bigg.metabolite": [
+                    "pyr"
+                ],
+                "biocyc": [
+                    "PYRUVATE"
+                ],
                 "cas": [
                     "127-17-3"
                 ],
@@ -1086,17 +1340,29 @@
                     "CHEBI:26466",
                     "CHEBI:26462"
                 ],
-                "hmdb": "HMDB00243",
-                "kegg.compound": "C00022",
-                "lipidmaps": "LMFA01060077",
-                "pubchem.substance": "3324",
+                "hmdb": [
+                    "HMDB00243"
+                ],
+                "kegg.compound": [
+                    "C00022"
+                ],
+                "lipidmaps": [
+                    "LMFA01060077"
+                ],
+                "pubchem.substance": [
+                    "3324"
+                ],
                 "reactome": [
                     "REACT_113557",
                     "REACT_389680",
                     "REACT_29398"
                 ],
-                "seed.compound": "cpd00020",
-                "unipathway.compound": "UPC00022"
+                "seed.compound": [
+                    "cpd00020"
+                ],
+                "unipathway.compound": [
+                    "UPC00022"
+                ]
             },
             "charge": -1,
             "compartment": "c",
@@ -1108,7 +1374,9 @@
     "reactions": [
         {
             "annotation": {
-                "bigg.reaction": "ATPM"
+                "bigg.reaction": [
+                    "ATPM"
+                ]
             },
             "gene_reaction_rule": "",
             "id": "ATPM",
@@ -1134,7 +1402,9 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "ENO"
+                "bigg.reaction": [
+                    "ENO"
+                ]
             },
             "gene_reaction_rule": "b2779",
             "id": "ENO",
@@ -1149,8 +1419,12 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "glc",
-                "sbo": "SBO:0000627"
+                "bigg.reaction": [
+                    "glc"
+                ],
+                "sbo": [
+                    "SBO:0000627"
+                ]
             },
             "gene_reaction_rule": "",
             "id": "EX_glc__D_e",
@@ -1163,8 +1437,12 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "h",
-                "sbo": "SBO:0000627"
+                "bigg.reaction": [
+                    "h"
+                ],
+                "sbo": [
+                    "SBO:0000627"
+                ]
             },
             "gene_reaction_rule": "",
             "id": "EX_h_e",
@@ -1177,8 +1455,12 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "lac__D",
-                "sbo": "SBO:0000627"
+                "bigg.reaction": [
+                    "lac__D"
+                ],
+                "sbo": [
+                    "SBO:0000627"
+                ]
             },
             "gene_reaction_rule": "",
             "id": "EX_lac__D_e",
@@ -1191,7 +1473,9 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "FBA"
+                "bigg.reaction": [
+                    "FBA"
+                ]
             },
             "gene_reaction_rule": "b1773 or b2097 or b2925",
             "id": "FBA",
@@ -1206,7 +1490,9 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "GAPD"
+                "bigg.reaction": [
+                    "GAPD"
+                ]
             },
             "gene_reaction_rule": "b1779",
             "id": "GAPD",
@@ -1224,7 +1510,9 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "GLCpts"
+                "bigg.reaction": [
+                    "GLCpts"
+                ]
             },
             "gene_reaction_rule": "(b2415 and b2417 and b1101 and b2416) or (b2415 and b2417 and b1621 and b2416) or (b2415 and b1818 and b1817 and b1819 and b2416)",
             "id": "GLCpts",
@@ -1240,7 +1528,9 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "H2Ot"
+                "bigg.reaction": [
+                    "H2Ot"
+                ]
             },
             "gene_reaction_rule": "b0875 or s0001",
             "id": "H2Ot",
@@ -1254,18 +1544,30 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "LDH_D",
-                "biocyc": "META:DLACTDEHYDROGNAD-RXN",
-                "ec-code": "1.1.1.28",
-                "kegg.reaction": "R00704",
-                "metanetx.reaction": "MNXR101037",
+                "bigg.reaction": [
+                    "LDH_D"
+                ],
+                "biocyc": [
+                    "META:DLACTDEHYDROGNAD-RXN"
+                ],
+                "ec-code": [
+                    "1.1.1.28"
+                ],
+                "kegg.reaction": [
+                    "R00704"
+                ],
+                "metanetx.reaction": [
+                    "MNXR101037"
+                ],
                 "rhea": [
                     "16369",
                     "16370",
                     "16371",
                     "16372"
                 ],
-                "sbo": "SBO:0000375"
+                "sbo": [
+                    "SBO:0000375"
+                ]
             },
             "gene_reaction_rule": "b2133 or b1380",
             "id": "LDH_D",
@@ -1282,7 +1584,9 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "PFK"
+                "bigg.reaction": [
+                    "PFK"
+                ]
             },
             "gene_reaction_rule": "b3916 or b1723",
             "id": "PFK",
@@ -1300,7 +1604,9 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "PGI"
+                "bigg.reaction": [
+                    "PGI"
+                ]
             },
             "gene_reaction_rule": "b4025",
             "id": "PGI",
@@ -1314,7 +1620,9 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "PGK"
+                "bigg.reaction": [
+                    "PGK"
+                ]
             },
             "gene_reaction_rule": "b2926",
             "id": "PGK",
@@ -1330,7 +1638,9 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "PGM"
+                "bigg.reaction": [
+                    "PGM"
+                ]
             },
             "gene_reaction_rule": "b4395 or b3612 or b0755",
             "id": "PGM",
@@ -1344,7 +1654,9 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "PIt2r"
+                "bigg.reaction": [
+                    "PIt2r"
+                ]
             },
             "gene_reaction_rule": "b2987 or b3493",
             "id": "PIt2r",
@@ -1360,7 +1672,9 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "PYK"
+                "bigg.reaction": [
+                    "PYK"
+                ]
             },
             "gene_reaction_rule": "b1854 or b1676",
             "id": "PYK",
@@ -1377,7 +1691,9 @@
         },
         {
             "annotation": {
-                "bigg.reaction": "TPI"
+                "bigg.reaction": [
+                    "TPI"
+                ]
             },
             "gene_reaction_rule": "b3919",
             "id": "TPI",

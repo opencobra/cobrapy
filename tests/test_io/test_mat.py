@@ -137,52 +137,6 @@ def test_read_rewrite_matlab_model(
     assert compare_models(raven_mat_model, raven_mat_model_reload) is None
 
 
-def _fix_xml_annotation_to_identifiers(model: "Model") -> None:
-    """Fix XML annotations to respect identifiers.org .
-
-    This function will fix the dict keys of annotations to match identifiers.org.
-    Eventually, the XML models should be fixed and cobrapy should be strict, but this is
-    part of SBML rewriting of annotations
-    see: https://github.com/opencobra/cobrapy/issues/684
-
-    It also changes met formulas from empty string to None (which is the default
-    when creating a metabolite with no fomula given) and strips spaces from reaction
-    names.
-
-    Parameters
-    ----------
-    model : cobra.Model
-        The model to fix.
-
-    """
-    for met in model.metabolites:
-        if met.formula == "":
-            met.formula = None
-        if len(met.annotation):
-            if "chebi" in met.annotation.keys():
-                met.annotation["CHEBI"] = met.annotation.pop("chebi")
-            if "sbo" in met.annotation.keys():
-                met.annotation["SBO"] = met.annotation.pop("sbo")
-            for annot, val in met.annotation.items():
-                if isinstance(val, str):
-                    met.annotation[annot] = [val]
-    for rxn in model.reactions:
-        rxn.name = rxn.name.strip()
-        if "sbo" in rxn.annotation.keys():
-            rxn.annotation["SBO"] = rxn.annotation.pop("sbo")
-        if len(rxn.annotation):
-            for annot, val in rxn.annotation.items():
-                if isinstance(val, str):
-                    rxn.annotation[annot] = [val]
-    for gene in model.genes:
-        if len(gene.annotation):
-            if "ncbigi" in gene.annotation.keys():
-                gene.annotation["ncbiprotein"] = gene.annotation.pop("ncbigi")
-            for annot, val in gene.annotation.items():
-                if isinstance(val, str):
-                    gene.annotation[annot] = [val]
-
-
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
 @pytest.mark.parametrize(
     "xml_file", ["e_coli_core.xml", "salmonella.xml", "mini_cobra.xml", "mini_fbc2.xml"]
@@ -190,7 +144,8 @@ def _fix_xml_annotation_to_identifiers(model: "Model") -> None:
 # When using a better comparison function, can run test on
 # "annotation.xml", "example_notes.xml", "fbc_ex1.xml", "fbc_ex2.xml", "validation.xml"
 # "example_notes.xml" contains a group and groups are not yet correctly exported to
-# matlab
+# matlab - can use it with better comparison function (and solved group export/import)
+# Maybe should ignore the field subsystem in reactions, or get SBML import to modify it.
 # "valid_annotation_output.xml" has reaction annotations in a metabolite, so they would
 # be thrown out by matlab
 def test_compare_xml_to_written_matlab_model(
@@ -337,6 +292,7 @@ def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) ->
         "bigg.reaction": ["LDH_D"],
         "ec-code": ["1.1.1.28"],
         "biocyc": ["META:DLACTDEHYDROGNAD-RXN"],
+        'sbo': ['SBO:0000375'],
     }
     for rxn in mat_model.reactions.list_attr("id"):
         assert (
@@ -349,6 +305,13 @@ def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) ->
         "lipidmaps": ["LMFA01060077"],
         "reactome": ["REACT_113557", "REACT_389680", "REACT_29398"],
         "biocyc": ["PYRUVATE"],
+        'chebi': ['CHEBI:15361',
+                  'CHEBI:14987',
+                  'CHEBI:8685',
+                  'CHEBI:32816',
+                  'CHEBI:45253',
+                  'CHEBI:26466',
+                  'CHEBI:26462'],
         "pubchem.substance": ["3324"],
         "bigg.metabolite": ["pyr"],
         "cas": ["127-17-3"],
