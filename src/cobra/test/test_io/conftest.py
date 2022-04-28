@@ -96,8 +96,9 @@ def compare_models(model_1, model_2):
     assert model_2.reactions[0]._model is model_2
 
     # gene -> model reference
-    assert model_1.genes[0]._model is model_1
-    assert model_2.genes[0]._model is model_2
+    if len(model_1.genes):
+        assert model_1.genes[0]._model is model_1
+        assert model_2.genes[0]._model is model_2
 
     # extra comparisons
     # assert model_1.compartments == model_2.compartments

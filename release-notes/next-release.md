@@ -6,6 +6,8 @@ Added knock_out_model_genes to simulate knock-outs, setting
 reaction bounds of effected reactions to zero and returning a list
 of reactions that were knocked-out. Replaces delete_model_genes and undelete_model_genes
 since it is context sensitive.
+Improve reading of matlab models, which will include metaboilte
+and reaction annotations.
 
 ## Fixes
 
@@ -35,3 +37,6 @@ removed find_gene_knockout_reactions from delete.py
 removed _find_gene_knockout_reactions_fast, 
 _gene_knockout_computation, _get_removed 
 from test_delete.py
+Removed pymatlib direct transfer of models to matlab process. 
+Please use save_matlab_model() and then read the model in matlab.
+
