@@ -4,7 +4,6 @@ from ast import And, BoolOp, Name, NodeTransformer
 from functools import partial
 from typing import TYPE_CHECKING, Iterable, List, Optional, Set, Tuple, Union
 
-import numpy as np
 
 from cobra.util import get_context
 
@@ -84,18 +83,12 @@ def knock_out_model_genes(
     list[cobra.Reaction]
         A list of cobra.Reactions that had the bounds turned to zero.
     """
-    orig_bounds = model.reactions.list_attr("bounds")
+    gene_list = model.genes.get_by_any(gene_list)
+    rxn_set = set()
     for gene in model.genes.get_by_any(gene_list):
         gene.knock_out()
-    new_bounds = model.reactions.list_attr("bounds")
-    reaction_list = list()
-    for i, rxn in enumerate(model.reactions):
-        if not (
-            np.isclose(orig_bounds[i][0], new_bounds[i][0])
-            and np.isclose(orig_bounds[i][1], new_bounds[i][1])
-        ):
-            reaction_list.append(rxn)
-    return reaction_list
+        rxn_set.update(gene.reactions)
+    return [rxn for rxn in list(rxn_set) if not rxn.functional]
 
 
 def delete_model_genes(

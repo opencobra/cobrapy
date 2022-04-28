@@ -89,7 +89,7 @@ def test_gene_knockout(salmonella: Model) -> None:
             salmonella.reactions.get_by_id(r) for r in dependent_reactions
         ]
         knocked_out_reactions = knock_out_model_genes(salmonella, gene_list)
-        assert expected_reactions == knocked_out_reactions
+        assert set(expected_reactions) == set(knocked_out_reactions)
     assert len(salmonella.genes) == orig_gene_len
     assert salmonella.reactions.list_attr("bounds") == orig_bounds
     with salmonella:
@@ -105,10 +105,10 @@ def test_gene_knockout(salmonella: Model) -> None:
     expected_reactions = [
         salmonella.reactions.get_by_id(r) for r in dependent_reactions
     ]
-    assert knocked_out_reactions == expected_reactions
+    assert set(knocked_out_reactions) == set(expected_reactions)
     knocked_out_reactions.extend(knock_out_model_genes(salmonella, ["STM4221"]))
     expected_reactions.append(salmonella.reactions.get_by_id("PGI"))
-    assert knocked_out_reactions == expected_reactions
+    assert set(knocked_out_reactions) == set(expected_reactions)
     # test computation when gene name is a subset of another
     test_model = Model()
     test_reaction_1 = Reaction("test1")
@@ -120,7 +120,7 @@ def test_gene_knockout(salmonella: Model) -> None:
     with test_model:
         knocked_out_reactions = knock_out_model_genes(test_model, ["eggs", "spam"])
         expected_reactions = [test_model.reactions.get_by_id("test1")]
-        assert knocked_out_reactions == expected_reactions
+        assert set(knocked_out_reactions) == set(expected_reactions)
     # test computation with nested boolean expression
     test_reaction_1.gene_reaction_rule = "g1 and g2 and (g3 or g4 or (g5 and g6))"
     with test_model:
