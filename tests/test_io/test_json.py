@@ -4,7 +4,7 @@ import json
 from os.path import join
 from typing import Any, Callable, Dict, Union
 
-import py.test
+import py.path
 import pytest
 from importlib_resources import files
 
@@ -39,7 +39,7 @@ def test_load_json_model(
 
 
 def test_save_json_model(
-    tmpdir: "py.test",
+    tmpdir: "py.path.local",
     mini_model: Model,
     json_schema_v1: Dict[str, Union[str, bool, Any]],
 ) -> None:

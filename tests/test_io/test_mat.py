@@ -16,10 +16,11 @@ except ImportError:
 
 
 if TYPE_CHECKING:
+    from typing import Callable
+
     import py.path
 
     from cobra import Model
-    from typing import Callable
 
 
 @pytest.fixture(scope="function")
@@ -83,7 +84,7 @@ def test_large_bounds(tmpdir: "py.path.local", model: "Model") -> None:
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
 def test_read_rewrite_matlab_model(
-    tmpdir: "py.path.local", data_directory: str
+    compare_models: Callable, tmpdir: "py.path.local", data_directory: str
 ) -> None:
     """Verify that rewritten matlab model is identical to original."""
     mini_mat_model = io.load_matlab_model(join(data_directory, "mini.mat"))
@@ -156,7 +157,10 @@ def _fix_xml_annotation_to_identifiers(model: "Model") -> None:
 # "valid_annotation_output.xml" has reaction annotations in a metabolite, so they would
 # be thrown out by matlab
 def test_compare_xml_to_written_matlab_model(
-    data_directory: str, tmpdir: "py.path.local", xml_file: str
+    compare_models: Callable,
+    data_directory: str,
+    tmpdir: "py.path.local",
+    xml_file: str,
 ) -> None:
     """Verify that xml rewritten as mat file is written and read correctly."""
     xml_model = io.read_sbml_model(join(data_directory, xml_file))
@@ -184,7 +188,7 @@ def test_fail_on_problematic_compartments(data_directory: str) -> None:
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
 def test_mat_model_with_long_compartment_ids(
-    data_directory: str, tmpdir: "py.path.local"
+    compare_models: Callable, data_directory: str, tmpdir: "py.path.local"
 ) -> None:
     """Test that long compartment IDs like "luSI" are correctly loaded"""
     model_compartments = io.load_matlab_model(join(data_directory, "compartments.mat"))
@@ -214,7 +218,9 @@ def test_mat_model_with_long_compartment_ids(
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
-def test_mat_model_with_no_genes(data_directory: str, tmpdir: "py.path.local") -> None:
+def test_mat_model_with_no_genes(
+    compare_models: Callable, data_directory: str, tmpdir: "py.path.local"
+) -> None:
     """Test that a model with no genes is loaded and reloaded correctly."""
     model_no_genes = io.load_matlab_model(
         join(data_directory, "cardiac_mit_glcuptake_atpmax.mat")
@@ -227,7 +233,7 @@ def test_mat_model_with_no_genes(data_directory: str, tmpdir: "py.path.local") -
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
-def test_mat_model_wrong_caps(data_directory: str) -> None:
+def test_mat_model_wrong_caps(compare_models: Callable, data_directory: str) -> None:
     """Check that wrong capitalization in matlab field names is processed correctly.
 
     See https://gist.github.com/akaviaLab/3dcb0eed6563a9d3d1e07198337300ac to create it

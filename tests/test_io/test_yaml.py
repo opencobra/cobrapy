@@ -4,7 +4,7 @@ import json
 from os.path import join
 from typing import Callable
 
-import py.test
+import py.path
 import pytest
 from ruamel.yaml import YAML
 
@@ -21,7 +21,7 @@ def test_load_yaml_model(
 
 
 @pytest.mark.xfail(reason="schema outdated")
-def test_save_yaml_model(tmpdir: "py.test", mini_model: Model) -> None:
+def test_save_yaml_model(tmpdir: "py.path.local", mini_model: Model) -> None:
     """Test the writing of YAML model."""
     jsonschema = pytest.importorskip("jsonschema")
     output_file = tmpdir.join("mini.yml")

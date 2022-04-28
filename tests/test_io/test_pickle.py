@@ -4,7 +4,7 @@ from os.path import join
 from pickle import dump, load
 from typing import Callable
 
-import py.test
+import py.path
 import pytest
 
 from cobra import Model
@@ -28,7 +28,9 @@ def test_read_pickle(
 
 
 @pytest.mark.parametrize("dump_function", [dump])
-def test_write_pickle(tmpdir: "py.test", mini_model: Model, dump_function: Callable):
+def test_write_pickle(
+    tmpdir: "py.path.local", mini_model: Model, dump_function: Callable
+):
     """Test the writing of model to pickle."""
     if dump_function is None:
         pytest.skip()
