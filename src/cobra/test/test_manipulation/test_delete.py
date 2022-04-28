@@ -97,6 +97,18 @@ def test_gene_knockout(salmonella: Model) -> None:
         knocked_out_reactions = knock_out_model_genes(salmonella, ["STM4221"])
         assert expected_reactions == knocked_out_reactions
     with salmonella:
+        expected_reactions = [salmonella.reactions.get_by_id("PGI")]
+        knocked_out_reactions = knock_out_model_genes(
+            salmonella, [salmonella.genes.get_by_id("STM4221")]
+        )
+        assert expected_reactions == knocked_out_reactions
+    with salmonella:
+        expected_reactions = [salmonella.reactions.get_by_id("PGI")]
+        knocked_out_reactions = knock_out_model_genes(
+            salmonella, [salmonella.genes.index("STM4221")]
+        )
+        assert expected_reactions == knocked_out_reactions
+    with salmonella:
         expected_reactions = [salmonella.reactions.get_by_id("4PEPTabcpp")]
         knocked_out_reactions = knock_out_model_genes(salmonella, ["STM1746.S"])
         assert expected_reactions == knocked_out_reactions

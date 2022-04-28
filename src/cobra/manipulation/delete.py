@@ -82,12 +82,11 @@ def knock_out_model_genes(
     list[cobra.Reaction]
         A list of cobra.Reactions that had the bounds turned to zero.
     """
-    gene_list = model.genes.get_by_any(gene_list)
     rxn_set = set()
     for gene in model.genes.get_by_any(gene_list):
         gene.knock_out()
         rxn_set.update(gene.reactions)
-    return [rxn for rxn in list(rxn_set) if not rxn.functional]
+    return [rxn for rxn in rxn_set if not rxn.functional]
 
 
 def delete_model_genes(
