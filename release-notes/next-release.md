@@ -2,6 +2,9 @@
 
 ## New features
 
+Improve reading of matlab models, which will include metaboilte
+and reaction annotations.
+
 ## Fixes
 
 `model.copy()` will now correctly copy GPRs.
@@ -22,3 +25,6 @@ test_gpr_that_needs_two_replacements()
 ## Deprecated features
 
 ## Backwards incompatible changes
+
+Removed pymatlib direct transfer of models to matlab process. 
+Please use save_matlab_model() and then read the model in matlab.
