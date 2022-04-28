@@ -385,10 +385,10 @@ def gapfill(
 
     Examples
     --------
-    >>> import cobra.io as cio
+    >>> from cobra.io import load_model
     >>> from cobra import Model
     >>> from cobra.flux_analysis import gapfill
-    >>> model = cio.load_model("iYS1720")
+    >>> model = load_model("iYS1720")
     >>> universal = Model("universal")
     >>> universal.add_reactions([model.reactions.GF6PTA.copy()])
     >>> model.remove_reactions([model.reactions.GF6PTA])

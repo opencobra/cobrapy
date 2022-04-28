@@ -240,9 +240,8 @@ class Metabolite(Species):
 
         Examples
         --------
-        >>> import cobra
-        >>> import cobra.io
-        >>> model = cobra.io.load_model("textbook")
+        >>> from cobra.io import load_model
+        >>> model = load_model("textbook")
         >>> solution = model.optimize()
         >>> model.metabolites.glc__D_e.shadow_price
         -0.09166474637510488

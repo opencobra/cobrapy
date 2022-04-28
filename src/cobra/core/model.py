@@ -126,8 +126,8 @@ class Model(Object):
 
         Examples
         --------
-        >>> import cobra.io
-        >>> model = cobra.io.load_model("textbook")
+        >>> from cobra.io import load_model
+        >>> model = load_model("textbook")
         >>> new = model.problem.Constraint(model.objective.expression, lb=0.99)
         >>> model.solver.add(new)
         """
@@ -216,8 +216,8 @@ class Model(Object):
 
         Examples
         --------
-        >>> import cobra.io
-        >>> model = cobra.io.load_model("textbook")
+        >>> from cobra.io import load_model
+        >>> model = load_model("textbook")
         >>> model.compartments = {'c': 'the cytosol'}
         >>> model.compartments
         {'c': 'the cytosol', 'e': 'extracellular'}
@@ -580,8 +580,8 @@ class Model(Object):
 
         Examples
         --------
-        >>> import cobra.io
-        >>> model = cobra.io.load_model("textbook")
+        >>> from cobra.io load_model
+        >>> model = load_model("textbook")
         >>> demand = model.add_boundary(model.metabolites.atp_c, type="demand")
         >>> demand.id
         'DM_atp_c'

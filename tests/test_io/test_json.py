@@ -4,6 +4,7 @@ import json
 from os.path import join
 from typing import Any, Callable, Dict, Union
 
+import py.test
 import pytest
 from importlib_resources import files
 
@@ -14,7 +15,7 @@ from cobra import io as cio
 @pytest.fixture(scope="module")
 def json_schema_v1() -> Dict[str, Union[str, bool, Any]]:
     """Fixture for cobra JSON-schema."""
-    with files(cio).joinpath("schema_v1.json").open('r') as handle:
+    with files(cio).joinpath("schema_v1.json").open("r") as handle:
         schema_v1 = json.load(handle)
     return schema_v1
 
@@ -38,7 +39,7 @@ def test_load_json_model(
 
 
 def test_save_json_model(
-    tmpdir: str,
+    tmpdir: "py.test",
     mini_model: Model,
     json_schema_v1: Dict[str, Union[str, bool, Any]],
 ) -> None:

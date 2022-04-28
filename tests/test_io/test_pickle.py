@@ -1,27 +1,22 @@
-# -*- coding: utf-8 -*-
-
 """Test data storage and recovery using pickle."""
-
-from __future__ import absolute_import
 
 from os.path import join
 from pickle import dump, load
+from typing import Callable
 
+import py.test
 import pytest
 
-
-try:
-    import cPickle
-
-    cload = cPickle.load
-    cdump = cPickle.dump
-except ImportError:
-    cload = None
-    cdump = None
+from cobra import Model
 
 
-@pytest.mark.parametrize("load_function", [load, cload])
-def test_read_pickle(compare_models, data_directory, mini_model, load_function):
+@pytest.mark.parametrize("load_function", [load])
+def test_read_pickle(
+    compare_models: Callable,
+    data_directory: str,
+    mini_model: Model,
+    load_function: Callable,
+):
     """Test the reading of model from pickle."""
     if load_function is None:
         pytest.skip()
@@ -32,8 +27,8 @@ def test_read_pickle(compare_models, data_directory, mini_model, load_function):
     assert compare_models(mini_model, pickle_model) is None
 
 
-@pytest.mark.parametrize("dump_function", [dump, cdump])
-def test_write_pickle(tmpdir, mini_model, dump_function):
+@pytest.mark.parametrize("dump_function", [dump])
+def test_write_pickle(tmpdir: "py.test", mini_model: Model, dump_function: Callable):
     """Test the writing of model to pickle."""
     if dump_function is None:
         pytest.skip()
