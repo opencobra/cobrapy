@@ -22,6 +22,9 @@ fail more comprehensibly.
 
 ## Other
 
+Moved tests to a different directory, from `src/cobra/test` 
+to `tests`
+
 Added two tests for GPR fixes
 test_gpr_wrong_input()
 test_gpr_that_needs_two_replacements()

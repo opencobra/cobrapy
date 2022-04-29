@@ -1,6 +1,6 @@
 """Provide functions for I/O in JSON format."""
-
-from typing import TYPE_CHECKING, Any
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Union
 
 from .dict import model_from_dict, model_to_dict
 
@@ -69,7 +69,7 @@ def from_json(document: str) -> "Model":
 
 def save_json_model(
     model: "Model",
-    filename: str,
+    filename: Union[str, Path],
     sort: bool = False,
     pretty: bool = False,
     **kwargs: Any
@@ -118,14 +118,14 @@ def save_json_model(
         }
     dump_opts.update(**kwargs)
 
-    if isinstance(filename, str):
+    if isinstance(filename, (str, Path)):
         with open(filename, "w") as file_handle:
             json.dump(obj, file_handle, **dump_opts)
     else:
         json.dump(obj, filename, **dump_opts)
 
 
-def load_json_model(filename: str) -> "Model":
+def load_json_model(filename: Union[str, Path]) -> "Model":
     """Load a cobra model from a file in JSON format.
 
     Parameters
@@ -144,7 +144,7 @@ def load_json_model(filename: str) -> "Model":
     from_json : Load from a JSON string.
 
     """
-    if isinstance(filename, str):
+    if isinstance(filename, (str, Path)):
         with open(filename, "r") as file_handle:
             return model_from_dict(json.load(file_handle))
     else:

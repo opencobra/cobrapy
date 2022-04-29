@@ -1,13 +1,13 @@
 """Test functionalities of I/O in MATLAB (.mat) format."""
 
 from os.path import join
+from pathlib import Path
 from pickle import load
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 import pytest
 
 from cobra import io
-from cobra.test.test_io.conftest import compare_models
 
 
 try:
@@ -17,7 +17,6 @@ except ImportError:
 
 
 if TYPE_CHECKING:
-    import py.path
 
     from cobra import Model
 
@@ -37,7 +36,10 @@ def raven_model(data_directory: str) -> "Model":
 #                            "raven.mat")])
 # TODO: wait for pytest.fixture_request() to get approved
 def test_load_matlab_model(
-    data_directory: str, mini_model: "Model", raven_model: "Model"
+    compare_models: Callable,
+    data_directory: Path,
+    mini_model: "Model",
+    raven_model: "Model",
 ) -> None:
     """Test the reading of MAT model."""
     mini_mat_model = io.load_matlab_model(join(data_directory, "mini.mat"))
@@ -55,24 +57,24 @@ def test_load_matlab_model(
 #                            "raven.mat")])
 # TODO: wait for pytest.fixture_request() to get approved
 def test_save_matlab_model(
-    tmpdir: "py.path.local", mini_model: "Model", raven_model: "Model"
+    tmp_path: Path, mini_model: "Model", raven_model: "Model"
 ) -> None:
     """Test the writing of MAT model."""
-    mini_output_file = tmpdir.join("mini.mat")
-    raven_output_file = tmpdir.join("raven.mat")
+    mini_output_file = tmp_path.joinpath("mini.mat")
+    raven_output_file = tmp_path.joinpath("raven.mat")
     # scipy.io.savemat() doesn't support anything other than
     # str or file-stream object, hence the str conversion
     io.save_matlab_model(mini_model, str(mini_output_file))
     io.save_matlab_model(raven_model, str(raven_output_file))
-    assert mini_output_file.check()
-    assert raven_output_file.check()
+    assert mini_output_file.exists()
+    assert raven_output_file.exists()
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
-def test_large_bounds(tmpdir: "py.path.local", model: "Model") -> None:
+def test_large_bounds(tmp_path: Path, model: "Model") -> None:
     """Verify that mat bounds don't get broken by the config defaults."""
     model.reactions[0].bounds = -1e6, 1e6
-    filepath = str(tmpdir.join("model.mat"))
+    filepath = str(tmp_path.joinpath("model.mat"))
     io.save_matlab_model(model, filepath)
     read = io.load_matlab_model(filepath)
     assert read.reactions[0].bounds == (-1e6, 1e6)
@@ -80,13 +82,13 @@ def test_large_bounds(tmpdir: "py.path.local", model: "Model") -> None:
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
 def test_read_rewrite_matlab_model(
-    tmpdir: "py.path.local", data_directory: str
+    compare_models: Callable, tmp_path: Path, data_directory: Path
 ) -> None:
     """Verify that rewritten matlab model is identical to original."""
     mini_mat_model = io.load_matlab_model(join(data_directory, "mini.mat"))
     raven_mat_model = io.load_matlab_model(join(data_directory, "raven.mat"))
-    mini_output_file = tmpdir.join("mini.mat")
-    raven_output_file = tmpdir.join("raven.mat")
+    mini_output_file = tmp_path.joinpath("mini.mat")
+    raven_output_file = tmp_path.joinpath("raven.mat")
     # scipy.io.savemat() doesn't support anything other than
     # str or file-stream object, hence the str conversion
     io.save_matlab_model(mini_mat_model, str(mini_output_file))
@@ -153,12 +155,15 @@ def _fix_xml_annotation_to_identifiers(model: "Model") -> None:
 # "valid_annotation_output.xml" has reaction annotations in a metabolite, so they would
 # be thrown out by matlab
 def test_compare_xml_to_written_matlab_model(
-    data_directory: str, tmpdir: "py.path.local", xml_file: str
+    compare_models: Callable,
+    data_directory: Path,
+    tmp_path: Path,
+    xml_file: str,
 ) -> None:
     """Verify that xml rewritten as mat file is written and read correctly."""
     xml_model = io.read_sbml_model(join(data_directory, xml_file))
     _fix_xml_annotation_to_identifiers(xml_model)
-    mat_output_file = tmpdir.join(xml_file.replace(".xml", ".mat"))
+    mat_output_file = tmp_path.joinpath(xml_file.replace(".xml", ".mat"))
     io.save_matlab_model(
         xml_model, str(mat_output_file)
     )  # lac__D_e_boundary confuses the reading of matlab
@@ -181,9 +186,9 @@ def test_fail_on_problematic_compartments(data_directory: str) -> None:
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
 def test_mat_model_with_long_compartment_ids(
-    data_directory: str, tmpdir: "py.path.local"
+    compare_models: Callable, data_directory: Path, tmp_path: Path
 ) -> None:
-    """Test that long compartment IDs like "luSI" are correctly loaded"""
+    """Test that long compartment IDs like "luSI" are correctly loaded."""
     model_compartments = io.load_matlab_model(join(data_directory, "compartments.mat"))
     assert model_compartments.compartments == {
         "csf": "csf",
@@ -204,27 +209,29 @@ def test_mat_model_with_long_compartment_ids(
             "kegg.compound": ["C00031"],
             "pubchem.substance": ["3333"],
         }
-    output_file = tmpdir.join("compartments.mat")
+    output_file = tmp_path.joinpath("compartments.mat")
     io.save_matlab_model(model_compartments, str(output_file))
     model_compartments_reloaded = io.load_matlab_model(str(output_file))
     assert compare_models(model_compartments, model_compartments_reloaded) is None
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
-def test_mat_model_with_no_genes(data_directory: str, tmpdir: "py.path.local") -> None:
+def test_mat_model_with_no_genes(
+    compare_models: Callable, data_directory: Path, tmp_path: Path
+) -> None:
     """Test that a model with no genes is loaded and reloaded correctly."""
     model_no_genes = io.load_matlab_model(
         join(data_directory, "cardiac_mit_glcuptake_atpmax.mat")
     )
     assert not len(model_no_genes.genes)
-    output_file = tmpdir.join("cardiac_mit_glcuptake_atpmax.mat")
+    output_file = tmp_path.joinpath("cardiac_mit_glcuptake_atpmax.mat")
     io.save_matlab_model(model_no_genes, str(output_file))
     model_no_genes_reloaded = io.load_matlab_model(str(output_file))
     assert compare_models(model_no_genes, model_no_genes_reloaded) is None
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
-def test_mat_model_wrong_caps(data_directory: str) -> None:
+def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) -> None:
     """Check that wrong capitalization in matlab field names is processed correctly.
 
     See https://gist.github.com/akaviaLab/3dcb0eed6563a9d3d1e07198337300ac to create it

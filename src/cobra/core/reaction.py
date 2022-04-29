@@ -485,8 +485,8 @@ class Reaction(Object):
 
         Examples
         --------
-        >>> import cobra.test
-        >>> model = cobra.test.create_test_model("textbook")
+        >>> from cobra.io import load_model
+        >>> model = load_model("textbook")
         >>> solution = model.optimize()
         >>> model.reactions.PFK.flux
         7.477381962160283
@@ -542,8 +542,8 @@ class Reaction(Object):
 
         Examples
         --------
-        >>> import cobra.test
-        >>> model = cobra.test.create_test_model("textbook")
+        >>> from cobra.io import load_model
+        >>> model = load_model("textbook")
         >>> solution = model.optimize()
         >>> model.reactions.PFK.reduced_cost
         -8.673617379884035e-18

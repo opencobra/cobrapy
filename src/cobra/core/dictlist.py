@@ -134,8 +134,8 @@ class DictList(list):
 
         Examples
         --------
-        >>> import cobra.test
-        >>> model = cobra.test.create_test_model('textbook')
+        >>> from cobra.io import load_model
+        >>> model = load_model('textbook')
         >>> model.reactions.query(lambda x: x.boundary)
         >>> import re
         >>> regex = re.compile('^g', flags=re.IGNORECASE)

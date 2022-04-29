@@ -1,7 +1,8 @@
 """Provide functions for I/O in YAML format."""
 
 import io
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from ruamel.yaml.compat import StringIO
 from ruamel.yaml.main import YAML
@@ -139,7 +140,7 @@ def save_yaml_model(
         yaml.dump(obj, filename, **kwargs)
 
 
-def load_yaml_model(filename: str) -> "Model":
+def load_yaml_model(filename: Union[str, Path]) -> "Model":
     """Load a cobra model from a file in YAML format.
 
     Parameters
@@ -158,7 +159,7 @@ def load_yaml_model(filename: str) -> "Model":
     from_yaml : Load from a string.
 
     """
-    if isinstance(filename, str):
+    if isinstance(filename, (str, Path)):
         with io.open(filename, "r") as file_handle:
             return model_from_dict(yaml.load(file_handle))
     else:

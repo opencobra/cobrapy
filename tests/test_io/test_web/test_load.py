@@ -71,3 +71,8 @@ def test_cache(monkeypatch, tmp_path, bigg_models, biomodels):
     biomodels.get_sbml.assert_not_called()
     assert len(cached_model.metabolites) == len(remote_model.metabolites)
     assert len(cached_model.reactions) == len(remote_model.reactions)
+
+
+def test_local_load(model, compare_models):
+    model_local = load_model("textbook")
+    compare_models(model, model_local)

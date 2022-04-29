@@ -3,6 +3,7 @@
 from collections import namedtuple
 from os import unlink
 from os.path import join, split
+from pathlib import Path
 from pickle import load
 from tempfile import gettempdir
 from typing import List, Tuple
@@ -276,14 +277,14 @@ def io_trial(
     return request.param.name, reference_model, test_model, reread_model
 
 
-def test_filehandle(data_directory: str, tmp_path: str) -> None:
+def test_filehandle(data_directory: str, tmp_path: Path) -> None:
     """Test reading and writing to file handle.
 
     Parameters
     ----------
     data_directory: str
         Directory where the data is.
-    tmp_path: str
+    tmp_path: Path
         Directory to use for temporary data.
     """
     with open(join(data_directory, "mini_fbc2.xml"), "r") as f_in:
@@ -318,12 +319,12 @@ def test_from_sbml_string(data_directory: str) -> None:
 
 
 @pytest.mark.skip(reason="Model history currently not written")
-def test_model_history(tmp_path: str) -> None:
+def test_model_history(tmp_path: Path) -> None:
     """Testing reading and writing of ModelHistory.
 
     Parameters
     ----------
-    tmp_path: str
+    tmp_path: Path
         Directory to use for temporary data.
     """
     model = Model("test")
@@ -354,14 +355,14 @@ def test_model_history(tmp_path: str) -> None:
     assert c["email"] == "muster@university.com"
 
 
-def test_groups(data_directory: str, tmp_path: str) -> None:
+def test_groups(data_directory: str, tmp_path: Path) -> None:
     """Testing reading and writing of groups.
 
     Parameters
     ----------
     data_directory: str
         Directory where the data is.
-    tmp_path: str
+    tmp_path: Path
         Directory to use for temporary data.
     """
     sbml_path = join(data_directory, "e_coli_core.xml")
@@ -455,14 +456,14 @@ def test_validation_warnings(data_directory: str) -> None:
         assert "No objective in listOfObjectives" in errors["COBRA_WARNING"]
 
 
-def test_infinity_bounds(data_directory: str, tmp_path: str) -> None:
+def test_infinity_bounds(data_directory: str, tmp_path: Path) -> None:
     """Test infinity bound example.
 
     Parameters
     ----------
     data_directory: str
         Directory where the data is.
-    tmp_path: str
+    tmp_path: Path
         Directory to use for temporary data.
     """
     sbml_path = join(data_directory, "fbc_ex1.xml")
@@ -512,14 +513,14 @@ def test_boundary_conditions(data_directory: str) -> None:
     assert sol1.objective_value == sol2.objective_value
 
 
-def test_gprs(data_directory: str, tmp_path: str) -> None:
+def test_gprs(data_directory: str, tmp_path: Path) -> None:
     """Test that GPRs are written and read correctly.
 
     Parameters
     ----------
     data_directory: str
         Directory where the data is.
-    tmp_path: str
+    tmp_path: Path
         Directory to use for temporary data.
     """
     model1 = read_sbml_model(join(data_directory, "iJO1366.xml.gz"))
@@ -574,14 +575,14 @@ def test_identifiers_annotation() -> None:
         assert data is None
 
 
-def test_smbl_with_notes(data_directory: str, tmp_path: str) -> None:
+def test_smbl_with_notes(data_directory: str, tmp_path: Path) -> None:
     """Test that NOTES in the RECON 2.2 style are written and read correctly.
 
     Parameters
     ----------
     data_directory: str
         Directory where the data is.
-    tmp_path: str
+    tmp_path: Path
         Directory to use for temporary data.
     """
     sbml_path = join(data_directory, "example_notes.xml")
@@ -689,14 +690,14 @@ def test_smbl_with_notes(data_directory: str, tmp_path: str) -> None:
         )
 
 
-def test_stable_gprs(data_directory: str, tmp_path: str) -> None:
+def test_stable_gprs(data_directory: str, tmp_path: Path) -> None:
     """Test that GPRs are written correctly after manual changes.
 
     Parameters
     ----------
     data_directory: str
         Directory where the data is.
-    tmp_path: str
+    tmp_path: Path
         Directory to use for temporary data.
     """
     mini = read_sbml_model(join(data_directory, "mini_fbc2.xml"))

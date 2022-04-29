@@ -14,6 +14,7 @@ from ..sbml import _sbml_to_model
 from .abstract_model_repository import AbstractModelRepository
 from .bigg_models_repository import BiGGModels
 from .biomodels_repository import BioModels
+from .cobrapy_repository import Cobrapy
 
 
 if TYPE_CHECKING:
@@ -26,7 +27,11 @@ configuration = Configuration()
 
 def load_model(
     model_id: str,
-    repositories: Iterable[AbstractModelRepository] = (BiGGModels(), BioModels()),
+    repositories: Iterable[AbstractModelRepository] = (
+        Cobrapy(),
+        BiGGModels(),
+        BioModels(),
+    ),
     cache: bool = True,
 ) -> "Model":
     """
@@ -150,6 +155,11 @@ def _fetch_model(
         )
         try:
             return repository.get_sbml(model_id=model_id)
+        except (FileNotFoundError, OSError):
+            logger.debug(
+                f"Model '{model_id} not found in the local "
+                f"repository {repository.name}.'"
+            )
         except httpx.HTTPStatusError as error:
             if error.response.status_code == 404:
                 logger.debug(

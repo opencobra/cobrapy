@@ -5,7 +5,7 @@ from cobra.io import read_sbml_model, write_sbml_model
 
 
 def test_notes(tmp_path):
-    """Testing if model notes are written in SBML"""
+    """Testing if model notes are written in SBML."""
     path_to_file = join(str(tmp_path), "model_notes.xml")
 
     # making a minimal cobra model to test notes
