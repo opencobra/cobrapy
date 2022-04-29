@@ -1,8 +1,8 @@
 """Test functionalities of I/O in JSON format."""
 
 import json
-from pathlib import Path
 from os.path import join
+from pathlib import Path
 from typing import Any, Callable, Dict, Union
 
 import pytest

@@ -1,8 +1,8 @@
 """Test data storage and recovery using pickle."""
 
+from pathlib import Path
 from pickle import dump, load
 from typing import Callable
-from pathlib import Path
 
 import pytest
 
@@ -27,9 +27,7 @@ def test_read_pickle(
 
 
 @pytest.mark.parametrize("dump_function", [dump])
-def test_write_pickle(
-    tmp_path: Path, mini_model: Model, dump_function: Callable
-):
+def test_write_pickle(tmp_path: Path, mini_model: Model, dump_function: Callable):
     """Test the writing of model to pickle."""
     if dump_function is None:
         pytest.skip()

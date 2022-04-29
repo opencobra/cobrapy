@@ -18,8 +18,6 @@ except ImportError:
 
 if TYPE_CHECKING:
 
-    import py.path
-
     from cobra import Model
 
 
@@ -190,7 +188,7 @@ def test_fail_on_problematic_compartments(data_directory: str) -> None:
 def test_mat_model_with_long_compartment_ids(
     compare_models: Callable, data_directory: Path, tmp_path: Path
 ) -> None:
-    """Test that long compartment IDs like "luSI" are correctly loaded"""
+    """Test that long compartment IDs like "luSI" are correctly loaded."""
     model_compartments = io.load_matlab_model(join(data_directory, "compartments.mat"))
     assert model_compartments.compartments == {
         "csf": "csf",

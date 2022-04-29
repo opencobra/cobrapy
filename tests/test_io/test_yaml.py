@@ -1,8 +1,8 @@
 """Test functionalities of I/O in YAML format."""
 
 import json
-from typing import Callable
 from pathlib import Path
+from typing import Callable
 
 import pytest
 from ruamel.yaml import YAML

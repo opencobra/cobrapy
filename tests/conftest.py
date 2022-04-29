@@ -1,6 +1,6 @@
 """Define global fixtures."""
 
-from os.path import abspath, dirname, join
+from os.path import abspath, join
 from pathlib import Path
 from pickle import load as _load
 
