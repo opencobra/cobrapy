@@ -1,6 +1,7 @@
 """Contains module level fixtures and utility functions."""
 
 from os.path import join
+from pathlib import Path
 from pickle import load
 from typing import Callable
 

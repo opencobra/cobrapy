@@ -17,8 +17,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="module")
-def tmp_path(tmpdir_factory):
-    return str(tmpdir_factory.mktemp("model_order"))
+def tmp_path_order(tmp_path_factory):
+    return str(tmp_path_factory.mktemp("model_order"))
 
 
 @pytest.fixture(scope="module")
@@ -86,10 +86,10 @@ def get_ids(iterable):
         ("load_yaml_model", "save_yaml_model", ".yml"),
     ],
 )
-def test_io_order(attribute, read, write, ext, template, tmp_path):
+def test_io_order(attribute, read, write, ext, template, tmp_path_order):
     read = getattr(cio, read)
     write = getattr(cio, write)
-    filename = join(tmp_path, "template" + ext)
+    filename = join(tmp_path_order, "template" + ext)
     write(template, filename)
     model = read(filename)
     model_elements = get_ids(getattr(model, attribute))

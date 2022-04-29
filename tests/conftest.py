@@ -1,6 +1,7 @@
 """Define global fixtures."""
 
 from os.path import abspath, dirname, join
+from pathlib import Path
 from pickle import load as _load
 
 from cobra import Metabolite, Model, Reaction
@@ -15,9 +16,7 @@ except ImportError:
     pytest = None
 
 
-cobra_directory = abspath(join(dirname(abspath(__file__)), ".."))
-cobra_location = abspath(join(cobra_directory, "src"))
-data_dir = join(cobra_directory, "tests", "data", "")
+data_dir = Path(__file__).parent / "data"
 
 
 def create_test_model(model_name="salmonella") -> Model:

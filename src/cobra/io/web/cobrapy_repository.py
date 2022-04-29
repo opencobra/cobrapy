@@ -2,6 +2,7 @@
 
 
 import importlib_resources
+import cobra.data
 
 from .abstract_model_repository import AbstractModelRepository
 
@@ -48,6 +49,4 @@ class Cobrapy(AbstractModelRepository):
         bytes
             A gzip-compressed, UTF-8 encoded SBML document.
         """
-        cobra_data_dir = importlib_resources.files("cobra.data")
-        model_file = cobra_data_dir.joinpath(f"{model_id}.xml.gz")
-        return model_file.read_bytes()
+        return importlib_resources.files("cobra.data").joinpath(f"{model_id}.xml.gz").read_bytes()

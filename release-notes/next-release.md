@@ -23,7 +23,7 @@ fail more comprehensibly.
 ## Other
 
 Moved tests to a different directory, from `src/cobra/test` 
-to `src/tests`
+to `tests`
 
 Added two tests for GPR fixes
 test_gpr_wrong_input()

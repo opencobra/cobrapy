@@ -1,8 +1,8 @@
 """Test data storage and recovery using pickle."""
 
-from os.path import join
 from pickle import dump, load
 from typing import Callable
+from pathlib import Path
 
 import pytest
 
@@ -20,7 +20,7 @@ def test_read_pickle(
     if load_function is None:
         pytest.skip()
 
-    with open(join(data_directory, "mini.pickle"), "rb") as infile:
+    with open(data_directory.joinpath("mini.pickle"), "rb") as infile:
         pickle_model = load_function(infile)
 
     assert compare_models(mini_model, pickle_model) is None
@@ -34,8 +34,8 @@ def test_write_pickle(
     if dump_function is None:
         pytest.skip()
 
-    output_file = tmpdir.join("mini.pickle")
+    output_file = tmp_path.joinpath("mini.pickle")
     with open(str(output_file), "wb") as outfile:
         dump_function(mini_model, outfile)
 
-    assert output_file.check()
+    assert output_file.exists()
