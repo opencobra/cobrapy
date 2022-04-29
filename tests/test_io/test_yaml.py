@@ -4,7 +4,6 @@ import json
 from os.path import join
 from typing import Callable
 
-import py.path
 import pytest
 from ruamel.yaml import YAML
 
@@ -13,7 +12,7 @@ from cobra import io as cio
 
 
 def test_load_yaml_model(
-    compare_models: Callable, data_directory: str, mini_model: Model
+    compare_models: Callable, data_directory: Path, mini_model: Model
 ) -> None:
     """Test the reading of YAML model."""
     yaml_model = cio.load_yaml_model(join(data_directory, "mini.yml"))
@@ -21,7 +20,7 @@ def test_load_yaml_model(
 
 
 @pytest.mark.xfail(reason="schema outdated")
-def test_save_yaml_model(tmpdir: "py.path.local", mini_model: Model) -> None:
+def test_save_yaml_model(tmp_path: Path, mini_model: Model) -> None:
     """Test the writing of YAML model."""
     jsonschema = pytest.importorskip("jsonschema")
     output_file = tmpdir.join("mini.yml")

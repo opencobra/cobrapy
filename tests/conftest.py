@@ -20,7 +20,7 @@ cobra_location = abspath(join(cobra_directory, "src"))
 data_dir = join(cobra_directory, "tests", "data", "")
 
 
-def create_test_model(model_name="salmonella"):
+def create_test_model(model_name="salmonella") -> Model:
     """Return a cobra model for testing.
 
     model_name: str
@@ -29,7 +29,7 @@ def create_test_model(model_name="salmonella"):
 
     """
     if model_name == "ecoli":
-        ecoli_sbml = join(data_dir, "iJO1366.xml.gz")
+        ecoli_sbml = str(data_dir / "iJO1366.xml.gz")
         return read_sbml_model(ecoli_sbml)
     elif model_name == "textbook":
         textbook_sbml = join(data_dir, "textbook.xml.gz")

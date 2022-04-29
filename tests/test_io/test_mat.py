@@ -39,7 +39,7 @@ def raven_model(data_directory: str) -> "Model":
 # TODO: wait for pytest.fixture_request() to get approved
 def test_load_matlab_model(
     compare_models: Callable,
-    data_directory: str,
+    data_directory: Path,
     mini_model: "Model",
     raven_model: "Model",
 ) -> None:
@@ -84,7 +84,7 @@ def test_large_bounds(tmpdir: "py.path.local", model: "Model") -> None:
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
 def test_read_rewrite_matlab_model(
-    compare_models: Callable, tmpdir: "py.path.local", data_directory: str
+    compare_models: Callable, tmp_path: Path, data_directory: Path
 ) -> None:
     """Verify that rewritten matlab model is identical to original."""
     mini_mat_model = io.load_matlab_model(join(data_directory, "mini.mat"))
@@ -158,8 +158,8 @@ def _fix_xml_annotation_to_identifiers(model: "Model") -> None:
 # be thrown out by matlab
 def test_compare_xml_to_written_matlab_model(
     compare_models: Callable,
-    data_directory: str,
-    tmpdir: "py.path.local",
+    data_directory: Path,
+    tmp_path: Path,
     xml_file: str,
 ) -> None:
     """Verify that xml rewritten as mat file is written and read correctly."""
@@ -233,7 +233,7 @@ def test_mat_model_with_no_genes(
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
-def test_mat_model_wrong_caps(compare_models: Callable, data_directory: str) -> None:
+def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) -> None:
     """Check that wrong capitalization in matlab field names is processed correctly.
 
     See https://gist.github.com/akaviaLab/3dcb0eed6563a9d3d1e07198337300ac to create it

@@ -11,9 +11,9 @@ from cobra import Model
 
 
 @pytest.fixture(scope="module")
-def mini_model(data_directory: str):
+def mini_model(data_directory: Path) -> Model:
     """Fixture for mini model."""
-    with open(join(data_directory, "mini.pickle"), "rb") as infile:
+    with (data_directory / "mini.pickle").open(mode="rb") as infile:
         return load(infile)
 
 

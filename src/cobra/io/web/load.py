@@ -37,8 +37,6 @@ def load_model(
     """
     Download an SBML model from a remote repository.
 
-    It will try the local repository first.
-
     Downloaded SBML documents are by default stored in a cache on disk such that future
     access is much faster. By default, models can be loaded from the following
     repositories:
