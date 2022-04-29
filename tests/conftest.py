@@ -1,6 +1,6 @@
 """Define global fixtures."""
 
-from os.path import abspath, join
+from os.path import join
 from pathlib import Path
 from pickle import load as _load
 
@@ -41,38 +41,6 @@ def create_test_model(model_name="salmonella") -> Model:
         model_name = salmonella_pickle
     with open(model_name, "rb") as infile:
         return _load(infile)
-
-
-def test_all(args=None):
-    """Alias for running all unit-tests on installed cobra."""
-    if pytest:
-        args = args if args else []
-
-        return pytest.main(
-            [
-                str(abspath(join(cobra_directory, "tests"))),
-                "--benchmark-skip",
-                "-v",
-                "-rs",
-            ]
-            + args
-        )
-    else:
-        raise ImportError(
-            "missing package pytest and pytest_benchmark required for testing"
-        )
-
-
-def pytest_addoption(parser):
-    try:
-        parser.addoption("--run-slow", action="store_true", help="run slow tests")
-        parser.addoption(
-            "--run-non-deterministic",
-            action="store_true",
-            help="run tests that sometimes (rarely) fail",
-        )
-    except ValueError:
-        pass
 
 
 @pytest.fixture(scope="session")
