@@ -1,17 +1,13 @@
 """Test functionalities of model component pruning functions."""
 
 from itertools import chain
-from typing import List, Set, Union
 
-from cobra.core import GPR, Gene, Metabolite, Model, Reaction
+from cobra.core import GPR, Metabolite, Model, Reaction
 from cobra.manipulation import (
-    delete_model_genes,
-    find_gene_knockout_reactions,
-    get_compiled_gene_reaction_rules,
+    knock_out_model_genes,
     prune_unused_metabolites,
     prune_unused_reactions,
     remove_genes,
-    undelete_model_genes,
 )
 
 
@@ -68,94 +64,113 @@ def test_prune_unused_rxns_functionality(model: Model) -> None:
     assert "foo3" not in model_pruned.reactions
 
 
-def _find_gene_knockout_reactions_fast(
-    m: Model, gene_list: List[Gene]
-) -> List[Reaction]:
-    """Quickly find gene knockout reactions."""
-    compiled_rules = get_compiled_gene_reaction_rules(m)
-    return find_gene_knockout_reactions(
-        m, gene_list, compiled_gene_reaction_rules=compiled_rules
-    )
-
-
-def _get_removed(m: Model) -> Set[str]:
-    """Get trimmed reactions."""
-    return {x.id for x in m._trimmed_reactions}
-
-
-def _gene_knockout_computation(
-    m: Model,
-    gene_ids: Union[List[str], Set[str]],
-    expected_reaction_ids: Union[List[str], Set[str]],
-) -> None:
-    """Compute gene knockout."""
-    genes = [m.genes.get_by_id(i) for i in gene_ids]
-    expected_reactions = {m.reactions.get_by_id(i) for i in expected_reaction_ids}
-    removed1 = set(find_gene_knockout_reactions(m, genes))
-    removed2 = set(_find_gene_knockout_reactions_fast(m, genes))
-    assert removed1 == expected_reactions
-    assert removed2 == expected_reactions
-    delete_model_genes(m, gene_ids, cumulative_deletions=False)
-    assert _get_removed(m) == expected_reaction_ids
-    undelete_model_genes(m)
-
-
 def test_gene_knockout(salmonella: Model) -> None:
-    """Test gene knockout."""
+    """Test gene knockout with and without context."""
     gene_list = ["STM1067", "STM0227"]
-    dependent_reactions = {
-        "3HAD121",
-        "3HAD160",
-        "3HAD80",
-        "3HAD140",
-        "3HAD180",
+    dependent_reactions = [
         "3HAD100",
-        "3HAD181",
         "3HAD120",
-        "3HAD60",
+        "3HAD121",
+        "3HAD140",
         "3HAD141",
+        "3HAD160",
         "3HAD161",
-        "T2DECAI",
+        "3HAD180",
+        "3HAD181",
         "3HAD40",
-    }
-    _gene_knockout_computation(salmonella, gene_list, dependent_reactions)
-    _gene_knockout_computation(salmonella, ["STM4221"], {"PGI"})
-    _gene_knockout_computation(salmonella, ["STM1746.S"], {"4PEPTabcpp"})
-    # test cumulative behavior
-    delete_model_genes(salmonella, gene_list[:1])
-    delete_model_genes(salmonella, gene_list[1:], cumulative_deletions=True)
-    delete_model_genes(salmonella, ["STM4221"], cumulative_deletions=True)
-    dependent_reactions.add("PGI")
-    assert _get_removed(salmonella) == dependent_reactions
-    # non-cumulative following cumulative
-    delete_model_genes(salmonella, ["STM4221"], cumulative_deletions=False)
-    assert _get_removed(salmonella) == {"PGI"}
-    # make sure on reset that the bounds are correct
-    reset_bound = salmonella.reactions.get_by_id("T2DECAI").upper_bound
-    assert reset_bound == 1000.0
+        "3HAD60",
+        "3HAD80",
+        "T2DECAI",
+    ]
+    orig_gene_len = len(salmonella.genes)
+    orig_bounds = salmonella.reactions.list_attr("bounds")
+    with salmonella:
+        expected_reactions = [
+            salmonella.reactions.get_by_id(r) for r in dependent_reactions
+        ]
+        knocked_out_reactions = knock_out_model_genes(salmonella, gene_list)
+        assert set(expected_reactions) == set(knocked_out_reactions)
+    assert len(salmonella.genes) == orig_gene_len
+    assert salmonella.reactions.list_attr("bounds") == orig_bounds
+    with salmonella:
+        expected_reactions = [salmonella.reactions.get_by_id("PGI")]
+        knocked_out_reactions = knock_out_model_genes(salmonella, ["STM4221"])
+        assert expected_reactions == knocked_out_reactions
+    with salmonella:
+        expected_reactions = [salmonella.reactions.get_by_id("PGI")]
+        knocked_out_reactions = knock_out_model_genes(
+            salmonella, [salmonella.genes.get_by_id("STM4221")]
+        )
+        assert expected_reactions == knocked_out_reactions
+    with salmonella:
+        expected_reactions = [salmonella.reactions.get_by_id("PGI")]
+        knocked_out_reactions = knock_out_model_genes(
+            salmonella, [salmonella.genes.index("STM4221")]
+        )
+        assert expected_reactions == knocked_out_reactions
+    with salmonella:
+        expected_reactions = [salmonella.reactions.get_by_id("4PEPTabcpp")]
+        knocked_out_reactions = knock_out_model_genes(salmonella, ["STM1746.S"])
+        assert expected_reactions == knocked_out_reactions
+    knocked_out_reactions = knock_out_model_genes(salmonella, gene_list)
+    assert len(knocked_out_reactions) == 13
+    expected_reactions = [
+        salmonella.reactions.get_by_id(r) for r in dependent_reactions
+    ]
+    assert set(knocked_out_reactions) == set(expected_reactions)
+    knocked_out_reactions.extend(knock_out_model_genes(salmonella, ["STM4221"]))
+    expected_reactions.append(salmonella.reactions.get_by_id("PGI"))
+    assert set(knocked_out_reactions) == set(expected_reactions)
     # test computation when gene name is a subset of another
     test_model = Model()
     test_reaction_1 = Reaction("test1")
     test_reaction_1.gene_reaction_rule = "eggs or (spam and eggspam)"
     test_model.add_reactions([test_reaction_1])
-    _gene_knockout_computation(test_model, ["eggs"], set())
-    _gene_knockout_computation(test_model, ["eggs", "spam"], {"test1"})
+    with test_model:
+        knocked_out_reactions = knock_out_model_genes(test_model, ["eggs"])
+        assert knocked_out_reactions == list()
+    with test_model:
+        knocked_out_reactions = knock_out_model_genes(test_model, ["eggs", "spam"])
+        expected_reactions = [test_model.reactions.get_by_id("test1")]
+        assert set(knocked_out_reactions) == set(expected_reactions)
     # test computation with nested boolean expression
     test_reaction_1.gene_reaction_rule = "g1 and g2 and (g3 or g4 or (g5 and g6))"
-    _gene_knockout_computation(test_model, ["g3"], set())
-    _gene_knockout_computation(test_model, ["g1"], {"test1"})
-    _gene_knockout_computation(test_model, ["g5"], set())
-    _gene_knockout_computation(test_model, ["g3", "g4", "g5"], {"test1"})
+    with test_model:
+        knocked_out_reactions = knock_out_model_genes(test_model, ["g3"])
+        assert knocked_out_reactions == list()
+    with test_model:
+        knocked_out_reactions = knock_out_model_genes(test_model, ["g1"])
+        assert knocked_out_reactions == [test_reaction_1]
+    with test_model:
+        knocked_out_reactions = knock_out_model_genes(test_model, ["g5"])
+        assert knocked_out_reactions == list()
+    with test_model:
+        knocked_out_reactions = knock_out_model_genes(test_model, ["g3", "g4", "g5"])
+        assert knocked_out_reactions == [test_reaction_1]
     # test computation when gene names are python expressions
     test_reaction_1.gene_reaction_rule = "g1 and (for or in)"
-    _gene_knockout_computation(test_model, ["for", "in"], {"test1"})
-    _gene_knockout_computation(test_model, ["for"], set())
+    with test_model:
+        knocked_out_reactions = knock_out_model_genes(test_model, ["for", "in"])
+        assert knocked_out_reactions == [test_reaction_1]
+    with test_model:
+        knocked_out_reactions = knock_out_model_genes(test_model, ["for"])
+        assert knocked_out_reactions == list()
     test_reaction_1.gene_reaction_rule = "g1 and g2 and g2.conjugate"
-    _gene_knockout_computation(test_model, ["g2"], {"test1"})
-    _gene_knockout_computation(test_model, ["g2.conjugate"], {"test1"})
+    with test_model:
+        knocked_out_reactions = knock_out_model_genes(test_model, ["g2"])
+        assert knocked_out_reactions == [test_reaction_1]
+    with test_model:
+        knocked_out_reactions = knock_out_model_genes(test_model, ["g2.conjugate"])
+        assert knocked_out_reactions == [test_reaction_1]
     test_reaction_1.gene_reaction_rule = "g1 and (try:' or 'except:1)"
-    _gene_knockout_computation(test_model, ["try:'"], set())
-    _gene_knockout_computation(test_model, ["try:'", "'except:1"], {"test1"})
+    with test_model:
+        knocked_out_reactions = knock_out_model_genes(test_model, ["try:'"])
+        assert knocked_out_reactions == []
+    with test_model:
+        knocked_out_reactions = knock_out_model_genes(
+            test_model, ["try:'", "'except:1"]
+        )
+        assert knocked_out_reactions == [test_reaction_1]
 
 
 def test_remove_genes() -> None:
