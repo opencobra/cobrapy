@@ -6,7 +6,7 @@
     <description>Recent content on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 24 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 30 Apr 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title></title>
       <link>https://opencobra.github.io/cobrapy/intro/description/</link>
@@ -40,6 +40,24 @@ $ conda install -c conda-forge cobra For futher help refer to the detailed insta
 Please use the Google Group for help. Alternatively, you can use gitter.im for quick questions and discussions about cobrapy (faster response times).
 File bug reports and contribute to development on our github page.
 If you use cobrapy in a scientific publication, please cite our publication 😄</description>
+    </item>
+    
+    <item>
+      <title>0.25.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.25.0/</link>
+      <pubDate>Sat, 30 Apr 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.25.0/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0250&#34;&gt;Release notes for cobrapy 0.25.0&lt;/h1&gt;
+&lt;h2 id=&#34;new-features&#34;&gt;New features&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Add &lt;code&gt;knock_out_model_genes&lt;/code&gt; to simulate knock-outs, setting
+reaction bounds of affected reactions to zero and returning a list
+of reactions that were knocked-out. Replaces &lt;code&gt;delete_model_genes&lt;/code&gt;
+and &lt;code&gt;undelete_model_genes&lt;/code&gt; since it is context sensitive.&lt;/li&gt;
+&lt;li&gt;Improve reading of matlab models which will include metabolite
+and reaction annotations.&lt;/li&gt;
+&lt;/ul&gt;</description>
     </item>
     
     <item>
