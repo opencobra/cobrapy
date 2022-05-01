@@ -3,8 +3,6 @@
 
 import importlib_resources
 
-import cobra.data
-
 from .abstract_model_repository import AbstractModelRepository
 
 
