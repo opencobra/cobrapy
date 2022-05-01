@@ -698,8 +698,8 @@ def from_mat_struct(
     for old_field, new_field in zip(old_cobratoolbox_fields, new_cobratoolbox_fields):
         if old_field in m.dtype.names and new_field not in m.dtype.names:
             logger.warning(
-                f"This model seems to have {old_field} instead of {new_field} field. Will use "
-                f"{old_field} for what {new_field} represents."
+                f"This model seems to have {old_field} instead of {new_field} field. "
+                f"Will use {old_field} for what {new_field} represents."
             )
             new_names = list(m.dtype.names)
             new_names[new_names.index(old_field)] = new_field
