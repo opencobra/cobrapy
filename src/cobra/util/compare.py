@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Dict, Optional, Tuple, TypeVar
 
 
 if TYPE_CHECKING:
-    from cobra import Group, Model, Object, Reaction
+    from cobra.core import Group, Model, Object, Reaction
 
     TObject = TypeVar("TObject", bound=Object)
 
@@ -33,7 +33,7 @@ def dict_compare(d1: Dict, d2: Dict, _dont_compare: Optional[set] = None):
     added = d1_keys - d2_keys
     removed = d2_keys - d1_keys
     modified = {o: (d1[o], d2[o]) for o in shared_keys if d1[o] != d2[o]}
-    same = set(o for o in shared_keys if d1[o] == d2[o])
+    same = {o for o in shared_keys if d1[o] == d2[o]}
     return {"added": added, "removed": removed, "modified": modified, "same": same}
 
 
@@ -137,6 +137,33 @@ def compare_group_state(
     return _is_equivalent, _comparison
 
 
+def compare_dictlists(
+    ignore_keys, dictlist_model1, dict_list_model2, comparison_function=None
+):
+    if comparison_function is None:
+        comparison_function = compare_state
+    _is_equivalent = True
+    comparison = {}
+    diff_objs = []
+    ids_model1 = set(dictlist_model1.list_attr("id"))
+    ids_model2 = set(dict_list_model2.list_attr("id"))
+    if ids_model1 - ids_model2:
+        comparison["added"] = ids_model1 - ids_model2
+        _is_equivalent = False
+    if ids_model2 - ids_model1:
+        comparison["removed"] = ids_model2 - ids_model1
+        _is_equivalent = False
+    for _id in dictlist_model1.intersection(dict_list_model2):
+        obj1 = dictlist_model1.get_by_id(_id)
+        obj2 = dict_list_model2.get_by_id(_id)
+        _eq, _comparison = comparison_function(obj1, obj2, ignore_keys=ignore_keys)
+        if not _eq:
+            _is_equivalent = False
+            diff_objs.append(_id)
+        comparison[_id] = _comparison
+    return _is_equivalent, comparison, diff_objs
+
+
 def compare_model_state(
     model1: "Model",
     model2: "Model",
@@ -148,6 +175,8 @@ def compare_model_state(
     Will compare the model and then compare metabolites, reactions, genes, groups in
     the model. Models will be considered different if any of the objects within the
     cobra model are different.
+    Will ignore the notes field. If you want to compare the notes field, you may need
+    to run _fix_xml_annotation_to_identifiers and/or fix_for_notes_changes.
 
     Parameters
     ----------
@@ -156,7 +185,7 @@ def compare_model_state(
     model2: cobra.Model
         Other Model to compare.
     ignore_notes: bool, optional
-        Whether or not to ignore the notes field in the
+        Whether or not to ignore the notes field in the model. Default True.
     ignore_keys
 
     Returns
@@ -168,6 +197,11 @@ def compare_model_state(
         The differenet_x specifies which comparisons were not equivalent, while the
         x contains the full dictionary of comparing each element (each group,
         metabolite, reaction, gene).
+
+    See Also
+    --------
+    _fix_xml_annotation_to_identifiers()
+    fix_for_notes_changes()
     """
     _is_equivalent = True
     if ignore_keys is None:
@@ -188,74 +222,39 @@ def compare_model_state(
     }
     _eq, model_comparison = compare_state(model1, model2, do_not_compare_models)
     _is_equivalent = _eq
-    model_comparison["metabolites"] = dict()
-    model_comparison["different_mets"] = list()
-    mets_model1 = set(model1.metabolites.list_attr("id"))
-    mets_model2 = set(model2.metabolites.list_attr("id"))
-    if mets_model1 != mets_model2:
-        if mets_model1 - mets_model2:
-            model_comparison["metabolites"]["added"] = mets_model1 - mets_model2
-        if mets_model2 - mets_model1:
-            model_comparison["metabolites"]["removed"] = mets_model2 - mets_model1
-    for _id in list(mets_model1.intersection(mets_model2)):
-        met1 = model1.metabolites.get_by_id(_id)
-        met2 = model2.metabolites.get_by_id(_id)
-        _eq, _comparison = compare_state(met1, met2, ignore_keys=ignore_keys)
-        if not _eq:
-            _is_equivalent = False
-            model_comparison["different_mets"].append(_id)
-        model_comparison["metabolites"][_id] = _comparison
+    _eq, comp_result, different_ids = compare_dictlists(
+        ignore_keys, model1.metabolites, model2.metabolites
+    )
+    model_comparison["metabolites"] = comp_result
+    model_comparison["different_mets"] = different_ids
+    _is_equivalent &= _eq
 
-    model_comparison["reactions"] = dict()
-    model_comparison["different_rxns"] = list()
-    rxns_model1 = set(model1.reactions.list_attr("id"))
-    rxns_model2 = set(model2.reactions.list_attr("id"))
-    if rxns_model1 - rxns_model2:
-        model_comparison["reactions"]["added"] = rxns_model1 - rxns_model2
-    if rxns_model2 - rxns_model1:
-        model_comparison["reactions"]["removed"] = rxns_model2 - rxns_model1
-    for _id in list(rxns_model1.intersection(rxns_model2)):
-        rxn1 = model1.reactions.get_by_id(_id)
-        rxn2 = model2.reactions.get_by_id(_id)
-        _eq, _comparison = compare_reaction_state(rxn1, rxn2, ignore_keys=ignore_keys)
-        if not _eq:
-            _is_equivalent = False
-            model_comparison["different_rxns"].append(_id)
-        model_comparison["reactions"][_id] = _comparison
+    _eq, comp_result, different_ids = compare_dictlists(
+        ignore_keys,
+        model1.reactions,
+        model2.reactions,
+        comparison_function=compare_reaction_state,
+    )
+    model_comparison["reactions"] = comp_result
+    model_comparison["different_reactions"] = different_ids
+    _is_equivalent &= _eq
 
-    model_comparison["genes"] = dict()
-    model_comparison["different_genes"] = list()
-    genes_model1 = set(model1.genes.list_attr("id"))
-    genes_model2 = set(model2.genes.list_attr("id"))
-    if genes_model1 - genes_model2:
-        model_comparison["genes"]["added"] = genes_model1 - genes_model2
-    if genes_model2 - genes_model1:
-        model_comparison["genes"]["removed"] = genes_model2 - genes_model1
-    for _id in list(genes_model1.intersection(genes_model2)):
-        gene1 = model1.genes.get_by_id(_id)
-        gene2 = model2.genes.get_by_id(_id)
-        _eq, _comparison = compare_state(gene1, gene2, ignore_keys=ignore_keys)
-        if not _eq:
-            _is_equivalent = False
-            model_comparison["different_genes"].append(_id)
-        model_comparison["genes"][_id] = _comparison
+    _eq, comp_result, different_ids = compare_dictlists(
+        ignore_keys, model1.genes, model2.genes
+    )
+    model_comparison["genes"] = comp_result
+    model_comparison["different_genes"] = different_ids
+    _is_equivalent &= _eq
 
-    model_comparison["groups"] = dict()
-    model_comparison["different_groups"] = list()
-    groups_model1 = set(model1.groups.list_attr("id"))
-    groups_model2 = set(model2.groups.list_attr("id"))
-    if groups_model1 - groups_model2:
-        model_comparison["groups"]["added"] = groups_model1 - groups_model2
-    if groups_model2 - groups_model1:
-        model_comparison["groups"]["removed"] = groups_model2 - groups_model1
-    for _id in list(groups_model1.intersection(groups_model2)):
-        group1 = model1.groups.get_by_id(_id)
-        group2 = model2.groups.get_by_id(_id)
-        _eq, _comparison = compare_state(group1, group2, ignore_keys=ignore_keys)
-        if not _eq:
-            _is_equivalent = False
-            model_comparison["different_groups"].append(_id)
-        model_comparison["groups"][_id] = _comparison
+    _eq, comp_result, different_ids = compare_dictlists(
+        ignore_keys,
+        model1.groups,
+        model2.groups,
+        comparison_function=compare_group_state,
+    )
+    model_comparison["genes"] = comp_result
+    model_comparison["different_genes"] = different_ids
+    _is_equivalent &= _eq
 
     return _is_equivalent, model_comparison
 
@@ -302,3 +301,22 @@ def _fix_xml_annotation_to_identifiers(model: "Model") -> None:
             for annot, val in gene.annotation.items():
                 if isinstance(val, str):
                     gene.annotation[annot] = [val]
+
+
+def fix_for_notes_changes(diff_dict, diff_set):
+    for key in list(diff_set):
+        if "notes" in diff_dict[key]["modified"].keys():
+            note_dictionaries = diff_dict[key]["modified"]["notes"]
+            note_dictionaries[0] = {
+                k: v
+                for k, v in note_dictionaries[0].items()
+                if k != "References" and k != "NOTES"
+            }
+            note_dictionaries[1] = {
+                k: v
+                for k, v in note_dictionaries[1].items()
+                if k != "References" and k != "NOTES"
+            }
+            if note_dictionaries[0] == note_dictionaries[1]:
+                diff_set.remove(key)
+                diff_dict[key]["modified"].__delitem__("notes")
