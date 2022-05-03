@@ -1,13 +1,12 @@
 """Test functionalities of I/O in MATLAB (.mat) format."""
 
-from os.path import join
 from pathlib import Path
 from pickle import load
 from typing import TYPE_CHECKING, Callable
 
 import pytest
 
-from cobra import io
+from cobra.io import load_matlab_model, read_sbml_model, save_matlab_model
 
 
 try:
@@ -17,14 +16,13 @@ except ImportError:
 
 
 if TYPE_CHECKING:
-
     from cobra import Model
 
 
 @pytest.fixture(scope="function")
-def raven_model(data_directory: str) -> "Model":
+def raven_model(data_directory: Path) -> "Model":
     """Fixture for RAVEN model."""
-    with open(join(data_directory, "raven.pickle"), "rb") as infile:
+    with open(data_directory / "raven.pickle", "rb") as infile:
         return load(infile)
 
 
@@ -41,9 +39,18 @@ def test_load_matlab_model(
     mini_model: "Model",
     raven_model: "Model",
 ) -> None:
-    """Test the reading of MAT model."""
-    mini_mat_model = io.load_matlab_model(join(data_directory, "mini.mat"))
-    raven_mat_model = io.load_matlab_model(join(data_directory, "raven.mat"))
+    """Test the reading of MAT model.
+
+    Parameters
+    ----------
+    compare_models : Callable
+        A callable to compare models.
+    data_directory : pathlib.Path
+        The path to the test data directory.
+
+    """
+    mini_mat_model = load_matlab_model(str((data_directory / "mini.mat").resolve()))
+    raven_mat_model = load_matlab_model(str((data_directory / "raven.mat").resolve()))
     assert compare_models(mini_model, mini_mat_model) is None
     assert compare_models(raven_model, raven_mat_model) is None
 
@@ -59,24 +66,44 @@ def test_load_matlab_model(
 def test_save_matlab_model(
     tmp_path: Path, mini_model: "Model", raven_model: "Model"
 ) -> None:
-    """Test the writing of MAT model."""
-    mini_output_file = tmp_path.joinpath("mini.mat")
-    raven_output_file = tmp_path.joinpath("raven.mat")
+    """Test the writing of MAT model.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        The path to the temporary test assets store.
+    mini_model : cobra.Model
+        The mini model.
+    raven_model : cobra.Model
+        The RAVEN model.
+
+    """
+    mini_output_file = tmp_path / "mini.mat"
+    raven_output_file = tmp_path / "raven.mat"
     # scipy.io.savemat() doesn't support anything other than
     # str or file-stream object, hence the str conversion
-    io.save_matlab_model(mini_model, str(mini_output_file))
-    io.save_matlab_model(raven_model, str(raven_output_file))
+    save_matlab_model(mini_model, str(mini_output_file.resolve()))
+    save_matlab_model(raven_model, str(raven_output_file.resolve()))
     assert mini_output_file.exists()
     assert raven_output_file.exists()
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
 def test_large_bounds(tmp_path: Path, model: "Model") -> None:
-    """Verify that mat bounds don't get broken by the config defaults."""
+    """Verify that mat bounds don't get broken by the config defaults.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        The path to the temporary test assets store.
+    model : cobra.Model
+        The "textbook" model.
+
+    """
     model.reactions[0].bounds = -1e6, 1e6
-    filepath = str(tmp_path.joinpath("model.mat"))
-    io.save_matlab_model(model, filepath)
-    read = io.load_matlab_model(filepath)
+    filepath = tmp_path / "model.mat"
+    save_matlab_model(model, str(filepath.resolve()))
+    read = load_matlab_model(str(filepath.resolve()))
     assert read.reactions[0].bounds == (-1e6, 1e6)
 
 
@@ -84,23 +111,34 @@ def test_large_bounds(tmp_path: Path, model: "Model") -> None:
 def test_read_rewrite_matlab_model(
     compare_models: Callable, tmp_path: Path, data_directory: Path
 ) -> None:
-    """Verify that rewritten matlab model is identical to original."""
-    mini_mat_model = io.load_matlab_model(join(data_directory, "mini.mat"))
-    raven_mat_model = io.load_matlab_model(join(data_directory, "raven.mat"))
+    """Verify that rewritten matlab model is identical to original.
+
+    Parameters
+    ----------
+    compare_models : Callable
+        A callable to compare models.
+    tmp_path : pathlib.Path
+        The path to the temporary test assets store.
+    data_directory : pathlib.Path
+        The path to the test data directory.
+
+    """
+    mini_mat_model = load_matlab_model(str((data_directory / "mini.mat").resolve()))
+    raven_mat_model = load_matlab_model(str((data_directory / "raven.mat").resolve()))
     mini_output_file = tmp_path.joinpath("mini.mat")
     raven_output_file = tmp_path.joinpath("raven.mat")
     # scipy.io.savemat() doesn't support anything other than
     # str or file-stream object, hence the str conversion
-    io.save_matlab_model(mini_mat_model, str(mini_output_file))
-    io.save_matlab_model(raven_mat_model, str(raven_output_file))
-    mini_mat_model_reload = io.load_matlab_model(str(mini_output_file))
-    raven_mat_model_reload = io.load_matlab_model(str(raven_output_file))
+    save_matlab_model(mini_mat_model, str(mini_output_file))
+    save_matlab_model(raven_mat_model, str(raven_output_file))
+    mini_mat_model_reload = load_matlab_model(str(mini_output_file))
+    raven_mat_model_reload = load_matlab_model(str(raven_output_file))
     assert compare_models(mini_mat_model, mini_mat_model_reload) is None
     assert compare_models(raven_mat_model, raven_mat_model_reload) is None
 
 
 def _fix_xml_annotation_to_identifiers(model: "Model") -> None:
-    """Some XML models with cobra have annotations that do not match identifiers.org.
+    """Fix XML annotations to respect identifiers.org .
 
     This function will fix the dict keys of annotations to match identifiers.org.
     Eventually, the XML models should be fixed and cobrapy should be strict, but this is
@@ -113,8 +151,9 @@ def _fix_xml_annotation_to_identifiers(model: "Model") -> None:
 
     Parameters
     ----------
-    model: Model
-        A model to fix
+    model : cobra.Model
+        The model to fix.
+
     """
     for met in model.metabolites:
         if met.formula == "":
@@ -160,36 +199,67 @@ def test_compare_xml_to_written_matlab_model(
     tmp_path: Path,
     xml_file: str,
 ) -> None:
-    """Verify that xml rewritten as mat file is written and read correctly."""
-    xml_model = io.read_sbml_model(join(data_directory, xml_file))
+    """Verify that xml rewritten as mat file is written and read correctly.
+
+    Parameters
+    ----------
+    compare_models : Callable
+        A callable to compare models.
+    data_directory : pathlib.Path
+        The path to the test data directory.
+    tmp_path : pathlib.Path
+        The path to the temporary test assets store.
+    xml_file : str
+        The name of the XML file to compare against.
+
+    """
+    xml_model = read_sbml_model(str((data_directory / xml_file).resolve()))
     _fix_xml_annotation_to_identifiers(xml_model)
-    mat_output_file = tmp_path.joinpath(xml_file.replace(".xml", ".mat"))
-    io.save_matlab_model(
-        xml_model, str(mat_output_file)
+    mat_output_file = tmp_path / xml_file.replace(".xml", ".mat")
+    save_matlab_model(
+        xml_model, str(mat_output_file.resolve())
     )  # lac__D_e_boundary confuses the reading of matlab
-    mat_model = io.load_matlab_model(str(mat_output_file))
+    mat_model = load_matlab_model(str(mat_output_file.resolve()))
     assert compare_models(xml_model, mat_model) is None
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
-def test_fail_on_problematic_compartments(data_directory: str) -> None:
-    """Test that mat import will fail if there are problems in compartments."""
+def test_fail_on_problematic_compartments(data_directory: Path) -> None:
+    """Test that mat import will fail if there are problems in compartments.
+
+    Parameters
+    ----------
+    data_directory : pathlib.Path
+        The path to the test data directory.
+
+    """
     with pytest.raises(IOError):
         # AntCore does not have defined compartments
-        ant_core_model = io.load_matlab_model(join(data_directory, "AntCore.mat"))
+        load_matlab_model(str((data_directory / "AntCore.mat").resolve()))
     with pytest.raises(IOError):
         # Ec_iAF1260_flux1 has underscore in compartment names which is not allowed
-        Ec_iAF1260_flux1_model = io.load_matlab_model(
-            join(data_directory, "Ec_iAF1260_flux1.mat")
-        )
+        load_matlab_model(str((data_directory / "Ec_iAF1260_flux1.mat").resolve()))
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
 def test_mat_model_with_long_compartment_ids(
     compare_models: Callable, data_directory: Path, tmp_path: Path
 ) -> None:
-    """Test that long compartment IDs like "luSI" are correctly loaded."""
-    model_compartments = io.load_matlab_model(join(data_directory, "compartments.mat"))
+    """Test that long compartment IDs like "luSI" are correctly loaded.
+
+    Parameters
+    ----------
+    compare_models : Callable
+        A callable to compare models.
+    data_directory : pathlib.Path
+        The path to the test data directory.
+    tmp_path : pathlib.Path
+        The path to the temporary test assets store.
+
+    """
+    model_compartments = load_matlab_model(
+        str((data_directory / "compartments.mat").resolve())
+    )
     assert model_compartments.compartments == {
         "csf": "csf",
         "bcK": "bcK",
@@ -209,9 +279,9 @@ def test_mat_model_with_long_compartment_ids(
             "kegg.compound": ["C00031"],
             "pubchem.substance": ["3333"],
         }
-    output_file = tmp_path.joinpath("compartments.mat")
-    io.save_matlab_model(model_compartments, str(output_file))
-    model_compartments_reloaded = io.load_matlab_model(str(output_file))
+    output_file = tmp_path / "compartments.mat"
+    save_matlab_model(model_compartments, str(output_file.resolve()))
+    model_compartments_reloaded = load_matlab_model(str(output_file.resolve()))
     assert compare_models(model_compartments, model_compartments_reloaded) is None
 
 
@@ -219,14 +289,25 @@ def test_mat_model_with_long_compartment_ids(
 def test_mat_model_with_no_genes(
     compare_models: Callable, data_directory: Path, tmp_path: Path
 ) -> None:
-    """Test that a model with no genes is loaded and reloaded correctly."""
-    model_no_genes = io.load_matlab_model(
-        join(data_directory, "cardiac_mit_glcuptake_atpmax.mat")
+    """Test that a model with no genes is loaded and reloaded correctly.
+
+    Parameters
+    ----------
+    compare_models : Callable
+        A callable to compare models.
+    data_directory : pathlib.Path
+        The path to the test data directory.
+    tmp_path : pathlib.Path
+        The path to the temporary test assets store.
+
+    """
+    model_no_genes = load_matlab_model(
+        str((data_directory / "cardiac_mit_glcuptake_atpmax.mat").resolve())
     )
     assert not len(model_no_genes.genes)
-    output_file = tmp_path.joinpath("cardiac_mit_glcuptake_atpmax.mat")
-    io.save_matlab_model(model_no_genes, str(output_file))
-    model_no_genes_reloaded = io.load_matlab_model(str(output_file))
+    output_file = tmp_path / "cardiac_mit_glcuptake_atpmax.mat"
+    save_matlab_model(model_no_genes, str(output_file.resolve()))
+    model_no_genes_reloaded = load_matlab_model(str(output_file.resolve()))
     assert compare_models(model_no_genes, model_no_genes_reloaded) is None
 
 
@@ -236,10 +317,18 @@ def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) ->
 
     See https://gist.github.com/akaviaLab/3dcb0eed6563a9d3d1e07198337300ac to create it
     again when needed.
+
+    Parameters
+    ----------
+    compare_models : Callable
+        A callable to compare models.
+    data_directory : pathlib.Path
+        The path to the test data directory.
+
     """
-    mat_model = io.load_matlab_model(join(data_directory, "mini.mat"))
-    mat_wrong_caps_model = io.load_matlab_model(
-        join(data_directory, "mini_wrong_key_caps.mat")
+    mat_model = load_matlab_model(str(Path(data_directory / "mini.mat").resolve()))
+    mat_wrong_caps_model = load_matlab_model(
+        str(Path(data_directory, "mini_wrong_key_caps.mat").resolve())
     )
     assert compare_models(mat_model, mat_wrong_caps_model) is None
     assert mat_wrong_caps_model.reactions.get_by_id("LDH_D").annotation == {
