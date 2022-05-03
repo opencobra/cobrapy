@@ -1,3 +1,5 @@
+"""Test load.py functions and behavior."""
+
 import gzip
 import pathlib
 
@@ -44,9 +46,7 @@ def test_biomodels_access(biomodels):
 
 def test_unknown_model():
     """Expect that a not found error is raised (e2e)."""
-    with pytest.raises(
-        RuntimeError, match="could not be found in any of the repositories."
-    ):
+    with pytest.raises(RuntimeError):
         load_model("MODELWHO?", cache=False)
 
 
@@ -74,5 +74,6 @@ def test_cache(monkeypatch, tmp_path, bigg_models, biomodels):
 
 
 def test_local_load(model, compare_models):
+    """Test loacl loading of models."""
     model_local = load_model("textbook")
     compare_models(model, model_local)
