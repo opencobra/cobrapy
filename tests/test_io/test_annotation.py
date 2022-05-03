@@ -104,7 +104,7 @@ def test_read_sbml_annotations(data_directory: Path) -> None:
         The path to the test data directory.
 
     """
-    with open(str((data_directory / "annotation.xml").resolve()), "r") as f_in:
+    with open(data_directory / "annotation.xml", "r") as f_in:
         model1 = read_sbml_model(f_in)
         _check_sbml_annotations(model1)
 
@@ -118,10 +118,10 @@ def test_read_write_sbml_annotations(data_directory: Path, tmp_path: Path) -> No
         The path to the temporary test assets store.
 
     """
-    with open(str((data_directory / "annotation.xml").resolve()), "r") as f_in:
+    with open(data_directory / "annotation.xml", "r") as f_in:
         model1 = read_sbml_model(f_in)
 
-    sbml_path = str((tmp_path / "test.xml").resolve())
+    sbml_path = tmp_path / "test.xml"
     with open(sbml_path, "w") as f_out:
         write_sbml_model(model1, f_out)
 
