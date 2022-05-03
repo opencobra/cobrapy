@@ -1,6 +1,8 @@
 """Comparing models, reactions, metabolites, genes and groups."""
 
-from typing import TYPE_CHECKING, Dict, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, Dict, Optional, Tuple, TypeVar, Callable
+
+from cobra import DictList
 
 
 if TYPE_CHECKING:
@@ -55,8 +57,8 @@ def compare_state(
     Returns
     -------
     Tuple - bool, Dict
-        A tuple of a boolean (are the two objects different or not) and a dictionary
-        specifying how they differed.
+        A tuple of a boolean (are the two objects equivalent or different) and
+        a dictionary specifying how they differed.
     """
     _is_equivalent = True
     if ignore_keys is None:
@@ -89,8 +91,8 @@ def compare_reaction_state(
     Returns
     -------
     Tuple - bool, Dict
-        A tuple of a boolean (are the two objects different or not) and a dictionary
-        specifying how they differed.
+        A tuple of a boolean (are the two objects equivalent or different) and a
+        dictionary specifying how they differed.
     """
     _is_equivalent = True
     state1 = rxn1.__getstate__()
@@ -123,8 +125,8 @@ def compare_group_state(
     Returns
     -------
     Tuple - bool, Dict
-        A tuple of a boolean (are the two objects different or not) and a dictionary
-        specifying how they differed.
+        A tuple of a boolean (are the two objects equivalent or different) and a
+        dictionary specifying how they differed.
     """
     _is_equivalent = True
     state1 = group1.__getstate__()
@@ -138,24 +140,58 @@ def compare_group_state(
 
 
 def compare_dictlists(
-    ignore_keys, dictlist_model1, dict_list_model2, comparison_function=None
+    dictlist1: DictList,
+    dictlist2: DictList,
+    ignore_keys: Optional[set] = None,
+    comparison_function: Optional[Callable] = None,
 ):
+    """Compare dictlist of objects. Useful for comparing models.
+
+    Will check whether there are objects in dictlist1 that aren't present in dictlist2,
+    and vice versa.
+    Objects that appear in both dictlists will be compared using the comparison
+    function, which allows different functions for reaction or group. The default is
+    None, which will result in simple compare_state() used as the comparison function.
+
+    Parameters
+    ----------
+    ignore_keys: set, optional
+        What keys should be ignored. Defualt None.
+    dictlist1: cobra.DictList
+        The first dictlist to compare
+    dictlist2: cobra.DictList
+    comparison_function: Callable
+        A function to use for comparing the objects in the dictlists.
+
+    Returns
+    -------
+    Tuple: bool, Dict, List
+        A tuple of a boolean (are the two dictlists equivalent or different) and a
+        dictionary specifying how they differed. It also returns a list of ids that
+        were present in both dictlists, but different.
+
+    See Also
+    --------
+    compare_state()
+    compare_reaction_state()
+    compare_group_state()
+    """
     if comparison_function is None:
         comparison_function = compare_state
     _is_equivalent = True
     comparison = {}
     diff_objs = []
-    ids_model1 = set(dictlist_model1.list_attr("id"))
-    ids_model2 = set(dict_list_model2.list_attr("id"))
+    ids_model1 = set(dictlist1.list_attr("id"))
+    ids_model2 = set(dictlist2.list_attr("id"))
     if ids_model1 - ids_model2:
         comparison["added"] = ids_model1 - ids_model2
         _is_equivalent = False
     if ids_model2 - ids_model1:
         comparison["removed"] = ids_model2 - ids_model1
         _is_equivalent = False
-    for _id in dictlist_model1.intersection(dict_list_model2):
-        obj1 = dictlist_model1.get_by_id(_id)
-        obj2 = dict_list_model2.get_by_id(_id)
+    for _id in dictlist1.intersection(dictlist2):
+        obj1 = dictlist1.get_by_id(_id)
+        obj2 = dictlist2.get_by_id(_id)
         _eq, _comparison = comparison_function(obj1, obj2, ignore_keys=ignore_keys)
         if not _eq:
             _is_equivalent = False
@@ -186,12 +222,13 @@ def compare_model_state(
         Other Model to compare.
     ignore_notes: bool, optional
         Whether or not to ignore the notes field in the model. Default True.
-    ignore_keys
+    ignore_keys: set, optional
+        What keys should be ignored. Defualt None.
 
     Returns
     -------
     Tuple - bool, Dict
-        A tuple of a boolean (are the two models different or not)
+        A tuple of a boolean (are the two models equivalent or different)
         and a dictionary specifying how they differed. The dictionary contains
         different_x as a list and x for metabolites, reactions, genes, groups.
         The differenet_x specifies which comparisons were not equivalent, while the
@@ -223,16 +260,16 @@ def compare_model_state(
     _eq, model_comparison = compare_state(model1, model2, do_not_compare_models)
     _is_equivalent = _eq
     _eq, comp_result, different_ids = compare_dictlists(
-        ignore_keys, model1.metabolites, model2.metabolites
+        model1.metabolites, model2.metabolites, ignore_keys
     )
     model_comparison["metabolites"] = comp_result
     model_comparison["different_mets"] = different_ids
     _is_equivalent &= _eq
 
     _eq, comp_result, different_ids = compare_dictlists(
-        ignore_keys,
         model1.reactions,
         model2.reactions,
+        ignore_keys,
         comparison_function=compare_reaction_state,
     )
     model_comparison["reactions"] = comp_result
@@ -240,16 +277,16 @@ def compare_model_state(
     _is_equivalent &= _eq
 
     _eq, comp_result, different_ids = compare_dictlists(
-        ignore_keys, model1.genes, model2.genes
+        model1.genes, model2.genes, ignore_keys
     )
     model_comparison["genes"] = comp_result
     model_comparison["different_genes"] = different_ids
     _is_equivalent &= _eq
 
     _eq, comp_result, different_ids = compare_dictlists(
-        ignore_keys,
         model1.groups,
         model2.groups,
+        ignore_keys,
         comparison_function=compare_group_state,
     )
     model_comparison["genes"] = comp_result
