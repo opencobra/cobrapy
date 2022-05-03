@@ -114,8 +114,8 @@ def test_read_write_sbml_annotations(data_directory: Path, tmp_path: Path) -> No
 
     data_directory : pathlib.Path
         The path to the test data directory.
-    tmp_path_order : pathlib.Path
-        The folder path for storing I/O order test files.
+    tmp_path : pathlib.Path
+        The path to the temporary test assets store.
 
     """
     with open(str((data_directory / "annotation.xml").resolve()), "r") as f_in:

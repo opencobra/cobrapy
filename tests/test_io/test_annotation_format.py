@@ -12,8 +12,8 @@ def test_load_json_model_valid(data_directory: Path, tmp_path: Path) -> None:
 
     data_directory : pathlib.Path
         The path to the test data directory.
-    tmp_path_order : pathlib.Path
-        The folder path for storing I/O order test files.
+    tmp_path : pathlib.Path
+        The path to the temporary test assets store.
 
     """
     path_to_file = data_directory / "valid_annotation_format.json"
