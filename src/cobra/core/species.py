@@ -2,7 +2,7 @@
 
 
 from copy import deepcopy
-from typing import TYPE_CHECKING, FrozenSet, Optional, Union
+from typing import TYPE_CHECKING, FrozenSet, Optional
 
 from ..core.object import Object
 
