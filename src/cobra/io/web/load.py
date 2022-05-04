@@ -25,18 +25,16 @@ logger = logging.getLogger(__name__)
 configuration = Configuration()
 
 
-cobrapy_repository = Cobrapy()
-bigg_models_repository = BiGGModels()
-bio_models_repository = BioModels()
+DEFAULT_REPOSITORIES = (
+    Cobrapy(),
+    BiGGModels(),
+    BioModels(),
+)
 
 
 def load_model(
     model_id: str,
-    repositories: Iterable[AbstractModelRepository] = (
-        cobrapy_repository,
-        bigg_models_repository,
-        bio_models_repository,
-    ),
+    repositories: Iterable[AbstractModelRepository] = DEFAULT_REPOSITORIES,
     cache: bool = True,
 ) -> "Model":
     """
