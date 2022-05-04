@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 @pytest.fixture(scope="module")
 def mini_sbml(data_directory: Path) -> bytes:
     """Provide a gzip-compressed SBML document."""
-    with open(data_directory / "mini_cobra.xml", "rb") as handle:
+    with (data_directory / "mini_cobra.xml").open(mode="rb") as handle:
         return gzip.compress(handle.read())
 
 
