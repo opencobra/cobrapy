@@ -1613,9 +1613,8 @@ def _check_required(sbase: "libsbml.Base", value: str, attribute: str) -> str:
         elif hasattr(sbase, "getMetaId") and sbase.getMetaId():
             msg += f" with metaId '{sbase.getName()}'"
         raise CobraSBMLError(msg)
-    if attribute == "id":
-        if not libsbml.SyntaxChecker.isValidSBMLSId(value):
-            LOGGER.error(f"'{value}' is not a valid SBML 'SId'.")
+    if attribute == "id" and not libsbml.SyntaxChecker.isValidSBMLSId(value):
+        LOGGER.error(f"'{value}' is not a valid SBML 'SId'.")
 
     return value
 
