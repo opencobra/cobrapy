@@ -25,13 +25,16 @@ logger = logging.getLogger(__name__)
 configuration = Configuration()
 
 
+DEFAULT_REPOSITORIES = (
+    Cobrapy(),
+    BiGGModels(),
+    BioModels(),
+)
+
+
 def load_model(
     model_id: str,
-    repositories: Iterable[AbstractModelRepository] = (
-        Cobrapy(),
-        BiGGModels(),
-        BioModels(),
-    ),
+    repositories: Iterable[AbstractModelRepository] = DEFAULT_REPOSITORIES,
     cache: bool = True,
 ) -> "Model":
     """
@@ -155,7 +158,7 @@ def _fetch_model(
         )
         try:
             return repository.get_sbml(model_id=model_id)
-        except (FileNotFoundError, OSError):
+        except OSError:
             logger.debug(
                 f"Model '{model_id} not found in the local "
                 f"repository {repository.name}.'"

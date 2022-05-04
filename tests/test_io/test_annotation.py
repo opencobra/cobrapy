@@ -1,10 +1,24 @@
-from os.path import join
+"""Test model annotations in SBML format."""
+
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 from cobra.io import read_sbml_model, write_sbml_model
 
 
-def _check_sbml_annotations(model):
-    """Checks the annotations from the annotation.xml."""
+if TYPE_CHECKING:
+    from cobra import Model
+
+
+def _check_sbml_annotations(model: "Model") -> None:
+    """Check the annotations from the annotation.xml.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The model to check annotations for.
+
+    """
     assert model is not None
 
     # model annotation
@@ -83,19 +97,31 @@ def _check_sbml_annotations(model):
     assert annotation["biocyc"] == "META:ACETALD-DEHYDROG-RXN"
 
 
-def test_read_sbml_annotations(data_directory):
-    """Test reading and writing annotations."""
-    with open(join(data_directory, "annotation.xml"), "r") as f_in:
+def test_read_sbml_annotations(data_directory: Path) -> None:
+    """Test reading and writing annotations.
+
+    data_directory : pathlib.Path
+        The path to the test data directory.
+
+    """
+    with open(data_directory / "annotation.xml", "r") as f_in:
         model1 = read_sbml_model(f_in)
         _check_sbml_annotations(model1)
 
 
-def test_read_write_sbml_annotations(data_directory, tmp_path):
-    """Test reading and writing annotations."""
-    with open(join(data_directory, "annotation.xml"), "r") as f_in:
+def test_read_write_sbml_annotations(data_directory: Path, tmp_path: Path) -> None:
+    """Test reading and writing annotations.
+
+    data_directory : pathlib.Path
+        The path to the test data directory.
+    tmp_path : pathlib.Path
+        The path to the temporary test assets store.
+
+    """
+    with open(data_directory / "annotation.xml", "r") as f_in:
         model1 = read_sbml_model(f_in)
 
-    sbml_path = join(str(tmp_path), "test.xml")
+    sbml_path = tmp_path / "test.xml"
     with open(sbml_path, "w") as f_out:
         write_sbml_model(model1, f_out)
 
