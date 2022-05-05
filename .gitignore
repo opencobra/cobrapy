@@ -236,11 +236,8 @@ docs/_build/
 target/
 
 # Jupyter Notebook
-.ipynb_checkpoints
 
 # IPython
-profile_default/
-ipython_config.py
 
 # pyenv
 #   For a library or package, you might want to ignore these files since the code is
@@ -303,8 +300,3 @@ gurobi.log
 /documentation_builder/test*\.*
 /.benchmarks
 /.testmondata
-/.idea/cobrapy.iml
-/.idea/misc.xml
-/.idea/modules.xml
-/.idea/inspectionProfiles/profiles_settings.xml
-/.idea/vcs.xml
