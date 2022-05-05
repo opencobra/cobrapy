@@ -598,7 +598,7 @@ def _sbml_to_model(
     if not libsbml.SyntaxChecker.isValidSBMLSId(model_id):
         LOGGER.error(f"'{model_id}' is not a valid SBML 'SId'.")
     cobra_model = Model(model_id)
-    cobra_model.name = model.getName()
+    cobra_model.name = model.getName() or None
 
     # meta information
     meta = {
@@ -685,7 +685,7 @@ def _sbml_to_model(
         specie_fbc: "libsbml.FbcSpeciesPlugin" = specie.getPlugin("fbc")
         if specie_fbc:
             met.charge = specie_fbc.getCharge()
-            met.formula = specie_fbc.getChemicalFormula()
+            met.formula = specie_fbc.getChemicalFormula() or None
         else:
             if specie.isSetCharge():
                 LOGGER.warning(

@@ -143,9 +143,6 @@ def test_read_rewrite_matlab_model(
 )
 # When using a better comparison function, can run test on
 # "annotation.xml", "example_notes.xml", "fbc_ex1.xml", "fbc_ex2.xml", "validation.xml"
-# "example_notes.xml" contains a group and groups are not yet correctly exported to
-# matlab - can use it with better comparison function (and solved group export/import)
-# Maybe should ignore the field subsystem in reactions, or get SBML import to modify it.
 # "valid_annotation_output.xml" has reaction annotations in a metabolite, so they would
 # be thrown out by matlab
 def test_compare_xml_to_written_matlab_model(

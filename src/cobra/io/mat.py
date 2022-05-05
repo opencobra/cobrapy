@@ -660,6 +660,9 @@ def create_mat_dict(model: Model) -> OrderedDict:
     notes_to_mat(mat, rxns.list_attr("notes"), DICT_REACTION_NOTES_REV)
     rxn_subsystems = _cell(rxns.list_attr("subsystem"))
     group_ids = model.groups.list_attr("id")
+    group_names = model.groups.list_attr("name")
+    group_ids = [_id if not _name else _name
+                 for _id, _name in zip(group_ids, group_names)]
     group_members_list = model.groups.list_attr("members")
     if set(rxn_subsystems) == {""} and set(group_ids) != {""}:
         subsystems = [[] for _ in rxns]
