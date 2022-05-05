@@ -530,10 +530,7 @@ def annotations_to_mat(
                 v = [v]
             if provider_key == "pubmed":
                 v = ", ".join(
-                    [
-                        "PMID:" + annot if "PMID:" not in annot else annot
-                        for annot in v
-                    ]
+                    ["PMID:" + annot if "PMID:" not in annot else annot for annot in v]
                 )
             elif provider_key == "CHEBI":
                 v = ", ".join(
@@ -624,10 +621,9 @@ def create_mat_dict(model: Model) -> OrderedDict:
     model_has_compartment_names = False
     if list(model.compartments.keys()) != list(model.compartments.values()):
         model_has_compartment_names = True
-    if (
-        {_get_id_compartment(met_id) for met_id in mets.list_attr("id")} == {None}
-        or model_has_compartment_names
-    ):
+    if {_get_id_compartment(met_id) for met_id in mets.list_attr("id")} == {
+        None
+    } or model_has_compartment_names:
         comps = list(model.compartments.keys())
         mat["comps"] = _cell(comps)
         mat["compNames"] = _cell([model.compartments[comp] for comp in comps])
@@ -860,14 +856,16 @@ def from_mat_struct(
         # RECON3.0 mat has an array within an array for subsystems.
         # If we find a model that has multiple subsytems per reaction, this should be
         # modified
-        if isinstance(m["subSystems"][0, 0][0][0][0], np.ndarray):
+        if np.sctype2char(m["subSystems"][0, 0][0][0]) == "O" and isinstance(
+            m["subSystems"][0, 0][0][0][0], np.ndarray
+        ):
             rxn_subsystems = [
-                each_cell[0][0][0][0] if each_cell else None
+                each_cell[0][0][0][0] if each_cell else ""
                 for each_cell in m["subSystems"][0, 0]
             ]
         # Other matlab files seem normal.
         else:
-            rxn_subsystems = _cell_to_str_list(m["subSystems"][0, 0])
+            rxn_subsystems = _cell_to_str_list(m["subSystems"][0, 0], "")
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass
@@ -907,7 +905,7 @@ def from_mat_struct(
             new_group = Group(
                 id=g_name, name=g_name, members=group_members, kind="partonomy"
             )
-            new_group.annotation["sbo"] = "SBO:0000633"
+            new_group.annotation["sbo"] = ["SBO:0000633"]
             new_groups.append(new_group)
         model.add_groups(new_groups)
 

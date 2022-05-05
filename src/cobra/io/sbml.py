@@ -1089,6 +1089,7 @@ def _sbml_to_model(
                     if f_replace and F_REACTION in f_replace:
                         obj_id = f_replace[F_REACTION](obj_id)
                     cobra_member = cobra_model.reactions.get_by_id(obj_id)
+                    cobra_member.subsystem = group.name
                 elif typecode == libsbml.SBML_FBC_GENEPRODUCT:
                     if f_replace and F_GENE in f_replace:
                         obj_id = f_replace[F_GENE](obj_id)
@@ -1110,6 +1111,7 @@ def _sbml_to_model(
         for cobra_reaction in cobra_model.reactions:
             if "SUBSYSTEM" in cobra_reaction.notes:
                 g_name = cobra_reaction.notes["SUBSYSTEM"]
+                cobra_reaction.subsystem = g_name
                 if g_name in groups_dict:
                     groups_dict[g_name].append(cobra_reaction)
                 else:
@@ -1119,7 +1121,7 @@ def _sbml_to_model(
             if f_replace and F_GROUP in f_replace:
                 gid = f_replace[F_GROUP](gid)
             cobra_group = Group(gid, name=gid, kind="partonomy")
-            cobra_group.annotation["sbo"] = "SBO:0000633"
+            cobra_group.annotation["sbo"] = ["SBO:0000633"]
             cobra_group.add_members(cobra_members)
             groups.append(cobra_group)
 
@@ -1669,7 +1671,7 @@ def _parse_notes_dict(sbase) -> dict:
     """
     notes = sbase.getNotesString()
     if notes and len(notes) > 0:
-        notes_store = dict()
+        notes_store = {}
         for match in pattern_notes.finditer(notes):
             _content = match.group("content")
             try:
