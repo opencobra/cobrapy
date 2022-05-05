@@ -4,15 +4,11 @@ from pathlib import Path
 from pickle import load as _load
 from typing import List, Tuple
 
+import pytest
+
 from cobra import Metabolite, Model, Reaction, Solution
 from cobra.io import read_sbml_model
 from cobra.util import solver as sutil
-
-
-try:
-    import pytest
-except ImportError:
-    pytest = None
 
 
 data_dir = Path(__file__).parent / "data"
