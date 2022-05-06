@@ -1,32 +1,42 @@
-# -*- coding: utf-8 -*-
-
 """Provide unified interfaces to optimization solutions."""
 
-from __future__ import absolute_import
-
 import logging
-from builtins import object, super
+from typing import TYPE_CHECKING, Iterable
 
-from numpy import empty, nan
+import numpy as np
+import pandas as pd
 from optlang.interface import OPTIMAL
-from pandas import DataFrame, Series, option_context
 
-from cobra.util.solver import check_solver_status
+from ..util.solver import check_solver_status
+
+
+if TYPE_CHECKING:
+    from cobra import Metabolite, Model, Reaction
 
 
 __all__ = ("Solution", "get_solution")
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
-class Solution(object):
+class Solution:
     """
     A unified interface to a `cobra.Model` optimization solution.
 
-    Notes
-    -----
-    Solution is meant to be constructed by `get_solution` please look at that
-    function to fully understand the `Solution` class.
+    Parameters
+    ----------
+    objective_value : float
+        The (optimal) value for the objective function.
+    status : str
+        The solver status related to the solution.
+    fluxes : pandas.Series
+        Contains the reaction fluxes (primal values of variables).
+    reduced_costs : pandas.Series
+        Contains reaction reduced costs (dual values of variables)
+        (default None).
+    shadow_prices : pandas.Series
+        Contains metabolite shadow prices (dual values of constraints)
+        (default None).
 
     Attributes
     ----------
@@ -40,78 +50,97 @@ class Solution(object):
         Contains reaction reduced costs (dual values of variables).
     shadow_prices : pandas.Series
         Contains metabolite shadow prices (dual values of constraints).
+
+    Notes
+    -----
+    Solution is meant to be constructed by `get_solution` please look at that
+    function to fully understand the `Solution` class.
+
     """
 
     def __init__(
         self,
-        objective_value,
-        status,
-        fluxes,
-        reduced_costs=None,
-        shadow_prices=None,
-        **kwargs
-    ):
+        objective_value: float,
+        status: str,
+        fluxes: pd.Series,
+        reduced_costs: pd.Series = None,
+        shadow_prices: pd.Series = None,
+        **kwargs,
+    ) -> None:
         """
         Initialize a `Solution` from its components.
 
-        Parameters
-        ----------
-        objective_value : float
-            The (optimal) value for the objective function.
-        status : str
-            The solver status related to the solution.
-        fluxes : pandas.Series
-            Contains the reaction fluxes (primal values of variables).
-        reduced_costs : pandas.Series
-            Contains reaction reduced costs (dual values of variables).
-        shadow_prices : pandas.Series
-            Contains metabolite shadow prices (dual values of constraints).
+        Other Parameters
+        ----------------
+        kwargs :
+            Further keyword arguments are passed on to the parent class.
+
         """
-        super(Solution, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.objective_value = objective_value
         self.status = status
         self.fluxes = fluxes
         self.reduced_costs = reduced_costs
         self.shadow_prices = shadow_prices
 
-    def __repr__(self):
-        """String representation of the solution instance."""
+    def __repr__(self) -> str:
+        """Return a string representation of the solution instance."""
         if self.status != OPTIMAL:
-            return "<Solution {0:s} at 0x{1:x}>".format(self.status, id(self))
-        return "<Solution {0:.3f} at 0x{1:x}>".format(self.objective_value, id(self))
+            return f"<Solution {self.status} at 0x{id(self):x}>"
+        return f"<Solution {self.objective_value:.3f} at 0x{id(self):x}>"
 
-    def _repr_html_(self):
+    def _repr_html_(self) -> str:
+        """Return a rich HTML representation of the solution."""
         if self.status == OPTIMAL:
-            with option_context("display.max_rows", 10):
+            with pd.option_context("display.max_rows", 10):
                 html = (
                     "<strong><em>Optimal</em> solution with objective "
-                    "value {:.3f}</strong><br>{}".format(
-                        self.objective_value, self.to_frame()._repr_html_()
-                    )
+                    f"value {self.objective_value:.3f}</strong><br>"
+                    f"{self.to_frame()._repr_html_()}"
                 )
         else:
-            html = "<strong><em>{}</em> solution</strong>".format(self.status)
+            html = f"<strong><em>{self.status}</em> solution</strong>"
         return html
 
-    def __getitem__(self, reaction_id):
+    def __getitem__(self, reaction_id: str) -> float:
         """
         Return the flux of a reaction.
 
         Parameters
         ----------
-        reaction : str
+        reaction_id : str
             A model reaction ID.
+
+        Returns
+        -------
+        float
+            The flux of the reaction with ID `reaction_id`.
+
         """
         return self.fluxes[reaction_id]
 
     get_primal_by_id = __getitem__
 
-    def to_frame(self):
-        """Return the fluxes and reduced costs as a data frame"""
-        return DataFrame({"fluxes": self.fluxes, "reduced_costs": self.reduced_costs})
+    def to_frame(self) -> pd.DataFrame:
+        """Return the fluxes and reduced costs as a pandas DataFrame.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The fluxes and reduced cost.
+
+        """
+        return pd.DataFrame(
+            {"fluxes": self.fluxes, "reduced_costs": self.reduced_costs}
+        )
 
 
-def get_solution(model, reactions=None, metabolites=None, raise_error=False):
+def get_solution(
+    model: "Model",
+    reactions: Iterable["Reaction"] = None,
+    metabolites: Iterable["Metabolite"] = None,
+    raise_error: bool = False,
+) -> Solution:
     """
     Generate a solution representation of the current solver state.
 
@@ -120,22 +149,19 @@ def get_solution(model, reactions=None, metabolites=None, raise_error=False):
     model : cobra.Model
         The model whose reactions to retrieve values for.
     reactions : list, optional
-        An iterable of `cobra.Reaction` objects. Uses `model.reactions` by
-        default.
+        An iterable of `cobra.Reaction` objects. Uses `model.reactions`
+        if None (default None).
     metabolites : list, optional
-        An iterable of `cobra.Metabolite` objects. Uses `model.metabolites` by
-        default.
+        An iterable of `cobra.Metabolite` objects. Uses `model.metabolites`
+        if None (default None).
     raise_error : bool
-        If true, raise an OptimizationError if solver status is not optimal.
+        If True, raise an OptimizationError if solver status is not optimal
+        (default False).
 
     Returns
     -------
     cobra.Solution
 
-    Note
-    ----
-    This is only intended for the `optlang` solver interfaces and not the
-    legacy solvers.
     """
     check_solver_status(model.solver.status, raise_error=raise_error)
     if reactions is None:
@@ -143,14 +169,14 @@ def get_solution(model, reactions=None, metabolites=None, raise_error=False):
     if metabolites is None:
         metabolites = model.metabolites
 
-    rxn_index = list()
-    fluxes = empty(len(reactions))
-    reduced = empty(len(reactions))
+    rxn_index = []
+    fluxes = np.empty(len(reactions))
+    reduced = np.empty(len(reactions))
     var_primals = model.solver.primal_values
-    shadow = empty(len(metabolites))
+    shadow = np.empty(len(metabolites))
     if model.solver.is_integer:
-        reduced.fill(nan)
-        shadow.fill(nan)
+        reduced.fill(np.nan)
+        shadow.fill(np.nan)
         for (i, rxn) in enumerate(reactions):
             rxn_index.append(rxn.id)
             fluxes[i] = var_primals[rxn.id] - var_primals[rxn.reverse_id]
@@ -163,15 +189,15 @@ def get_solution(model, reactions=None, metabolites=None, raise_error=False):
             rxn_index.append(forward)
             fluxes[i] = var_primals[forward] - var_primals[reverse]
             reduced[i] = var_duals[forward] - var_duals[reverse]
-        met_index = list()
+        met_index = []
         constr_duals = model.solver.shadow_prices
         for (i, met) in enumerate(metabolites):
             met_index.append(met.id)
             shadow[i] = constr_duals[met.id]
     return Solution(
-        model.solver.objective.value,
-        model.solver.status,
-        Series(index=rxn_index, data=fluxes, name="fluxes"),
-        Series(index=rxn_index, data=reduced, name="reduced_costs"),
-        Series(index=met_index, data=shadow, name="shadow_prices"),
+        objective_value=model.solver.objective.value,
+        status=model.solver.status,
+        fluxes=pd.Series(index=rxn_index, data=fluxes, name="fluxes"),
+        reduced_costs=pd.Series(index=rxn_index, data=reduced, name="reduced_costs"),
+        shadow_prices=pd.Series(index=met_index, data=shadow, name="shadow_prices"),
     )
