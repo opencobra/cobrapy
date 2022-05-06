@@ -1,7 +1,7 @@
 """Provide unified interfaces to optimization solutions."""
 
 import logging
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Iterable, Optional
 
 import numpy as np
 import pandas as pd
@@ -63,8 +63,8 @@ class Solution:
         objective_value: float,
         status: str,
         fluxes: pd.Series,
-        reduced_costs: pd.Series = None,
-        shadow_prices: pd.Series = None,
+        reduced_costs: Optional[pd.Series] = None,
+        shadow_prices: Optional[pd.Series] = None,
         **kwargs,
     ) -> None:
         """
@@ -86,8 +86,8 @@ class Solution:
     def __repr__(self) -> str:
         """Return a string representation of the solution instance."""
         if self.status != OPTIMAL:
-            return f"<Solution {self.status} at 0x{id(self):x}>"
-        return f"<Solution {self.objective_value:.3f} at 0x{id(self):x}>"
+            return f"<Solution {self.status} at {id(self):#x}>"
+        return f"<Solution {self.objective_value:.3f} at {id(self):#x}>"
 
     def _repr_html_(self) -> str:
         """Return a rich HTML representation of the solution."""
@@ -137,8 +137,8 @@ class Solution:
 
 def get_solution(
     model: "Model",
-    reactions: Iterable["Reaction"] = None,
-    metabolites: Iterable["Metabolite"] = None,
+    reactions: Optional[Iterable["Reaction"]] = None,
+    metabolites: Optional[Iterable["Metabolite"]] = None,
     raise_error: bool = False,
 ) -> Solution:
     """
