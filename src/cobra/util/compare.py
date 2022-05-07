@@ -1,12 +1,10 @@
 """Comparing models, reactions, metabolites, genes and groups."""
 
-from typing import TYPE_CHECKING, Dict, Optional, Tuple, TypeVar, Callable
-
-from cobra import DictList
+from typing import TYPE_CHECKING, Callable, Dict, Optional, Tuple, TypeVar, List
 
 
 if TYPE_CHECKING:
-    from cobra.core import Group, Model, Object, Reaction
+    from cobra.core import Group, Model, Object, Reaction, DictList
 
     TObject = TypeVar("TObject", bound=Object)
 
@@ -42,10 +40,11 @@ def dict_compare(d1: Dict, d2: Dict, _dont_compare: Optional[set] = None):
 def compare_state(
     obj1: "TObject", obj2: "TObject", ignore_keys: Optional[set] = None
 ) -> Tuple[bool, Dict]:
-    """Will compare two cobra Objects (and what is derived from them).
+    """Cmpare two cobra Objects (including subclasses).
 
+    Useful for Metaboite, and Gene Comparison.
     Not useful for comparing GPRs(). Use the equality in GPRs() directly.
-    For Reaction and Group, use the specific functions which do some processing.
+    For Reaction and Group, use the specific functions which do some pre-processing.
 
     Parameters
     ----------
@@ -75,7 +74,7 @@ def compare_state(
 def compare_reaction_state(
     rxn1: "Reaction", rxn2: "Reaction", ignore_keys: Optional[set] = None
 ) -> Tuple[bool, Dict]:
-    """Will compare two cobra Reactions.
+    """Compare two cobra Reactions.
 
     In order to avoid recursion and disagreement on memory address
     genes are transformed to gene.ids
@@ -110,7 +109,7 @@ def compare_reaction_state(
 def compare_group_state(
     group1: "Group", group2: "Group", ignore_keys: Optional[set] = None
 ) -> Tuple[bool, Dict]:
-    """Will compare two cobra Groups.
+    """Compare two cobra Groups.
 
     Members are transformed to a list of reaction ids in order to avoid differences in
     memory address leading to false positives.
@@ -140,12 +139,12 @@ def compare_group_state(
 
 
 def compare_dictlists(
-    dictlist1: DictList,
-    dictlist2: DictList,
+    dictlist1: "DictList",
+    dictlist2: "DictList",
     ignore_keys: Optional[set] = None,
     comparison_function: Optional[Callable] = None,
-):
-    """Compare dictlist of objects. Useful for comparing models.
+) -> Tuple[bool, Dict, List]:
+    """Compare dictlist of objects. Useful when comparing models.
 
     Will check whether there are objects in dictlist1 that aren't present in dictlist2,
     and vice versa.
@@ -205,7 +204,7 @@ def compare_model_state(
     model2: "Model",
     ignore_notes: bool = True,
     ignore_keys: Optional[set] = None,
-):
+) -> Tuple[bool, Dict]:
     """Recursively compare model states.
 
     Will compare the model and then compare metabolites, reactions, genes, groups in
@@ -237,7 +236,6 @@ def compare_model_state(
 
     See Also
     --------
-    _fix_xml_annotation_to_identifiers()
     fix_for_notes_changes()
     """
     _is_equivalent = True
@@ -296,52 +294,35 @@ def compare_model_state(
     return _is_equivalent, model_comparison
 
 
-def _fix_xml_annotation_to_identifiers(model: "Model") -> None:
-    """Fix XML models which have annotations that do not match identifiers.org.
+def fix_for_reaction_notes_changes(diff_dict: Dict, diff_list: List) -> None:
+    """Fix differences caused in reaction Notes when reading and writing models.
 
-    This function will fix the dict keys of annotations to match identifiers.org.
-    Eventually, the XML models should be fixed and cobrapy should be strict, but this is
-    part of SBML rewriting of annotations
-    see: https://github.com/opencobra/cobrapy/issues/684
+    If you wish to compare reaction Notes, there may be some changes that are caused
+    because the reading and writing functions (in Matlab) do not fully preserve all
+    the info in the Notes field.
 
-    Useful for comapring matlab models with XML models, otherwise the difference in
-    annotation behavoir confuses the funciton.
+    If you're using this on a model comparison, it should be the two fields
+    'reactions' and 'different_reactions'.
+
+    Matlab -    reaction Notes may include References as well. These are read as Notes,
+                outputted to the rxnReferences field if they match the pubmed format
+                r"PMID: ?\d+"
 
     Parameters
     ----------
-    model: Model
-        A model to fix
+    diff_dict: Dict
+        Dictionary of differences.
+    diff_list: List
+        List of reactions that were present in both dictlists/models but had were
+        different in some fields.
+
+    Examples
+    --------
+    >>>>
+    >>>> comparison = compare_model_state(model1, model2)
+
     """
-    for met in model.metabolites:
-        if met.formula == "":
-            met.formula = None
-        if len(met.annotation):
-            if "chebi" in met.annotation.keys():
-                met.annotation["CHEBI"] = met.annotation.pop("chebi")
-            if "sbo" in met.annotation.keys():
-                met.annotation["SBO"] = met.annotation.pop("sbo")
-            for annot, val in met.annotation.items():
-                if isinstance(val, str):
-                    met.annotation[annot] = [val]
-    for rxn in model.reactions:
-        rxn.name = rxn.name.strip()
-        if "sbo" in rxn.annotation.keys():
-            rxn.annotation["SBO"] = rxn.annotation.pop("sbo")
-        if len(rxn.annotation):
-            for annot, val in rxn.annotation.items():
-                if isinstance(val, str):
-                    rxn.annotation[annot] = [val]
-    for gene in model.genes:
-        if len(gene.annotation):
-            if "ncbigi" in gene.annotation.keys():
-                gene.annotation["ncbiprotein"] = gene.annotation.pop("ncbigi")
-            for annot, val in gene.annotation.items():
-                if isinstance(val, str):
-                    gene.annotation[annot] = [val]
-
-
-def fix_for_notes_changes(diff_dict, diff_set):
-    for key in list(diff_set):
+    for key in diff_list:
         if "notes" in diff_dict[key]["modified"].keys():
             note_dictionaries = diff_dict[key]["modified"]["notes"]
             note_dictionaries[0] = {
@@ -355,5 +336,5 @@ def fix_for_notes_changes(diff_dict, diff_set):
                 if k != "References" and k != "NOTES"
             }
             if note_dictionaries[0] == note_dictionaries[1]:
-                diff_set.remove(key)
+                diff_list.remove(key)
                 diff_dict[key]["modified"].__delitem__("notes")
