@@ -1,13 +1,9 @@
 """Test Comparing functions in cobra.util.compare.py ."""
 
-import warnings
-from typing import Iterable
 
 import numpy as np
-import pytest
 
-from cobra import Gene, Model
-from cobra.core import GPR, Configuration, Metabolite, Model, Reaction
+from cobra.core import GPR, Metabolite, Model, Reaction
 from cobra.util.compare import compare_reaction_state
 
 
@@ -269,7 +265,7 @@ def test_add_metabolite_comparison(model: Model) -> None:
     with model:
         reaction.add_metabolites({"g6p_c": -1})  # already in reaction
         reaction_metabolites = {m.id: v for m, v in old_reaction.metabolites.items()}
-        reaction_metabolites["gfp_c"] = -2
+        reaction_metabolites["g6p_c"] = -2
         equivalent, comparison = compare_reaction_state(old_reaction, reaction)
         assert not equivalent
         assert comparison["modified"] == {
@@ -306,7 +302,7 @@ def test_add_metabolite_comparison(model: Model) -> None:
     reaction.add_metabolites({Metabolite("test_met"): -1})
     equivalent, comparison = compare_reaction_state(old_reaction, reaction)
     assert not equivalent
-    assert comparison["modified"] == {"_metabolites": ({}, {"test_met": 1})}
+    assert comparison["modified"] == {"_metabolites": ({}, {"test_met": -1})}
 
 
 def test_iadd_reaction_comparison(model: Model) -> None:
@@ -315,7 +311,7 @@ def test_iadd_reaction_comparison(model: Model) -> None:
     PGI_copy = PGI.copy()
     EX_h2o = model.reactions.EX_h2o_e
     PGI += EX_h2o
-    PGI_metabolites = {k.id: v for k,v in PGI_copy.metabolites.items()}
+    PGI_metabolites = {k.id: v for k, v in PGI_copy.metabolites.items()}
     PGI_copy_metabolites = PGI_metabolites.copy()
     PGI_copy_metabolites[model.metabolites.h2o_e.id] = -1.0
 
@@ -331,8 +327,8 @@ def test_iadd_reaction_comparison(model: Model) -> None:
     new_reaction = Reaction("test")
     new_reaction.add_metabolites({Metabolite("A"): -1, Metabolite("B"): 1})
     PGI += new_reaction
-    PGI_copy_metabolites['A'] = -1
-    PGI_copy_metabolites['B'] = 1
+    PGI_copy_metabolites["A"] = -1
+    PGI_copy_metabolites["B"] = 1
     equivalent, comparison = compare_reaction_state(PGI_copy, PGI)
     assert not equivalent
     assert comparison["same"] == set(PGI.__getstate__().keys()).difference(
@@ -349,20 +345,30 @@ def test_iadd_reaction_comparison(model: Model) -> None:
     expected_rule = "(b2296 or b3115 or b1849) and (b0118 or b1276)"
     ACKr_metabolites = {m.id: stoic for m, stoic in ACKr_copy.metabolites.items()}
     expected_metabolites = ACKr_metabolites.copy()
-    expected_metabolites.update({m.id: stoic for m, stoic in model.reactions.ACONTa.metabolites.items()})
+    expected_metabolites.update(
+        {m.id: stoic for m, stoic in model.reactions.ACONTa.metabolites.items()}
+    )
     equivalent, comparison = compare_reaction_state(ACKr_copy, ACKr)
     assert not equivalent
     assert comparison["same"] == set(PGI.__getstate__().keys()).difference(
         {"_metabolites", "_gpr", "_genes"}
-
     )
-    assert comparison["modified"]["_genes"] == ({g.id for g in ACKr_copy.genes}, expected_genes)
-    assert comparison["modified"]['_gpr'] == (ACKr_copy.gpr, GPR().from_string(expected_rule))
-    assert comparison["modified"]['_metabolites'] == (ACKr_metabolites, expected_metabolites)
+    assert comparison["modified"]["_genes"] == (
+        {g.id for g in ACKr_copy.genes},
+        expected_genes,
+    )
+    assert comparison["modified"]["_gpr"] == (
+        ACKr_copy.gpr,
+        GPR().from_string(expected_rule),
+    )
+    assert comparison["modified"]["_metabolites"] == (
+        ACKr_metabolites,
+        expected_metabolites,
+    )
     assert comparison["modified"] == {
         "_metabolites": (ACKr_metabolites, expected_metabolites),
         "_genes": ({g.id for g in ACKr_copy.genes}, expected_genes),
-        "_gpr": (ACKr_copy.gpr, GPR().from_string(expected_rule))
+        "_gpr": (ACKr_copy.gpr, GPR().from_string(expected_rule)),
     }
 
 
@@ -377,7 +383,9 @@ def test_mul_reaction_comparison(model: Model) -> None:
     )
     PGI_metabolites = {m.id: stoic for m, stoic in PGI.metabolites.items()}
     new_metabolites = {m.id: stoic * 2 for m, stoic in PGI.metabolites.items()}
-    assert comparison["modified"] == {"_metabolites": (PGI_metabolites, new_metabolites)}
+    assert comparison["modified"] == {
+        "_metabolites": (PGI_metabolites, new_metabolites)
+    }
 
 
 def test_sub_reaction_comparison(model: Model) -> None:
@@ -388,12 +396,14 @@ def test_sub_reaction_comparison(model: Model) -> None:
     new_metabolites = PGI_metabolites.copy()
     new_metabolites[model.metabolites.h2o_e.id] = 1.0
     equivalent, comparison = compare_reaction_state(PGI, new)
+    assert not equivalent
     assert comparison["same"] == set(PGI.__getstate__().keys()).difference(
         {"_metabolites"}
     )
     assert not equivalent
     assert comparison["modified"] == {
-        "_metabolites": (PGI_metabolites, new_metabolites)}
+        "_metabolites": (PGI_metabolites, new_metabolites)
+    }
 
 
 def test_add_metabolites_combine_true_reaction_comparison(model: Model) -> None:
@@ -402,21 +412,26 @@ def test_add_metabolites_combine_true_reaction_comparison(model: Model) -> None:
     for reaction in model.reactions:
         old_reaction = reaction.copy()
         reaction.add_metabolites({test_metabolite: -66}, combine=True)
-        reaction_metabolites = {m.id: stoic for m, stoic in reaction.metabolites.items()}
+        reaction_metabolites = {
+            m.id: stoic for m, stoic in reaction.metabolites.items()
+        }
         old_reaction_metabolites = reaction_metabolites.copy()
-        old_reaction_metabolites.pop('test')
+        old_reaction_metabolites.pop("test")
         equivalent, comparison = compare_reaction_state(old_reaction, reaction)
+        assert not equivalent
         assert comparison["same"] == set(reaction.__getstate__().keys()).difference(
             {"_metabolites"}
         )
-        assert comparison["modified"] == {"_metabolites": (old_reaction_metabolites, reaction_metabolites
-        )}
+        assert comparison["modified"] == {
+            "_metabolites": (old_reaction_metabolites, reaction_metabolites)
+        }
         already_included_metabolite = list(reaction.metabolites.keys())[0]
         previous_coefficient = reaction.get_coefficient(already_included_metabolite.id)
         old_reaction = reaction.copy()
         reaction.add_metabolites({already_included_metabolite: 10}, combine=True)
-        reaction_metabolites = {m.id: stoic for m, stoic in
-                                reaction.metabolites.items()}
+        reaction_metabolites = {
+            m.id: stoic for m, stoic in reaction.metabolites.items()
+        }
         old_reaction_metabolites = reaction_metabolites.copy()
         old_reaction_metabolites[already_included_metabolite.id] = previous_coefficient
         equivalent, comparison = compare_reaction_state(old_reaction, reaction)
@@ -424,11 +439,204 @@ def test_add_metabolites_combine_true_reaction_comparison(model: Model) -> None:
             {"_metabolites"}
         )
         assert comparison["modified"] == {
-            "_metabolites": (old_reaction_metabolites, reaction_metabolites
-                             )}
+            "_metabolites": (old_reaction_metabolites, reaction_metabolites)
+        }
 
 
-# {'_annotation', 'notes',}
+def test_reaction_annotation_comparison(model: Model) -> None:
+    """Test that changes in annotation are picked up by comparison.
+
+    Parameters
+    ----------
+    model: cobra.Model
+
+
+    """
+    PGI = model.reactions.PGI
+    PGI_copy = PGI.copy()
+    PGI_copy_annotation = PGI_copy.annotation
+    with model:
+        PGI.annotation = {}
+        equivalent, comparison = compare_reaction_state(PGI_copy, PGI)
+        assert not equivalent
+        assert comparison["same"] == set(PGI.__getstate__().keys()).difference(
+            {"_annotation"}
+        )
+        assert comparison["modified"] == {"_annotation": (PGI_copy_annotation, {})}
+    with model:
+        PGI.annotation = {k: v + " " for k, v in PGI.annotation}
+        equivalent, comparison = compare_reaction_state(PGI_copy, PGI)
+        assert not equivalent
+        assert comparison["same"] == set(PGI.__getstate__().keys()).difference(
+            {"_annotation"}
+        )
+        assert comparison["modified"] == {
+            "_annotation": (
+                PGI_copy_annotation,
+                {k: v + " " for k, v in PGI.annotation},
+            )
+        }
+    with model:
+        PGI.annotation["bigg.reaction"] = "Test"
+        equivalent, comparison = compare_reaction_state(PGI_copy, PGI)
+        PGI_annotation = PGI_copy_annotation
+        PGI_annotation["bigg.reaction"] = "Test"
+        assert not equivalent
+        assert comparison["same"] == set(PGI.__getstate__().keys()).difference(
+            {"_annotation"}
+        )
+        assert comparison["modified"] == {
+            "_annotation": (PGI_copy_annotation, PGI_annotation)
+        }
+
+
+def test_reaction_notes_comparison(model: Model) -> None:
+    """Test that notes in reaction can be picked up by comparison function."""
+    PGI = model.reactions.PGI
+    PGI_copy = PGI.copy()
+    PGI.notes = {"Note": "Test"}
+    equivalent, comparison = compare_reaction_state(PGI_copy, PGI)
+    assert not equivalent
+    assert comparison["same"] == set(PGI.__getstate__().keys()).difference({"notes"})
+    assert comparison["modified"] == ({}, {"Note": "Test"})
+    PGI_copy = PGI.copy()
+    PGI.notes = {"Note": "Test "}
+    equivalent, comparison = compare_reaction_state(PGI_copy, PGI)
+    assert not equivalent
+    assert comparison["same"] == set(PGI.__getstate__().keys()).difference({"notes"})
+    assert comparison["modified"] == ({"Note": "Test"}, {"Note": "Test "})
+    PGI.notes = {"Note": "test"}
+    equivalent, comparison = compare_reaction_state(PGI_copy, PGI)
+    assert not equivalent
+    assert comparison["same"] == set(PGI.__getstate__().keys()).difference({"notes"})
+    assert comparison["modified"] == ({"Note": "Test"}, {"Note": "test"})
+    PGI.notes = {"note": "Test"}
+    equivalent, comparison = compare_reaction_state(PGI_copy, PGI)
+    assert not equivalent
+    assert comparison["same"] == set(PGI.__getstate__().keys()).difference({"notes"})
+    assert comparison["modified"] == ({"Note": "Test"}, {"note": "Test"})
+    PGI.notes = {"Note": "Test", "secondNote": "test"}
+    equivalent, comparison = compare_reaction_state(PGI_copy, PGI)
+    assert not equivalent
+    assert comparison["same"] == set(PGI.__getstate__().keys()).difference({"notes"})
+    assert comparison["modified"] == (
+        {"Note": "Test"},
+        {"Note": "Test", "secondNote": "test"},
+    )
+
+
+def test_reaction_comparison_ignore_keys(model: Model) -> None:
+    """Test that the ignore_keys field in reaction comparison works as expected."""
+    PGI = model.reactions.get_by_id("PGI")
+    PGI_copy = PGI.copy()
+    PGI.blah = None
+    equivalent, comparison = compare_reaction_state(PGI, PGI_copy, ignore_keys={"blah"})
+    assert equivalent
+    assert comparison["same"] == PGI_copy.__getstate__().keys()
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    PGI.__dict__.pop("blah")
+
+    PGI.id = "PGI2"
+    equivalent, comparison = compare_reaction_state(PGI, PGI_copy, ignore_keys={"_id"})
+    assert equivalent
+    assert comparison["same"] == set(PGI_copy.__getstate__().keys()).difference({"_id"})
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    PGI.id = PGI_copy.id
+
+    PGI.name = PGI.name + " "
+    equivalent, comparison = compare_reaction_state(PGI, PGI_copy, ignore_keys={"name"})
+    assert equivalent
+    assert comparison["same"] == set(PGI_copy.__getstate__().keys()).difference(
+        {"name"}
+    )
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    PGI.name = PGI_copy.name
+
+    with model:
+        PGI.gene_reaction_rule = "s0001"
+        equivalent, comparison = compare_reaction_state(
+            PGI, PGI_copy, ignore_keys={"_genes", "_gpr"}
+        )
+        assert equivalent
+        assert comparison["same"] == set(PGI_copy.__getstate__().keys()).difference(
+            {"_genes", "_gpr"}
+        )
+        assert comparison["modified"] == {}
+        assert comparison["added"] == set()
+        assert comparison["removed"] == set()
+
+    with model:
+        PGI.bounds = (
+            PGI_copy.lower_bound - 100,
+            PGI_copy.lower_bound - 100,
+        )
+        equivalent, comparison = compare_reaction_state(
+            PGI, PGI_copy, ignore_keys={"_lower_bound", "_upper_bound"}
+        )
+        assert equivalent
+        assert comparison["same"] == set(PGI_copy.__getstate__().keys()).difference(
+            {"_lower_bound", "_upper_bound"}
+        )
+        assert comparison["modified"] == {}
+        assert comparison["added"] == set()
+        assert comparison["removed"] == set()
+
+    PGI.subsystem = "Test"
+    equivalent, comparison = compare_reaction_state(
+        PGI, PGI_copy, ignore_keys={"subsystem"}
+    )
+    assert equivalent
+    assert comparison["same"] == set(PGI_copy.__getstate__().keys()).difference(
+        {"subsystem"}
+    )
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    PGI.subsystem = PGI_copy.subsystem
+
+    with model:
+        PGI.add_metabolites({model.metabolites[0]: 1})
+        equivalent, comparison = compare_reaction_state(
+            PGI, PGI_copy, ignore_keys={"_metabolites"}
+        )
+        assert equivalent
+        assert comparison["same"] == set(PGI_copy.__getstate__().keys()).difference(
+            {"_metabolites"}
+        )
+        assert comparison["modified"] == {}
+        assert comparison["added"] == set()
+        assert comparison["removed"] == set()
+    with model:
+        PGI.annotation = {}
+        equivalent, comparison = compare_reaction_state(
+            PGI, PGI_copy, ignore_keys={"_annotation"}
+        )
+        assert equivalent
+        assert comparison["same"] == set(PGI_copy.__getstate__().keys()).difference(
+            {"_annotation"}
+        )
+        assert comparison["modified"] == {}
+        assert comparison["added"] == set()
+        assert comparison["removed"] == set()
+    with model:
+        PGI.notes = {"Note": "Test"}
+        equivalent, comparison = compare_reaction_state(
+            PGI, PGI_copy, ignore_keys={"notes"}
+        )
+        assert equivalent
+        assert comparison["same"] == set(PGI_copy.__getstate__().keys()).difference(
+            {"notes"}
+        )
+        assert comparison["modified"] == {}
+        assert comparison["added"] == set()
+        assert comparison["removed"] == set()
+
 
 ## Test model
 def test_add(model: Model) -> None:

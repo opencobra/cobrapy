@@ -1,15 +1,27 @@
 """Comparing models, reactions, metabolites, genes and groups."""
 
-from typing import TYPE_CHECKING, Callable, Dict, Optional, Tuple, TypeVar, List
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 
 if TYPE_CHECKING:
-    from cobra.core import Group, Model, Object, Reaction, DictList
+    from cobra.core import DictList, Group, Model, Object, Reaction
 
     TObject = TypeVar("TObject", bound=Object)
 
 
-def dict_compare(d1: Dict, d2: Dict, _dont_compare: Optional[set] = None):
+def dict_compare(
+    d1: Dict, d2: Dict, _dont_compare: Optional[set] = None
+) -> Dict[str, Union[Set, Dict]]:
     """Compare two dictionaries.
 
     This function will identify overlapping keys, added, removed keys between
@@ -24,6 +36,15 @@ def dict_compare(d1: Dict, d2: Dict, _dont_compare: Optional[set] = None):
         Dictionary to compare.
     _dont_compare: set
         Keys that should not be compared. Optional. Default None (compare all keys).
+
+    Returns
+    -------
+    A dicitonary comprised of
+        "added" - set of attributes present in the first, but not the second
+        "removed" - set of attributes present in the second, but not the first
+        "same" - dict of keys prsent in both with the same values
+        "modified" - dict of keys present in both with different values. Each key will
+                    have a tuple of values in both dictionaries given.
     """
     if _dont_compare is None:
         _dont_compare = set()
@@ -93,6 +114,8 @@ def compare_reaction_state(
         A tuple of a boolean (are the two objects equivalent or different) and a
         dictionary specifying how they differed.
     """
+    if ignore_keys is None:
+        ignore_keys = set()
     _is_equivalent = True
     state1 = rxn1.__getstate__()
     state1["_metabolites"] = {met.id: stoic for met, stoic in rxn1.metabolites.items()}
@@ -295,7 +318,7 @@ def compare_model_state(
 
 
 def fix_for_reaction_notes_changes(diff_dict: Dict, diff_list: List) -> None:
-    """Fix differences caused in reaction Notes when reading and writing models.
+    r"""Fix differences caused in reaction Notes when reading and writing models.
 
     If you wish to compare reaction Notes, there may be some changes that are caused
     because the reading and writing functions (in Matlab) do not fully preserve all
