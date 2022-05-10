@@ -1076,6 +1076,139 @@ def test_metabolite_comparison_ignore_keys_different_string_fields(
     assert NADH.__getattribute__(field_name) != NADH_copy.__getattribute__(field_name)
 
 
+def test_gene_copies_are_identical(model: Model) -> None:
+    """Test that gene copies are considered identical."""
+    b1241 = model.genes[0]
+    b1241_copy = b1241.copy()
+    equivalent, comparison = compare_state(b1241, b1241_copy)
+    assert equivalent
+    assert comparison["same"] == b1241.__getstate__().keys()
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+
+
+def test_gene_with_added_field_are_different(model: Model) -> None:
+    """Test that gene comparison identifies genes with different fields."""
+    b1241 = model.genes[0]
+    b1241_copy = b1241.copy()
+    b1241.blah = 'Test'
+    equivalent, comparison = compare_state(b1241, b1241_copy)
+    assert not equivalent
+    assert comparison["same"] == set(b1241.__getstate__().keys()).difference({'blah'})
+    assert comparison["modified"] == {}
+    assert comparison["added"] == {'blah'}
+    assert comparison["removed"] == set()
+    equivalent, comparison = compare_state(b1241_copy, b1241)
+    assert not equivalent
+    assert comparison["same"] == set(b1241.__getstate__().keys()).difference({'blah'})
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == {'blah'}
+
+
+@pytest.mark.parametrize("field_name", ["_id", "name"])
+def test_gene_comparison_different_string_fields(
+    model: Model, field_name: str
+) -> None:
+    """Test that genes that differ in string fields are not identical.
+
+    This function will test id (_id), name.
+
+    Parameters
+    --------`--
+    model: cobra.Model
+        Model to take genes from
+    field_name: str
+        Which field to test.
+
+    """
+    b1241 = model.genes[0]
+    b1241_copy = b1241.copy()
+    b1241.__setattr__(field_name, b1241.__getattribute__(field_name) + " ")
+    equivalent, comparison = compare_state(b1241, b1241_copy)
+    assert not equivalent
+    assert comparison["same"] == set(b1241.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {
+        field_name: (
+            b1241_copy.__getattribute__(field_name) + " ",
+            b1241_copy.__getattribute__(field_name),
+        )
+    }
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    b1241.__setattr__(field_name, None)
+    equivalent, comparison = compare_state(b1241, b1241_copy)
+    assert not equivalent
+    assert comparison["same"] == set(b1241.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {
+        field_name: (None, b1241_copy.__getattribute__(field_name))
+    }
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    b1241.__setattr__(field_name, "")
+    equivalent, comparison = compare_state(b1241, b1241_copy)
+    assert not equivalent
+    assert comparison["same"] == set(b1241.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {
+        field_name: ("", b1241_copy.__getattribute__(field_name))
+    }
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    b1241.__setattr__(field_name, "Test")
+    equivalent, comparison = compare_state(b1241, b1241_copy)
+    assert not equivalent
+    assert comparison["same"] == set(b1241.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {
+        field_name: ("Test", b1241_copy.__getattribute__(field_name))
+    }
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    b1241.__setattr__(field_name, "C21H27N7O14P")
+    equivalent, comparison = compare_state(b1241, b1241_copy)
+    assert not equivalent
+    assert comparison["same"] == set(b1241.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {
+        field_name: ("C21H27N7O14P", b1241_copy.__getattribute__(field_name))
+    }
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    b1241.__setattr__(field_name, "e")
+    equivalent, comparison = compare_state(b1241, b1241_copy)
+    assert not equivalent
+    assert comparison["same"] == set(b1241.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {
+        field_name: ("e", b1241_copy.__getattribute__(field_name))
+    }
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+
+
+def test_gene_comparison_functional(model: Model) -> None:
+    """Test that genes that differ in functional are not identical."""
+    b1241 = model.genes[0]
+    b1241_copy = b1241.copy()
+    b1241.functional = False
+    equivalent, comparison = compare_state(b1241, b1241_copy)
+    assert not equivalent
+    assert comparison["same"] == set(b1241.__getstate__().keys()).difference({'_functional'})
+    assert comparison["modified"] == {'_functional': (False, True)}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+
+
 ## Test model
 def test_add(model: Model) -> None:
     """Test reaction addition to model."""
