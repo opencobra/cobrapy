@@ -1092,25 +1092,23 @@ def test_gene_with_added_field_are_different(model: Model) -> None:
     """Test that gene comparison identifies genes with different fields."""
     b1241 = model.genes[0]
     b1241_copy = b1241.copy()
-    b1241.blah = 'Test'
+    b1241.blah = "Test"
     equivalent, comparison = compare_state(b1241, b1241_copy)
     assert not equivalent
-    assert comparison["same"] == set(b1241.__getstate__().keys()).difference({'blah'})
+    assert comparison["same"] == set(b1241.__getstate__().keys()).difference({"blah"})
     assert comparison["modified"] == {}
-    assert comparison["added"] == {'blah'}
+    assert comparison["added"] == {"blah"}
     assert comparison["removed"] == set()
     equivalent, comparison = compare_state(b1241_copy, b1241)
     assert not equivalent
-    assert comparison["same"] == set(b1241.__getstate__().keys()).difference({'blah'})
+    assert comparison["same"] == set(b1241.__getstate__().keys()).difference({"blah"})
     assert comparison["modified"] == {}
     assert comparison["added"] == set()
-    assert comparison["removed"] == {'blah'}
+    assert comparison["removed"] == {"blah"}
 
 
 @pytest.mark.parametrize("field_name", ["_id", "name"])
-def test_gene_comparison_different_string_fields(
-    model: Model, field_name: str
-) -> None:
+def test_gene_comparison_different_string_fields(model: Model, field_name: str) -> None:
     """Test that genes that differ in string fields are not identical.
 
     This function will test id (_id), name.
@@ -1203,10 +1201,13 @@ def test_gene_comparison_functional(model: Model) -> None:
     b1241.functional = False
     equivalent, comparison = compare_state(b1241, b1241_copy)
     assert not equivalent
-    assert comparison["same"] == set(b1241.__getstate__().keys()).difference({'_functional'})
-    assert comparison["modified"] == {'_functional': (False, True)}
+    assert comparison["same"] == set(b1241.__getstate__().keys()).difference(
+        {"_functional"}
+    )
+    assert comparison["modified"] == {"_functional": (False, True)}
     assert comparison["added"] == set()
     assert comparison["removed"] == set()
+
 
 
 ## Test model
