@@ -2,9 +2,10 @@
 
 
 import numpy as np
+import pytest
 
 from cobra.core import GPR, Metabolite, Model, Reaction
-from cobra.util.compare import compare_reaction_state
+from cobra.util.compare import compare_reaction_state, compare_state
 
 
 def test_reaction_copies_are_equivalent(model: Model) -> None:
@@ -464,7 +465,7 @@ def test_reaction_annotation_comparison(model: Model) -> None:
         )
         assert comparison["modified"] == {"_annotation": (PGI_copy_annotation, {})}
     with model:
-        PGI.annotation = {k: v + " " for k, v in PGI.annotation}
+        PGI.annotation = {k: v + " " for k, v in PGI.annotation.items()}
         equivalent, comparison = compare_reaction_state(PGI_copy, PGI)
         assert not equivalent
         assert comparison["same"] == set(PGI.__getstate__().keys()).difference(
@@ -473,7 +474,7 @@ def test_reaction_annotation_comparison(model: Model) -> None:
         assert comparison["modified"] == {
             "_annotation": (
                 PGI_copy_annotation,
-                {k: v + " " for k, v in PGI.annotation},
+                {k: v + " " for k, v in PGI_copy.annotation.items()},
             )
         }
     with model:
@@ -498,31 +499,33 @@ def test_reaction_notes_comparison(model: Model) -> None:
     equivalent, comparison = compare_reaction_state(PGI_copy, PGI)
     assert not equivalent
     assert comparison["same"] == set(PGI.__getstate__().keys()).difference({"notes"})
-    assert comparison["modified"] == ({}, {"Note": "Test"})
+    assert comparison["modified"] == {"notes": ({}, {"Note": "Test"})}
     PGI_copy = PGI.copy()
     PGI.notes = {"Note": "Test "}
     equivalent, comparison = compare_reaction_state(PGI_copy, PGI)
     assert not equivalent
     assert comparison["same"] == set(PGI.__getstate__().keys()).difference({"notes"})
-    assert comparison["modified"] == ({"Note": "Test"}, {"Note": "Test "})
+    assert comparison["modified"] == {"notes": ({"Note": "Test"}, {"Note": "Test "})}
     PGI.notes = {"Note": "test"}
     equivalent, comparison = compare_reaction_state(PGI_copy, PGI)
     assert not equivalent
     assert comparison["same"] == set(PGI.__getstate__().keys()).difference({"notes"})
-    assert comparison["modified"] == ({"Note": "Test"}, {"Note": "test"})
+    assert comparison["modified"] == {"notes": ({"Note": "Test"}, {"Note": "test"})}
     PGI.notes = {"note": "Test"}
     equivalent, comparison = compare_reaction_state(PGI_copy, PGI)
     assert not equivalent
     assert comparison["same"] == set(PGI.__getstate__().keys()).difference({"notes"})
-    assert comparison["modified"] == ({"Note": "Test"}, {"note": "Test"})
+    assert comparison["modified"] == {"notes": ({"Note": "Test"}, {"note": "Test"})}
     PGI.notes = {"Note": "Test", "secondNote": "test"}
     equivalent, comparison = compare_reaction_state(PGI_copy, PGI)
     assert not equivalent
     assert comparison["same"] == set(PGI.__getstate__().keys()).difference({"notes"})
-    assert comparison["modified"] == (
-        {"Note": "Test"},
-        {"Note": "Test", "secondNote": "test"},
-    )
+    assert comparison["modified"] == {
+        "notes": (
+            {"Note": "Test"},
+            {"Note": "Test", "secondNote": "test"},
+        )
+    }
 
 
 def test_reaction_comparison_ignore_keys(model: Model) -> None:
@@ -536,6 +539,8 @@ def test_reaction_comparison_ignore_keys(model: Model) -> None:
     assert comparison["modified"] == {}
     assert comparison["added"] == set()
     assert comparison["removed"] == set()
+    assert not hasattr(PGI_copy, "blah")
+    assert hasattr(PGI, "blah")
     PGI.__dict__.pop("blah")
 
     PGI.id = "PGI2"
@@ -545,6 +550,7 @@ def test_reaction_comparison_ignore_keys(model: Model) -> None:
     assert comparison["modified"] == {}
     assert comparison["added"] == set()
     assert comparison["removed"] == set()
+    assert PGI.id != PGI_copy.id
     PGI.id = PGI_copy.id
 
     PGI.name = PGI.name + " "
@@ -556,6 +562,7 @@ def test_reaction_comparison_ignore_keys(model: Model) -> None:
     assert comparison["modified"] == {}
     assert comparison["added"] == set()
     assert comparison["removed"] == set()
+    assert PGI.name != PGI_copy.name
     PGI.name = PGI_copy.name
 
     with model:
@@ -570,6 +577,7 @@ def test_reaction_comparison_ignore_keys(model: Model) -> None:
         assert comparison["modified"] == {}
         assert comparison["added"] == set()
         assert comparison["removed"] == set()
+        assert PGI.gpr != PGI_copy.gpr
 
     with model:
         PGI.bounds = (
@@ -586,6 +594,7 @@ def test_reaction_comparison_ignore_keys(model: Model) -> None:
         assert comparison["modified"] == {}
         assert comparison["added"] == set()
         assert comparison["removed"] == set()
+        assert PGI.bounds != PGI_copy.bounds
 
     PGI.subsystem = "Test"
     equivalent, comparison = compare_reaction_state(
@@ -598,6 +607,7 @@ def test_reaction_comparison_ignore_keys(model: Model) -> None:
     assert comparison["modified"] == {}
     assert comparison["added"] == set()
     assert comparison["removed"] == set()
+    assert PGI.subsystem != PGI_copy.subsystem
     PGI.subsystem = PGI_copy.subsystem
 
     with model:
@@ -612,6 +622,7 @@ def test_reaction_comparison_ignore_keys(model: Model) -> None:
         assert comparison["modified"] == {}
         assert comparison["added"] == set()
         assert comparison["removed"] == set()
+        assert PGI.metabolites != PGI_copy.metabolites
     with model:
         PGI.annotation = {}
         equivalent, comparison = compare_reaction_state(
@@ -624,6 +635,7 @@ def test_reaction_comparison_ignore_keys(model: Model) -> None:
         assert comparison["modified"] == {}
         assert comparison["added"] == set()
         assert comparison["removed"] == set()
+        assert PGI.annotation != PGI_copy.annotation
     with model:
         PGI.notes = {"Note": "Test"}
         equivalent, comparison = compare_reaction_state(
@@ -636,6 +648,432 @@ def test_reaction_comparison_ignore_keys(model: Model) -> None:
         assert comparison["modified"] == {}
         assert comparison["added"] == set()
         assert comparison["removed"] == set()
+        assert PGI.notes != PGI_copy.notes
+
+
+def test_metabolite_copies_are_equivalent(model: Model) -> None:
+    """Test that a copy of a metabolite will return True with compare functions."""
+    NADH = model.metabolites.get_by_id("nadh_c")
+    NADH_copy = NADH.copy()
+    equivalent, comparison = compare_state(NADH, NADH_copy)
+    assert equivalent
+    assert comparison["same"] == NADH.__getstate__().keys()
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+
+
+def test_metabolite_with_added_field_is_different(model: Model) -> None:
+    """Test that metabolites with added fields are picked up by comparison."""
+    NADH = model.metabolites.get_by_id("nadh_c")
+    NADH_copy = NADH.copy()
+    NADH.blah = None
+    equivalent, comparison = compare_state(NADH, NADH_copy)
+    assert not equivalent
+    assert comparison["same"] == NADH_copy.__getstate__().keys()
+    assert comparison["modified"] == {}
+    assert comparison["added"] == {"blah"}
+    assert comparison["removed"] == set()
+    equivalent, comparison = compare_state(NADH_copy, NADH)
+    assert not equivalent
+    assert comparison["same"] == NADH_copy.__getstate__().keys()
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == {"blah"}
+
+
+@pytest.mark.parametrize("field_name", ["_id", "name", "formula", "compartment"])
+def test_metabolite_comparison_different_string_fields(
+    model: Model, field_name: str
+) -> None:
+    """Test that metabolites that differ in string fields are not identical.
+
+    This function will test id (_id), name, formula, compartment.
+
+    Parameters
+    ----------
+    model: cobra.Model
+        Model to take metabolites from
+    field_name: str
+        Which field to test.
+
+    """
+    NADH = model.metabolites.get_by_id("nadh_c")
+    NADH_copy = NADH.copy()
+    NADH.__setattr__(field_name, NADH.__getattribute__(field_name) + " ")
+    equivalent, comparison = compare_state(NADH, NADH_copy)
+    assert not equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {
+        field_name: (
+            NADH_copy.__getattribute__(field_name) + " ",
+            NADH_copy.__getattribute__(field_name),
+        )
+    }
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    NADH.__setattr__(field_name, None)
+    equivalent, comparison = compare_state(NADH, NADH_copy)
+    assert not equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {
+        field_name: (None, NADH_copy.__getattribute__(field_name))
+    }
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    NADH.__setattr__(field_name, "")
+    equivalent, comparison = compare_state(NADH, NADH_copy)
+    assert not equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {
+        field_name: ("", NADH_copy.__getattribute__(field_name))
+    }
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    NADH.__setattr__(field_name, "Test")
+    equivalent, comparison = compare_state(NADH, NADH_copy)
+    assert not equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {
+        field_name: ("Test", NADH_copy.__getattribute__(field_name))
+    }
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    NADH.__setattr__(field_name, "C21H27N7O14P")
+    equivalent, comparison = compare_state(NADH, NADH_copy)
+    assert not equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {
+        field_name: ("C21H27N7O14P", NADH_copy.__getattribute__(field_name))
+    }
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    NADH.__setattr__(field_name, "e")
+    equivalent, comparison = compare_state(NADH, NADH_copy)
+    assert not equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {
+        field_name: ("e", NADH_copy.__getattribute__(field_name))
+    }
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+
+
+def test_metabolite_charge_comparison(model: Model) -> None:
+    """Test that metabolites with different charge are picked up by comparison."""
+    NADH = model.metabolites.get_by_id("nadh_c")
+    NADH_copy = NADH.copy()
+    NADH.charge = 0
+    equivalent, comparison = compare_state(NADH, NADH_copy)
+    assert not equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference({"charge"})
+    assert comparison["modified"] == {"charge": (0, NADH_copy.charge)}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    NADH.charge = None
+    equivalent, comparison = compare_state(NADH, NADH_copy)
+    assert not equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference({"charge"})
+    assert comparison["modified"] == {"charge": (None, NADH_copy.charge)}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    NADH.charge = 2
+    equivalent, comparison = compare_state(NADH, NADH_copy)
+    assert not equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference({"charge"})
+    assert comparison["modified"] == {"charge": (2, NADH_copy.charge)}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+
+
+def test_metabolite_annotation_comparison(model: Model) -> None:
+    """Test that changes in metabolite annotation are picked up by comparison."""
+    NADH = model.metabolites.get_by_id("nadh_c")
+    NADH_copy = NADH.copy()
+    NADH_copy_annotation = NADH_copy.annotation
+    with model:
+        NADH.annotation = {}
+        equivalent, comparison = compare_state(NADH_copy, NADH)
+        assert not equivalent
+        assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+            {"_annotation"}
+        )
+        assert comparison["modified"] == {"_annotation": (NADH_copy_annotation, {})}
+        assert comparison["added"] == set()
+        assert comparison["removed"] == set()
+    with model:
+        NADH_annotation = {k: v for k, v in NADH_copy_annotation.items()}
+        NADH_annotation["bigg.metabolite"] = "Test"
+        NADH.annotation = NADH_annotation
+        equivalent, comparison = compare_state(NADH_copy, NADH)
+        assert not equivalent
+        assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+            {"_annotation"}
+        )
+        assert comparison["modified"] == {
+            "_annotation": (NADH_copy_annotation, NADH_annotation)
+        }
+        assert comparison["added"] == set()
+        assert comparison["removed"] == set()
+    with model:
+        NADH_annotation = {k: v for k, v in NADH_copy_annotation.items()}
+        NADH_annotation.pop("biocyc")
+        NADH.annotation = NADH_annotation
+        equivalent, comparison = compare_state(NADH_copy, NADH)
+        assert not equivalent
+        assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+            {"_annotation"}
+        )
+        assert comparison["modified"] == {
+            "_annotation": (NADH_copy_annotation, NADH_annotation)
+        }
+        assert comparison["added"] == set()
+        assert comparison["removed"] == set()
+    with model:
+        NADH_annotation = {k: v for k, v in NADH_copy_annotation.items()}
+        NADH_annotation["test"] = "test"
+        NADH.annotation = NADH_annotation
+        equivalent, comparison = compare_state(NADH_copy, NADH)
+        assert not equivalent
+        assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+            {"_annotation"}
+        )
+        assert comparison["modified"] == {
+            "_annotation": (NADH_copy_annotation, NADH_annotation)
+        }
+        assert comparison["added"] == set()
+        assert comparison["removed"] == set()
+    with model:
+        NADH_annotation = {
+            "bigg.metabolite": "nadh ",
+            "biocyc": "NADH ",
+            "cas": ["58-68-4 "],
+            "chebi": [
+                "CHEBI:13395 ",
+                "CHEBI:21902 ",
+                "CHEBI:16908 ",
+                "CHEBI:7423 ",
+                "CHEBI:44216 ",
+                "CHEBI:57945 ",
+                "CHEBI:13396 ",
+            ],
+            "hmdb": "HMDB01487 ",
+            "kegg.compound": "C00004 ",
+            "pubchem.substance": "3306 ",
+            "reactome": [
+                "REACT_192305 ",
+                "REACT_73473 ",
+                "REACT_194697 ",
+                "REACT_29362 ",
+            ],
+            "seed.compound": "cpd00004 ",
+            "unipathway.compound": "UPC00004 ",
+        }
+        NADH.annotation = NADH_annotation
+        equivalent, comparison = compare_state(NADH_copy, NADH)
+        assert not equivalent
+        assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+            {"_annotation"}
+        )
+        assert comparison["modified"] == {
+            "_annotation": (NADH_copy_annotation, NADH_annotation)
+        }
+        assert comparison["added"] == set()
+        assert comparison["removed"] == set()
+
+
+def test_metabolite_notes_comparison(model: Model) -> None:
+    """Test that notes in Metabolite can be picked up by comparison function."""
+    NADH = model.metabolites.get_by_id("nadh_c")
+    NADH_copy = NADH.copy()
+    NADH.notes = {"Note": "Test"}
+    equivalent, comparison = compare_state(NADH_copy, NADH)
+    assert not equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference({"notes"})
+    assert comparison["modified"] == {"notes": ({}, {"Note": "Test"})}
+    NADH_copy = NADH.copy()
+    NADH.notes = {"Note": "Test "}
+    equivalent, comparison = compare_state(NADH_copy, NADH)
+    assert not equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference({"notes"})
+    assert comparison["modified"] == {"notes": ({"Note": "Test"}, {"Note": "Test "})}
+    NADH.notes = {"Note": "test"}
+    equivalent, comparison = compare_state(NADH_copy, NADH)
+    assert not equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference({"notes"})
+    assert comparison["modified"] == {"notes": ({"Note": "Test"}, {"Note": "test"})}
+    NADH.notes = {"note": "Test"}
+    equivalent, comparison = compare_state(NADH_copy, NADH)
+    assert not equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference({"notes"})
+    assert comparison["modified"] == {"notes": ({"Note": "Test"}, {"note": "Test"})}
+    NADH.notes = {"Note": "Test", "secondNote": "test"}
+    equivalent, comparison = compare_state(NADH_copy, NADH)
+    assert not equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference({"notes"})
+    assert comparison["modified"] == {
+        "notes": (
+            {"Note": "Test"},
+            {"Note": "Test", "secondNote": "test"},
+        )
+    }
+
+
+def test_metabolite_comparison_ignore_keys(model: Model) -> None:
+    """Test that the ignore_keys field in Metabolite comparison works as expected."""
+    NADH = model.metabolites.get_by_id("nadh_c")
+    NADH_copy = NADH.copy()
+    NADH.blah = None
+    equivalent, comparison = compare_state(NADH, NADH_copy, ignore_keys={"blah"})
+    assert equivalent
+    assert comparison["same"] == NADH_copy.__getstate__().keys()
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    NADH.__dict__.pop("blah")
+
+    NADH.charge = 0
+    equivalent, comparison = compare_state(NADH, NADH_copy, {"charge"})
+    assert equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference({"charge"})
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    assert NADH.charge != NADH_copy.charge
+    NADH.charge = NADH_copy.charge
+
+    NADH_copy_annotation = NADH_copy.annotation
+    with model:
+        NADH_annotation = {k: v for k, v in NADH_copy_annotation.items()}
+        NADH_annotation["bigg.metabolite"] = "Test"
+        NADH.annotation = NADH_annotation
+        equivalent, comparison = compare_state(
+            NADH_copy, NADH, ignore_keys={"_annotation"}
+        )
+        assert equivalent
+        assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+            {"_annotation"}
+        )
+        assert comparison["modified"] == {}
+        assert comparison["added"] == set()
+        assert comparison["removed"] == set()
+        assert NADH.annotation != NADH_copy.annotation
+    with model:
+        NADH_annotation = {k: v for k, v in NADH_copy_annotation.items()}
+        NADH_annotation.pop("biocyc")
+        NADH.annotation = NADH_annotation
+        equivalent, comparison = compare_state(
+            NADH_copy, NADH, ignore_keys={"_annotation"}
+        )
+        assert equivalent
+        assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+            {"_annotation"}
+        )
+        assert comparison["modified"] == {}
+        assert comparison["added"] == set()
+        assert comparison["removed"] == set()
+        assert NADH.annotation != NADH_copy.annotation
+
+    NADH.notes = {"Note": "Test"}
+    equivalent, comparison = compare_state(NADH_copy, NADH, ignore_keys={"notes"})
+    assert equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference({"notes"})
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    assert NADH.notes != NADH_copy.notes
+
+
+@pytest.mark.parametrize("field_name", ["_id", "name", "formula", "compartment"])
+def test_metabolite_comparison_ignore_keys_different_string_fields(
+    model: Model, field_name: str
+) -> None:
+    """Test that ignore keys works on string fields in metaoblites.
+
+    This function will test id (_id), name, formula, compartment.
+
+    Parameters
+    ----------
+    model: cobra.Model
+        Model to take metabolites from
+    field_name: str
+        Which field to test.
+
+    """
+    NADH = model.metabolites.get_by_id("nadh_c")
+    NADH_copy = NADH.copy()
+    NADH.__setattr__(field_name, NADH.__getattribute__(field_name) + " ")
+    equivalent, comparison = compare_state(NADH, NADH_copy, ignore_keys={field_name})
+    assert equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    assert NADH.__getattribute__(field_name) != NADH_copy.__getattribute__(field_name)
+    NADH.__setattr__(field_name, None)
+    equivalent, comparison = compare_state(NADH, NADH_copy, ignore_keys={field_name})
+    assert equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    assert NADH.__getattribute__(field_name) != NADH_copy.__getattribute__(field_name)
+    NADH.__setattr__(field_name, "")
+    equivalent, comparison = compare_state(NADH, NADH_copy, ignore_keys={field_name})
+    assert equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    assert NADH.__getattribute__(field_name) != NADH_copy.__getattribute__(field_name)
+    NADH.__setattr__(field_name, "Test")
+    equivalent, comparison = compare_state(NADH, NADH_copy, ignore_keys={field_name})
+    assert equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    assert NADH.__getattribute__(field_name) != NADH_copy.__getattribute__(field_name)
+    NADH.__setattr__(field_name, "C21H27N7O14P")
+    equivalent, comparison = compare_state(NADH, NADH_copy, ignore_keys={field_name})
+    assert equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    assert NADH.__getattribute__(field_name) != NADH_copy.__getattribute__(field_name)
+    NADH.__setattr__(field_name, "e")
+    equivalent, comparison = compare_state(NADH, NADH_copy, ignore_keys={field_name})
+    assert equivalent
+    assert comparison["same"] == set(NADH.__getstate__().keys()).difference(
+        {field_name}
+    )
+    assert comparison["modified"] == {}
+    assert comparison["added"] == set()
+    assert comparison["removed"] == set()
+    assert NADH.__getattribute__(field_name) != NADH_copy.__getattribute__(field_name)
 
 
 ## Test model
