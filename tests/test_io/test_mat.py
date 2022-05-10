@@ -289,7 +289,7 @@ def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) ->
         "bigg.reaction": ["LDH_D"],
         "ec-code": ["1.1.1.28"],
         "biocyc": ["META:DLACTDEHYDROGNAD-RXN"],
-        'sbo': ['SBO:0000375'],
+        "sbo": ["SBO:0000375"],
     }
     for rxn in mat_model.reactions.list_attr("id"):
         assert (
@@ -302,13 +302,15 @@ def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) ->
         "lipidmaps": ["LMFA01060077"],
         "reactome": ["REACT_113557", "REACT_389680", "REACT_29398"],
         "biocyc": ["PYRUVATE"],
-        'chebi': ['CHEBI:15361',
-                  'CHEBI:14987',
-                  'CHEBI:8685',
-                  'CHEBI:32816',
-                  'CHEBI:45253',
-                  'CHEBI:26466',
-                  'CHEBI:26462'],
+        "chebi": [
+            "CHEBI:15361",
+            "CHEBI:14987",
+            "CHEBI:8685",
+            "CHEBI:32816",
+            "CHEBI:45253",
+            "CHEBI:26466",
+            "CHEBI:26462",
+        ],
         "pubchem.substance": ["3324"],
         "bigg.metabolite": ["pyr"],
         "cas": ["127-17-3"],
