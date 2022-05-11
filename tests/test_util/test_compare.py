@@ -1209,7 +1209,6 @@ def test_gene_comparison_functional(model: Model) -> None:
     assert comparison["removed"] == set()
 
 
-
 ## Test model
 def test_add(model: Model) -> None:
     """Test reaction addition to model."""
