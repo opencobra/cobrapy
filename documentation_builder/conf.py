@@ -14,42 +14,12 @@
 
 import sys
 from os.path import dirname, join
-from unittest.mock import Mock
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 SRC_PATH = join(dirname(dirname(__file__)), "src")
 sys.path.insert(0, SRC_PATH)
-
-
-# These modules should correspond to the importable Python packages.
-MOCK_MODULES = [
-    "depinfo",
-    "numpy",
-    "scipy",
-    "scipy.optimize",
-    "scipy.sparse",
-    "scipy.io",
-    "scipy.stats",
-    "pp",
-    "libsbml",
-    "pandas",
-    "tabulate",
-    "optlang",
-    "optlang.interface",
-    "optlang.symbolics",
-    "optlang.symbolics.core",
-    "optlang.exceptions",
-    "future",
-    "future.utils",
-    "ruamel",
-    "ruamel.yaml",
-    "ruamel.yaml.compat",
-    "ruamel.yaml.main",
-]
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = Mock()
 
 # -- General configuration ----------------------------------------------------
 
@@ -116,8 +86,8 @@ latex_documents = [
     (
         "index",
         "cobra.tex",
-        u"cobra Documentation",
-        u"The cobrapy core team",
+        "cobra Documentation",
+        "The cobrapy core team",
         "manual",
     )
 ]

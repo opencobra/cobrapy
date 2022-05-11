@@ -1,23 +1,26 @@
-# -*- coding: utf-8 -*-
-
 """Provide an implementation of FASTCC."""
 
-from __future__ import absolute_import
+from typing import TYPE_CHECKING, List, Optional
 
 from optlang.symbolics import Zero
-from six import iteritems
 
-from cobra.flux_analysis.helpers import normalize_cutoff
+from .helpers import normalize_cutoff
 
 
-def _find_sparse_mode(model, rxns, flux_threshold, zero_cutoff):
+if TYPE_CHECKING:
+    from cobra.core import Model, Reaction
+
+
+def _find_sparse_mode(
+    model: "Model", rxns: List["Reaction"], flux_threshold: float, zero_cutoff: float
+) -> List["Reaction"]:
     """Perform the LP required for FASTCC.
 
     Parameters
     ----------
-    model: cobra.core.Model
-        The cobra model to perform FASTCC on.
-    rxns: list of cobra.core.Reactions
+    model: cobra.Model
+        The model to perform FASTCC on.
+    rxns: list of cobra.Reaction
         The reactions to use for LP.
     flux_threshold: float
         The upper threshold an auxiliary variable can have.
@@ -26,11 +29,10 @@ def _find_sparse_mode(model, rxns, flux_threshold, zero_cutoff):
 
     Returns
     -------
-    result: list
+    list of cobra.Reaction
         The list of reactions to consider as consistent.
 
     """
-
     if rxns:
         obj_vars = []
         vars_and_cons = []
@@ -60,25 +62,33 @@ def _find_sparse_mode(model, rxns, flux_threshold, zero_cutoff):
     return result
 
 
-def _flip_coefficients(model, rxns):
-    """Flip the coefficients for optimizing in reverse direction."""
+def _flip_coefficients(model: "Model", rxns: List["Reaction"]) -> None:
+    """Flip the coefficients for optimizing in reverse direction.
 
+    Parameters
+    ----------
+    model: cobra.Model
+        The model to operate on.
+    rxns: list of cobra.Reaction
+        The list of reactions whose coefficients will be flipped.
+
+    """
     # flip reactions
     for rxn in rxns:
         const = model.constraints.get("constraint_{}".format(rxn.id))
         var = model.variables.get("auxiliary_{}".format(rxn.id))
         coefs = const.get_linear_coefficients(const.variables)
-        const.set_linear_coefficients(
-            {k: -v for k, v in iteritems(coefs) if k is not var}
-        )
+        const.set_linear_coefficients({k: -v for k, v in coefs.items() if k is not var})
 
     # flip objective
     objective = model.objective
     objective_coefs = objective.get_linear_coefficients(objective.variables)
-    objective.set_linear_coefficients({k: -v for k, v in iteritems(objective_coefs)})
+    objective.set_linear_coefficients({k: -v for k, v in objective_coefs.items()})
 
 
-def fastcc(model, flux_threshold=1.0, zero_cutoff=None):
+def fastcc(
+    model: "Model", flux_threshold: float = 1.0, zero_cutoff: Optional[float] = None
+) -> "Model":
     r"""
     Check consistency of a metabolic network using FASTCC [1]_.
 
@@ -94,16 +104,16 @@ def fastcc(model, flux_threshold=1.0, zero_cutoff=None):
     Parameters
     ----------
     model: cobra.Model
-        The constraint-based model to operate on.
-    flux_threshold: float, optional (default 1.0)
-        The flux threshold to consider.
+        The model to operate on.
+    flux_threshold: float, optional
+        The flux threshold to consider (default 1.0).
     zero_cutoff: float, optional
         The cutoff to consider for zero flux (default model.tolerance).
 
     Returns
     -------
     cobra.Model
-        The consistent constraint-based model.
+        The consistent model.
 
     Notes
     -----

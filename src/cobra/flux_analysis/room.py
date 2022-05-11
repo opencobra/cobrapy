@@ -1,30 +1,37 @@
-# -*- coding: utf-8 -*-
-
 """Provide regulatory on/off minimization (ROOM)."""
 
-from __future__ import absolute_import, division
+from typing import TYPE_CHECKING, Optional
 
 from optlang.symbolics import Zero
 
-from cobra.flux_analysis.parsimonious import pfba
+from .parsimonious import pfba
 
 
-def room(model, solution=None, linear=False, delta=0.03, epsilon=1e-03):
-    """
-    Compute a single solution based on regulatory on/off minimization (ROOM).
+if TYPE_CHECKING:
+    from cobra import Model, Solution
+
+
+def room(
+    model: "Model",
+    solution: Optional["Solution"] = None,
+    linear: bool = False,
+    delta: float = 0.03,
+    epsilon: float = 1e-03,
+) -> "Solution":
+    """Compute a solution based on regulatory on/off minimization (ROOM).
 
     Compute a new flux distribution that minimizes the number of active
     reactions needed to accommodate a previous reference solution.
     Regulatory on/off minimization (ROOM) is generally used to assess the
-    impact of knock-outs. Thus the typical usage is to provide a wildtype flux
-    distribution as reference and a model in knock-out state.
+    impact of knock-outs. Thus, the typical usage is to provide a wild-type
+    flux distribution as reference and a `model` in knock-out state.
 
     Parameters
     ----------
     model : cobra.Model
         The model state to compute a ROOM-based solution for.
     solution : cobra.Solution, optional
-        A (wildtype) reference solution.
+        A (wild-type) reference solution (default None).
     linear : bool, optional
         Whether to use the linear ROOM formulation or not (default False).
     delta: float, optional
@@ -51,7 +58,13 @@ def room(model, solution=None, linear=False, delta=0.03, epsilon=1e-03):
     return solution
 
 
-def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1e-03):
+def add_room(
+    model: "Model",
+    solution: Optional["Solution"] = None,
+    linear: bool = False,
+    delta: float = 0.03,
+    epsilon: float = 1e-03,
+) -> None:
     r"""
     Add constraints and objective for ROOM.
 
@@ -64,7 +77,7 @@ def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1e-03):
         The model to add ROOM constraints and objective to.
     solution : cobra.Solution, optional
         A previous solution to use as a reference. If no solution is given,
-        one will be computed using pFBA.
+        one will be computed using pFBA (default None).
     linear : bool, optional
         Whether to use the linear ROOM formulation or not (default False).
     delta: float, optional
@@ -79,20 +92,20 @@ def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1e-03):
     The formulation used here is the same as stated in the original paper [1]_.
     The mathematical expression is given below:
 
-    minimize \sum_{i=1}^m y^i
-    s.t. Sv = 0
-         v_min <= v <= v_max
-         v_j = 0
-         j ∈ A
-         for 1 <= i <= m
-         v_i - y_i(v_{max,i} - w_i^u) <= w_i^u      (1)
-         v_i - y_i(v_{min,i} - w_i^l) <= w_i^l      (2)
-         y_i ∈ {0,1}                                (3)
-         w_i^u = w_i + \delta|w_i| + \epsilon
-         w_i^l = w_i - \delta|w_i| - \epsilon
+    minimize: \sum_{i=1}^m y^i
+    s.t.    : Sv = 0
+              v_min \le v \le v_max
+              v_j = 0
+              j \in A
+              for 1 \le i \le m
+              v_i - y_i(v_{max,i} - w_i^u) \le w_i^u        (1)
+              v_i - y_i(v_{min,i} - w_i^l) \le w_i^l        (2)
+              y_i \in {0,1}                                 (3)
+              w_i^u = w_i + \delta|w_i| + \epsilon
+              w_i^l = w_i - \delta|w_i| - \epsilon
 
     So, for the linear version of the ROOM , constraint (3) is relaxed to
-    0 <= y_i <= 1.
+    0 \le y_i \le 1.
 
     See Also
     --------
@@ -105,9 +118,8 @@ def add_room(model, solution=None, linear=False, delta=0.03, epsilon=1e-03):
      PNAS 2005 102 (21) 7695-7700; doi:10.1073/pnas.0406346102
 
     """
-
     if "room_old_objective" in model.solver.variables:
-        raise ValueError("model is already adjusted for ROOM")
+        raise ValueError("Model is already adjusted for ROOM.")
 
     # optimizes if no reference solution is provided
     if solution is None:

@@ -1,28 +1,33 @@
-# -*- coding: utf8 -*-
-
 """Provide an implementation of geometric FBA."""
 
-from __future__ import absolute_import, division
-
 import logging
+from typing import TYPE_CHECKING, Optional
 
 from optlang.symbolics import Zero
 
-from cobra.flux_analysis.parsimonious import add_pfba
-from cobra.flux_analysis.variability import flux_variability_analysis
+from .parsimonious import add_pfba
+from .variability import flux_variability_analysis
 
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
-def geometric_fba(model, epsilon=1e-06, max_tries=200, processes=None):
-    """
-    Perform geometric FBA to obtain a unique, centered flux distribution.
+if TYPE_CHECKING:
+    from cobra import Model, Solution
 
-    Geometric FBA [1]_ formulates the problem as a polyhedron and
-    then solves it by bounding the convex hull of the polyhedron.
-    The bounding forms a box around the convex hull which reduces
-    with every iteration and extracts a unique solution in this way.
+
+def geometric_fba(
+    model: "Model",
+    epsilon: float = 1e-06,
+    max_tries: int = 200,
+    processes: Optional[int] = None,
+) -> "Solution":
+    """Perform geometric FBA to obtain a unique, centered flux distribution.
+
+    Geometric FBA [1]_ formulates the problem as a polyhedron and then
+    solves it by bounding the convex hull of the polyhedron. The bounding
+    forms a box around the convex hull which reduces with every iteration
+    and extracts a unique solution in this way.
 
     Parameters
     ----------
@@ -34,13 +39,18 @@ def geometric_fba(model, epsilon=1e-06, max_tries=200, processes=None):
         Maximum number of iterations (default 200).
     processes : int, optional
         The number of parallel processes to run. If not explicitly passed,
-        will be set from the global configuration singleton.
+        will be set from the global configuration singleton (default None).
 
     Returns
     -------
     cobra.Solution
-        The solution object containing all the constraints required
-        for geometric FBA.
+        The solution object containing all the constraints required for
+        geometric FBA.
+
+    Raises
+    ------
+    RuntimeError
+        If iteration count becomes equal to `max_tries`.
 
     References
     ----------
@@ -50,7 +60,6 @@ def geometric_fba(model, epsilon=1e-06, max_tries=200, processes=None):
            10.1016/j.jtbi.2009.01.027.
 
     """
-
     with model:
         # Variables' and constraints' storage variables.
         consts = []
@@ -91,9 +100,7 @@ def geometric_fba(model, epsilon=1e-06, max_tries=200, processes=None):
         mean_flux = (fva_sol["maximum"] + fva_sol["minimum"]).abs() / 2
         delta = (fva_sol["maximum"] - fva_sol["minimum"]).max()
         count = 1
-        LOGGER.debug(
-            "Iteration: %d; delta: %.3g; status: %s.", count, delta, sol.status
-        )
+        logger.debug(f"Iteration: {count}; delta: {delta}; status: {sol.status}.")
 
         # Following iterations that minimize the distance below threshold.
         while delta > epsilon and count < max_tries:
@@ -107,17 +114,15 @@ def geometric_fba(model, epsilon=1e-06, max_tries=200, processes=None):
             mean_flux = (fva_sol["maximum"] + fva_sol["minimum"]).abs() / 2
             delta = (fva_sol["maximum"] - fva_sol["minimum"]).max()
             count += 1
-            LOGGER.debug(
-                "Iteration: %d; delta: %.3g; status: %s.", count, delta, sol.status
-            )
+            logger.debug(f"Iteration: {count}; delta: {delta}; status: {sol.status}.")
 
         if count == max_tries:
             raise RuntimeError(
-                "The iterations have exceeded the maximum value of {}. "
-                "This is probably due to the increased complexity of the "
-                "model and can lead to inaccurate results. Please set a "
-                "different convergence tolerance and/or increase the "
-                "maximum iterations".format(max_tries)
+                "The iterations have exceeded the maximum value of "
+                f"{max_tries}. This is probably due to the increased "
+                "complexity of the model and can lead to inaccurate "
+                "results. Please set a different convergence tolerance "
+                "and/or increase the maximum iterations."
             )
 
     return sol

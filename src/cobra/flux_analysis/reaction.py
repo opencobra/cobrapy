@@ -1,52 +1,61 @@
-# -*- coding: utf-8 -*-
-
-""" functions for analyzing / creating objective functions """
-
-from __future__ import absolute_import, division
+"""Provide functions for analyzing / creating objective functions."""
 
 from operator import attrgetter
+from typing import TYPE_CHECKING, Dict, Union
 from warnings import warn
 
-from six import iteritems
-
-from cobra.core import Reaction
+from ..core import Reaction
 
 
-def assess(model, reaction, flux_coefficient_cutoff=0.001, solver=None):
-    """Assesses production capacity.
+if TYPE_CHECKING:
+    from cobra import Model
 
-    Assesses the capacity of the model to produce the precursors for the
-    reaction and absorb the production of the reaction while the reaction is
-    operating at, or above, the specified cutoff.
+
+def assess(
+    model: "Model",
+    reaction: Union[Reaction, str],
+    flux_coefficient_cutoff: float = 0.001,
+    solver: str = None,
+) -> Union[bool, Dict]:
+    """Assess production capacity.
+
+    Assess the capacity of the `model` to produce the precursors for the
+    `reaction` and absorb the production of the `reaction` while the
+    `reaction` is operating at, or above, the specified
+    `flux_coefficient_cutoff`.
+
+    .. deprecated:: 0.10.0a1
+              `solver` argument will be removed in cobrapy 1.0.0, it is
+              replaced by globally setting the solver via
+              cobra.Configuration .
 
     Parameters
     ----------
     model : cobra.Model
-        The cobra model to assess production capacity for
-
-    reaction : reaction identifier or cobra.Reaction
-        The reaction to assess
-
-    flux_coefficient_cutoff :  float
-        The minimum flux that reaction must carry to be considered active.
-
-    solver : basestring
-        Solver name. If None, the default solver will be used.
+        The cobra model to assess production capacity for.
+    reaction : str or cobra.Reaction
+        The reaction to assess.
+    flux_coefficient_cutoff : float, optional
+        The minimum flux that reaction must carry to be considered active
+        (default 0.001).
+    solver : str, optional
+        The solver name. If None, the default solver will be used
+        (default None).
 
     Returns
     -------
     bool or dict
         True if the model can produce the precursors and absorb the products
-        for the reaction operating at, or above, flux_coefficient_cutoff.
-        Otherwise, a dictionary of {'precursor': Status, 'product': Status}.
-        Where Status is the results from assess_precursors and
-        assess_products, respectively.
+        for the reaction operating at, or above, `flux_coefficient_cutoff`.
+        Otherwise, a dictionary of {'precursor': Status, 'product': Status},
+        where 'Status' is the results from `assess_precursors` and
+        `assess_products`, respectively.
 
     """
     reaction = model.reactions.get_by_any(reaction)[0]
     with model as m:
         m.objective = reaction
-        if _optimize_or_value(m, solver=solver) >= flux_coefficient_cutoff:
+        if m.slim_optimize(error_value=0.0) >= flux_coefficient_cutoff:
             return True
         else:
             results = dict()
@@ -59,27 +68,38 @@ def assess(model, reaction, flux_coefficient_cutoff=0.001, solver=None):
             return results
 
 
-def assess_component(model, reaction, side, flux_coefficient_cutoff=0.001, solver=None):
-    """Assesses the ability of the model to provide sufficient precursors,
-    or absorb products, for a reaction operating at, or beyond,
-    the specified cutoff.
+def assess_component(
+    model: "Model",
+    reaction: Union[Reaction, str],
+    side: str,
+    flux_coefficient_cutoff: float = 0.001,
+    solver: str = None,
+) -> Union[bool, Dict]:
+    """Assess production capacity of components.
+
+    Assess the ability of the `model` to provide sufficient precursors,
+    or absorb products, for a `reaction` operating at, or beyond,
+    the specified `flux_coefficient_cutoff`.
+
+    .. deprecated:: 0.10.0a1
+              `solver` argument will be removed in cobrapy 1.0.0, it is
+              replaced by globally setting the solver via
+              cobra.Configuration .
 
     Parameters
     ----------
     model : cobra.Model
-        The cobra model to assess production capacity for
-
-    reaction : reaction identifier or cobra.Reaction
-        The reaction to assess
-
-    side : basestring
-        Side of the reaction, 'products' or 'reactants'
-
-    flux_coefficient_cutoff :  float
-        The minimum flux that reaction must carry to be considered active.
-
-    solver : basestring
-        Solver name. If None, the default solver will be used.
+        The cobra model to assess production capacity for.
+    reaction : str or cobra.Reaction
+        The reaction to assess.
+    side : {"products", "reactants"}
+        The side of the reaction to assess.
+    flux_coefficient_cutoff : float, optional
+        The minimum flux that reaction must carry to be considered active
+        (default 0.001).
+    solver : str, optional
+        The solver name. If None, the default solver will be used
+        (default None).
 
     Returns
     -------
@@ -87,9 +107,9 @@ def assess_component(model, reaction, side, flux_coefficient_cutoff=0.001, solve
         True if the precursors can be simultaneously produced at the
         specified cutoff. False, if the model has the capacity to produce
         each individual precursor at the specified threshold  but not all
-        precursors at the required level simultaneously. Otherwise a
-        dictionary of the required and the produced fluxes for each reactant
-        that is not produced in sufficient quantities.
+        precursors at the required level simultaneously. Otherwise, a
+        dictionary of the required and the produced fluxes for each
+        reactant that is not produced in sufficient quantities.
 
     """
     reaction = model.reactions.get_by_any(reaction)[0]
@@ -97,7 +117,7 @@ def assess_component(model, reaction, side, flux_coefficient_cutoff=0.001, solve
     get_components = attrgetter(side)
     with model as m:
         m.objective = reaction
-        if _optimize_or_value(m, solver=solver) >= flux_coefficient_cutoff:
+        if m.slim_optimize(error_value=0.0) >= flux_coefficient_cutoff:
             return True
         simulation_results = {}
         # build the demand reactions and add all at once
@@ -113,17 +133,17 @@ def assess_component(model, reaction, side, flux_coefficient_cutoff=0.001, solve
             joint_demand += demand_reaction
         m.add_reactions([joint_demand])
         m.objective = joint_demand
-        if _optimize_or_value(m, solver=solver) >= flux_coefficient_cutoff:
+        if m.slim_optimize(error_value=0.0) >= flux_coefficient_cutoff:
             return True
 
         # Otherwise assess the ability of the model to produce each precursor
         # individually.  Now assess the ability of the model to produce each
         # reactant for a reaction
-        for demand_reaction, (component, coeff) in iteritems(demand_reactions):
+        for demand_reaction, (component, coeff) in demand_reactions.items():
             # Calculate the maximum amount of the
             with m:
                 m.objective = demand_reaction
-                flux = _optimize_or_value(m, solver=solver)
+                flux = m.slim_optimize(error_value=0.0)
             # metabolite that can be produced.
             if flux_coefficient_cutoff > flux:
                 # Scale the results to a single unit
@@ -140,82 +160,118 @@ def assess_component(model, reaction, side, flux_coefficient_cutoff=0.001, solve
         return simulation_results
 
 
-def _optimize_or_value(model, value=0.0, solver=None):
+def _optimize_or_value(model: "Model", value: float = 0.0) -> float:
+    """Perform quick optimization and return the objective value.
+
+    The objective value is returned at `value` error value.
+
+    .. deprecated:: 0.22.0
+              `_optimize_or_value` will be removed in cobrapy 1.0.0, its
+              functionality can be achieved by using
+              `cobra.Model.slim_optimize`.
+
+    Parameters
+    ----------
+    model: cobra.Model
+        The model to optimize.
+    value: float
+        The error value to consider.
+
+    Returns
+    -------
+    float
+        The optimized value of the model's objective.
+
+    """
     return model.slim_optimize(error_value=value)
 
 
-def assess_precursors(model, reaction, flux_coefficient_cutoff=0.001, solver=None):
-    """Assesses the ability of the model to provide sufficient precursors for
-    a reaction operating at, or beyond, the specified cutoff.
+def assess_precursors(
+    model: "Model",
+    reaction: Reaction,
+    flux_coefficient_cutoff: float = 0.001,
+    solver: str = None,
+) -> Union[bool, Dict]:
+    """Assess production capacity of precursors.
 
-    Deprecated: use assess_component instead
+    Assess the ability of the model to provide sufficient precursors for
+    a reaction operating at, or beyond, the `flux_coefficient_cutoff`.
+
+    .. deprecated:: 0.7.0
+              `assess_precursors` will be removed in cobrapy 1.0.0, it is
+              replaced by `assess_component`.
 
     Parameters
     ----------
     model : cobra.Model
-        The cobra model to assess production capacity for
-
-    reaction : reaction identifier or cobra.Reaction
-        The reaction to assess
-
-    flux_coefficient_cutoff :  float
-        The minimum flux that reaction must carry to be considered active.
-
-    solver : basestring
-        Solver name. If None, the default solver will be used.
+        The cobra model to assess production capacity for.
+    reaction : str or cobra.Reaction
+        The reaction to assess.
+    flux_coefficient_cutoff : float, optional
+        The minimum flux that reaction must carry to be considered active
+        (default 0.001).
+    solver : str, optional
+        The solver name. If None, the default solver will be used
+        (default None).
 
     Returns
     -------
     bool or dict
         True if the precursors can be simultaneously produced at the
         specified cutoff. False, if the model has the capacity to produce
-        each individual precursor at the specified threshold  but not all
-        precursors at the required level simultaneously. Otherwise a
-        dictionary of the required and the produced fluxes for each reactant
-        that is not produced in sufficient quantities.
+        each individual precursor at the specified threshold but not all
+        precursors at the required level simultaneously. Otherwise, a
+        dictionary of the required and the produced fluxes for each
+        reactant that is not produced in sufficient quantities.
 
     """
-    warn("use assess_component instead", DeprecationWarning)
+    warn("Use cobra.sampling.reaction.assess_component() instead.", DeprecationWarning)
     return assess_component(
         model, reaction, "reactants", flux_coefficient_cutoff, solver
     )
 
 
-def assess_products(model, reaction, flux_coefficient_cutoff=0.001, solver=None):
-    """Assesses whether the model has the capacity to absorb the products of
-    a reaction at a given flux rate.
+def assess_products(
+    model: "Model",
+    reaction: Reaction,
+    flux_coefficient_cutoff: float = 0.001,
+    solver: str = None,
+) -> Union[bool, Dict]:
+    """Assesses absorption capacity of products.
 
-    Useful for identifying which components might be blocking a reaction
-    from achieving a specific flux rate.
+    Assess the ability of the model to to absorb the products of a reaction
+    at a given flux rate. Useful for identifying which components might be
+    blocking a reaction from achieving a specific flux rate.
 
-    Deprecated: use assess_component instead
+    .. deprecated:: 0.7.0
+              `assess_products` will be removed in cobrapy 1.0.0, it is
+              replaced by `assess_component`.
 
     Parameters
     ----------
     model : cobra.Model
-        The cobra model to assess production capacity for
-
-    reaction : reaction identifier or cobra.Reaction
-        The reaction to assess
-
-    flux_coefficient_cutoff :  float
-        The minimum flux that reaction must carry to be considered active.
-
-    solver : basestring
-        Solver name. If None, the default solver will be used.
+        The cobra model to assess production capacity for.
+    reaction : str or cobra.Reaction
+        The reaction to assess.
+    flux_coefficient_cutoff :  float, optional
+        The minimum flux that reaction must carry to be considered active
+        (default 0.001).
+    solver : str, optional
+        The solver name. If None, the default solver will be used
+        (default None).
 
     Returns
     -------
     bool or dict
         True if the model has the capacity to absorb all the reaction
-        products being simultaneously given the specified cutoff.   False,
+        products being simultaneously given the specified cutoff. False,
         if the model has the capacity to absorb each individual product but
-        not all products at the required level simultaneously.   Otherwise a
+        not all products at the required level simultaneously. Otherwise, a
         dictionary of the required and the capacity fluxes for each product
         that is not absorbed in sufficient quantities.
 
     """
-    warn("use assess_component instead", DeprecationWarning)
+    warn("Use cobra.sampling.reaction.assess_component() instead.", DeprecationWarning)
     return assess_component(
         model, reaction, "products", flux_coefficient_cutoff, solver
     )

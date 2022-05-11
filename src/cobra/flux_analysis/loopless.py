@@ -1,44 +1,41 @@
-# -*- coding: utf-8 -*-
+"""Provide functions to remove thermodynamically infeasible loops."""
 
-"""Provides functions to remove thermodynamically infeasible loops."""
 
-from __future__ import absolute_import
+from typing import TYPE_CHECKING, Dict, Optional, Union
 
-import logging
-
-import numpy
+import numpy as np
 from optlang.symbolics import Zero
 
-from cobra.core import get_solution
-from cobra.flux_analysis.helpers import normalize_cutoff
-from cobra.util import create_stoichiometric_matrix, nullspace
+from ..core import get_solution
+from ..util import create_stoichiometric_matrix, nullspace
+from .helpers import normalize_cutoff
 
 
-LOGGER = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from cobra import Model, Reaction, Solution
 
 
-def add_loopless(model, zero_cutoff=None):
+def add_loopless(model: "Model", zero_cutoff: Optional[float] = None) -> None:
     """Modify a model so all feasible flux distributions are loopless.
 
-    In most cases you probably want to use the much faster `loopless_solution`.
-    May be used in cases where you want to add complex constraints and
-    objecives (for instance quadratic objectives) to the model afterwards
-    or use an approximation of Gibbs free energy directions in you model.
-    Adds variables and constraints to a model which will disallow flux
+    It adds variables and constraints to a model which will disallow flux
     distributions with loops. The used formulation is described in [1]_.
     This function *will* modify your model.
+
+    In most cases you probably want to use the much faster
+    `loopless_solution`. May be used in cases where you want to add complex
+    constraints and objecives (for instance quadratic objectives) to the
+    model afterwards or use an approximation of Gibbs free energy directions
+    in your model.
 
     Parameters
     ----------
     model : cobra.Model
         The model to which to add the constraints.
     zero_cutoff : positive float, optional
-        Cutoff used for null space. Coefficients with an absolute value smaller
-        than `zero_cutoff` are considered to be zero (default model.tolerance).
-
-    Returns
-    -------
-    Nothing
+        Cutoff used for null space. Coefficients with an absolute value
+        smaller than `zero_cutoff` are considered to be zero. The default
+        uses the `model.tolerance` (default None).
 
     References
     ----------
@@ -46,11 +43,12 @@ def add_loopless(model, zero_cutoff=None):
        metabolic models. Schellenberger J, Lewis NE, Palsson BO. Biophys J.
        2011 Feb 2;100(3):544-53. doi: 10.1016/j.bpj.2010.12.3707. Erratum
        in: Biophys J. 2011 Mar 2;100(5):1381.
+
     """
     zero_cutoff = normalize_cutoff(model, zero_cutoff)
 
     internal = [i for i, r in enumerate(model.reactions) if not r.boundary]
-    s_int = create_stoichiometric_matrix(model)[:, numpy.array(internal)]
+    s_int = create_stoichiometric_matrix(model)[:, np.array(internal)]
     n_int = nullspace(s_int).T
     max_bound = max(max(abs(b) for b in r.bounds) for r in model.reactions)
     prob = model.problem
@@ -60,21 +58,21 @@ def add_loopless(model, zero_cutoff=None):
     for i in internal:
         rxn = model.reactions[i]
         # indicator variable a_i
-        indicator = prob.Variable("indicator_" + rxn.id, type="binary")
+        indicator = prob.Variable(f"indicator_{rxn.id}", type="binary")
         # -M*(1 - a_i) <= v_i <= M*a_i
         on_off_constraint = prob.Constraint(
             rxn.flux_expression - max_bound * indicator,
             lb=-max_bound,
             ub=0,
-            name="on_off_" + rxn.id,
+            name=f"on_off_{rxn.id}",
         )
         # -(max_bound + 1) * a_i + 1 <= G_i <= -(max_bound + 1) * a_i + 1000
-        delta_g = prob.Variable("delta_g_" + rxn.id)
+        delta_g = prob.Variable(f"delta_g_{rxn.id}")
         delta_g_range = prob.Constraint(
             delta_g + (max_bound + 1) * indicator,
             lb=1,
             ub=max_bound,
-            name="delta_g_range_" + rxn.id,
+            name=f"delta_g_range_{rxn.id}",
         )
         to_add.extend([indicator, on_off_constraint, delta_g, delta_g_range])
 
@@ -82,19 +80,29 @@ def add_loopless(model, zero_cutoff=None):
 
     # Add nullspace constraints for G_i
     for i, row in enumerate(n_int):
-        name = "nullspace_constraint_" + str(i)
+        name = f"nullspace_constraint_{str(i)}"
         nullspace_constraint = prob.Constraint(Zero, lb=0, ub=0, name=name)
         model.add_cons_vars([nullspace_constraint])
         coefs = {
-            model.variables["delta_g_" + model.reactions[ridx].id]: row[i]
+            model.variables[f"delta_g_{model.reactions[ridx].id}"]: row[i]
             for i, ridx in enumerate(internal)
             if abs(row[i]) > zero_cutoff
         }
         model.constraints[name].set_linear_coefficients(coefs)
 
 
-def _add_cycle_free(model, fluxes):
-    """Add constraints for CycleFreeFlux."""
+def _add_cycle_free(model: "Model", fluxes: Dict[str, float]) -> None:
+    """Add constraints for CycleFreeFlux.
+
+    Parameters
+    ----------
+    model : cobra.Model
+        The model to operate on.
+    fluxes : dict of {str: float}
+        A dictionary having keys as reaction IDs and values as their flux
+        values.
+
+    """
     model.objective = model.solver.interface.Objective(
         Zero, direction="min", sloppy=True
     )
@@ -114,22 +122,25 @@ def _add_cycle_free(model, fluxes):
     model.objective.set_linear_coefficients({v: 1.0 for v in objective_vars})
 
 
-def loopless_solution(model, fluxes=None):
+def loopless_solution(
+    model: "Model", fluxes: Optional[Dict[str, float]] = None
+) -> "Solution":
     """Convert an existing solution to a loopless one.
 
     Removes as many loops as possible (see Notes).
+
     Uses the method from CycleFreeFlux [1]_ and is much faster than
-    `add_loopless` and should therefore be the preferred option to get loopless
-    flux distributions.
+    `add_loopless` and should therefore be the preferred option to get
+    loopless flux distributions.
 
     Parameters
     ----------
     model : cobra.Model
         The model to which to add the constraints.
-    fluxes : dict
-        A dictionary {rxn_id: flux} that assigns a flux to each reaction. If
-        not None will use the provided flux values to obtain a close loopless
-        solution.
+    fluxes : dict of {str, float}, optional
+        A dictionary having keys as reaction IDs and values as their flux
+        values. If not None will use the provided flux values to obtain a
+        close loopless solution (default None).
 
     Returns
     -------
@@ -142,14 +153,14 @@ def loopless_solution(model, fluxes=None):
     -----
     The returned flux solution has the following properties:
 
-    - it contains the minimal number of loops possible and no loops at all if
-      all flux bounds include zero
-    - it has an objective value close to the original one and the same
+    - It contains the minimal number of loops possible and no loops at all
+      if all flux bounds include zero.
+    - It has an objective value close to the original one and the same
       objective value id the objective expression can not form a cycle
-      (which is usually true since it consumes metabolites)
-    - it has the same exact exchange fluxes as the previous solution
-    - all fluxes have the same sign (flow in the same direction) as the
-      previous solution
+      (which is usually true since it consumes metabolites).
+    - It has the same exact exchange fluxes as the previous solution.
+    - All fluxes have the same sign (flow in the same direction) as the
+      previous solution.
 
     References
     ----------
@@ -157,6 +168,7 @@ def loopless_solution(model, fluxes=None):
        loops from flux distributions. Desouki AA, Jarre F, Gelius-Dietrich
        G, Lercher MJ. Bioinformatics. 2015 Jul 1;31(13):2159-65. doi:
        10.1093/bioinformatics/btv096.
+
     """
     # Need to reoptimize otherwise spurious solution artifacts can cause
     # all kinds of havoc
@@ -179,15 +191,20 @@ def loopless_solution(model, fluxes=None):
     return solution
 
 
-def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=None):
+def loopless_fva_iter(
+    model: "Model",
+    reaction: "Reaction",
+    solution: bool = False,
+    zero_cutoff: Optional[float] = None,
+) -> Union[float, Dict[str, float]]:
     """Plugin to get a loopless FVA solution from single FVA iteration.
 
     Assumes the following about `model` and `reaction`:
-    1. the model objective is set to be `reaction`
-    2. the model has been optimized and contains the minimum/maximum flux for
-       `reaction`
-    3. the model contains an auxiliary variable called "fva_old_objective"
-       denoting the previous objective
+    1. The model objective is set to be `reaction`.
+    2. The model has been optimized and contains the minimum/maximum flux
+       for `reaction`.
+    3. The model contains an auxiliary variable called "fva_old_objective"
+       denoting the previous objective.
 
     Parameters
     ----------
@@ -195,19 +212,21 @@ def loopless_fva_iter(model, reaction, solution=False, zero_cutoff=None):
         The model to be used.
     reaction : cobra.Reaction
         The reaction currently minimized/maximized.
-    solution : boolean, optional
-        Whether to return the entire solution or only the minimum/maximum for
-        `reaction`.
+    solution : bool, optional
+        Whether to return the entire solution or only the minimum/maximum
+        for `reaction` (default False).
     zero_cutoff : positive float, optional
         Cutoff used for loop removal. Fluxes with an absolute value smaller
-        than `zero_cutoff` are considered to be zero (default model.tolerance).
+        than `zero_cutoff` are considered to be zero. The default is to use
+        `model.tolerance` (default None).
 
     Returns
     -------
-    single float or dict
+    single float or dict of {str: float}
         Returns the minimized/maximized flux through `reaction` if
-        all_fluxes == False (default). Otherwise returns a loopless flux
-        solution containing the minimum/maximum flux for `reaction`.
+        `solution` is False. Otherwise, returns a loopless flux
+        solution object containing the minimum/maximum flux for `reaction`.
+
     """
     zero_cutoff = normalize_cutoff(model, zero_cutoff)
 

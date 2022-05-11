@@ -1,10 +1,12 @@
-# -*- coding: utf-8 -*-
-
-"""Lists and annotations for compartment names and reactions.
+"""Provide lists and annotations for compartment names and reactions.
 
 Please send a PR if you want to add something here :)
+
 """
 
+# A dictionary having keys as reaction types and keys as prefixes of
+# reaction IDs that usually indicate that the reaction is *not* a reaction
+# of the specified type.
 excludes = {
     "demand": ["SN_", "SK_", "sink", "EX_", "exchange"],
     "exchange": [
@@ -27,9 +29,10 @@ excludes = {
         "exchange",
     ],
 }
-"""A list of sub-strings in reaction IDs that usually indicate
-that the reaction is *not* a reaction of the specified type."""
 
+
+# A dictionary having SBO term identifiers as values and boundary types
+# as keys.
 sbo_terms = {
     "demand": "SBO:0000628",
     "exchange": "SBO:0000627",
@@ -37,8 +40,10 @@ sbo_terms = {
     "biomass": "SBO:0000629",
     "pseudoreaction": "SBO:0000631",
 }
-"""SBO term identifiers for various boundary types."""
 
+
+# A dictionary having keys as common compartment abbreviations and values
+# as alternative names.
 compartment_shortlist = {
     "ce": ["cell envelope"],
     "c": [
@@ -81,4 +86,3 @@ compartment_shortlist = {
     "w": ["cell wall"],
     "s": ["eyespot", "eyespot apparatus", "stigma"],
 }
-"""A list of common compartment abbreviations and alternative names."""

@@ -2,7 +2,7 @@
 
 set -eu
 
-target="${TMP}/cobrapy-website"
+target="${HOME}/cobrapy-website"
 
 git clone "https://github.com/opencobra/cobrapy-website.git" "${target}"
 pushd "${target}"

@@ -1,0 +1,22 @@
+name: BioSimulators Dispatch
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get tag
+        id: tag
+        run: echo "::set-output name=version::${GITHUB_REF#refs/tags/}"
+      - name: Dispatch new release version to BioSimulators
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Continuous integration
+          repo: biosimulators/Biosimulators_COBRApy
+          ref: dev
+          token: ${{ secrets.BIOSIM_DISPATCH_TOKEN }}
+          inputs: '{ "simulatorVersion": "${{ steps.tag.outputs.version }}", "simulatorVersionLatest": "true" }'

@@ -1,19 +1,13 @@
-# -*- coding: utf-8 -*-
-
 """Define the Model class."""
 
-from __future__ import absolute_import
 
 import logging
-import types
 from copy import copy, deepcopy
 from functools import partial
 from warnings import warn
 
 import optlang
-import six
 from optlang.symbolics import Basic, Zero
-from six import iteritems, string_types
 
 from cobra.core.configuration import Configuration
 from cobra.core.dictlist import DictList
@@ -23,16 +17,15 @@ from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.core.reaction import Reaction
 from cobra.core.solution import get_solution
-from cobra.exceptions import SolverNotFound
 from cobra.medium import find_boundary_types, find_external_compartment, sbo_terms
 from cobra.util.context import HistoryManager, get_context, resettable
 from cobra.util.solver import (
     add_cons_vars_to_problem,
     assert_optimal,
+    check_solver,
     interface_to_str,
     remove_cons_vars_from_problem,
     set_objective,
-    solvers,
 )
 from cobra.util.util import AutoVivification, format_long_string
 
@@ -100,9 +93,6 @@ class Model(Object):
             self._solver = id_or_model.solver
         else:
             Object.__init__(self, id_or_model, name=name)
-            self._trimmed = False
-            self._trimmed_genes = []
-            self._trimmed_reactions = {}
             self.genes = DictList()
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
@@ -117,7 +107,7 @@ class Model(Object):
             # if not hasattr(self, '_solver'):  # backwards compatibility
             # with older cobrapy pickles?
 
-            interface = configuration.solver
+            interface = check_solver(configuration.solver)
             self._solver = interface.Model()
             self._solver.objective = interface.Objective(Zero)
             self._populate_solver(self.reactions, self.metabolites)
@@ -137,10 +127,9 @@ class Model(Object):
 
         Examples
         --------
-        >>> import cobra.test
-        >>> model = cobra.test.create_test_model("textbook")
-        >>> new = model.problem.Constraint(model.objective.expression,
-        >>> lb=0.99)
+        >>> from cobra.io import load_model
+        >>> model = load_model("textbook")
+        >>> new = model.problem.Constraint(model.objective.expression, lb=0.99)
         >>> model.solver.add(new)
         """
         return self._solver
@@ -148,20 +137,7 @@ class Model(Object):
     @solver.setter
     @resettable
     def solver(self, value):
-        not_valid_interface = SolverNotFound(
-            "%s is not a valid solver interface. Pick from %s." % (value, list(solvers))
-        )
-        if isinstance(value, six.string_types):
-            try:
-                interface = solvers[interface_to_str(value)]
-            except KeyError:
-                raise not_valid_interface
-        elif isinstance(value, types.ModuleType) and hasattr(value, "Model"):
-            interface = value
-        elif isinstance(value, optlang.interface.Model):
-            interface = value.interface
-        else:
-            raise not_valid_interface
+        interface = check_solver(value)
 
         # Do nothing if the solver did not change
         if self.problem == interface:
@@ -174,27 +150,30 @@ class Model(Object):
 
     @tolerance.setter
     def tolerance(self, value):
-        solver_tolerances = self._solver.configuration.tolerances
+        solver_tolerances = self.solver.configuration.tolerances
 
         try:
             solver_tolerances.feasibility = value
         except AttributeError:
             logger.info(
-                "The current solver doesn't allow setting" "feasibility tolerance."
+                f"The current solver interface {interface_to_str(self.problem)} "
+                f"doesn't support setting the feasibility tolerance."
             )
 
         try:
             solver_tolerances.optimality = value
         except AttributeError:
             logger.info(
-                "The current solver doesn't allow setting" "optimality tolerance."
+                f"The current solver interface {interface_to_str(self.problem)} "
+                f"doesn't support setting the optimality tolerance."
             )
 
         try:
             solver_tolerances.integrality = value
         except AttributeError:
             logger.info(
-                "The current solver doesn't allow setting" "integrality tolerance."
+                f"The current solver interface {interface_to_str(self.problem)} "
+                f"doesn't support setting the integrality tolerance."
             )
 
         self._tolerance = value
@@ -238,9 +217,10 @@ class Model(Object):
 
         Examples
         --------
-        >>> import cobra.test
-        >>> model = cobra.test.create_test_model("textbook")
+        >>> from cobra.io import load_model
+        >>> model = load_model("textbook")
         >>> model.compartments = {'c': 'the cytosol'}
+        >>> model.compartments
         {'c': 'the cytosol', 'e': 'extracellular'}
         """
         self._compartments.update(value)
@@ -293,10 +273,10 @@ class Model(Object):
         # Set the given media bounds
         media_rxns = list()
         exchange_rxns = frozenset(self.exchanges)
-        for rxn_id, bound in iteritems(medium):
+        for rxn_id, bound in medium.items():
             rxn = self.reactions.get_by_id(rxn_id)
             if rxn not in exchange_rxns:
-                logger.warn(
+                logger.warning(
                     "%s does not seem to be an"
                     " an exchange reaction. Applying bounds anyway.",
                     rxn.id,
@@ -308,7 +288,10 @@ class Model(Object):
 
         # Turn off reactions not present in media
         for rxn in exchange_rxns - media_rxns:
-            set_active_bound(rxn, 0)
+            is_export = rxn.reactants and not rxn.products
+            set_active_bound(
+                rxn, min(0, -rxn.lower_bound if is_export else rxn.upper_bound)
+            )
 
     def __add__(self, other_model):
         """Add the content of another model to this model (+).
@@ -355,7 +338,7 @@ class Model(Object):
         do_not_copy_by_ref = {"_reaction", "_model", "_annotation"}
         for metabolite in self.metabolites:
             new_met = metabolite.__class__()
-            for attr, value in iteritems(metabolite.__dict__):
+            for attr, value in metabolite.__dict__.items():
                 if attr not in do_not_copy_by_ref:
                     new_met.__dict__[attr] = copy(value) if attr == "formula" else value
             new_met._model = new
@@ -365,7 +348,7 @@ class Model(Object):
         new.genes = DictList()
         for gene in self.genes:
             new_gene = gene.__class__(None)
-            for attr, value in iteritems(gene.__dict__):
+            for attr, value in gene.__dict__.items():
                 if attr not in do_not_copy_by_ref:
                     new_gene.__dict__[attr] = (
                         copy(value) if attr == "formula" else value
@@ -378,21 +361,18 @@ class Model(Object):
         do_not_copy_by_ref = {"_model", "_metabolites", "_genes", "_annotation"}
         for reaction in self.reactions:
             new_reaction = reaction.__class__()
-            for attr, value in iteritems(reaction.__dict__):
+            for attr, value in reaction.__dict__.items():
                 if attr not in do_not_copy_by_ref:
                     new_reaction.__dict__[attr] = copy(value)
             new_reaction._model = new
             new_reaction._annotation = deepcopy(reaction.annotation)
             new.reactions.append(new_reaction)
             # update awareness
-            for metabolite, stoic in iteritems(reaction._metabolites):
+            for metabolite, stoic in reaction._metabolites.items():
                 new_met = new.metabolites.get_by_id(metabolite.id)
                 new_reaction._metabolites[new_met] = stoic
                 new_met._reaction.add(new_reaction)
-            for gene in reaction._genes:
-                new_gene = new.genes.get_by_id(gene.id)
-                new_reaction._genes.add(new_gene)
-                new_gene._reaction.add(new_reaction)
+            new_reaction.update_genes_from_gpr()
 
         new.groups = DictList()
         do_not_copy_by_ref = {"_model", "_members", "_annotation"}
@@ -400,7 +380,7 @@ class Model(Object):
         # then update their members.
         for group in self.groups:
             new_group = group.__class__(group.id)
-            for attr, value in iteritems(group.__dict__):
+            for attr, value in group.__dict__.items():
                 if attr not in do_not_copy_by_ref:
                     new_group.__dict__[attr] = copy(value)
             new_group._model = new
@@ -460,9 +440,7 @@ class Model(Object):
         metabolite_list = [x for x in metabolite_list if x.id not in self.metabolites]
 
         bad_ids = [
-            m
-            for m in metabolite_list
-            if not isinstance(m.id, string_types) or len(m.id) < 1
+            m for m in metabolite_list if not isinstance(m.id, str) or len(m.id) < 1
         ]
         if len(bad_ids) != 0:
             raise ValueError("invalid identifiers in {}".format(repr(bad_ids)))
@@ -570,7 +548,8 @@ class Model(Object):
         A demand reaction is an irreversible reaction that consumes an
         intracellular metabolite.
         A sink is similar to an exchange but specifically for intracellular
-        metabolites.
+        metabolites, i.e., a reversible reaction that adds or removes an
+        intracellular metabolite.
 
         If you set the reaction `type` to something else, you must specify the
         desired identifier of the created reaction along with its upper and
@@ -606,8 +585,8 @@ class Model(Object):
 
         Examples
         --------
-        >>> import cobra.test
-        >>> model = cobra.test.create_test_model("textbook")
+        >>> from cobra.io load_model
+        >>> model = load_model("textbook")
         >>> demand = model.add_boundary(model.metabolites.atp_c, type="demand")
         >>> demand.id
         'DM_atp_c'
@@ -690,6 +669,8 @@ class Model(Object):
         # Add reactions. Also take care of genes and metabolites in the loop.
         for reaction in pruned:
             reaction._model = self
+            if context:
+                context(partial(setattr, reaction, "_model", None))
             # Build a `list()` because the dict will be modified in the loop.
             for metabolite in list(reaction.metabolites):
                 # TODO: Should we add a copy of the metabolite instead?
@@ -746,7 +727,7 @@ class Model(Object):
             Remove orphaned genes and metabolites from the model as well
 
         """
-        if isinstance(reactions, string_types) or hasattr(reactions, "id"):
+        if isinstance(reactions, str) or hasattr(reactions, "id"):
             warn("need to pass in a list")
             reactions = [reactions]
 
@@ -830,7 +811,7 @@ class Model(Object):
                 return False
             return True
 
-        if isinstance(group_list, string_types) or hasattr(group_list, "id"):
+        if isinstance(group_list, str) or hasattr(group_list, "id"):
             warn("need to pass in a list")
             group_list = [group_list]
 
@@ -866,7 +847,7 @@ class Model(Object):
             A list of `cobra.Group` objects to remove from the model.
         """
 
-        if isinstance(group_list, string_types) or hasattr(group_list, "id"):
+        if isinstance(group_list, str) or hasattr(group_list, "id"):
             warn("need to pass in a list")
             group_list = [group_list]
 
@@ -1031,7 +1012,7 @@ class Model(Object):
                 reaction = self.reactions.get_by_id(reaction.id)
                 forward_variable = reaction.forward_variable
                 reverse_variable = reaction.reverse_variable
-            for metabolite, coeff in six.iteritems(reaction.metabolites):
+            for metabolite, coeff in reaction.metabolites.items():
                 if metabolite.id in self.constraints:
                     constraint = self.constraints[metabolite.id]
                 else:
@@ -1046,7 +1027,7 @@ class Model(Object):
         for reaction in reaction_list:
             reaction = self.reactions.get_by_id(reaction.id)
             reaction.update_variable_bounds()
-        for constraint, terms in six.iteritems(constraint_terms):
+        for constraint, terms in constraint_terms.items():
             constraint.set_linear_coefficients(terms)
 
     def slim_optimize(self, error_value=float("nan"), message=None):
@@ -1137,10 +1118,9 @@ class Model(Object):
             for gene in self.genes:
                 gene._reaction.clear()
             for rxn in self.reactions:
+                rxn.update_genes_from_gpr()
                 for met in rxn._metabolites:
                     met._reaction.add(rxn)
-                for gene in rxn._genes:
-                    gene._reaction.add(rxn)
 
         # point _model to self
         for l in (self.reactions, self.genes, self.metabolites, self.groups):
@@ -1336,7 +1316,5 @@ class Model(Object):
             num_reactions=len(self.reactions),
             num_groups=len(self.groups),
             objective=format_long_string(str(self.objective.expression), 100),
-            compartments=", ".join(
-                v if v else k for k, v in iteritems(self.compartments)
-            ),
+            compartments=", ".join(v if v else k for k, v in self.compartments.items()),
         )

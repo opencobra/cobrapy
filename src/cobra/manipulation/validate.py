@@ -1,9 +1,14 @@
-# -*- coding: utf-8 -*-
+"""Provide functions for model component validations."""
 
-from __future__ import absolute_import
+from typing import TYPE_CHECKING, Dict, List
 
 
-NOT_MASS_BALANCED_TERMS = {
+if TYPE_CHECKING:
+    from cobra import Metabolite, Model, Reaction
+
+
+# Set of mass unbalanced SBO terms
+_NOT_MASS_BALANCED_TERMS = {
     "SBO:0000627",  # EXCHANGE
     "SBO:0000628",  # DEMAND
     "SBO:0000629",  # BIOMASS
@@ -12,28 +17,48 @@ NOT_MASS_BALANCED_TERMS = {
 }
 
 
-def check_mass_balance(model):
+def check_mass_balance(model: "Model") -> Dict["Reaction", Dict["Metabolite", float]]:
+    """Check mass balance for reactions of `model` and return unbalanced ones.
+
+    Parameters
+    ----------
+    model: cobra.Model
+        The model to perform check on.
+
+    Returns
+    -------
+    dict of {cobra.Reaction: dict of {cobra.Metabolite: float}}
+        Returns an empty dict if all components are balanced.
+
+    """
     unbalanced = {}
     for reaction in model.reactions:
-        sbo = reaction.annotation["sbo"]
-        if len(sbo) == 0:
-            sbo = None
-        else:
-            sbo = sbo[0]
-        if sbo not in NOT_MASS_BALANCED_TERMS:
+        if reaction.annotation.get("sbo") not in _NOT_MASS_BALANCED_TERMS:
             balance = reaction.check_mass_balance()
             if balance:
                 unbalanced[reaction] = balance
     return unbalanced
 
 
-def check_metabolite_compartment_formula(model):
+def check_metabolite_compartment_formula(model: "Model") -> List[str]:
+    """Check metabolite formulae of `model`.
+
+    Parameters
+    ----------
+    model: cobra.Model
+        The model to perform check on.
+
+    Returns
+    -------
+    list of str
+        Returns an empty list if no errors are found.
+
+    """
     errors = []
     for met in model.metabolites:
         if met.formula is not None and len(met.formula) > 0:
             if not met.formula.isalnum():
                 errors.append(
-                    "Metabolite '%s' formula '%s' not alphanumeric"
-                    % (met.id, met.formula)
+                    f"Metabolite '{met.id}' formula '{met.formula}' not alphanumeric"
                 )
     return errors

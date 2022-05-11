@@ -1,0 +1,13 @@
+# Ref: https://help.github.com/en/github/building-a-strong-community/configuring-issue-templates-for-your-repository#configuring-the-template-chooser
+blank_issues_enabled: true
+contact_links:
+- name: 📧 Google Group
+  url: http://groups.google.com/group/cobra-pie
+  about: >
+    Please ask typical questions here: General constraint-based modelling problems or
+    issues with genome-scale models in COBRApy.
+- name: 💬 Gitter
+  url: https://gitter.im/opencobra/cobrapy
+  about: >
+    Please ask more specific programming questions in this Gitter channel or discuss
+    ideas and feature requests with the developers.

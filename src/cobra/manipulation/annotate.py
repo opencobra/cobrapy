@@ -1,16 +1,26 @@
-# -*- coding: utf-8 -*-
+"""Provide function for annotating demand and exchange reactions."""
 
-from __future__ import absolute_import
+from typing import TYPE_CHECKING
 
 
-def add_SBO(model):
-    """adds SBO terms for demands and exchanges
+if TYPE_CHECKING:
+    from cobra import Model
+
+
+def add_SBO(model: "Model") -> None:
+    """Add SBO terms for demands and exchanges.
 
     This works for models which follow the standard convention for
     constructing and naming these reactions.
 
     The reaction should only contain the single metabolite being exchanged,
-    and the id should be EX_metid or DM_metid
+    and the id should be EX_<met_id> or DM_<met_id> .
+
+    Parameters
+    ----------
+    model: cobra.Model
+        The model whose demand and exchange reactions need to be annotated.
+
     """
     for r in model.reactions:
         # don't annotate already annotated reactions

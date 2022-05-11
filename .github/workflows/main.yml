@@ -20,7 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [3.6, 3.7, 3.8]
+        python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
+    timeout-minutes: 360
 
     steps:
     - uses: actions/checkout@v2
@@ -34,7 +35,8 @@ jobs:
         python -m pip install tox tox-gh-actions
     - name: Test with tox
       run:
-        tox -- --cov-report=xml
+        tox -- --benchmark-skip
+      timeout-minutes: 60
     - name: Report coverage
       shell: bash
       run: bash <(curl -s https://codecov.io/bash)
@@ -60,11 +62,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools wheel
-        python -m pip install twine
+        python -m pip install build twine
     - name: Build package
-      run: python setup.py sdist bdist_wheel
-    - name: Check the package
-      run: twine check dist/*
+      run: python -m build
     - name: Publish to PyPI
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}

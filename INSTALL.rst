@@ -38,7 +38,7 @@ available from the ``conda-forge`` channel.
 Installation for development
 ============================
 
-Get the `detailed contribution instructions <CONTRIBUTING.rst>`_ for
+Get the `detailed contribution instructions <.github/CONTRIBUTING.rst>`_ for
 contributing to COBRApy.
 
 Solvers
