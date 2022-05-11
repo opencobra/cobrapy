@@ -55,6 +55,7 @@ from cobra.core.metadata import (
     Qualifier,
 )
 
+
 class CobraSBMLError(Exception):
     """SBML error class."""
 
@@ -608,42 +609,7 @@ def _sbml_to_model(
     cobra_model = Model(model_id)
     cobra_model.name = model.getName()
 
-    # meta information
-    meta = {
-        "model.id": model_id,
-        "level": model.getLevel(),
-        "version": model.getVersion(),
-        "packages": [],
-    }
-    # History
-    creators = []
-    created = None
-    if model.isSetModelHistory():
-        history: "libsbml.ModelHistory" = model.getModelHistory()
-
-        if history.isSetCreatedDate():
-            created = history.getCreatedDate()
-
-        c: "libsbml.ModelCreator"
-        for c in history.getListCreators():
-            creators.append(
-                {
-                    "familyName": c.getFamilyName() if c.isSetFamilyName() else None,
-                    "givenName": c.getGivenName() if c.isSetGivenName() else None,
-                    "organisation": c.getOrganisation()
-                    if c.isSetOrganisation()
-                    else None,
-                    "email": c.getEmail() if c.isSetEmail() else None,
-                }
-            )
-
-    meta["creators"] = creators
-    meta["created"] = created
-    meta["notes"] = _parse_notes_info(doc)
-    meta["annotation"] = _parse_annotations(doc)
-
     info = f"<{model_id}> SBML L{model.getLevel()}V{model.getVersion()}"
-    meta["info"] = info
     packages = {}
     for k in range(doc.getNumPlugins()):
         plugin: "libsbml.SBasePlugin" = doc.getPlugin(k)
@@ -655,8 +621,17 @@ def _sbml_to_model(
                 f"SBML package '{key}' not supported by cobrapy, "
                 f"information is not parsed"
             )
-    meta["info"] = info
-    meta["packages"] = packages
+
+    # meta information
+    meta = {
+        "model.id": model_id,
+        "level": model.getLevel(),
+        "version": model.getVersion(),
+        "packages": packages,
+        "notes": _parse_notes_info(doc),
+        "annotation": _parse_annotations(doc),
+        "info": info,
+    }
     cobra_model._sbml = meta
 
     # notes and annotations
@@ -666,9 +641,8 @@ def _sbml_to_model(
     # Compartments
     # FIXME: update with new compartments
     compartments = {}
-    for (
-        compartment
-    ) in model.getListOfCompartments():  # noqa: E501 type: libsbml.Compartment
+    compartment: libsbml.Compartment
+    for compartment in model.getListOfCompartments():
         cid = _check_required(compartment, compartment.getIdAttribute(), "id")
         compartments[cid] = compartment.getName()
     cobra_model.compartments = compartments
@@ -1666,7 +1640,7 @@ def _check(value: Union[None, int], message: str) -> None:
 # Notes
 # -----------------------------------------------------------------------------
 def _parse_notes_info(sbase: libsbml.SBase) -> Notes:
-    """ Create COBRA Notes object.
+    """Create COBRA Notes object.
 
     Parameters
     ----------
@@ -1796,7 +1770,7 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
         else:
             qualifier = "unknown_qualifier"
         ext_res = {"resources": []}
-        for k in range(cvterm.getNumResources()):            # FIXME: read and store the qualifier
+        for k in range(cvterm.getNumResources()):  # FIXME: read and store the qualifier
             uri = cvterm.getResourceURI(k)
             ext_res["resources"].append(uri)
         ext_res["nested_data"] = _set_nested_data(cvterm)
@@ -1805,22 +1779,28 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
 
     # history of the component
     if sbase.isSetModelHistory():
-        model_history = sbase.getModelHistory()  # type: libsbml.ModelHistory
+        model_history: "libsbml.ModelHistory" = sbase.getModelHistory()
 
         cobra_creators = []
         for index in range(model_history.getNumCreators()):
-            creator = model_history.getCreator(index)  # type: libsbml.Creator
-            creator_dict = {}
-            if creator.isSetGivenName():
-                creator_dict["first_name"] = creator.getGivenName()
-            if creator.isSetFamilyName():
-                creator_dict["last_name"] = creator.getFamilyName()
-            if creator.isSetEmail():
-                creator_dict["email"] = creator.getEmail()
-            if creator.isSetOrganisation():
-                creator_dict["organization_name"] = creator.getOrganisation()
-            cobra_creator = Creator.from_data(creator_dict)
-            cobra_creators.append(cobra_creator)
+            creator: "libsbml.Creator" = model_history.getCreator(index)
+            cobra_creators.append(
+                Creator.from_data(
+                    {
+                        "familyName": creator.getFamilyName()
+                        if creator.isSetFamilyName()
+                        else None,
+                        "givenName": creator.getGivenName()
+                        if creator.isSetGivenName()
+                        else None,
+                        "organisation": creator.getOrganisation()
+                        if creator.isSetOrganisation()
+                        else None,
+                        "email": creator.getEmail() if creator.isSetEmail() else None,
+                    }
+                )
+            )
+
         annotation.history.creators = cobra_creators
 
         if model_history.isSetCreatedDate():
@@ -1868,7 +1848,7 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
 
 
 def _set_nested_data(cvterm_obj: libsbml.CVTerm) -> CVTerms:
-    """ Parses the nested data corresponding to a given
+    """Parses the nested data corresponding to a given
     libsbml.CVTerm object
     cvterm_obj : libsbml.CVTerm
         The CVTerm object from which nested data is to be parsed

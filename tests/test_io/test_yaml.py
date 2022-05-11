@@ -19,10 +19,8 @@ def test_load_yaml_model(
     assert compare_models(mini_model, yaml_model) is None
 
 
-@pytest.mark.xfail(reason="schema outdated")
 def test_save_yaml_model(tmp_path: Path, mini_model: Model) -> None:
     """Test the writing of YAML model."""
-    jsonschema = pytest.importorskip("jsonschema")
     output_file = tmp_path.joinpath("mini.yml")
     cio.save_yaml_model(mini_model, str(output_file), sort=True)
     # validate against JSONSchema
@@ -30,5 +28,6 @@ def test_save_yaml_model(tmp_path: Path, mini_model: Model) -> None:
     with open(output_file, "r") as infile:
         yaml_to_dict = yaml.load(infile)
     dict_to_json = json.dumps(yaml_to_dict)
-    loaded = json.loads(dict_to_json)
-    assert jsonschema.validate(loaded, cio.json.json_schema)
+    # Validate according to schema version 1
+    errors = cio.validate_json_model(filename=dict_to_json, json_schema_version=1)
+    assert len(errors) == 0
