@@ -384,7 +384,7 @@ def _reaction_from_dict(reaction: Dict, model: Model) -> Reaction:
     return new_reaction
 
 
-def group_to_dict(group: Group) -> Dict:
+def group_to_dict(group: "Group") -> Dict:
     new_group = OrderedDict()
     for key in _REQUIRED_GROUP_ATTRIBUTES:
         if key != "members":
@@ -415,7 +415,7 @@ def group_to_dict(group: Group) -> Dict:
 
 def group_from_dict(group: Dict, model: Model) -> Group:
     new_group = Group(group["id"])
-    for k, v in iteritems(group):
+    for k, v in group.items():
         if k == "annotation":
             value = MetaData.from_dict(v)
             setattr(new_group, k, value)
@@ -482,7 +482,7 @@ def model_to_dict(model: Model, sort: bool = False) -> OrderedDict:
     # sbml meta info
     sbml_info = OrderedDict()
     if hasattr(model, "_sbml"):
-        for key, value in iteritems(model._sbml):
+        for key, value in model._sbml.items():
             if key == "annotation":
                 sbml_info[key] = _fix_type(value.to_dict())
             else:

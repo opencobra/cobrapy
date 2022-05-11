@@ -1,9 +1,9 @@
 """Test functionalities of json.py"""
 
 from os.path import join
+from typing import Callable
 
 from cobra import io as cio
-from cobra.test.test_io.conftest import compare_models
 
 
 def test_validate_json(data_directory):
@@ -27,7 +27,7 @@ def test_validate_json(data_directory):
     assert len(errors_invalid) == 309
 
 
-def test_load_json_model(data_directory, mini_model):
+def test_load_json_model(data_directory, mini_model, compare_models: Callable):
     """Test the reading of JSON model."""
     json_model = cio.load_json_model(join(data_directory, "mini.json"))
     assert compare_models(mini_model, json_model) is None

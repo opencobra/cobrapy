@@ -6,5 +6,6 @@ from cobra.core.metadata import *
 from cobra.core.model import Model
 from cobra.core.object import Object
 from cobra.core.reaction import Reaction
-from cobra.core.solution import LegacySolution, Solution, get_solution
+from cobra.core.group import Group
+from cobra.core.solution import Solution, get_solution
 from cobra.core.species import Species

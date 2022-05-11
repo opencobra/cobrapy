@@ -609,17 +609,12 @@ def _sbml_to_model(
     cobra_model.name = model.getName()
 
     # meta information
-    # meta information
     meta = {
         "model.id": model_id,
         "level": model.getLevel(),
         "version": model.getVersion(),
         "packages": [],
-        "notes": _parse_notes_info(doc),
-        "annotation": _parse_annotations(doc),
-        "info": info,
     }
-
     # History
     creators = []
     created = None
@@ -644,10 +639,11 @@ def _sbml_to_model(
 
     meta["creators"] = creators
     meta["created"] = created
-    meta["notes"] = _parse_notes_dict(doc)
+    meta["notes"] = _parse_notes_info(doc)
     meta["annotation"] = _parse_annotations(doc)
 
     info = f"<{model_id}> SBML L{model.getLevel()}V{model.getVersion()}"
+    meta["info"] = info
     packages = {}
     for k in range(doc.getNumPlugins()):
         plugin: "libsbml.SBasePlugin" = doc.getPlugin(k)
@@ -1750,7 +1746,6 @@ QUALIFIER_TYPES = {
 }
 
 
-
 def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
     """Parses cobra annotations from a given SBase object.
 
@@ -1812,15 +1807,6 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
     if sbase.isSetModelHistory():
         model_history = sbase.getModelHistory()  # type: libsbml.ModelHistory
 
-            if provider in annotation:
-                if isinstance(annotation[provider], str):
-                    annotation[provider] = [annotation[provider]]
-                # FIXME: use a list
-                if identifier not in annotation[provider]:
-                    annotation[provider].append(identifier)
-            else:
-                # FIXME: always in list
-                annotation[provider] = identifier
         cobra_creators = []
         for index in range(model_history.getNumCreators()):
             creator = model_history.getCreator(index)  # type: libsbml.Creator
@@ -1867,7 +1853,6 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
     (provider, identifier) if resolvable, None otherwise
     """
     match = URL_IDENTIFIERS_PATTERN.match(uri)
-    match = URL_IDENTIFIERS_PATTERN.match(uri)
     if match:
         provider, identifier = match.group(1), match.group(2)
         if provider.isupper():
@@ -1880,6 +1865,8 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
             f"'http(s)://identifiers.org/COLLECTION:id"
         )
         return None
+
+
 def _set_nested_data(cvterm_obj: libsbml.CVTerm) -> CVTerms:
     """ Parses the nested data corresponding to a given
     libsbml.CVTerm object
@@ -1975,7 +1962,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
                 _add_nested_data(cv, ex_res.nested_data)
             _check(
                 sbase.addCVTerm(cv),
-                f"Setting cvterm: {cv}, resource: {resource}",
+                f"Setting cvterm: {cv}, resource: {uri}",
             )
     # set history
     if not annotation.history.is_empty():

@@ -73,7 +73,7 @@ class Object:
         self._id = value
 
     @property
-    def annotation(self) -> dict:
+    def annotation(self) -> MetaData:
         """Get annotation dictionary.
 
         Returns
@@ -96,18 +96,18 @@ class Object:
         ------
         TypeError if annotation not a dict.
         """
-        if not (isinstance(value, dict) or isinstance(value, MetaData)):
+        if not (isinstance(annotation, dict) or isinstance(annotation, MetaData)):
             raise TypeError(
                 "The data passed for annotation must be inside "
-                "a dictionary: {}".format(value)
+                "a dictionary or MetaData: {}".format(annotation)
             )
         else:
-            if isinstance(value, MetaData):
-                self._annotation = value
+            if isinstance(annotation, MetaData):
+                self._annotation = annotation
             else:
                 self._annotation.cvterms._annotations = defaultdict(list)
                 self._annotation.cvterms._cvterms = defaultdict(CVList)
-                self._annotation.cvterms.add_simple_annotations(value)
+                self._annotation.cvterms.add_simple_annotations(annotation)
 
     @property
     def notes(self):
