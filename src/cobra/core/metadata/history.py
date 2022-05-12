@@ -186,7 +186,7 @@ class Creator:
             "given_name": self.given_name,
             "family_name": self.family_name,
             "email": self.email,
-            "organization_name": self.organisation,
+            "organisation": self.organisation,
         }
 
     def __str__(self) -> str:

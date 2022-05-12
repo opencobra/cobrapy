@@ -333,7 +333,7 @@ def test_model_history(tmp_path: Path) -> None:
             {
                 "family_name": "Mustermann",
                 "given_name": "Max",
-                "organization_name": "Muster University",
+                "organisation": "Muster University",
                 "email": "muster@university.com",
             }
         ],
