@@ -40,13 +40,13 @@
                   "email": {
                     "type": "string"
                   },
-                  "first_name": {
+                  "given_name": {
                     "type": "string"
                   },
-                  "last_name": {
+                  "family_name": {
                     "type": "string"
                   },
-                  "organization_name": {
+                  "organisation": {
                     "type": "string"
                   }
                 },
