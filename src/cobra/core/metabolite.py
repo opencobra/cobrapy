@@ -308,7 +308,10 @@ class Metabolite(Species):
         from cobra.summary import MetaboliteSummary
 
         return MetaboliteSummary(
-            metabolite=self, model=self._model, solution=solution, fva=fva,
+            metabolite=self,
+            model=self._model,
+            solution=solution,
+            fva=fva,
         )
 
     def _repr_html_(self) -> str:

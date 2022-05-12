@@ -7,7 +7,7 @@ from typing import Dict, Iterable, List, Optional, Pattern
 
 import numpy as np
 
-from ..core import Gene, Group, Metabolite, Model, Object, Reaction
+from ..core import Gene, Group, Metabolite, Model, Object, Reaction, Notes
 from ..util import create_stoichiometric_matrix
 from ..util.solver import set_objective
 
@@ -35,7 +35,7 @@ MET_MATLAB_TO_PROVIDERS = {
     "metUniPathway": "unipathway.compound",
     "metPubChemID": "pubchem.compound",
     "metPubChemSubstance": "pubchem.substance",
-    "metCHEBIID": "CHEBI",
+    "metCHEBIID": "chebi",
     "metMetaNetXID": "metanetx.chemical",
     "metSEEDID": "seed.compound",
     "metBiGGID": "bigg.metabolite",
@@ -46,7 +46,7 @@ MET_MATLAB_TO_PROVIDERS = {
     "metSABIORKID": "sabiork.compound",
     "metSLMID": "SLM",
     "metSMILES": "SMILES",
-    "metSBOTerm": "SBO",
+    "metSBOTerm": "sbo",
     "metCasNumber": "cas",
 }
 
@@ -73,7 +73,7 @@ RXN_MATLAB_TO_PROVIDERS = {
     "rxnReactomeID": "reactome",
     "rxnSABIORKID": "sabiork.reaction",
     "rxnBRENDAID": "brenda",
-    "rxnSBOTerms": "SBO",
+    "rxnSBOTerms": "sbo",
 }
 
 RXN_PROVIDERS_TO_MATLAB = {
@@ -141,6 +141,7 @@ _punctuation_re = re.compile(r"^[;,.'\"]+$")
 _double_punctuation_re = re.compile(r"[;,.'\"]{2,}")
 _ec_re = re.compile(r"([\d\-]+.[\d\-]+.[\d\-]+.[\d-]+)")
 _chebi_re = re.compile(r"\D*(\d+),?")
+_sbo_re = re.compile(r"\D*(\d+),?")
 
 
 def _get_id_compartment(_id: str) -> str:
@@ -233,7 +234,9 @@ def _cell_to_str_list(
 
 
 def _cell_to_float_list(
-    m_cell: np.ndarray, empty_value: Optional[float] = None
+    m_cell: np.ndarray,
+    empty_value: Optional[float] = None,
+    inf_value: Optional[float] = None,
 ) -> List:
     """Turn an ndarray (cell) to a list of floats.
 
@@ -242,13 +245,41 @@ def _cell_to_float_list(
     m_cell: np.ndarray
     empty_value: float, optional
         What value to replace empty cells with. Default None.
+    inf_value: float, optional
+        Replace infinite values with defined inf. Default None (don't replace), will be
+        replaced by given value  if given.
 
     Returns
     -------
     List
         A list of processed floats.
     """
-    return [float(x[0]) if np.size(x[0]) else empty_value for x in m_cell]
+
+    def fix_inf(val: str, _inf_value: float):
+        """Fix inf value, used for rxn.lb and rxn.ub.
+
+        Parameters
+        ----------
+        val: str
+            the str to process into float
+        _inf_value: float
+            A value to replace infite values with.
+        """
+        val = float(val)
+        if np.isinf(val) and val < 0:
+            return -_inf_value
+        elif np.isinf(val) and val > 0:
+            return _inf_value
+        else:
+            return val
+
+    if inf_value:
+        return [
+            fix_inf(x[0], _inf_value=inf_value) if np.size(x[0]) else empty_value
+            for x in m_cell
+        ]
+    else:
+        return [float(x[0]) if np.size(x[0]) else empty_value for x in m_cell]
 
 
 def load_matlab_model(
@@ -302,7 +333,6 @@ def load_matlab_model(
         except ValueError as e:
             print(f"Some problem with the model, causing error {e}")
             # TODO: use custom cobra exception to handle exception
-            pass
     # If code here is executed, then no model was found.
     raise IOError(f"No COBRA model found at {infile_path}.")
 
@@ -382,6 +412,14 @@ def mat_parse_annotations(
             annotations[name] = _cell_to_str_list(
                 mat_struct[caseunfold[mat_key]][0, 0], None, _chebi_re, "CHEBI:"
             )
+        elif mat_key == "metSBOTerms".casefold() or mat_key == "rxnSBOTerms".casefold():
+            annotations[name] = _cell_to_str_list(
+                mat_struct[caseunfold[mat_key]][0, 0], None, _sbo_re, "SBO:"
+            )
+        elif mat_key == "metSLMID".casefold():
+            annotations[name] = _cell_to_str_list(
+                mat_struct[caseunfold[mat_key]][0, 0], None, _sbo_re, "SLM:"
+            )
         else:
             # If it something else, which may have commas, turn it into a list
             annotations[name] = [
@@ -454,7 +492,8 @@ def mat_parse_notes(
             for x in notes[name]
         ]
     for i, obj in enumerate(target_list):
-        obj.notes = {prov: notes[prov][i] for prov in note_providers if notes[prov][i]}
+        obj.notes = Notes.notes_from_dict({prov: notes[prov][i] for prov
+                                           in note_providers if notes[prov][i]})
 
 
 def annotations_to_mat(
@@ -479,42 +518,36 @@ def annotations_to_mat(
     """
     providers_used = set()
     for i in range(len(annotation_list)):
-        if annotation_list[i]:
-            providers_used.update(annotation_list[i].keys())
+        providers_used.update(annotation_list[i].keys())
     providers_used = providers_used.intersection(DICT_REPLACE[d_replace].keys())
     providers_used = list(providers_used)
     annotation_matlab = {prov: DICT_REPLACE[d_replace][prov] for prov in providers_used}
-    empty_lists = [[""] * len(annotation_list) for x in annotation_matlab]
+    empty_lists = [[""] * len(annotation_list) for _ in annotation_matlab]
     annotation_cells_to_be = dict(zip(annotation_matlab.values(), empty_lists))
     for i in range(len(annotation_list)):
-        if annotation_list[i]:
-            for provider_key, v in annotation_list[i].items():
-                if isinstance(v, str):
-                    v = [v]
-                if provider_key == "pubmed":
-                    v = ", ".join(
-                        [
-                            "PMID:" + annot if "PMID:" not in annot else annot
-                            for annot in v
-                        ]
-                    )
-                elif provider_key == "CHEBI":
-                    v = ", ".join(
-                        [
-                            "CHEBI:" + annot if "CHBEI:" not in annot else annot
-                            for annot in v
-                        ]
-                    )
-                elif provider_key == "ec-code":
-                    v = " or ".join(v)
-                else:
-                    v = ", ".join(v)
-                if provider_key not in providers_used:
-                    continue
-                annotation_cells_to_be[annotation_matlab[provider_key]][i] = v
+        for provider_key, v in annotation_list[i].items():
+            if isinstance(v, str):
+                v = [v]
+            if provider_key == "pubmed":
+                v = ", ".join(
+                    ["PMID:" + annot if "PMID:" not in annot else annot for annot in v]
+                )
+            elif provider_key == "CHEBI":
+                v = ", ".join(
+                    [
+                        "CHEBI:" + annot if "CHBEI:" not in annot else annot
+                        for annot in v
+                    ]
+                )
+            elif provider_key == "ec-code":
+                v = " or ".join(v)
+            else:
+                v = ", ".join(v)
+            if provider_key not in providers_used:
+                continue
+            annotation_cells_to_be[annotation_matlab[provider_key]][i] = v
     for annotation_key, item_list in annotation_cells_to_be.items():
-        if annotation_key not in mat_dict:
-            mat_dict[annotation_key] = _cell(item_list)
+        mat_dict[annotation_key] = _cell(item_list)
 
     # TODO - When cobrapy.notes are revised not be a dictionary (possibly when
     #  annotations are fully SBML compliant, revise this function.
@@ -542,28 +575,26 @@ def notes_to_mat(
     """
     providers_used = set()
     for i in range(len(note_list)):
-        if note_list[i]:
-            providers_used.update(note_list[i].keys())
+        providers_used.update(note_list[i].keys())
     providers_used = providers_used.intersection(DICT_REPLACE[d_replace].keys())
     providers_used = list(providers_used)
     annotation_matlab = {prov: DICT_REPLACE[d_replace][prov] for prov in providers_used}
-    empty_lists = [[""] * len(note_list) for x in annotation_matlab]
+    empty_lists = [[""] * len(note_list) for _ in annotation_matlab]
     annotation_cells_to_be = dict(zip(annotation_matlab.values(), empty_lists))
     for i in range(len(note_list)):
-        if note_list[i]:
-            for provider_key, v in note_list[i].items():
-                if provider_key not in providers_used:
-                    continue
-                if provider_key == "Confidence Level":
-                    v = float(v)
-                if not len(annotation_cells_to_be[annotation_matlab[provider_key]][i]):
-                    annotation_cells_to_be[annotation_matlab[provider_key]][i] = v
-                else:
-                    # References that aren't MIRIAM compliant will go to rxnNotes
-                    annotation_cells_to_be[annotation_matlab[provider_key]][i] = (
-                        annotation_cells_to_be[annotation_matlab[provider_key]][i]
-                        + f"; {v}"
-                    )
+        for provider_key, v in note_list[i].items():
+            if provider_key not in providers_used:
+                continue
+            if provider_key == "Confidence Level":
+                v = float(v)
+            if not len(annotation_cells_to_be[annotation_matlab[provider_key]][i]):
+                annotation_cells_to_be[annotation_matlab[provider_key]][i] = v
+            else:
+                # References that aren't MIRIAM compliant will go to rxnNotes
+                annotation_cells_to_be[annotation_matlab[provider_key]][i] = (
+                    annotation_cells_to_be[annotation_matlab[provider_key]][i]
+                    + f"; {v}"
+                )
     for annotation_key, item_list in annotation_cells_to_be.items():
         mat_dict[annotation_key] = _cell(item_list)
 
@@ -629,7 +660,28 @@ def create_mat_dict(model: Model) -> OrderedDict:
     mat["rxnNames"] = _cell(rxns.list_attr("name"))
     annotations_to_mat(mat, rxns.list_attr("annotation"), DICT_REACTION_REV)
     notes_to_mat(mat, rxns.list_attr("notes"), DICT_REACTION_NOTES_REV)
-    mat["subSystems"] = _cell(rxns.list_attr("subsystem"))  # TODO - output groups
+    rxn_subsystems = _cell(rxns.list_attr("subsystem"))
+    group_ids = model.groups.list_attr("id")
+    group_names = model.groups.list_attr("name")
+    group_ids = [
+        _id if not _name else _name for _id, _name in zip(group_ids, group_names)
+    ]
+    group_members_list = model.groups.list_attr("members")
+    if set(rxn_subsystems) == {""} and set(group_ids) != {""}:
+        subsystems = [[] for _ in rxns]
+        for group_id, group_members in zip(group_ids, group_members_list):
+            group = model.groups.get_by_id(group_id)
+            if group.kind == "partonomy":
+                for member in group_members:
+                    if isinstance(member, Reaction):
+                        rxn_ind = model.reactions.index(member)
+                        # noinspection PyTypeChecker
+                        subsystems[rxn_ind].append(group_id)
+        mat["subSystems"] = _cell(
+            [", ".join(subsystem_list) for subsystem_list in subsystems]
+        )
+    else:
+        mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
     stoich_mat = create_stoichiometric_matrix(model)
     mat["S"] = stoich_mat if stoich_mat is not None else [[]]
     # multiply by 1 to convert to float, working around scipy bug
@@ -796,10 +848,8 @@ def from_mat_struct(
 
     new_reactions = []
     rxn_ids = _cell_to_str_list(m["rxns"][0, 0])
-    rxn_lbs = _cell_to_float_list(m["lb"][0, 0])
-    rxn_lbs = [-inf if np.isinf(x) and x < 0 else x for x in rxn_lbs]
-    rxn_ubs = _cell_to_float_list(m["ub"][0, 0])
-    rxn_ubs = [inf if np.isinf(x) and x > 0 else x for x in rxn_ubs]
+    rxn_lbs = _cell_to_float_list(m["lb"][0, 0], empty_value=None, inf_value=inf)
+    rxn_ubs = _cell_to_float_list(m["ub"][0, 0], empty_value=None, inf_value=inf)
     rxn_gene_rules, rxn_names, rxn_subsystems = None, None, None
     try:
         rxn_gene_rules = _cell_to_str_list(m["grRules"][0, 0], "")
@@ -815,14 +865,16 @@ def from_mat_struct(
         # RECON3.0 mat has an array within an array for subsystems.
         # If we find a model that has multiple subsytems per reaction, this should be
         # modified
-        if isinstance(m["subSystems"][0, 0][0][0][0], np.ndarray):
+        if np.sctype2char(m["subSystems"][0, 0][0][0]) == "O" and isinstance(
+            m["subSystems"][0, 0][0][0][0], np.ndarray
+        ):
             rxn_subsystems = [
-                each_cell[0][0][0][0] if each_cell else None
+                each_cell[0][0][0][0] if each_cell else ""
                 for each_cell in m["subSystems"][0, 0]
             ]
         # Other matlab files seem normal.
         else:
-            rxn_subsystems = _cell_to_str_list(m["subSystems"][0, 0])
+            rxn_subsystems = _cell_to_str_list(m["subSystems"][0, 0], "")
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass

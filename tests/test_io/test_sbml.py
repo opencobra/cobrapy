@@ -6,7 +6,7 @@ from os.path import join, split
 from pathlib import Path
 from pickle import load
 from tempfile import gettempdir
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 
 import pytest
 from _pytest.fixtures import SubRequest
@@ -77,7 +77,7 @@ def test_validate(trial: IOTrial, data_directory: str) -> None:
 
     Parameters
     ----------
-    IOTrial:
+    trial: IOTrial
         Which model trial to check.
     data_directory: str
         Directory where the data is.
@@ -557,7 +557,7 @@ def test_gprs(data_directory: str, tmp_path: Path) -> None:
 
 def test_identifiers_annotation() -> None:
     """Test annotation with identifiers."""
-    from cobra.io.sbml import _parse_annotation_info
+    from cobra.core.metadata.helper import parse_identifiers_uri
 
     for uri in [
         "http://identifiers.org/chebi/CHEBI:000123",
@@ -565,7 +565,7 @@ def test_identifiers_annotation() -> None:
         "http://identifiers.org/CHEBI:000123",
         "https://identifiers.org/CHEBI:000123",
     ]:
-        data = _parse_annotation_info(uri)
+        data = parse_identifiers_uri(uri)
         assert data
         assert data[0] == "chebi"
         assert data[1] == "CHEBI:000123"
@@ -576,7 +576,7 @@ def test_identifiers_annotation() -> None:
         "http://identifiers.org/taxonomy:9602",
         "https://identifiers.org/taxonomy:9602",
     ]:
-        data = _parse_annotation_info(uri)
+        data = parse_identifiers_uri(uri)
         assert data
         assert data[0] == "taxonomy"
         assert data[1] == "9602"
@@ -585,19 +585,17 @@ def test_identifiers_annotation() -> None:
         "http://identifier.org/taxonomy/9602",
         "https://test.com",
     ]:
-        data = _parse_annotation_info(uri)
+        data = parse_identifiers_uri(uri)
         assert data is None
 
 
-def test_smbl_with_notes(data_directory: str, tmp_path: Path) -> None:
+def test_smbl_with_notes(data_directory: str) -> None:
     """Test that NOTES in the RECON 2.2 style are written and read correctly.
 
     Parameters
     ----------
     data_directory: str
         Directory where the data is.
-    tmp_path: Path
-        Directory to use for temporary data.
     """
     sbml_path = join(data_directory, "example_notes.xml")
     model = read_sbml_model(sbml_path)
@@ -624,7 +622,7 @@ def test_smbl_with_notes(data_directory: str, tmp_path: Path) -> None:
     metabolite_annotations = {
         "2hb_e": {
             "sbo": ["SBO:0000247"],
-            "inchi": ["InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3," "(H,6,7)"],
+            "inchi": ["InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3,(H,6,7)"],
             "chebi": ["CHEBI:1148"],
         },
         "nad_e": {
@@ -647,7 +645,7 @@ def test_smbl_with_notes(data_directory: str, tmp_path: Path) -> None:
         },
         "2obut_e": {
             "sbo": ["SBO:0000247"],
-            "inchi": ["InChI=1S/C4H6O3/c1-2-3(5)4(6)7/h2H2,1H3,(H,6," "7)/p-1"],
+            "inchi": ["InChI=1S/C4H6O3/c1-2-3(5)4(6)7/h2H2,1H3,(H,6,7)/p-1"],
             "chebi": ["CHEBI:16763"],
         },
         "nadh_e": {
@@ -668,7 +666,7 @@ def test_smbl_with_notes(data_directory: str, tmp_path: Path) -> None:
         "CONFIDENCE_LEVEL": "4",
         "NOTES": "NCD",
         "SUBSYSTEM": "Propanoate metabolism",
-        "GENE_ASSOCIATION": "(HGNC:8546 and HGNC:8548) or" " (HGNC:8547 and HGNC:8548)",
+        "GENE_ASSOCIATION": "(HGNC:8546 and HGNC:8548) or (HGNC:8547 and HGNC:8548)",
     }
     reaction_annotations = {
         "sbo": ["SBO:0000176"],
@@ -726,3 +724,12 @@ def test_stable_gprs(data_directory: str, tmp_path: Path) -> None:
     assert (
         fixed_model.reactions.GLCpts.gene_reaction_rule == "(b2415 and b2417) or b2416"
     )
+
+
+def test_writing_xml_with_annotation(
+    compare_models: Callable, data_directory: Path, tmp_path: Path
+):
+    model = read_sbml_model(str(join(data_directory, "e_coli_core_for_annotation.xml")))
+    write_sbml_model(model, str(join(tmp_path, "e_coli_core_writing.xml")))
+    reread_model = read_sbml_model(str(join(tmp_path, "e_coli_core_writing.xml")))
+    compare_models(model, reread_model)

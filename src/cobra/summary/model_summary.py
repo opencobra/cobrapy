@@ -118,7 +118,9 @@ class ModelSummary(Summary):
         if isinstance(fva, float):
             logger.info("Performing flux variability analysis.")
             fva = flux_variability_analysis(
-                model=model, reaction_list=model.boundary, fraction_of_optimum=fva,
+                model=model,
+                reaction_list=model.boundary,
+                fraction_of_optimum=fva,
             )
         if coefficients:
             self._objective: Dict["Reaction", float] = {

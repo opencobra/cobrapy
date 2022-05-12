@@ -4,7 +4,6 @@ from os.path import join
 from pathlib import Path
 from typing import Callable
 
-
 from cobra import Model
 from cobra import io as cio
 

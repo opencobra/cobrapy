@@ -1,10 +1,11 @@
-from collections import OrderedDict
-from collections.abc import MutableMapping
+from collections import UserDict
 from typing import Dict, Iterable, Union
+
+from ...util import format_long_string
 
 
 class KeyValueEntry:
-    """ Single key-value entry.
+    """Single key-value entry.
 
     The key is an attribute on the entry.
 
@@ -33,7 +34,7 @@ class KeyValueEntry:
 
     @staticmethod
     def from_data(data: Union[Dict, "KeyValueEntry"]) -> "KeyValueEntry":
-        """ Makes a KeyValueDict object using the data passed. """
+        """Makes a KeyValueDict object using the data passed."""
         if data is None:
             return KeyValueEntry()
         elif isinstance(data, KeyValueEntry):
@@ -59,8 +60,8 @@ class KeyValueEntry:
         return f"<{self.__class__.__name__} ({self.key}, {self.value}, {self.uri})>"
 
 
-class KeyValuePairs(MutableMapping):
-    """An OrderedDict extension to store KeyValueEntries
+class KeyValuePairs(UserDict):
+    """An UserDict to store KeyValueEntries.
 
     Parameters
     ----------
@@ -69,33 +70,40 @@ class KeyValuePairs(MutableMapping):
     """
 
     def __init__(self, entries: Iterable[Union[Dict, KeyValueEntry]] = None):
-        self.mapping = OrderedDict()  # type: OrderedDict[str, KeyValueEntry]
+        super().__init__()
         if entries:
             for item in entries:
                 entry = KeyValueEntry.from_data(item)
-                self.mapping[entry.key] = entry
-
-    def __getitem__(self, key: str) -> KeyValueEntry:
-        return self.mapping.__getitem__(key)
+                self.data[entry.key] = entry
 
     def __setitem__(self, key: str, item: Union[Dict, KeyValueEntry]) -> None:
         entry = KeyValueEntry.from_data(item)
-        self.mapping[key] = entry
-
-    def __len__(self) -> int:
-        return len(self.mapping)
-
-    def __iter__(self):
-        return iter(self.mapping)
-
-    def __delitem__(self, key: str) -> None:
-        del self.mapping[key]
+        self.data[key] = entry
 
     def __str__(self) -> str:
+        """Convert KeyValuePairs to str.
+
+        Parameters
+        ----------
+        self : KeyValuePairs
+            UserDict defining key value pairs
+
+        Returns
+        ------
+        string
+            a string representation of a dictionary
+        """
         return str(self.to_dict())
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} [{len(self)}]>"
+        return (
+            f"{self.__class__.__module__}.{self.__class__.__qualname__}"
+            f"({self.to_dict()!r})"
+        )
+
+    def _repr_html_(self) -> str:
+        return f"""<p><strong>KeyValuePairs</strong></p><p>{format_long_string(
+            self.__str__(), 100)}</p>"""
 
     def to_dict(self) -> dict:
-        return {k: v.to_dict() for k, v in self.mapping.items()}
+        return {k: v.to_dict() for k, v in self.data.items()}

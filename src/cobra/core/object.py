@@ -1,13 +1,12 @@
 """Define base Object class in Cobra."""
 
-from typing import Optional
-from cobra.core.metadata import CVList, MetaData, Notes
+from typing import Optional, Union
 
-from collections import defaultdict
+from cobra.core.metadata import MetaData, Notes
+
 
 class Object:
     """Defines common behavior of object in cobra.core."""
-
 
     def __init__(self, id: Optional[str] = None, name: str = "") -> None:
         """Initialize a simple object with an identifier.
@@ -96,25 +95,36 @@ class Object:
         ------
         TypeError if annotation not a dict.
         """
-        if not (isinstance(annotation, dict) or isinstance(annotation, MetaData)):
-            raise TypeError(
-                "The data passed for annotation must be inside "
-                "a dictionary or MetaData: {}".format(annotation)
-            )
+        if isinstance(annotation, MetaData):
+            self._annotation = annotation
+        elif isinstance(annotation, dict):
+            self._annotation = MetaData().from_dict(annotation)
         else:
-            if isinstance(annotation, MetaData):
-                self._annotation = annotation
-            else:
-                self._annotation.cvterms._annotations = defaultdict(list)
-                self._annotation.cvterms._cvterms = defaultdict(CVList)
-                self._annotation.cvterms.add_simple_annotations(annotation)
+            raise TypeError(
+                f"The data passed for annotation must be inside "
+                f"a dictionary or MetaData: {annotation}"
+            )
 
     @property
-    def notes(self):
+    def notes(self) -> Optional[Notes]:
+        """Get notes attribute, if exists.
+
+        Returns
+        -------
+        Notes: optional notes
+            Returns None if object has no Notes.
+        """
         return getattr(self, "_notes", None)
 
     @notes.setter
-    def notes(self, data):
+    def notes(self, data: Union[Notes, str]) -> None:
+        """Set notes attribute.
+
+        Parameters
+        ----------
+        data: Notes or str (xhtml)
+            Notes or xhtml
+        """
         if isinstance(data, Notes):
             self._notes = data
             return

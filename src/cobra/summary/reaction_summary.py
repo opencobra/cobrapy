@@ -107,17 +107,24 @@ class ReactionSummary(Summary):
         if isinstance(fva, float):
             logger.info("Performing flux variability analysis.")
             fva = flux_variability_analysis(
-                model, reaction_list=[self._reaction], fraction_of_optimum=fva,
+                model,
+                reaction_list=[self._reaction],
+                fraction_of_optimum=fva,
             )
 
         # Create the basic flux table.
         self._flux = pd.DataFrame(
-            data={"flux": [solution[self._reaction.id]]}, index=[self._reaction.id],
+            data={"flux": [solution[self._reaction.id]]},
+            index=[self._reaction.id],
         )
         if fva is not None:
             self._flux = self._flux.join(fva)
 
-    def _string_flux(self, threshold: float, float_format: str,) -> str:
+    def _string_flux(
+        self,
+        threshold: float,
+        float_format: str,
+    ) -> str:
         """
         Transform a flux data frame to a string.
 

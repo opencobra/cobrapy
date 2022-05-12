@@ -67,6 +67,28 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <vCard:Orgname>Humboldt-University Berlin, Institute for Theoretical Biology</vCard:Orgname>
                 </vCard:ORG>
               </rdf:li>
+              <rdf:li rdf:parseType="Resource">
+                <vCard:N rdf:parseType="Resource">
+                  <vCard:Family>Koenig</vCard:Family>
+                  <vCard:Given>Matthias</vCard:Given>
+                </vCard:N>
+                <vCard:EMAIL>koenigmx@hu-berlin.de</vCard:EMAIL>
+              </rdf:li>
+              <rdf:li rdf:parseType="Resource">
+                <vCard:N rdf:parseType="Resource">
+                  <vCard:Family>Koenig</vCard:Family>
+                  <vCard:Given>Matthias</vCard:Given>
+                </vCard:N>
+                <vCard:ORG rdf:parseType="Resource">
+                  <vCard:Orgname>Humboldt-University Berlin, Institute for Theoretical Biology</vCard:Orgname>
+                </vCard:ORG>
+              </rdf:li>
+              <rdf:li rdf:parseType="Resource">
+                <vCard:N rdf:parseType="Resource">
+                  <vCard:Family>Koenig</vCard:Family>
+                  <vCard:Given>Matthias</vCard:Given>
+                </vCard:N>
+              </rdf:li>
             </rdf:Bag>
           </dcterms:creator>
           <dcterms:created rdf:parseType="Resource">
@@ -74,6 +96,9 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
           </dcterms:created>
           <dcterms:modified rdf:parseType="Resource">
             <dcterms:W3CDTF>2019-03-06T14:40:55Z</dcterms:W3CDTF>
+          </dcterms:modified>
+          <dcterms:modified rdf:parseType="Resource">
+            <dcterms:W3CDTF>2019-03-06T14:41:55Z</dcterms:W3CDTF>
           </dcterms:modified>
           <bqbiol:hasTaxon>
             <rdf:Bag>

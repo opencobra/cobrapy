@@ -1,9 +1,12 @@
-from collections import MutableMapping, OrderedDict
-from typing import Dict, Iterator, List, Union
+"""Define the cobra MetaData class."""
 
-from cobra.core.metadata.cvterm import CVTerms
-from cobra.core.metadata.history import Creator, History, HistoryDatetime
-from cobra.core.metadata.keyvaluepairs import KeyValuePairs
+from collections import OrderedDict
+from collections.abc import MutableMapping
+from typing import Dict, Iterable, Iterator, List, Union
+
+from ..metadata.cvterm import CVTerm, CVTerms
+from ..metadata.history import Creator, History
+from ..metadata.keyvaluepairs import KeyValuePairs
 
 
 class MetaData(MutableMapping):
@@ -28,6 +31,9 @@ class MetaData(MutableMapping):
     history : dict, History
         The history stores information about the creator,
         created and modified dates.
+    sbo: str
+        The sbo term to use for the entity. If you want to use more than one SBO term
+        (not recommended), use SBO in identifers.org format and put it in cvterms.
     keyvaluepairs : list
         Key-value pairs which are not suitable to be
         represented anywhere else in the model.
@@ -38,13 +44,36 @@ class MetaData(MutableMapping):
         self,
         cvterms: Union[Dict, CVTerms] = None,
         history: Union[Dict, History] = None,
+        sbo: str = "",
         keyvaluepairs: List = None,
     ):
-        self._cvterms = None  # type: CVTerms
-        self._history = None  # type: History
-        self._keyvaluepairs = None  # type: KeyValuePairs
+        """Initialize the MetaData class.
+
+        Parameters
+        ---------
+        cvterms : dict or CVTerms, optional
+            Which controlled vocabulary terms does the metadata have. Default None.
+        history: dict or History, optional
+            History of annotation, including creation data, creators, and optional
+            modificiation date. Default None.
+        sbo: str
+            SBO term, if relevant. Default "".
+            If there are
+        keyvaluepairs: KeyValuePairs
+            For annotations that don't match the identifiers.org format.
+
+        """
+        self._cvterms = CVTerms.from_data(cvterms)
+        self._history = History.from_data(history)
+        self._keyvaluepairs = KeyValuePairs(keyvaluepairs)
+        self._sbo = sbo
+
+        """Model.annotations.standardized and Model.annotations.custom would be much
+        more clear than Model.annotations.cvterms and Model.annotations.keyvaluepairs
+        for beginners. """
 
         # use setters
+        self.sbo = sbo
         self.cvterms = cvterms
         self.history = history
         self.keyvaluepairs = keyvaluepairs
@@ -52,20 +81,63 @@ class MetaData(MutableMapping):
     @property
     def annotations(self) -> Dict:
         """Backwards compatible annotations."""
-        return self.cvterms.annotations
+        anno_dict = self.cvterms.annotations
+        if self.sbo:
+            anno_dict["sbo"] = self.sbo
+        return anno_dict
+
+    @property
+    def sbo(self) -> str:
+        """Return the SBO term of the MetaData.
+
+        Returns
+        -------
+        str: SBO as string
+        """
+        return self._sbo
+
+    @sbo.setter
+    def sbo(self, value: str) -> None:
+        """Set the SBO term."""
+        self._sbo = value
 
     def __setitem__(self, key: str, value: List) -> None:
-        self._cvterms.add_simple_annotations(dict({key: value}))
+        """Set the item for accessing metadata as dict (the old style annotation).
 
-    def __getitem__(self, key: str) -> List:
-        if key == "sbo" and len(self.annotations[key]) == 0:
-            value = self._cvterms._annotations[key]
-            del self._cvterms._annotations[key]
-            return value
-        return self.annotations[key]
+        Parameters
+        ----------
+        key: str
+            provider key word.
+        value: List
+            A list that will contain either term(s) or qualifier and term(s).
+
+        If the key is sbo, sets the self.sbo term to the first item in the list. If
+        you'd like to add multiple SBO terms, use the CVTerms() and add sbo as
+        identifiers.org formatted links.
+
+        See Also
+        --------
+        CVTerms().add_simple_annotations()
+
+        """
+        if key == "sbo":
+            if isinstance(value, list):
+                value = value[0]
+            self.sbo = value
+        else:
+            self._cvterms.add_simple_annotations(dict({key: value}))
+
+    def __getitem__(self, key: str) -> Union[str, List]:
+        if key == "sbo":
+            return [self.sbo]
+        else:
+            return self.annotations[key]
 
     def __delitem__(self, key: str) -> None:
-        del self.annotations[key]
+        if key == "sbo":
+            self.sbo = ""
+        else:
+            del self.annotations[key]
 
     def __iter__(self) -> Iterator:
         return iter(self.annotations)
@@ -87,7 +159,7 @@ class MetaData(MutableMapping):
     def cvterms(self, cvterms: Union[Dict, CVTerms]) -> None:
         self._cvterms = CVTerms.from_data(cvterms)
 
-    def add_cvterms(self, cvterms: Union[Dict, CVTerms]) -> None:
+    def add_cvterms(self, cvterms: Iterable[Union[Dict, CVTerm]]) -> None:
         self._cvterms.add_cvterms(cvterms)
 
     @property
@@ -110,11 +182,16 @@ class MetaData(MutableMapping):
         self._keyvaluepairs = KeyValuePairs(keyvaluepairs)
 
     def to_dict(self) -> Dict:
-        """Creates string dictionary for serialization"""
+        """Create string dictionary for serialization.
+
+        Returns
+        -------
+        dict
+        """
         d = OrderedDict()
-        if "sbo" in self and self["sbo"] != []:
+        if self.sbo:
             # set first SBO term as sbo
-            d["sbo"] = self["sbo"][0]
+            d["sbo"] = self.sbo
 
         if self.cvterms:
             d["cvterms"] = self.cvterms.to_dict()
@@ -140,6 +217,6 @@ class MetaData(MutableMapping):
             annotation.cvterms.add_simple_annotations(data)
 
         if "sbo" in data:
-            annotation["sbo"] = [data["sbo"]]
+            annotation["sbo"] = data["sbo"]
 
         return annotation

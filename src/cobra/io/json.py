@@ -2,11 +2,12 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-from .dict import model_from_dict, model_to_dict
+import jsonschema
+from importlib_resources import files
+
 from cobra import io as cio
 
-import jsonschema
-from importlib_resources import open_text
+from .dict import model_from_dict, model_to_dict
 
 
 try:
@@ -22,13 +23,13 @@ JSON_SPEC = "1"
 
 
 def json_schema_v1() -> Dict:
-    with open_text(cio, "schema_v1.json") as handle:
+    with files(cio).joinpath("schema_v1.json").open('r') as handle:
         schema_v1 = json.load(handle)
     return schema_v1
 
 
 def json_schema_v2() -> Dict:
-    with open_text(cio, "schema_v2.json") as handle:
+    with files(cio).joinpath("schema_v2.json").open('r') as handle:
         schema_v2 = json.load(handle)
     return schema_v2
 
@@ -196,10 +197,12 @@ def validate_json_model(
             f"schema v{json_schema_version} is not supported."
         )
 
+    # TODO - Should the validator be picked by schema?
+    #  Something like validators.validator_for
     validator = jsonschema.Draft7Validator(schema)
 
     try:
-        if isinstance(filename, str):
+        if isinstance(filename, (str, Path)):
             with open(filename, "r") as file_handle:
                 errors = validator.iter_errors(json.load(file_handle))
         else:

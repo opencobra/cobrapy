@@ -1,9 +1,52 @@
 import os
+from pathlib import Path
 
 import pytest
 
-from cobra.core.metadata import Notes
+from cobra import Metabolite, Model, Reaction
+from cobra.core import Notes
 from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
+
+
+def test_notes_io(tmp_path: Path) -> None:
+    """Test if model notes are written and read from/to SBML.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        The path to the temporary test assets store.
+
+    """
+    path_to_file = tmp_path / "model_notes.xml"
+
+    # making a minimal cobra model to test notes
+    model = Model("e_coli_core")
+    model.notes = Notes().notes_from_dict({"Remark": "...Model Notes..."})
+    met = Metabolite("pyr_c", compartment="c")
+    model.add_metabolites([met])
+    met.notes = Notes().notes_from_dict({"Remark": "Note with \n newline"})
+    rxn = Reaction("R_ATPM")
+    model.add_reactions([rxn])
+    rxn.notes = Notes().notes_from_dict({"Remark": "What about me?"})
+    model.objective_direction = "max"
+    model.objective = rxn
+    write_sbml_model(model, str(path_to_file.resolve()))
+
+    # reading the model back
+    model_after_reading = read_sbml_model(str(path_to_file.resolve()))
+    met_after_reading = model_after_reading.metabolites.get_by_id("pyr_c")
+    reaction_after_reading = model_after_reading.reactions.get_by_id("R_ATPM")
+
+    # checking if notes are written to model
+    assert model_after_reading.notes["Remark"] == "...Model Notes..."
+
+    # checking notes for metabolite and reaction
+    assert met_after_reading.notes["Remark"] == "Note with \n newline"
+    assert reaction_after_reading.notes["Remark"] == "What about me?"
+
+
+NEW_VALUE1 = "New Value 1"
+NEW_VALUE3 = "New Value 3"
 
 
 incoming_notes_str = (
@@ -69,18 +112,18 @@ def test_notes(data_directory, tmp_path):
     assert rx1.notes["Key3"] == "Value3"
 
     # modifying already present key-value
-    rx1.notes["Key1"] = "New Value 1"
-    rx1.notes["Key3"] = "New Value 3"
+    rx1.notes["Key1"] = NEW_VALUE1
+    rx1.notes["Key3"] = NEW_VALUE3
 
     # trying to insert a new key-value
     with pytest.raises(ValueError):
-        rx1.notes["Key4"] = "New Value 3"
+        rx1.notes["Key4"] = NEW_VALUE3
 
     # checking modified notes dict and string
     assert rx1.notes.notes_xhtml == modified_notes_str
-    assert rx1.notes["Key1"] == "New Value 1"
+    assert rx1.notes["Key1"] == NEW_VALUE1
     assert rx1.notes["Key2"] == "Value2"
-    assert rx1.notes["Key3"] == "New Value 3"
+    assert rx1.notes["Key3"] == NEW_VALUE3
 
     # writing and reading back the model
     path_to_file = os.path.join(tmp_path, "model_notes.xml")
@@ -91,9 +134,9 @@ def test_notes(data_directory, tmp_path):
 
     # checks after reading model back again
     assert rx1_after_reading.notes.notes_xhtml == modified_notes_str
-    assert rx1_after_reading.notes["Key1"] == "New Value 1"
+    assert rx1_after_reading.notes["Key1"] == NEW_VALUE1
     assert rx1_after_reading.notes["Key2"] == "Value2"
-    assert rx1_after_reading.notes["Key3"] == "New Value 3"
+    assert rx1_after_reading.notes["Key3"] == NEW_VALUE3
 
 
 def test_reading_writing_notes(data_directory, tmp_path):

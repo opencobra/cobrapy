@@ -13,18 +13,20 @@
         "https://www.uniprot.org/uniprot/P68871",
         "https://identifiers.org/chebi/CHEBI:17627"
       ],
-      "bqb_isDescribedBy": [
-        {
-          "resources": [
-            "https://identifiers.org/pubmed/1111111"
-          ]
-        },
-        {
-          "resources": [
-            "https://identifiers.org/eco/000000"
-          ]
-        }
-      ]
+      "nested_data": {
+        "bqb_isDescribedBy": [
+          {
+            "resources": [
+              "https://identifiers.org/pubmed/1111111"
+            ]
+          },
+          {
+            "resources": [
+              "https://identifiers.org/eco/000000"
+            ]
+          }
+        ]
+      }
     }
   ]
 }
