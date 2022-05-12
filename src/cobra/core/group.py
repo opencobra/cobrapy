@@ -1,6 +1,6 @@
 """Define the group class."""
 
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Set
 from warnings import warn
 
 from .dictlist import DictList
@@ -134,7 +134,7 @@ class Group(Object):
             warn("need to pass in a list")
             new_members = [new_members]
 
-        self._members.union(new_members)
+        self._members.update(new_members)
 
     def remove_members(self, to_remove: list) -> None:
         """Remove objects from the group.
