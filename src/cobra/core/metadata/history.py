@@ -136,23 +136,23 @@ class Creator:
 
     Parameters
     ----------
-        first_name : str,
-        last_name : str,
+        given_name : str,
+        family_name : str,
         email : str,
-        organization_name : str
+        organisation : str
     """
 
     def __init__(
         self,
-        first_name: str = None,
-        last_name: str = None,
+        given_name: str = None,
+        family_name: str = None,
         email: str = None,
-        organization_name: str = None,
+        organisation: str = None,
     ):
-        self.first_name = first_name  # type: str
-        self.last_name = last_name  # type: str
+        self.given_name = given_name  # type: str
+        self.family_name = family_name  # type: str
         self.email = email  # type: str
-        self.organization_name = organization_name  # type: str
+        self.organisation = organisation  # type: str
 
     @staticmethod
     def from_data(data: Union[Dict, "Creator"]) -> "Creator":
@@ -172,10 +172,10 @@ class Creator:
         Two creators are equal if all fields are equal.
         """
         if (
-            self.first_name != creator_obj.first_name
-            or self.last_name != creator_obj.last_name
+            self.given_name != creator_obj.given_name
+            or self.family_name != creator_obj.family_name
             or self.email != creator_obj.email
-            or self.organization_name != creator_obj.organization_name
+            or self.organisation != creator_obj.organisation
         ):
             return False
 
@@ -183,17 +183,17 @@ class Creator:
 
     def to_dict(self):
         return {
-            "first_name": self.first_name,
-            "last_name": self.last_name,
+            "given_name": self.given_name,
+            "family_name": self.family_name,
             "email": self.email,
-            "organization_name": self.organization_name,
+            "organization_name": self.organisation,
         }
 
     def __str__(self) -> str:
         return str(self.to_dict())
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} {self.first_name} {self.last_name}>"
+        return f"<{self.__class__.__name__} {self.given_name} {self.family_name}>"
 
 
 class HistoryDatetime:

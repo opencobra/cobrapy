@@ -1234,10 +1234,10 @@ def _model_to_sbml(
                 "creators"
             ]:  # noqa: E501 type: libsbml.ModelCreator
                 creator = libsbml.ModelCreator()
-                if cobra_creator.get("familyName", None):
-                    creator.setFamilyName(cobra_creator["familyName"])
-                if cobra_creator.get("givenName", None):
-                    creator.setGivenName(cobra_creator["givenName"])
+                if cobra_creator.get("family_name", None):
+                    creator.setFamilyName(cobra_creator["family_name"])
+                if cobra_creator.get("given_name", None):
+                    creator.setGivenName(cobra_creator["given_name"])
                 if cobra_creator.get("organisation", None):
                     creator.setOrganisation(cobra_creator["organisation"])
                 if cobra_creator.get("email", None):
@@ -1787,10 +1787,10 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
             cobra_creators.append(
                 Creator.from_data(
                     {
-                        "familyName": creator.getFamilyName()
+                        "family_name": creator.getFamilyName()
                         if creator.isSetFamilyName()
                         else None,
-                        "givenName": creator.getGivenName()
+                        "given_name": creator.getGivenName()
                         if creator.isSetGivenName()
                         else None,
                         "organisation": creator.getOrganisation()
@@ -1950,10 +1950,10 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
 
         for creator in annotation.history.creators:
             comp_creator = libsbml.ModelCreator()
-            comp_creator.setGivenName(creator.first_name)
-            comp_creator.setFamilyName(creator.last_name)
+            comp_creator.setGivenName(creator.given_name)
+            comp_creator.setFamilyName(creator.family_name)
             comp_creator.setEmail(creator.email)
-            comp_creator.setOrganisation(creator.organization_name)
+            comp_creator.setOrganisation(creator.organisation)
             comp_history.addCreator(comp_creator)
 
         if annotation.history.created_date.datetime is not None:

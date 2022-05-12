@@ -331,8 +331,8 @@ def test_model_history(tmp_path: Path) -> None:
     history = {
         "creators": [
             {
-                "last_name": "Mustermann",
-                "first_name": "Max",
+                "family_name": "Mustermann",
+                "given_name": "Max",
                 "organization_name": "Muster University",
                 "email": "muster@university.com",
             }
@@ -353,9 +353,9 @@ def test_model_history(tmp_path: Path) -> None:
     assert "annotation" in model2._sbml
     assert len(model2._sbml["annotation"].history.creators) == 1
     c = model2._sbml["annotation"].history.creators[0]
-    assert c.last_name == "Mustermann"
-    assert c.first_name == "Max"
-    assert c.organization_name == "Muster University"
+    assert c.family_name == "Mustermann"
+    assert c.given_name == "Max"
+    assert c.organisation == "Muster University"
     assert c.email == "muster@university.com"
 
     assert (

@@ -18,15 +18,15 @@ def test_create_history():
     history = History(
         creators=[
             Creator(
-                first_name="Matthias",
-                last_name="Koenig",
-                organization_name="HU",
+                given_name="Matthias",
+                family_name="Koenig",
+                organisation="HU",
                 email="test@test.com",
             ),
             Creator(
-                first_name="Andreas",
-                last_name="Draeger",
-                organization_name="University of Tübingen",
+                given_name="Andreas",
+                family_name="Draeger",
+                organisation="University of Tübingen",
                 email="test2@test2.com",
             ),
         ],
@@ -47,10 +47,10 @@ def test_history_from_ecoli_xml(data_directory):
     history = History(
         creators=[
             Creator(
-                first_name="Matthias",
-                last_name="Koenig",
+                given_name="Matthias",
+                family_name="Koenig",
                 email="koenigmx@hu-berlin.de",
-                organization_name="Humboldt-University Berlin, "
+                organisation="Humboldt-University Berlin, "
                 "Institute for Theoretical Biology",
             )
         ],
@@ -62,15 +62,15 @@ def test_history_from_ecoli_xml(data_directory):
 
 def test_create_creator():
     creator = Creator(
-        first_name="Matthias",
-        last_name="König",
-        organization_name="HU",
+        given_name="Matthias",
+        family_name="König",
+        organisation="HU",
         email="test@test.com",
     )
     assert creator is not None
-    assert creator.first_name == "Matthias"
-    assert creator.last_name == "König"
-    assert creator.organization_name == "HU"
+    assert creator.given_name == "Matthias"
+    assert creator.family_name == "König"
+    assert creator.organisation == "HU"
     assert creator.email == "test@test.com"
 
 
