@@ -8,7 +8,7 @@ import numpy as np
 
 from ..core import Gene, Group, Metabolite, Model, Reaction
 from ..core.metadata import MetaData, Notes
-from ..io.sbml import F_REPLACE
+from ..io.sbml import F_REPLACE, F_GENE, F_GENE_REV, F_REACTION, F_REACTION_REV, F_SPECIE, F_SPECIE_REV, F_GROUP, F_GROUP_REV
 from ..util.solver import set_objective
 
 
@@ -154,14 +154,18 @@ def _update_optional(
             value = value.to_dict()
         new_dict[key] = _fix_type(value)
 
-
-def _metabolite_to_dict(metabolite: Metabolite) -> OrderedDict:
+def _metabolite_to_dict(metabolite: Metabolite, f_replace: dict = F_REPLACE) -> OrderedDict: # noqa:    W0102
     """Convert a cobra Metabolite object to dictionary.
 
     Parameters
     ----------
     metabolite : cobra.Metabolite
         The cobra.Metabolite to convert to dictionary.
+    f_replace : dict of replacement functions for id replacement
+        Dictionary of replacement functions for gene, specie, and reaction.
+        By default the following id changes are performed on import:
+        clip G_ from genes, clip M_ from species, clip R_ from reactions
+        If no replacements should be performed, set f_replace={} or None
 
     Returns
     -------
@@ -173,10 +177,13 @@ def _metabolite_to_dict(metabolite: Metabolite) -> OrderedDict:
     _metabolite_from_dict : Convert a dictionary to cobra Metabolite object.
 
     """
+    if f_replace is None:
+        f_replace = {}
+
     new_metabolite = OrderedDict()
     for key in _REQUIRED_METABOLITE_ATTRIBUTES:
-        if key == "id":
-            new_metabolite[key] = _fix_type(F_REPLACE["F_SPECIE_REV"](metabolite.id))
+        if key == "id" and f_replace and F_SPECIE_REV in f_replace:
+            new_metabolite[key] = _fix_type(f_replace[F_SPECIE_REV](metabolite.id))
         else:
             new_metabolite[key] = _fix_type(getattr(metabolite, key))
     _update_optional(
@@ -214,8 +221,7 @@ def _metabolite_from_dict(metabolite: Dict) -> Metabolite:
             notes_data = Notes(v)
             setattr(new_metabolite, k, notes_data)
         elif k == "id":
-            id = F_REPLACE["F_SPECIE"](v)
-            setattr(new_metabolite, k, id)
+            new_metabolite.id = F_REPLACE[F_SPECIE](v)
         else:
             setattr(new_metabolite, k, v)
     return new_metabolite
@@ -242,7 +248,7 @@ def _gene_to_dict(gene: Gene) -> OrderedDict:
     new_gene = OrderedDict()
     for key in _REQUIRED_GENE_ATTRIBUTES:
         if key == "id":
-            new_gene[key] = _fix_type(F_REPLACE["F_GENE_REV"](gene.id))
+            new_gene[key] = _fix_type(F_REPLACE[F_GENE_REV](gene.id))
         else:
             new_gene[key] = _fix_type(getattr(gene, key))
     _update_optional(
@@ -278,7 +284,7 @@ def gene_from_dict(gene: Dict) -> Gene:
             notes_data = Notes(v)
             setattr(new_gene, k, notes_data)
         elif k == "id":
-            id = F_REPLACE["F_GENE"](v)
+            id = F_REPLACE[F_GENE](v)
             setattr(new_gene, k, id)
         else:
             setattr(new_gene, k, v)
@@ -315,13 +321,13 @@ def _reaction_to_dict(reaction: Reaction) -> OrderedDict:
             ):
                 new_reaction[key] = str(_fix_type(getattr(reaction, key)))
             elif key == "id":
-                new_reaction[key] = _fix_type(F_REPLACE["F_REACTION_REV"](reaction.id))
+                new_reaction[key] = _fix_type(F_REPLACE[F_REACTION_REV](reaction.id))
             else:
                 new_reaction[key] = _fix_type(getattr(reaction, key))
             continue
         mets = OrderedDict()
         for met in sorted(reaction.metabolites, key=attrgetter("id")):
-            id = F_REPLACE["F_SPECIE_REV"](str(met))
+            id = F_REPLACE[F_SPECIE_REV](str(met))
             mets[id] = reaction.metabolites[met]
         new_reaction["metabolites"] = mets
     _update_optional(
@@ -361,7 +367,7 @@ def _reaction_from_dict(reaction: Dict, model: Model) -> Reaction:
             new_reaction.add_metabolites(
                 OrderedDict(
                     (
-                        model.metabolites.get_by_id(F_REPLACE["F_SPECIE"](str(met))),
+                        model.metabolites.get_by_id(F_REPLACE[F_SPECIE](str(met))),
                         coeff,
                     )
                     for met, coeff in v.items()
@@ -377,7 +383,7 @@ def _reaction_from_dict(reaction: Dict, model: Model) -> Reaction:
             elif k == "lower_bound" or k == "upper_bound":
                 setattr(new_reaction, k, float(v))
             elif k == "id":
-                id = F_REPLACE["F_REACTION"](v)
+                id = F_REPLACE[F_REACTION](v)
                 setattr(new_reaction, k, id)
             else:
                 setattr(new_reaction, k, v)
@@ -389,7 +395,7 @@ def group_to_dict(group: "Group") -> Dict:
     for key in _REQUIRED_GROUP_ATTRIBUTES:
         if key != "members":
             if key == "id":
-                new_group[key] = _fix_type(F_REPLACE["F_GROUP_REV"](group.id))
+                new_group[key] = _fix_type(F_REPLACE[F_GROUP_REV](group.id))
             else:
                 new_group[key] = _fix_type(getattr(group, key))
                 continue
@@ -397,13 +403,13 @@ def group_to_dict(group: "Group") -> Dict:
         for member in group.members:
             idRef = member.id
             if isinstance(member, Reaction):
-                idRef = F_REPLACE["F_REACTION_REV"](member.id)
+                idRef = F_REPLACE[F_REACTION_REV](member.id)
             elif isinstance(member, Gene):
-                idRef = F_REPLACE["F_GENE_REV"](member.id)
+                idRef = F_REPLACE[F_GENE_REV](member.id)
             elif isinstance(member, Metabolite):
-                idRef = F_REPLACE["F_SPECIE_REV"](member.id)
+                idRef = F_REPLACE[F_SPECIE_REV](member.id)
             elif isinstance(member, Group):
-                idRef = F_REPLACE["F_GROUP_REV"](member.id)
+                idRef = F_REPLACE[F_GROUP_REV](member.id)
             json_member = {"idRef": idRef, "type": type(member).__name__}
             members.append(json_member)
         new_group["members"] = members
@@ -427,29 +433,29 @@ def group_from_dict(group: Dict, model: Model) -> Group:
             for member in group["members"]:
                 if member["type"] == "Reaction":
                     cobra_obj = model.reactions.get_by_id(
-                        F_REPLACE["F_REACTION"](member["idRef"])
+                        F_REPLACE[F_REACTION](member["idRef"])
                     )
                     cobra_members.append(cobra_obj)
                 elif member["type"] == "Metabolite":
                     cobra_obj = model.metabolites.get_by_id(
-                        F_REPLACE["F_SPECIE"](member["idRef"])
+                        F_REPLACE[F_SPECIE](member["idRef"])
                     )
                     cobra_members.append(cobra_obj)
                 elif member["type"] == "Gene":
                     cobra_obj = model.genes.get_by_id(
-                        F_REPLACE["F_GENE"](member["idRef"])
+                        F_REPLACE[F_GENE](member["idRef"])
                     )
                     cobra_members.append(cobra_obj)
             new_group.add_members(cobra_members)
         elif k == "id":
-            id = F_REPLACE["F_GROUP"](v)
+            id = F_REPLACE[F_GROUP](v)
             setattr(new_group, k, id)
         else:
             setattr(new_group, k, v)
     return new_group
 
 
-def model_to_dict(model: Model, sort: bool = False) -> OrderedDict:
+def model_to_dict(model: Model, sort: bool = False, f_replace: dict = F_REPLACE) -> OrderedDict:
     """Convert a cobra Model to a dictionary.
 
     Parameters
@@ -459,6 +465,11 @@ def model_to_dict(model: Model, sort: bool = False) -> OrderedDict:
     sort : bool, optional
         Whether to sort the metabolites, reactions, and genes or maintain the
         order defined in the model (default False).
+    f_replace : dict of replacement functions for id replacement
+        Dictionary of replacement functions for gene, specie, and reaction.
+        By default the following id changes are performed on import:
+        clip G_ from genes, clip M_ from species, clip R_ from reactions
+        If no replacements should be performed, set f_replace={} or None
 
     Returns
     -------
@@ -473,8 +484,11 @@ def model_to_dict(model: Model, sort: bool = False) -> OrderedDict:
     model_from_dict : Convert a dictionary to a cobra Model.
 
     """
+    if f_replace is None:
+        f_replace = {}
+
     obj = OrderedDict()
-    obj["metabolites"] = list(map(_metabolite_to_dict, model.metabolites))
+    obj["metabolites"] = [_metabolite_to_dict(met, f_replace) for met in model.metabolites]
     obj["reactions"] = list(map(_reaction_to_dict, model.reactions))
     obj["genes"] = list(map(_gene_to_dict, model.genes))
     obj["groups"] = list(map(group_to_dict, model.groups))
@@ -544,7 +558,7 @@ def model_from_dict(obj: Dict) -> Model:
         rxn for rxn in obj["reactions"] if rxn.get("objective_coefficient", 0) != 0
     ]
     coefficients = {
-        model.reactions.get_by_id(F_REPLACE["F_REACTION"](rxn["id"])): rxn[
+        model.reactions.get_by_id(F_REPLACE[F_REACTION](rxn["id"])): rxn[
             "objective_coefficient"
         ]
         for rxn in objective_reactions
@@ -558,22 +572,18 @@ def model_from_dict(obj: Dict) -> Model:
         meta = {}
         for k, v in obj["sbml_info"].items():
             if k == "annotation":
-                value = MetaData.from_dict(v)
-                meta[k] = value
+                meta[k] = MetaData.from_dict(v)
             elif k == "notes":
-                notes_data = Notes(v)
-                meta[k] = notes_data
+                meta[k] = Notes(v)
             else:
                 meta[k] = v
         model._sbml = meta
 
     for k, v in obj.items():
         if k == "annotation":
-            value = MetaData.from_dict(v)
-            setattr(model, k, value)
+            model.annotation = MetaData.from_dict(v)
         elif k == "notes":
-            notes_data = Notes(v)
-            setattr(model, k, notes_data)
-        elif k in {"id", "name", "notes", "compartments"}:
+            model.notes = Notes(v)
+        elif k in {"id", "name", "compartments"}:
             setattr(model, k, v)
     return model
