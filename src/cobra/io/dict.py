@@ -76,6 +76,11 @@ _OPTIONAL_MODEL_ATTRIBUTES = {
     "annotation": {},
 }
 
+FROM_DICT_FUNCTIONS = {
+    'annotation' : lambda x: MetaData.from_dict(x),
+
+}
+
 
 def _fix_type(
     value: Union[str, np.float, np.bool, Set, Dict]
@@ -145,12 +150,12 @@ def _update_optional(
         default = optional_attribute_dict[key]
         value = getattr(cobra_object, key)
         if key == "notes" and (
-            value.notes_xhtml is None or len(value.notes_xhtml) == 0
+            value is None or value.notes_xhtml is None or len(value.notes_xhtml) == 0
         ):
             continue
         if value is None or value == default:
             continue
-        if key == "annotation":
+        if key == "annotation" and not isinstance(value, dict):
             value = value.to_dict()
         new_dict[key] = _fix_type(value)
 

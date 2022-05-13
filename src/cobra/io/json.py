@@ -199,7 +199,7 @@ def validate_json_model(
     validator = jsonschema.Draft7Validator(schema)
 
     try:
-        if isinstance(filename, str):
+        if isinstance(filename, (str , Path)):
             with open(filename, "r") as file_handle:
                 errors = validator.iter_errors(json.load(file_handle))
         else:
