@@ -11,6 +11,8 @@ from cobra.core.metadata import CVTerms
 from cobra.core.species import Species
 from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
 
+PUBMED_EXAMPLE = "https://identifiers.org/pubmed/1111111"
+ECO_EXAMPLE = "https://identifiers.org/eco/ECO:0000004"
 
 ecoli_model_annotation = {
     "bqb_hasTaxon": [{"resources": ["http://identifiers.org/taxonomy/511145"]}],
@@ -18,8 +20,8 @@ ecoli_model_annotation = {
         {
             "nested_data": {
                 "bqb_isDescribedBy": [
-                    {"resources": ["https://identifiers.org/pubmed/1111111"]},
-                    {"resources": ["https://identifiers.org/eco/ECO:0000004"]},
+                    {"resources": [PUBMED_EXAMPLE]},
+                    {"resources": [ECO_EXAMPLE]},
                 ]
             },
             "resources": ["http://identifiers.org/bigg.model/e_coli_core"],
@@ -36,6 +38,12 @@ def test_annotation():
     # a cobra component
     s = Species()
     assert s.annotation == {}  # nothing set for annotation, so empty dict
+    assert s.annotation.cvterms == {}
+    assert not s.annotation.keys()
+    assert s.annotation.keyvaluepairs == {}
+    assert s.annotation.history.creators == []
+    assert s.annotation.history.modified_dates == []
+
 
     # setting annotation via old annotation format
     s.annotation["chebi"] = ["CHEBI:43215", "CHEBI:11881"]
@@ -98,7 +106,7 @@ def test_nested_annotation(data_directory):
                         "https://identifiers.org/chebi/CHEBI:17627",
                     ],
                     "bqb_isDescribedBy": [
-                        {"resources": ["https://identifiers.org/pubmed/1111111"]},
+                        {"resources": [PUBMED_EXAMPLE]},
                         {"resources": ["https://identifiers.org/eco/000000"]},
                     ],
                 },
@@ -108,7 +116,7 @@ def test_nested_annotation(data_directory):
     nested_cvt = CVTerms(
         {
             "bqb_isDescribedBy": [
-                {"resources": ["https://identifiers.org/pubmed/1111111"]},
+                {"resources": [PUBMED_EXAMPLE]},
                 {"resources": ["https://identifiers.org/eco/000000"]},
             ]
         }
@@ -130,8 +138,8 @@ def test_cvterms_from_ecoli_xml(data_directory):
     nested_cvt = CVTerms(
         {
             "bqb_isDescribedBy": [
-                {"resources": ["https://identifiers.org/pubmed/1111111"]},
-                {"resources": ["https://identifiers.org/eco/ECO:0000004"]},
+                {"resources": [PUBMED_EXAMPLE]},
+                {"resources": [ECO_EXAMPLE]},
             ]
         }
     )

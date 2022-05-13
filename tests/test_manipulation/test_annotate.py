@@ -15,6 +15,6 @@ def test_sbo_annotation(model: Model) -> None:
     # an existing SBO annotation
     rxns.get_by_id("EX_h_e").annotation["sbo"] = "SBO:0000628"
     add_SBO(model)
-    assert rxns.EX_o2_e.annotation["sbo"] == "SBO:0000627"
-    assert rxns.DM_h_c.annotation["sbo"] == "SBO:0000628"
-    assert rxns.EX_h_e.annotation["sbo"] == "SBO:0000628"
+    assert rxns.EX_o2_e.annotation["sbo"] == ["SBO:0000627"]
+    assert rxns.DM_h_c.annotation["sbo"] == ["SBO:0000628"]
+    assert rxns.EX_h_e.annotation["sbo"] == ["SBO:0000628"]

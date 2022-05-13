@@ -40,9 +40,6 @@ class MetaData(MutableMapping):
         history: Union[Dict, History] = None,
         keyvaluepairs: List = None,
     ):
-        self._cvterms = None  # type: CVTerms
-        self._history = None  # type: History
-        self._keyvaluepairs = None  # type: KeyValuePairs
 
         # use setters
         self.cvterms = cvterms
@@ -59,6 +56,7 @@ class MetaData(MutableMapping):
 
     def __getitem__(self, key: str) -> List:
         if key == "sbo" and len(self.annotations[key]) == 0:
+            # TODO - why is this if necessary?
             value = self._cvterms._annotations[key]
             del self._cvterms._annotations[key]
             return value
