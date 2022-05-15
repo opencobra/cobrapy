@@ -1427,9 +1427,7 @@ def _model_to_sbml(
             "http://www.sbml.org/sbml/level3/version1/groups/version1", "groups", True
         )
         doc.setPackageRequired("groups", False)
-        model_group = model.getPlugin(
-            "groups"
-        )  # noqa: E501 type: libsbml.GroupsModelPlugin
+        model_group: "libsbml.GroupsModelPlugin" = model.getPlugin("groups")
         for cobra_group in cobra_model.groups:
             group: "libsbml.Group" = model_group.createGroup()
             if f_replace and F_GROUP_REV in f_replace:
@@ -1449,15 +1447,12 @@ def _model_to_sbml(
                 m_type = str(type(cobra_member))
 
                 # id replacements
-                if "Reaction" in m_type:
-                    if f_replace and F_REACTION_REV in f_replace:
-                        mid = f_replace[F_REACTION_REV](mid)
-                if "Metabolite" in m_type:
-                    if f_replace and F_SPECIE_REV in f_replace:
-                        mid = f_replace[F_SPECIE_REV](mid)
-                if "Gene" in m_type:
-                    if f_replace and F_GENE_REV in f_replace:
-                        mid = f_replace[F_GENE_REV](mid)
+                if "Reaction" in m_type and f_replace and F_REACTION_REV in f_replace:
+                    mid = f_replace[F_REACTION_REV](mid)
+                if "Metabolite" in m_type and f_replace and F_SPECIE_REV in f_replace:
+                    mid = f_replace[F_SPECIE_REV](mid)
+                if "Gene" in m_type and f_replace and F_GENE_REV in f_replace:
+                    mid = f_replace[F_GENE_REV](mid)
 
                 member.setIdRef(mid)
                 if cobra_member.name and len(cobra_member.name) > 0:
@@ -1595,9 +1590,8 @@ def _check_required(sbase: "libsbml.Base", value: str, attribute: str) -> str:
         elif hasattr(sbase, "getMetaId") and sbase.getMetaId():
             msg += f" with metaId '{sbase.getName()}'"
         raise CobraSBMLError(msg)
-    if attribute == "id":
-        if not libsbml.SyntaxChecker.isValidSBMLSId(value):
-            LOGGER.error(f"'{value}' is not a valid SBML 'SId'.")
+    if attribute == "id" and not libsbml.SyntaxChecker.isValidSBMLSId(value):
+        LOGGER.error(f"'{value}' is not a valid SBML 'SId'.")
 
     return value
 
