@@ -1770,7 +1770,7 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
         else:
             qualifier = "unknown_qualifier"
         ext_res = {"resources": []}
-        for k in range(cvterm.getNumResources()):  # FIXME: read and store the qualifier
+        for k in range(cvterm.getNumResources()):
             uri = cvterm.getResourceURI(k)
             ext_res["resources"].append(uri)
         ext_res["nested_data"] = _set_nested_data(cvterm)
@@ -1845,6 +1845,8 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
             f"'http(s)://identifiers.org/COLLECTION:id"
         )
         return None
+
+    return provider, identifier
 
 
 def _set_nested_data(cvterm_obj: libsbml.CVTerm) -> CVTerms:

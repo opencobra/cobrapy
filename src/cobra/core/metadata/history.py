@@ -252,7 +252,7 @@ class HistoryDatetime:
         """
         if not isinstance(datetime_str, str):
             raise TypeError(
-                f"The date passed must be of " f"type string: {datetime_str}"
+                f"The date passed must be of type string: {datetime_str}"
             )
 
         # python 3.6 doesn't allow : (colon) in the utc offset.

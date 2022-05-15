@@ -56,7 +56,7 @@ class MetaData(MutableMapping):
 
     def __getitem__(self, key: str) -> List:
         if key == "sbo" and len(self.annotations[key]) == 0:
-            # TODO - why is this if necessary?
+            # TODO - why is this if necessary? because test_write2 (fbc2, fbc2Gz, fbc2Bz2)
             value = self._cvterms._annotations[key]
             del self._cvterms._annotations[key]
             return value

@@ -339,7 +339,7 @@ class CVTerms(collections.MutableMapping):
         for key, value in other.items():
             if key not in self._cvterms:
                 return False
-            if not value == self._cvterms[key]:
+            if value != self._cvterms[key]:
                 return False
         return True
 
@@ -444,7 +444,7 @@ class CVList(collections.MutableSequence):
         if len(self) != len(other):
             return False
         for k, ext_res in enumerate(self):
-            if not ext_res == other[k]:
+            if ext_res != other[k]:
                 return False
         return True
 
@@ -558,7 +558,7 @@ class ExternalResources:
             return True
         elif self.nested_data is None or other.nested_data is None:
             return False
-        elif not self.nested_data == other.nested_data:
+        elif self.nested_data != other.nested_data:
             return False
         return True
 
