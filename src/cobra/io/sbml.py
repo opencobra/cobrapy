@@ -36,7 +36,7 @@ from collections import defaultdict, namedtuple
 from copy import deepcopy
 from io import StringIO
 from sys import platform
-from typing import IO, Match, Optional, Pattern, Tuple, Type, Union
+from typing import IO, Match, Optional, Pattern, Tuple, Type, Union, List
 
 import libsbml
 
@@ -1886,6 +1886,44 @@ def _set_nested_data(cvterm_obj: libsbml.CVTerm) -> CVTerms:
     return cobra_nested_cvterms
 
 
+def _cobra_CVTerm_to_SMBL_CVterm(
+    qualifier: str, cvterms: CVTerms
+) -> List["libsbml.CVTerm"]:
+    """
+
+    :param qualifier:
+    :param external_resource:
+    :return:
+    """
+    cv_list = []
+    if qualifier.startswith("bqb"):
+        qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
+    elif qualifier.startswith("bqm"):
+        qualifier_type = libsbml.MODEL_QUALIFIER
+    else:
+        raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
+
+    for ex_res in cvterms:
+        cv: "libsbml.CVTerm" = libsbml.CVTerm()
+        cv.setQualifierType(qualifier_type)
+        if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
+            cv.setBiologicalQualifierType(Qualifier[qualifier].value)
+        elif qualifier_type == libsbml.MODEL_QUALIFIER:
+            cv.setModelQualifierType(Qualifier[qualifier].value - 14)
+        else:
+            raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
+        for uri in ex_res.resources:
+            cv.addResource(uri)
+
+        if ex_res.nested_data is not None:
+            for _qualifier, _cvterms in ex_res.nested_data.items():
+                _cv = _cobra_CVTerm_to_SMBL_CVterm(_qualifier, _cvterms)
+                _check(cv.addNestedCVTerm(_cv), f"Adding nested cvterm: {_cv}")
+        cv_list.append(cv)
+
+    return cv_list
+
+
 def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
     """Set SBase annotations based on cobra annotations.
 
@@ -1926,34 +1964,17 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
     sbase.setMetaId(meta_id)
 
     # set cvterms
-    for key, value in annotation.cvterms.items():
-        qualifier = key
-        if qualifier.startswith("bqb"):
-            qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
-        elif qualifier.startswith("bqm"):
-            qualifier_type = libsbml.MODEL_QUALIFIER
-        else:
-            raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
-
-        for ex_res in value:
-            cv: "libsbml.CVTerm" = libsbml.CVTerm()
-            cv.setQualifierType(qualifier_type)
-            if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
-                cv.setBiologicalQualifierType(Qualifier[qualifier].value)
-            elif qualifier_type == libsbml.MODEL_QUALIFIER:
-                cv.setModelQualifierType(Qualifier[qualifier].value - 14)
-            else:
-                raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
-            for uri in ex_res.resources:
-                cv.addResource(uri)
-
-            # adding the nested data
-            if ex_res.nested_data is not None:
-                _add_nested_data(cv, ex_res.nested_data)
+    [
+        [
             _check(
                 sbase.addCVTerm(cv),
-                f"Setting cvterm: {cv}, resource: {uri}",
+                f"Setting cvterm: {cv}",
             )
+            for cv in _cobra_CVTerm_to_SMBL_CVterm(key, value)
+        ]
+        for key, value in annotation.cvterms.items()
+    ]
+
     # set history
     if not annotation.history.is_empty():
         comp_history = libsbml.ModelHistory()
