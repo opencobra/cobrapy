@@ -489,8 +489,8 @@ class ExternalResources:
             data = {}
         if not isinstance(data, dict):
             raise TypeError("The value passed must be of type dict.")
-        self.resources = data["resources"] if "resources" in data else None
-        self.nested_data = data["nested_data"] if "nested_data" in data else None
+        self.resources = data["resources"] if "resources" in data else {}
+        self.nested_data = data["nested_data"] if "nested_data" in data else {}
         for key, value in data.items():
             if key == "resources":
                 continue

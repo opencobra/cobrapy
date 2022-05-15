@@ -1886,7 +1886,7 @@ def _set_nested_data(cvterm_obj: libsbml.CVTerm) -> CVTerms:
     return cobra_nested_cvterms
 
 
-def _cobra_CVTerm_to_SMBL_CVterm(
+def _cobra_cvterms_to_SMBL_CVterm(
     qualifier: str, cvterms: CVTerms
 ) -> List["libsbml.CVTerm"]:
     """
@@ -1915,10 +1915,14 @@ def _cobra_CVTerm_to_SMBL_CVterm(
         for uri in ex_res.resources:
             cv.addResource(uri)
 
-        if ex_res.nested_data is not None:
-            for _qualifier, _cvterms in ex_res.nested_data.items():
-                _cv = _cobra_CVTerm_to_SMBL_CVterm(_qualifier, _cvterms)
+        [
+            [
                 _check(cv.addNestedCVTerm(_cv), f"Adding nested cvterm: {_cv}")
+                for _cv in _cobra_cvterms_to_SMBL_CVterm(_qualifier, _cvterms)
+            ]
+            for _qualifier, _cvterms in ex_res.nested_data.items()
+        ]
+
         cv_list.append(cv)
 
     return cv_list
@@ -1970,7 +1974,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
                 sbase.addCVTerm(cv),
                 f"Setting cvterm: {cv}",
             )
-            for cv in _cobra_CVTerm_to_SMBL_CVterm(key, value)
+            for cv in _cobra_cvterms_to_SMBL_CVterm(key, value)
         ]
         for key, value in annotation.cvterms.items()
     ]
@@ -2000,46 +2004,6 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
             sbase.setModelHistory(comp_history),
             f"Setting ModelHistory: {comp_history}",
         )
-
-
-def _add_nested_data(cvterm: libsbml.CVTerm, nested_data: CVTerms):
-    """Sets nested data inside a libsbml.CVTerm object.
-
-    Parameters
-    ----------
-    cvterm : libsbml.CVTerm
-        the cvterm object whose nested data is to be set
-    nested_data : CVTerms
-        the nested data to be set.
-
-    """
-    for key, value in nested_data.items():
-        qualifier = key
-        if qualifier.startswith("bqb"):
-            qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
-        elif qualifier.startswith("bqm"):
-            qualifier_type = libsbml.MODEL_QUALIFIER
-        else:
-            raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
-
-        for ex_res in value:
-            cv = libsbml.CVTerm()  # type: libsbml.CVTerm
-            cv.setQualifierType(qualifier_type)
-            if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
-                cv.setBiologicalQualifierType(Qualifier[qualifier].value)
-            elif qualifier_type == libsbml.MODEL_QUALIFIER:
-                cv.setModelQualifierType(Qualifier[qualifier].value - 14)
-            else:
-                raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
-            for uri in ex_res.resources:
-                cv.addResource(uri)
-
-            # adding the nested data
-            if ex_res.nested_data is not None:
-                _add_nested_data(cv, ex_res.nested_data)
-
-            # finally add the cvterm
-            _check(cvterm.addNestedCVTerm(cv), "Adding nested cvterm: {}".format(cv))
 
 
 # -----------------------------------------------------------------------------
