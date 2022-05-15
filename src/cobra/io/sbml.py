@@ -1903,15 +1903,23 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
 
     # standardize annotations
     annotation_data = deepcopy(annotation)
+    # TODO - devel has formatting of float and to str, and str to ["is", str] - does this happen in CVterm?
 
     if not isinstance(annotation_data, MetaData):
         raise TypeError(
-            f"The annotation object must be " f"of type 'Metadata': {annotation_data}"
+            f"The annotation object must be of type 'Metadata': {annotation_data}"
         )
+
+    if "SBO" in annotation:
+        LOGGER.warning(
+            "'SBO' provider is deprecated, use 'sbo' provider instead. Converting to"
+            "'sbo' for writing."
+        )
+        annotation["sbo"] = annotation.pop("SBO")
 
     if "sbo" in annotation and annotation["sbo"] != []:
         sbo_term = annotation["sbo"]
-        _check(sbase.setSBOTerm(sbo_term[0]), "Setting SBOTerm: {}".format(sbo_term[0]))
+        _check(sbase.setSBOTerm(sbo_term[0]), f"Setting SBOTerm: {sbo_term[0]}")
 
     # set metaId
     meta_id = f"meta_{sbase.getId()}"
@@ -1925,7 +1933,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
         elif qualifier.startswith("bqm"):
             qualifier_type = libsbml.MODEL_QUALIFIER
         else:
-            raise CobraSBMLError("Unsupported qualifier: " "%s" % qualifier)
+            raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
 
         for ex_res in value:
             cv: "libsbml.CVTerm" = libsbml.CVTerm()
@@ -1969,7 +1977,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
         # finally add the compo_history
         _check(
             sbase.setModelHistory(comp_history),
-            "Setting ModelHistory: {}".format(comp_history),
+            f"Setting ModelHistory: {comp_history}",
         )
 
 

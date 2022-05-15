@@ -232,23 +232,22 @@ class CVTerms(collections.MutableMapping):
         if data is None:
             data = {}
 
+        if not isinstance(data, (dict, list)):
+            raise TypeError(f"The data passed must be of type dict or list: {data}")
+
         # if annotation is in the form of list of list, modify the format
         # https://github.com/opencobra/cobrapy/issues/736
         if isinstance(data, list):
             dict_anno = defaultdict(list)
             for item in data:
-                cvt = CVTerm(resource=item[1])
-                data = cvt.parse_provider_identifier()
-                if data is None:
+                _data = CVTerm(resource=item[1]).parse_provider_identifier()
+                if _data is None:
                     continue
                 else:
-                    provider, identifier = data
+                    provider, identifier = _data
 
                 dict_anno[provider].append(identifier)
             data = dict_anno
-
-        if not isinstance(data, dict):
-            raise TypeError(f"The data passed must be of type dict: {data}")
 
         for key, value in data.items():
 
@@ -464,7 +463,7 @@ class CVList(collections.MutableSequence):
 class ExternalResources:
     """
     Class representation of a single set of resources and its nested
-    annotation. Its a special type of dict with restricted keys and
+    annotation. It is a special type of dict with restricted keys and
     values
 
     Parameters
