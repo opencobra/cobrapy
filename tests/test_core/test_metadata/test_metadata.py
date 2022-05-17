@@ -207,19 +207,19 @@ def test_read_old_json_model(data_directory):
             "bqb_is": [
                 {
                     "resources": [
-                        "https://identifiers.org/bigg.metabolite/13dpg",
-                        "https://identifiers.org/biocyc/DPG",
-                        "https://identifiers.org/chebi/CHEBI:16001",
-                        "https://identifiers.org/chebi/CHEBI:1658",
-                        "https://identifiers.org/chebi/CHEBI:20189",
-                        "https://identifiers.org/chebi/CHEBI:57604",
-                        "https://identifiers.org/chebi/CHEBI:11881",
-                        "https://identifiers.org/hmdb/HMDB01270",
-                        "https://identifiers.org/kegg.compound/C00236",
-                        "https://identifiers.org/pubchem.substance/3535",
-                        "https://identifiers.org/reactome/REACT_29800",
-                        "https://identifiers.org/seed.compound/cpd00203",
-                        "https://identifiers.org/unipathway.compound/UPC00236",
+                        "http://identifiers.org/bigg.metabolite/13dpg",
+                        "http://identifiers.org/biocyc/DPG",
+                        "http://identifiers.org/chebi/CHEBI:16001",
+                        "http://identifiers.org/chebi/CHEBI:1658",
+                        "http://identifiers.org/chebi/CHEBI:20189",
+                        "http://identifiers.org/chebi/CHEBI:57604",
+                        "http://identifiers.org/chebi/CHEBI:11881",
+                        "http://identifiers.org/hmdb/HMDB01270",
+                        "http://identifiers.org/kegg.compound/C00236",
+                        "http://identifiers.org/pubchem.substance/3535",
+                        "http://identifiers.org/reactome/REACT_29800",
+                        "http://identifiers.org/seed.compound/cpd00203",
+                        "http://identifiers.org/unipathway.compound/UPC00236",
                     ]
                 }
             ]
