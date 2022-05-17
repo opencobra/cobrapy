@@ -304,3 +304,5 @@ gurobi.log
 /documentation_builder/test*\.*
 /.benchmarks
 /.testmondata
+/.idea/sonarlint/
+/.idea/sonarlint/issuestore/
