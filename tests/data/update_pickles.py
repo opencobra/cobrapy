@@ -16,6 +16,7 @@ from pickle import dump, load
 
 import cobra
 from cobra.io import (
+    load_model,
     load_matlab_model,
     read_sbml_model,
     save_json_model,
@@ -36,11 +37,7 @@ if __name__ == "__main__":
         dump(ecoli_model, outfile, protocol=2)
 
     # salmonella
-    salmonella = read_sbml_model("salmonella.xml")
-    with open("salmonella.genes", "rb") as infile:
-        gene_names = load(infile)
-    for gene in salmonella.genes:
-        gene.name = gene_names[gene.id]
+    salmonella = load_model("iYS1720")
     with open("salmonella.media", "rb") as infile:
         salmonella.media_compositions = load(infile)
     with open("salmonella.pickle", "wb") as outfile:

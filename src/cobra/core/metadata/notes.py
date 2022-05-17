@@ -185,7 +185,7 @@ class Notes(collections.MutableMapping):
         dictionary. It should be used when creating notes from scratch (such as import
         if the function already sets up a dict).
 
-        This method will warn if using terms that should go into annotations.
+        This method should warn if using terms that should go into annotations.
 
         Parameters
         ----------

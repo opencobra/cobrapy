@@ -19,6 +19,9 @@ if TYPE_CHECKING:
     from cobra import Model
 
 
+MINI_MAT = 'mini.mat'
+RAVEN_MAT = 'raven.mat'
+
 @pytest.fixture(scope="function")
 def raven_model(data_directory: Path) -> "Model":
     """Fixture for RAVEN model."""
@@ -29,9 +32,9 @@ def raven_model(data_directory: Path) -> "Model":
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
 # @pytest.mark.parametrize("ref_model, filename",
 #                          [(pytest.fixture_request("mini_model"),
-#                            "mini.mat"),
+#                            MINI_MAT),
 #                           (pytest.fixture_request("raven_model"),
-#                            "raven.mat")])
+#                            RAVEN_MAT)])
 # TODO: wait for pytest.fixture_request() to get approved
 def test_load_matlab_model(
     compare_models: Callable,
@@ -49,8 +52,8 @@ def test_load_matlab_model(
         The path to the test data directory.
 
     """
-    mini_mat_model = load_matlab_model(str((data_directory / "mini.mat").resolve()))
-    raven_mat_model = load_matlab_model(str((data_directory / "raven.mat").resolve()))
+    mini_mat_model = load_matlab_model(str((data_directory / MINI_MAT).resolve()))
+    raven_mat_model = load_matlab_model(str((data_directory / RAVEN_MAT).resolve()))
     assert compare_models(mini_model, mini_mat_model) is None
     assert compare_models(raven_model, raven_mat_model) is None
 
@@ -59,9 +62,9 @@ def test_load_matlab_model(
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
 # @pytest.mark.parametrize("model, filename",
 #                          [(pytest.fixture_request("mini_model"),
-#                            "mini.mat"),
+#                            MINI_MAT),
 #                           (pytest.fixture_request("raven_model"),
-#                            "raven.mat")])
+#                            RAVEN_MAT)])
 # TODO: wait for pytest.fixture_request() to get approved
 def test_save_matlab_model(
     tmp_path: Path, mini_model: "Model", raven_model: "Model"
@@ -78,8 +81,8 @@ def test_save_matlab_model(
         The RAVEN model.
 
     """
-    mini_output_file = tmp_path / "mini.mat"
-    raven_output_file = tmp_path / "raven.mat"
+    mini_output_file = tmp_path / MINI_MAT
+    raven_output_file = tmp_path / RAVEN_MAT
     # scipy.io.savemat() doesn't support anything other than
     # str or file-stream object, hence the str conversion
     save_matlab_model(mini_model, str(mini_output_file.resolve()))
@@ -123,10 +126,10 @@ def test_read_rewrite_matlab_model(
         The path to the test data directory.
 
     """
-    mini_mat_model = load_matlab_model(str((data_directory / "mini.mat").resolve()))
-    raven_mat_model = load_matlab_model(str((data_directory / "raven.mat").resolve()))
-    mini_output_file = tmp_path.joinpath("mini.mat")
-    raven_output_file = tmp_path.joinpath("raven.mat")
+    mini_mat_model = load_matlab_model(str((data_directory / MINI_MAT).resolve()))
+    raven_mat_model = load_matlab_model(str((data_directory / RAVEN_MAT).resolve()))
+    mini_output_file = tmp_path.joinpath(MINI_MAT)
+    raven_output_file = tmp_path.joinpath(RAVEN_MAT)
     # scipy.io.savemat() doesn't support anything other than
     # str or file-stream object, hence the str conversion
     save_matlab_model(mini_mat_model, str(mini_output_file))
@@ -277,12 +280,12 @@ def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) ->
         The path to the test data directory.
 
     """
-    mat_model = load_matlab_model(str(Path(data_directory / "mini.mat").resolve()))
+    mat_model = load_matlab_model(str(Path(data_directory / MINI_MAT).resolve()))
     mat_wrong_caps_model = load_matlab_model(
         str(Path(data_directory, "mini_wrong_key_caps.mat").resolve())
     )
     assert compare_models(mat_model, mat_wrong_caps_model) is None
-    assert mat_wrong_caps_model.reactions.get_by_id("LDH_D").annotation == {
+    EXPECTED_RXN_ANNOTATION = {
         "rhea": ["16369", "16370", "16371", "16372"],
         "metanetx.reaction": ["MNXR101037"],
         "kegg.reaction": ["R00704"],
@@ -291,12 +294,20 @@ def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) ->
         "biocyc": ["META:DLACTDEHYDROGNAD-RXN"],
         "sbo": ["SBO:0000375"],
     }
+    actual_rxn_annotation = dict(mat_wrong_caps_model.reactions.
+                                 get_by_id("LDH_D").annotation)
+    expected_rxn_keys = EXPECTED_RXN_ANNOTATION.keys()
+    actual_rxn_keys = actual_rxn_annotation.keys()
+    assert expected_rxn_keys == actual_rxn_keys
+    for key in actual_rxn_keys:
+        assert EXPECTED_RXN_ANNOTATION[key] == actual_rxn_annotation[key]
     for rxn in mat_model.reactions.list_attr("id"):
         assert (
             mat_wrong_caps_model.reactions.get_by_id(rxn).annotation
             == mat_model.reactions.get_by_id(rxn).annotation
         )
-    assert mat_wrong_caps_model.metabolites.get_by_id("pyr_c").annotation == {
+
+    EXPECTED_MAT_ANNOTATION = {
         "seed.compound": ["cpd00020"],
         "unipathway.compound": ["UPC00022"],
         "lipidmaps": ["LMFA01060077"],
@@ -317,6 +328,12 @@ def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) ->
         "hmdb": ["HMDB00243"],
         "kegg.compound": ["C00022"],
     }
+    actual_met_annotation = mat_wrong_caps_model.metabolites.get_by_id("pyr_c").annotation.annotations
+    expected_met_keys = EXPECTED_MAT_ANNOTATION.keys()
+    actual_met_keys = actual_met_annotation.keys()
+    assert expected_met_keys == actual_met_keys
+    for key in actual_met_keys:
+        assert EXPECTED_MAT_ANNOTATION[key] == actual_met_annotation[key]
     for met in mat_model.metabolites.list_attr("id"):
         assert (
             mat_wrong_caps_model.metabolites.get_by_id(met).annotation

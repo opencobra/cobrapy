@@ -10,6 +10,11 @@ from cobra.manipulation import (
     remove_genes,
 )
 
+A_AND_B_OR_C_AND_A = "(a and b) or (c and a)"
+A_AND_B_AND_D_AND_E = "(a and b and d and e)"
+A_AND_B_OR_B_AND_C = "(a and b) or (b and c)"
+F_AND_B_OR_B_AND_C = "(f and b) or (b and c)"
+B_AND_C = "b and c"
 
 def test_prune_unused_metabolites_output_type(model: Model) -> None:
     """Test the output type of unused metabolites pruning."""
@@ -110,7 +115,7 @@ def test_gene_knockout(salmonella: Model) -> None:
         assert expected_reactions == knocked_out_reactions
     with salmonella:
         expected_reactions = [salmonella.reactions.get_by_id("4PEPTabcpp")]
-        knocked_out_reactions = knock_out_model_genes(salmonella, ["STM1746.S"])
+        knocked_out_reactions = knock_out_model_genes(salmonella, ["STM1746_S"])
         assert expected_reactions == knocked_out_reactions
     knocked_out_reactions = knock_out_model_genes(salmonella, gene_list)
     assert len(knocked_out_reactions) == 13
@@ -179,10 +184,10 @@ def test_remove_genes() -> None:
     m.add_reactions([Reaction("r" + str(i + 1)) for i in range(8)])
     assert len(m.reactions) == 8
     rxns = m.reactions
-    rxns.r1.gene_reaction_rule = "(a and b) or (c and a)"
-    rxns.r2.gene_reaction_rule = "(a and b and d and e)"
-    rxns.r3.gene_reaction_rule = "(a and b) or (b and c)"
-    rxns.r4.gene_reaction_rule = "(f and b) or (b and c)"
+    rxns.r1.gene_reaction_rule = A_AND_B_OR_C_AND_A
+    rxns.r2.gene_reaction_rule = A_AND_B_AND_D_AND_E
+    rxns.r3.gene_reaction_rule = A_AND_B_OR_B_AND_C
+    rxns.r4.gene_reaction_rule = F_AND_B_OR_B_AND_C
     rxns.r5.gene_reaction_rule = "x"
     rxns.r6.gene_reaction_rule = "y"
     rxns.r7.gene_reaction_rule = "x or     z"
@@ -194,8 +199,8 @@ def test_remove_genes() -> None:
     assert "x" in m.genes
     assert rxns.r1.gene_reaction_rule == ""
     assert rxns.r2.gene_reaction_rule == ""
-    assert rxns.r3.gene_reaction_rule == "b and c"
-    assert rxns.r4.gene_reaction_rule == "(f and b) or (b and c)"
+    assert rxns.r3.gene_reaction_rule == B_AND_C
+    assert rxns.r4.gene_reaction_rule == F_AND_B_OR_B_AND_C
     assert rxns.r5.gene_reaction_rule == "x"
     assert rxns.r6.gene_reaction_rule == "y"
     assert rxns.r7.genes == {m.genes.x, m.genes.z}
@@ -206,8 +211,8 @@ def test_remove_genes() -> None:
     assert "x" not in m.genes
     assert rxns.r1.gene_reaction_rule == ""
     assert rxns.r2.gene_reaction_rule == ""
-    assert rxns.r3.gene_reaction_rule == "b and c"
-    assert rxns.r4.gene_reaction_rule == "(f and b) or (b and c)"
+    assert rxns.r3.gene_reaction_rule == B_AND_C
+    assert rxns.r4.gene_reaction_rule == F_AND_B_OR_B_AND_C
     assert rxns.r6.gene_reaction_rule == "y"
     assert rxns.r7.gene_reaction_rule == "z"
     assert rxns.r7.genes == {m.genes.z}
@@ -220,10 +225,10 @@ def test_remove_genes_with_context() -> None:
     m.add_reactions([Reaction("r" + str(i + 1)) for i in range(8)])
     assert len(m.reactions) == 8
     rxns = m.reactions
-    rxns.r1.gene_reaction_rule = "(a and b) or (c and a)"
-    rxns.r2.gene_reaction_rule = "(a and b and d and e)"
-    rxns.r3.gene_reaction_rule = "(a and b) or (b and c)"
-    rxns.r4.gene_reaction_rule = "(f and b) or (b and c)"
+    rxns.r1.gene_reaction_rule = A_AND_B_OR_C_AND_A
+    rxns.r2.gene_reaction_rule = A_AND_B_AND_D_AND_E
+    rxns.r3.gene_reaction_rule = A_AND_B_OR_B_AND_C
+    rxns.r4.gene_reaction_rule = F_AND_B_OR_B_AND_C
     rxns.r5.gene_reaction_rule = "x"
     rxns.r6.gene_reaction_rule = "y"
     rxns.r7.gene_reaction_rule = "x or     z"
@@ -234,18 +239,18 @@ def test_remove_genes_with_context() -> None:
         assert "x" in m.genes
         assert rxns.r1.gene_reaction_rule == ""
         assert rxns.r2.gene_reaction_rule == ""
-        assert rxns.r3.gene_reaction_rule == "b and c"
-        assert rxns.r4.gene_reaction_rule == "(f and b) or (b and c)"
+        assert rxns.r3.gene_reaction_rule == B_AND_C
+        assert rxns.r4.gene_reaction_rule == F_AND_B_OR_B_AND_C
         assert rxns.r5.gene_reaction_rule == "x"
         assert rxns.r6.gene_reaction_rule == "y"
         assert rxns.r7.genes == {m.genes.x, m.genes.z}
         assert rxns.r8.gene_reaction_rule == ""
     assert "a" in m.genes
     assert "x" in m.genes
-    assert rxns.r1.gene_reaction_rule == "(a and b) or (c and a)"
-    assert rxns.r2.gpr == GPR.from_string("(a and b and d and e)")
-    assert rxns.r3.gene_reaction_rule == "(a and b) or (b and c)"
-    assert rxns.r4.gene_reaction_rule == "(f and b) or (b and c)"
+    assert rxns.r1.gene_reaction_rule == A_AND_B_OR_C_AND_A
+    assert rxns.r2.gpr == GPR.from_string(A_AND_B_AND_D_AND_E)
+    assert rxns.r3.gene_reaction_rule == A_AND_B_OR_B_AND_C
+    assert rxns.r4.gene_reaction_rule == F_AND_B_OR_B_AND_C
     assert rxns.r5.gene_reaction_rule == "x"
     assert rxns.r6.gene_reaction_rule == "y"
     assert rxns.r7.genes == {m.genes.x, m.genes.z}
@@ -259,8 +264,8 @@ def test_remove_genes_with_context() -> None:
         assert "x" not in m.genes
         assert rxns.r1.gene_reaction_rule == ""
         assert rxns.r2.gene_reaction_rule == ""
-        assert rxns.r3.gene_reaction_rule == "b and c"
-        assert rxns.r4.gene_reaction_rule == "(f and b) or (b and c)"
+        assert rxns.r3.gene_reaction_rule == B_AND_C
+        assert rxns.r4.gene_reaction_rule == F_AND_B_OR_B_AND_C
         assert rxns.r6.gene_reaction_rule == "y"
         assert rxns.r7.gene_reaction_rule == "z"
         assert rxns.r7.genes == {m.genes.z}
@@ -268,10 +273,10 @@ def test_remove_genes_with_context() -> None:
     assert "a" in m.genes
     assert "x" in m.genes
     assert len(m.reactions) == 8
-    assert rxns.r1.gene_reaction_rule == "(a and b) or (c and a)"
-    assert rxns.r2.gpr == GPR.from_string("(a and b and d and e)")
-    assert rxns.r3.gene_reaction_rule == "(a and b) or (b and c)"
-    assert rxns.r4.gene_reaction_rule == "(f and b) or (b and c)"
+    assert rxns.r1.gene_reaction_rule == A_AND_B_OR_C_AND_A
+    assert rxns.r2.gpr == GPR.from_string(A_AND_B_AND_D_AND_E)
+    assert rxns.r3.gene_reaction_rule == A_AND_B_OR_B_AND_C
+    assert rxns.r4.gene_reaction_rule == F_AND_B_OR_B_AND_C
     assert rxns.r5.gene_reaction_rule == "x"
     assert rxns.r6.gene_reaction_rule == "y"
     assert rxns.r7.genes == {m.genes.x, m.genes.z}
