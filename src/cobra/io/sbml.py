@@ -607,7 +607,7 @@ def _sbml_to_model(
     if not libsbml.SyntaxChecker.isValidSBMLSId(model_id):
         LOGGER.error(f"'{model_id}' is not a valid SBML 'SId'.")
     cobra_model = Model(model_id)
-    cobra_model.name = model.getName()
+    cobra_model.name = model.getName() or None
 
     info = f"<{model_id}> SBML L{model.getLevel()}V{model.getVersion()}"
     packages = {}
@@ -668,7 +668,7 @@ def _sbml_to_model(
         specie_fbc: "libsbml.FbcSpeciesPlugin" = specie.getPlugin("fbc")
         if specie_fbc:
             met.charge = specie_fbc.getCharge()
-            met.formula = specie_fbc.getChemicalFormula()
+            met.formula = specie_fbc.getChemicalFormula() or None
         else:
             if specie.isSetCharge():
                 LOGGER.warning(
@@ -708,7 +708,7 @@ def _sbml_to_model(
         ex_rid = f"EX_{met.id}"
         ex_reaction = Reaction(ex_rid)
         ex_reaction.name = ex_rid
-        ex_reaction.annotation = {"sbo": SBO_EXCHANGE_REACTION}
+        ex_reaction.annotation = {"sbo": [SBO_EXCHANGE_REACTION]}
         ex_reaction.lower_bound = config.lower_bound
         ex_reaction.upper_bound = config.upper_bound
         LOGGER.warning(
@@ -811,7 +811,7 @@ def _sbml_to_model(
         if f_replace and F_REACTION in f_replace:
             rid = f_replace[F_REACTION](rid)
         cobra_reaction = Reaction(rid)
-        cobra_reaction.name = reaction.getName()
+        cobra_reaction.name = reaction.getName().strip()
         cobra_reaction.annotation = _parse_annotations(reaction)
         cobra_reaction.notes = _parse_notes_info(reaction)
 
@@ -1071,6 +1071,7 @@ def _sbml_to_model(
                     if f_replace and F_REACTION in f_replace:
                         obj_id = f_replace[F_REACTION](obj_id)
                     cobra_member = cobra_model.reactions.get_by_id(obj_id)
+                    cobra_member.subsystem = group.name
                 elif typecode == libsbml.SBML_FBC_GENEPRODUCT:
                     if f_replace and F_GENE in f_replace:
                         obj_id = f_replace[F_GENE](obj_id)
@@ -1092,6 +1093,7 @@ def _sbml_to_model(
         for cobra_reaction in cobra_model.reactions:
             if "SUBSYSTEM" in cobra_reaction.notes:
                 g_name = cobra_reaction.notes["SUBSYSTEM"]
+                cobra_reaction.subsystem = g_name
                 if g_name in groups_dict:
                     groups_dict[g_name].append(cobra_reaction)
                 else:
@@ -1100,7 +1102,8 @@ def _sbml_to_model(
         for gid, cobra_members in groups_dict.items():
             if f_replace and F_GROUP in f_replace:
                 gid = f_replace[F_GROUP](gid)
-            cobra_group = Group(gid, name=gid, kind="collection")
+            cobra_group = Group(gid, name=gid, kind="partonomy")
+            cobra_group.annotation["sbo"] = ["SBO:0000633"]
             cobra_group.add_members(cobra_members)
             groups.append(cobra_group)
 

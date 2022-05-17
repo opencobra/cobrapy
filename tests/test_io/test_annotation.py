@@ -35,15 +35,15 @@ def _check_sbml_annotations(model: "Model") -> None:
 
     # gene annotation
     # {'asap': 'ABE-0006162', 'ncbigene': '946368', 'uniprot': 'P33221',
-    #  'ncbigi': 'gi:16129802', 'ecogene': 'EG11809'}
+    #  'ncbiprotein': 'gi:16129802', 'ecogene': 'EG11809'}
     annotation = model.genes.G1.annotation
     assert len(annotation) == 5
-    for key in ["asap", "ncbigene", "uniprot", "ncbigi", "ecogene"]:
+    for key in ["asap", "ncbigene", "uniprot", "ncbiprotein", "ecogene"]:
         assert key in annotation
     assert annotation["asap"] == ["ABE-0006162"]
     assert annotation["ncbigene"] == ["946368"]
     assert annotation["uniprot"] == ["P33221"]
-    assert annotation["ncbigi"] == ["gi:16129802"]
+    assert annotation["ncbiprotein"] == ["16129802"]
     assert annotation["ecogene"] == ["EG11809"]
 
     # compartment annotation

@@ -148,7 +148,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0006162" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11809" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946368" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129802" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129802" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>

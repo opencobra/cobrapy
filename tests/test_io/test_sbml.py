@@ -77,7 +77,7 @@ def test_validate(trial: IOTrial, data_directory: str) -> None:
 
     Parameters
     ----------
-    IOTrial:
+    trial: IOTrial
         Which model trial to check.
     data_directory: str
         Directory where the data is.
@@ -624,7 +624,7 @@ def test_smbl_with_notes(data_directory: str, tmp_path: Path) -> None:
     metabolite_annotations = {
         "2hb_e": {
             "sbo": ["SBO:0000247"],
-            "inchi": ["InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3," "(H,6,7)"],
+            "inchi": ["InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3,(H,6,7)"],
             "chebi": ["CHEBI:1148"],
         },
         "nad_e": {
@@ -647,7 +647,7 @@ def test_smbl_with_notes(data_directory: str, tmp_path: Path) -> None:
         },
         "2obut_e": {
             "sbo": ["SBO:0000247"],
-            "inchi": ["InChI=1S/C4H6O3/c1-2-3(5)4(6)7/h2H2,1H3,(H,6," "7)/p-1"],
+            "inchi": ["InChI=1S/C4H6O3/c1-2-3(5)4(6)7/h2H2,1H3,(H,6,7)/p-1"],
             "chebi": ["CHEBI:16763"],
         },
         "nadh_e": {
@@ -668,7 +668,7 @@ def test_smbl_with_notes(data_directory: str, tmp_path: Path) -> None:
         "CONFIDENCE_LEVEL": "4",
         "NOTES": "NCD",
         "SUBSYSTEM": "Propanoate metabolism",
-        "GENE_ASSOCIATION": "(HGNC:8546 and HGNC:8548) or" " (HGNC:8547 and HGNC:8548)",
+        "GENE_ASSOCIATION": "(HGNC:8546 and HGNC:8548) or (HGNC:8547 and HGNC:8548)",
     }
     reaction_annotations = {
         "sbo": ["SBO:0000176"],

@@ -33,7 +33,7 @@ def check_mass_balance(model: "Model") -> Dict["Reaction", Dict["Metabolite", fl
     """
     unbalanced = {}
     for reaction in model.reactions:
-        if set(reaction.annotation.get("sbo")).isdisjoint(_NOT_MASS_BALANCED_TERMS):
+        if set(reaction.annotation.get("sbo", [])).isdisjoint(_NOT_MASS_BALANCED_TERMS):
             balance = reaction.check_mass_balance()
             if balance:
                 unbalanced[reaction] = balance
