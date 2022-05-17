@@ -1,11 +1,11 @@
 import collections
 import re
-from typing import Iterator
+from typing import Iterator, Dict
 from warnings import warn
 
 
 class Notes(collections.MutableMapping):
-    """ Class representation of 'notes' of an object.
+    """Class representation of 'notes' of an object.
 
     The previous version of COBRApy was parsing entries of
     the form '<p> key : value </p>' and making
@@ -65,12 +65,12 @@ class Notes(collections.MutableMapping):
 
     @property
     def notes_xhtml(self) -> str:
-        """ Return the html content of notes in the form of a string. """
+        """Return the html content of notes in the form of a string."""
         return self._notes_xhtml
 
     @notes_xhtml.setter
     def notes_xhtml(self, value: str) -> None:
-        """ Set the notes_xhtml string """
+        """Set the notes_xhtml string"""
         if value is None:
             self._notes_xhtml = value
             self._data = {}
@@ -118,7 +118,7 @@ class Notes(collections.MutableMapping):
         return self.__str__()
 
     def update_notes_dict(self) -> None:
-        """ Updates notes dictionary according to key-value stored
+        """Updates notes dictionary according to key-value stored
         in notes string.
         """
         if self._notes_xhtml:
@@ -130,7 +130,7 @@ class Notes(collections.MutableMapping):
                 self._data[key.strip()] = value.strip()
 
     def update_notes_str(self, key: str, value: str) -> None:
-        """ Updates the notes string according to key-value pairs
+        """Updates the notes string according to key-value pairs
         passed. If any such 'key' is present inside notes string
         having format '<p> key : oldvalue </p>', then it will be
         updated to store the new value. But if that 'key' is not
@@ -155,8 +155,8 @@ class Notes(collections.MutableMapping):
 
         # pattern to search for inside notes string
         pattern = re.compile(
-            r"<(?P<prefix>(\w+:)?)p[^>]*>(\s*){}(\s*):(\s*)"
-            r"(?P<content>.*?)(\s*)</(?P=prefix)p>".format(key),
+            rf"<(?P<prefix>(\w+:)?)p[^>]*>(\s*)"
+            rf"{key}(\s*):(\s*)(?P<content>.*?)(\s*)</(?P=prefix)p>",
             re.IGNORECASE | re.DOTALL,
         )
         match = re.search(pattern, self._notes_xhtml)
@@ -176,3 +176,30 @@ class Notes(collections.MutableMapping):
             end = match.end("content")
             modified_str = self._notes_xhtml[:start] + value + self._notes_xhtml[end:]
             self._notes_xhtml = modified_str
+
+    @classmethod
+    def notes_from_dict(cls, data_dict: Dict) -> "Notes":
+        """Creates a new note based on a dictionary.
+
+        This method can be used to create a completely new Notes object from a
+        dictionary. It should be used when creating notes from scratch (such as import
+        if the function already sets up a dict).
+
+        This method will warn if using terms that should go into annotations.
+
+        Parameters
+        ----------
+        data_dict: dict
+            A dictionary that will be transformed to string.
+
+        Returns
+        -------
+        Notes
+            A new Notes object.
+        """
+        str_list = ['<html xmlns = "http://www.w3.org/1999/xhtml">']
+        str_suffix = "</html>"
+        for k, v in data_dict.items():
+            str_list.append(f"<p>{k}: {v}</p>")
+        str_list.append(str_suffix)
+        return cls("\n".join(str_list))

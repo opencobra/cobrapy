@@ -4,7 +4,7 @@ import collections
 import re
 from collections import OrderedDict, defaultdict
 from enum import Enum
-from typing import Dict, Iterator, List, Tuple, Union
+from typing import Dict, Iterator, List, Tuple, Union, Optional
 from warnings import warn
 
 
@@ -60,7 +60,7 @@ class CVTerm:
         else:
             raise TypeError(f"{qualifier} is not a supported enum Qualifier")
 
-    def parse_provider_identifier(self) -> Tuple:
+    def parse_provider_identifier(self) -> Optional[Tuple]:
         """Parses provider and identifier term from given resource uri.
 
         Returns

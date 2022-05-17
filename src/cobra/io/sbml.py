@@ -676,17 +676,16 @@ def _sbml_to_model(
                     f"discouraged, use fbc:charge instead: {specie}"
                 )
                 met.charge = specie.getCharge()
-            else:
-                if "CHARGE" in met.notes:
-                    LOGGER.warning(
-                        f"Use of CHARGE in the notes element is "
-                        f"discouraged, use fbc:charge instead: {specie}"
-                    )
-                    try:
-                        met.charge = int(met.notes["CHARGE"])
-                    except ValueError:
-                        # handle nan, na, NA, ...
-                        pass
+            elif "CHARGE" in met.notes:
+                LOGGER.warning(
+                    f"Use of CHARGE in the notes element is "
+                    f"discouraged, use fbc:charge instead: {specie}"
+                )
+                try:
+                    met.charge = int(met.notes["CHARGE"])
+                except ValueError:
+                    # handle nan, na, NA, ...
+                    pass
 
             if "FORMULA" in met.notes:
                 LOGGER.warning(
@@ -1954,7 +1953,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
         annotation["sbo"] = annotation.pop("SBO")
 
     if "sbo" in annotation and annotation["sbo"] != []:
-        sbo_term = annotation["sbo"]
+        sbo_term = annotation.pop("sbo")
         _check(sbase.setSBOTerm(sbo_term[0]), f"Setting SBOTerm: {sbo_term[0]}")
 
     # set metaId

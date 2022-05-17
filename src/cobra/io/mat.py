@@ -7,7 +7,7 @@ from typing import Dict, Iterable, List, Optional, Pattern
 
 import numpy as np
 
-from ..core import Gene, Group, Metabolite, Model, Object, Reaction
+from ..core import Gene, Group, Metabolite, Model, Object, Reaction, Notes
 from ..util import create_stoichiometric_matrix
 from ..util.solver import set_objective
 
@@ -454,7 +454,8 @@ def mat_parse_notes(
             for x in notes[name]
         ]
     for i, obj in enumerate(target_list):
-        obj.notes = {prov: notes[prov][i] for prov in note_providers if notes[prov][i]}
+        obj.notes = Notes.notes_from_dict({prov: notes[prov][i] for prov
+                                           in note_providers if notes[prov][i]})
 
 
 def annotations_to_mat(
