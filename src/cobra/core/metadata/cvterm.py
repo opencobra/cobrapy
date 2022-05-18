@@ -148,14 +148,20 @@ class CVTerms(collections.MutableMapping):
             raise TypeError(f"Invalid format for CVTerms: '{data}'")
 
     def to_dict(self) -> dict:
-        """Represent a CVTerm object in python dict"""
-        cv_dict = OrderedDict()
-        for key, value in self._cvterms.items():
-            cvlist = []
-            for ex_res in value:
-                cvlist.append(ex_res.to_dict())
-            cv_dict[key] = cvlist
-        return cv_dict
+        """Represent a CVTerms object in python dict.
+
+        Returns:
+        -------
+        dict:
+            a dict where each key has a list of all external resources in the original
+            self._cvterms dictionary for that key
+
+        Note: If this should work on Python 3.5 and lower, it needs to be an
+        OrderedDict.
+
+        """
+        return {key: [ex_res.to_dict() for ex_res in value]
+                for key, value in self._cvterms.items()}
 
     def add_cvterm(self, cvterm: CVTerm, index: int = 0) -> None:
         """
