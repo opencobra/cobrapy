@@ -1746,7 +1746,8 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
 
     # SBO term
     if sbase.isSetSBOTerm():
-        annotation["sbo"] = [sbase.getSBOTermID()]
+        annotation.annotations["sbo"] = [sbase.getSBOTermID()]
+#        annotation["sbo"] = [sbase.getSBOTermID()]
 
     # RDF annotation
     cvterms = sbase.getCVTerms()
@@ -1800,11 +1801,8 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
         annotation.history.creators = cobra_creators
 
         if model_history.isSetCreatedDate():
-            date = model_history.getCreatedDate()  # type: libsbml.Date
-            cobra_date = HistoryDatetime(
-                date.getDateAsString()
-            )  # type: HistoryDatetime
-            annotation.history.created_date = cobra_date
+            date: libsbml.Date = model_history.getCreatedDate()
+            annotation.history.created_date = HistoryDatetime(date.getDateAsString())
 
         cobra_modified_dates = []
         for index in range(model_history.getNumModifiedDates()):

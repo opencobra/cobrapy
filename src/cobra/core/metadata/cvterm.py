@@ -4,7 +4,7 @@ import collections
 import re
 from collections import OrderedDict, defaultdict
 from enum import Enum
-from typing import Dict, Iterator, List, Tuple, Union, Optional
+from typing import Dict, Iterator, List, Optional, Tuple, Union
 from warnings import warn
 
 
@@ -40,12 +40,12 @@ URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")
 class CVTerm:
     """Representation of a single CVTerm.
 
-       Parameters
-       ----------
-       qualifier : Qualifier
-            the qualifier relation of resource to the component
-       resource : string
-            a uri identifying external resource
+    Parameters
+    ----------
+    qualifier : Qualifier
+         the qualifier relation of resource to the component
+    resource : string
+         a uri identifying external resource
     """
 
     def __init__(self, qualifier: Qualifier = Qualifier.bqb_is, resource: str = None):
@@ -358,14 +358,13 @@ class CVTerms(collections.MutableMapping):
         return self.__str__()
 
 
-class CVList(collections.MutableSequence):
+class CVList(collections.UserList):
     """
     Class representation of all sets of resources and their nested
-    annotation corresponding to a given qualifier. It have similar
-    structure like that of a list but has only restricted type of
-    entries (of type ExternalResources) within it. This list will
-    have more than one entry inside it only in the case of alternative
-    set of resources linked to a given qualifier.
+    annotation corresponding to a given qualifier. It is a list but is restricted to
+    entries of type ExternalResources within it. This list will
+    have more than one entry inside it in the case of alternative
+    set of resources linked to a given qualifier (such as "BQB_IS").
 
     CVList : [
                  {
@@ -381,83 +380,29 @@ class CVList(collections.MutableSequence):
 
     Parameters
     ----------
-    cvlist : list
+    data : list
         a list containing entries confirming to ExternalResources structure
 
     """
 
-    def __init__(self, data: List = None):
-
-        self._sequence = list()
-        if data is None:
-            data = []
-        elif not isinstance(data, list):
-            raise TypeError(f"The data passed must be inside a list: '{data}'")
-        for item in data:
-            self.append(item)
+    def __init__(self, data: List[Union[Dict, "ExternalResources"]] = None):
+        super().__init__(data)
+        self.data = [
+            ExternalResources(d_item)
+            for d_item in self.data
+            if not isinstance(d_item, ExternalResources)
+        ]
 
     def insert(self, index: int, value: Union[Dict, "ExternalResources"]) -> None:
         """Insert a ExternalResource object at given index."""
-
-        if isinstance(value, ExternalResources):
-            self._sequence.insert(index, value)
-        elif isinstance(value, dict):
-            self._sequence.insert(index, ExternalResources(value))
-        else:
-            raise TypeError(
-                f"The passed object for setting external "
-                f"resources has invalid format: {value}"
-            )
+        self.data.insert(index, _check_External_Resources_type(value))
 
     def append(self, value: Union[Dict, "ExternalResources"]) -> None:
         """Append a ExternalResource object to this list."""
-
-        if isinstance(value, ExternalResources):
-            self._sequence.append(value)
-        elif isinstance(value, dict):
-            self._sequence.append(ExternalResources(value))
-        else:
-            raise TypeError(
-                f"The passed object for setting external "
-                f"resources has invalid format: {value}"
-            )
-
-    def __getitem__(self, index: int) -> "ExternalResources":
-        return self._sequence[index]
+        self.data.append(_check_External_Resources_type(value))
 
     def __setitem__(self, index: int, value: Union[Dict, "ExternalResources"]) -> None:
-        if isinstance(value, ExternalResources):
-            self._sequence[index] = value
-        elif isinstance(value, dict):
-            self._sequence[index] = ExternalResources(value)
-        else:
-            raise TypeError(
-                f"The passed object for setting external "
-                f"resources has invalid format: {value}"
-            )
-
-    def __eq__(self, other: "CVList") -> bool:
-        """ Compare two CVList objects to find out whether
-        they are same (have same data) or not
-        """
-        if len(self) != len(other):
-            return False
-        for k, ext_res in enumerate(self):
-            if ext_res != other[k]:
-                return False
-        return True
-
-    def __len__(self) -> int:
-        return len(self._sequence)
-
-    def __delitem__(self, index: int) -> None:
-        del self._sequence[index]
-
-    def __str__(self) -> str:
-        return str(self._sequence)
-
-    def __repr__(self) -> str:
-        return f"{list(self._sequence)}"
+        self.data[index] = _check_External_Resources_type(value)
 
 
 class ExternalResources:
@@ -569,3 +514,16 @@ class ExternalResources:
 
     def __repr__(self) -> str:
         return self.__str__()
+
+
+def _check_External_Resources_type(
+    value: Union[Dict, "ExternalResources"]
+) -> "ExternalResources":
+    if isinstance(value, dict):
+        return ExternalResources(value)
+    if isinstance(value, ExternalResources):
+        return value
+    raise TypeError(
+        f"The passed object {value }for setting external resources has "
+        f"invalid type: {type(value)}. It needs to be ExternalResouces or dict."
+    )
