@@ -1,14 +1,14 @@
 """Provide functions for cobrapy objects to generic Python objects and vice-versa."""
-
-from collections import OrderedDict
+import itertools
+from collections import OrderedDict, defaultdict
 from operator import attrgetter, itemgetter
-from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Union
+from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Union, Tuple
 
 import numpy as np
 
 from ..core import Gene, Group, Metabolite, Model, Reaction
 from ..core.metadata import MetaData, Notes
-from ..io.sbml import F_REPLACE, F_GENE, F_GENE_REV, F_REACTION, F_REACTION_REV, F_SPECIE, F_SPECIE_REV, F_GROUP, F_GROUP_REV
+from ..io.sbml import F_REPLACE, F_GENE, F_GENE_REV, F_REACTION, F_REACTION_REV, F_SPECIE, F_SPECIE_REV, F_GROUP, F_GROUP_REV, _parse_annotation_info
 from ..util.solver import set_objective
 
 
@@ -80,6 +80,22 @@ FROM_DICT_FUNCTIONS = {
     'annotation' : lambda x: MetaData.from_dict(x),
 
 }
+
+
+def flatten(list_of_lists: Union[List, Tuple]) -> List:
+    """This will flatten lists of lists.
+
+    Parameters
+    ----------
+    list_of_lists: List or Tuple
+        List or Tuple of lists or tuples to flatten.
+
+    Returns
+    -------
+    list: flattened list
+
+    """
+    return list(itertools.chain.from_iterable(list_of_lists))
 
 
 def _fix_type(
@@ -220,6 +236,18 @@ def _metabolite_from_dict(metabolite: Dict) -> Metabolite:
     new_metabolite = Metabolite()
     for k, v in metabolite.items():
         if k == "annotation":
+            # if annotation is in the form of list of list, modify the format
+            # https://github.com/opencobra/cobrapy/issues/736
+            # TODO - move this to a general function
+            if isinstance(v, list) and isinstance(v[0], list):
+                v = flatten(v)
+            anno_dict = defaultdict(list)
+            if isinstance(v, list):
+                for item in v:
+                    if _parse_annotation_info(item):
+                        provider, identifier = _parse_annotation_info(item)
+                        anno_dict[provider].append(identifier)
+                v = anno_dict
             value = MetaData.from_dict(v)
             setattr(new_metabolite, k, value)
         elif k == "notes":

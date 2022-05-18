@@ -241,20 +241,6 @@ class CVTerms(collections.MutableMapping):
         if not isinstance(data, (dict, list)):
             raise TypeError(f"The data passed must be of type dict or list: {data}")
 
-        # if annotation is in the form of list of list, modify the format
-        # https://github.com/opencobra/cobrapy/issues/736
-        if isinstance(data, list):
-            dict_anno = defaultdict(list)
-            for item in data:
-                _data = CVTerm(resource=item[1]).parse_provider_identifier()
-                if _data is None:
-                    continue
-                else:
-                    provider, identifier = _data
-
-                dict_anno[provider].append(identifier)
-            data = dict_anno
-
         for key, value in data.items():
 
             # addition of "sbo" term
@@ -488,13 +474,9 @@ class ExternalResources:
 
     def to_dict(self):
         """Represents a ExternalResource object as python dict"""
-        resources = []
-        for resource in self._resources:
-            resources.append(resource)
-        ex_dic = {"resources": resources}
-        if self.nested_data is None:
-            return ex_dic
-        ex_dic["nested_data"] = self.nested_data.to_dict()
+        ex_dic = {"resources": list(self._resources)}
+        if self.nested_data is not None:
+            ex_dic["nested_data"] = self.nested_data.to_dict()
         return ex_dic
 
     def __eq__(self, other: "ExternalResources") -> bool:
