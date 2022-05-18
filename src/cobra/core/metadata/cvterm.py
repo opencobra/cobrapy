@@ -1,11 +1,11 @@
 """ Define the Controlled Vocabulary term class."""
 
 import collections
-import re
 from collections import OrderedDict, defaultdict
 from enum import Enum
 from typing import Dict, Iterator, List, Optional, Tuple, Union
 from warnings import warn
+from .helper import *
 
 
 class Qualifier(Enum):
@@ -31,10 +31,6 @@ class Qualifier(Enum):
     bqm_isInstanceOf = 17
     bqm_hasInstance = 18
     bqm_unknown = 19
-
-
-# the URL pattern to parse provider and identifier
-URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")
 
 
 class CVTerm:
@@ -261,30 +257,27 @@ class CVTerms(collections.MutableMapping):
             if isinstance(value, str) and key != "sbo":
                 data[key] = [value]
                 value = [value]
-            if not isinstance(value, list):
-                raise TypeError(f"The value passed must be of type list: {value}")
-            if not isinstance(key, str):
-                raise TypeError(f"The key passed must be of type string: {key}")
+            if not isinstance(value, (list, str)):
+                raise TypeError(f"The value passed must be of type list or str: {value}")
 
             # adding data one by one
             for identifier in value:
-                cvterm = CVTerm()
-
+                qual = Qualifier["bqb_is"]
                 # if no qualifier is linked to identifier i.e annotation
-                # of the form { "chebi": ["CHEBI:17234"]}
+                # of the form { "chebi": "CHEBI:17234"}
                 if isinstance(identifier, str):
-                    cvterm.uri = "https://identifiers.org/" + key + "/" + identifier
-                    cvterm.qualifier = Qualifier["bqb_is"]
+                    uri = "https://identifiers.org/" + key + "/" + identifier
                 # if some qualifier is linked to the identifier i.e annotation
                 # of the form { "chebi": ["bqb_is", "CHEBI:17234"]}
                 elif isinstance(identifier, list):
-                    cvterm.uri = "https://identifiers.org/" + key + "/" + identifier[1]
-                    cvterm.qualifier = Qualifier[identifier[0]]
+                    uri = "https://identifiers.org/" + key + "/" + identifier[1]
+                    qual = Qualifier[identifier[0]]
                 else:
                     raise TypeError(
-                        f"The identifier passed must be of type string: {identifier}"
+                        f"The identifier passed must be of type string "
+                        f"or list: {identifier}"
                     )
-                self.add_cvterm(cvterm, 0)
+                self.add_cvterm(CVTerm(qualifier=qual, resource=uri), 0)
 
     @property
     def annotations(self) -> Dict:
@@ -418,7 +411,8 @@ class ExternalResources:
         for accessing the mapped resources
     "nested_data" : CVTerms
         for accessing the nested annotation data
-
+    Qualifier: enum
+        Members of the Qualifier enum defined above
     """
 
     def __init__(self, data: Dict = None):
