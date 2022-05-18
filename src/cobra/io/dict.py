@@ -3,12 +3,14 @@ import itertools
 from collections import OrderedDict, defaultdict
 from operator import attrgetter, itemgetter
 from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Union, Tuple
+import re
 
 import numpy as np
 
 from ..core import Gene, Group, Metabolite, Model, Reaction
 from ..core.metadata import MetaData, Notes
-from ..io.sbml import F_REPLACE, F_GENE, F_GENE_REV, F_REACTION, F_REACTION_REV, F_SPECIE, F_SPECIE_REV, F_GROUP, F_GROUP_REV, _parse_annotation_info
+from ..core.metadata.helper import URL_IDENTIFIERS_PATTERN, _parse_identifiers_uri
+from ..io.sbml import F_REPLACE, F_GENE, F_GENE_REV, F_REACTION, F_REACTION_REV, F_SPECIE, F_SPECIE_REV, F_GROUP, F_GROUP_REV
 from ..util.solver import set_objective
 
 
@@ -74,11 +76,6 @@ _OPTIONAL_MODEL_ATTRIBUTES = {
     "compartments": [],
     "notes": {},
     "annotation": {},
-}
-
-FROM_DICT_FUNCTIONS = {
-    'annotation' : lambda x: MetaData.from_dict(x),
-
 }
 
 
@@ -244,8 +241,8 @@ def _metabolite_from_dict(metabolite: Dict) -> Metabolite:
             anno_dict = defaultdict(list)
             if isinstance(v, list):
                 for item in v:
-                    if _parse_annotation_info(item):
-                        provider, identifier = _parse_annotation_info(item)
+                    if _parse_identifiers_uri(item):
+                        provider, identifier = _parse_identifiers_uri(item)
                         anno_dict[provider].append(identifier)
                 v = anno_dict
             value = MetaData.from_dict(v)
@@ -317,8 +314,7 @@ def gene_from_dict(gene: Dict) -> Gene:
             notes_data = Notes(v)
             setattr(new_gene, k, notes_data)
         elif k == "id":
-            id = F_REPLACE[F_GENE](v)
-            setattr(new_gene, k, id)
+            setattr(new_gene, k,  F_REPLACE[F_GENE](v))
         else:
             setattr(new_gene, k, v)
     return new_gene
@@ -360,8 +356,8 @@ def _reaction_to_dict(reaction: Reaction) -> OrderedDict:
             continue
         mets = OrderedDict()
         for met in sorted(reaction.metabolites, key=attrgetter("id")):
-            id = F_REPLACE[F_SPECIE_REV](str(met))
-            mets[id] = reaction.metabolites[met]
+            _id = F_REPLACE[F_SPECIE_REV](str(met))
+            mets[_id] = reaction.metabolites[met]
         new_reaction["metabolites"] = mets
     _update_optional(
         reaction,
@@ -416,8 +412,7 @@ def _reaction_from_dict(reaction: Dict, model: Model) -> Reaction:
             elif k == "lower_bound" or k == "upper_bound":
                 setattr(new_reaction, k, float(v))
             elif k == "id":
-                id = F_REPLACE[F_REACTION](v)
-                setattr(new_reaction, k, id)
+                setattr(new_reaction, k, F_REPLACE[F_REACTION](v))
             else:
                 setattr(new_reaction, k, v)
     return new_reaction
@@ -481,8 +476,7 @@ def group_from_dict(group: Dict, model: Model) -> Group:
                     cobra_members.append(cobra_obj)
             new_group.add_members(cobra_members)
         elif k == "id":
-            id = F_REPLACE[F_GROUP](v)
-            setattr(new_group, k, id)
+            setattr(new_group, k, F_REPLACE[F_GROUP](v))
         else:
             setattr(new_group, k, v)
     return new_group
@@ -605,18 +599,18 @@ def model_from_dict(obj: Dict) -> Model:
         meta = {}
         for k, v in obj["sbml_info"].items():
             if k == "annotation":
-                meta[k] = MetaData.from_dict(v)
+                v = MetaData.from_dict(v)
             elif k == "notes":
-                meta[k] = Notes(v)
-            else:
-                meta[k] = v
+                v = Notes(v)
+            meta[k] = v
         model._sbml = meta
 
     for k, v in obj.items():
+        if k not in {"id", "name", "compartments", "annotation", "notes"}:
+            continue
         if k == "annotation":
-            model.annotation = MetaData.from_dict(v)
+            v = MetaData.from_dict(v)
         elif k == "notes":
-            model.notes = Notes(v)
-        elif k in {"id", "name", "compartments"}:
-            setattr(model, k, v)
+            v = Notes(v)
+        setattr(model, k, v)
     return model
