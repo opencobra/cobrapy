@@ -1,16 +1,29 @@
 """Provide functions for cobrapy objects to generic Python objects and vice-versa."""
 import itertools
+import re
 from collections import OrderedDict, defaultdict
 from operator import attrgetter, itemgetter
-from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Union, Tuple
-import re
+from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Tuple, Union
 
 import numpy as np
 
 from ..core import Gene, Group, Metabolite, Model, Reaction
 from ..core.metadata import MetaData, Notes
-from ..core.metadata.helper import URL_IDENTIFIERS_PATTERN, _parse_identifiers_uri
-from ..io.sbml import F_REPLACE, F_GENE, F_GENE_REV, F_REACTION, F_REACTION_REV, F_SPECIE, F_SPECIE_REV, F_GROUP, F_GROUP_REV
+from ..core.metadata.helper import (
+    URL_IDENTIFIERS_PATTERN,
+    _parse_identifiers_uri,
+)
+from ..io.sbml import (
+    F_GENE,
+    F_GENE_REV,
+    F_GROUP,
+    F_GROUP_REV,
+    F_REACTION,
+    F_REACTION_REV,
+    F_REPLACE,
+    F_SPECIE,
+    F_SPECIE_REV,
+)
 from ..util.solver import set_objective
 
 
@@ -172,7 +185,62 @@ def _update_optional(
             value = value.to_dict()
         new_dict[key] = _fix_type(value)
 
-def _metabolite_to_dict(metabolite: Metabolite, f_replace: dict = F_REPLACE) -> OrderedDict: # noqa:    W0102
+
+def _fix_id_from_dict(
+    _id_to_fix: str, _class_to_fix_to: str, f_replace: dict = F_REPLACE
+):
+    if f_replace is None:
+        f_replace = {}
+    if not f_replace:
+        return _id_to_fix
+    if _class_to_fix_to == "Metabolite":
+        return F_REPLACE[F_SPECIE](_id_to_fix)
+    elif _class_to_fix_to == "Reaction":
+        return F_REPLACE[F_REACTION](_id_to_fix)
+    elif _class_to_fix_to == "Gene":
+        return F_REPLACE[F_GENE](_id_to_fix)
+    elif _class_to_fix_to == "Group":
+        return F_REPLACE[F_GROUP](_id_to_fix)
+
+
+def _fix_value_from_dict(_key: str, _value_to_fix: Union[List, str]):
+    if _key == "annotation":
+        # if annotation is in the form of list of list, modify the format
+        # https://github.com/opencobra/cobrapy/issues/736
+        if isinstance(_value_to_fix, list) and isinstance(_value_to_fix[0], list):
+            _value_to_fix = flatten(_value_to_fix)
+        anno_dict = defaultdict(list)
+        if isinstance(_value_to_fix, list):
+            for item in _value_to_fix:
+                if re.match(URL_IDENTIFIERS_PATTERN, item):
+                    provider, identifier = _parse_identifiers_uri(item)
+                    anno_dict[provider].append(identifier)
+            _value_to_fix = anno_dict
+        _value_to_fix = MetaData.from_dict(_value_to_fix)
+    elif _key == "notes":
+        _value_to_fix = Notes(_value_to_fix)
+    elif _key == "lower_bound" or _key == "upper_bound":
+        _value_to_fix = float(_value_to_fix)
+
+    return _value_to_fix
+
+
+def _get_by_id(
+    id: str, _object_to_get: str, model: Model
+) -> Union[Gene, Metabolite, Group, Reaction]:
+    if _object_to_get == "Reaction":
+        return model.reactions.get_by_id(id)
+    elif _object_to_get == "Metabolite":
+        return model.metabolites.get_by_id(id)
+    elif _object_to_get == "Group":
+        return model.groups.get_by_id(id)
+    elif _object_to_get == "Gene":
+        return model.genes.get_by_id(id)
+
+
+def _metabolite_to_dict(
+    metabolite: Metabolite, f_replace: dict = F_REPLACE
+) -> OrderedDict:  # noqa:    W0102
     """Convert a cobra Metabolite object to dictionary.
 
     Parameters
@@ -213,7 +281,7 @@ def _metabolite_to_dict(metabolite: Metabolite, f_replace: dict = F_REPLACE) -> 
     return new_metabolite
 
 
-def _metabolite_from_dict(metabolite: Dict) -> Metabolite:
+def _metabolite_from_dict(metabolite: Dict, f_replace: dict = F_REPLACE) -> Metabolite:
     """Convert a dictionary to cobra Metabolite object.
 
     Parameters
@@ -230,30 +298,17 @@ def _metabolite_from_dict(metabolite: Dict) -> Metabolite:
     _metabolite_to_dict : Convert a cobra Metabolite object to dictionary.
 
     """
-    new_metabolite = Metabolite()
-    for k, v in metabolite.items():
-        if k == "annotation":
-            # if annotation is in the form of list of list, modify the format
-            # https://github.com/opencobra/cobrapy/issues/736
-            # TODO - move this to a general function
-            if isinstance(v, list) and isinstance(v[0], list):
-                v = flatten(v)
-            anno_dict = defaultdict(list)
-            if isinstance(v, list):
-                for item in v:
-                    if _parse_identifiers_uri(item):
-                        provider, identifier = _parse_identifiers_uri(item)
-                        anno_dict[provider].append(identifier)
-                v = anno_dict
-            value = MetaData.from_dict(v)
-            setattr(new_metabolite, k, value)
-        elif k == "notes":
-            notes_data = Notes(v)
-            setattr(new_metabolite, k, notes_data)
-        elif k == "id":
-            new_metabolite.id = F_REPLACE[F_SPECIE](v)
-        else:
-            setattr(new_metabolite, k, v)
+    if f_replace is None:
+        f_replace = {}
+
+    new_metabolite = Metabolite(
+        _fix_id_from_dict(metabolite["id"], "Metabolite", f_replace)
+    )
+    [
+        setattr(new_metabolite, k, _fix_value_from_dict(k, v))
+        for k, v in metabolite.items()
+        if k != "id"
+    ]
     return new_metabolite
 
 
@@ -287,7 +342,7 @@ def _gene_to_dict(gene: Gene) -> OrderedDict:
     return new_gene
 
 
-def gene_from_dict(gene: Dict) -> Gene:
+def gene_from_dict(gene: Dict, f_replace: dict = F_REPLACE) -> Gene:
     """Convert a dictionary to cobra Gene object.
 
     Parameters
@@ -305,18 +360,15 @@ def gene_from_dict(gene: Dict) -> Gene:
     _gene_to_dict : Convert a cobra Gene object to a dictionary.
 
     """
-    new_gene = Gene(gene["id"])
-    for k, v in gene.items():
-        if k == "annotation":
-            value = MetaData.from_dict(v)
-            setattr(new_gene, k, value)
-        elif k == "notes":
-            notes_data = Notes(v)
-            setattr(new_gene, k, notes_data)
-        elif k == "id":
-            setattr(new_gene, k,  F_REPLACE[F_GENE](v))
-        else:
-            setattr(new_gene, k, v)
+    if f_replace is None:
+        f_replace = {}
+
+    new_gene = Gene(_fix_id_from_dict(gene["id"], "Gene", f_replace))
+    [
+        setattr(new_gene, k, _fix_value_from_dict(k, v))
+        for k, v in gene.items()
+        if k != "id"
+    ]
     return new_gene
 
 
@@ -368,7 +420,9 @@ def _reaction_to_dict(reaction: Reaction) -> OrderedDict:
     return new_reaction
 
 
-def _reaction_from_dict(reaction: Dict, model: Model) -> Reaction:
+def _reaction_from_dict(
+    reaction: Dict, model: Model, f_replace: Dict = F_REPLACE
+) -> Reaction:
     """Convert a dictionary to a cobra Reaction object.
 
     Parameters
@@ -388,33 +442,35 @@ def _reaction_from_dict(reaction: Dict, model: Model) -> Reaction:
     _reaction_to_dict : Convert a cobra Reaction object to a dictionary.
 
     """
-    new_reaction = Reaction()
-    for k, v in reaction.items():
-        if k in {"objective_coefficient", "reversibility", "reaction"}:
-            continue
-        elif k == "metabolites":
-            new_reaction.add_metabolites(
-                OrderedDict(
-                    (
-                        model.metabolites.get_by_id(F_REPLACE[F_SPECIE](str(met))),
-                        coeff,
-                    )
-                    for met, coeff in v.items()
-                )
+    if f_replace is None:
+        f_replace = {}
+
+    new_reaction = Reaction(_fix_id_from_dict(reaction["id"], "Reaction", f_replace))
+    [
+        setattr(new_reaction, k, _fix_value_from_dict(k, v))
+        for k, v in reaction.items()
+        if k
+        not in {
+            "id",
+            "objective_coefficient",
+            "reversibility",
+            "reaction",
+            "metabolites",
+        }
+    ]
+
+    met_stoic = reaction.get("metabolites", dict())
+    new_reaction.add_metabolites(
+        OrderedDict(
+            (
+                model.metabolites.get_by_id(
+                    _fix_id_from_dict(str(met), "Metabolite", f_replace)
+                ),
+                coeff,
             )
-        else:
-            if k == "annotation":
-                value = MetaData.from_dict(v)
-                setattr(new_reaction, k, value)
-            elif k == "notes":
-                notes_data = Notes(v)
-                setattr(new_reaction, k, notes_data)
-            elif k == "lower_bound" or k == "upper_bound":
-                setattr(new_reaction, k, float(v))
-            elif k == "id":
-                setattr(new_reaction, k, F_REPLACE[F_REACTION](v))
-            else:
-                setattr(new_reaction, k, v)
+            for met, coeff in met_stoic.items()
+        )
+    )
     return new_reaction
 
 
@@ -447,42 +503,31 @@ def group_to_dict(group: "Group") -> Dict:
     return new_group
 
 
-def group_from_dict(group: Dict, model: Model) -> Group:
-    new_group = Group(group["id"])
-    for k, v in group.items():
-        if k == "annotation":
-            value = MetaData.from_dict(v)
-            setattr(new_group, k, value)
-        elif k == "notes":
-            notes_data = Notes(v)
-            setattr(new_group, k, notes_data)
-        elif k == "members":
-            cobra_members = []
-            for member in group["members"]:
-                if member["type"] == "Reaction":
-                    cobra_obj = model.reactions.get_by_id(
-                        F_REPLACE[F_REACTION](member["idRef"])
-                    )
-                    cobra_members.append(cobra_obj)
-                elif member["type"] == "Metabolite":
-                    cobra_obj = model.metabolites.get_by_id(
-                        F_REPLACE[F_SPECIE](member["idRef"])
-                    )
-                    cobra_members.append(cobra_obj)
-                elif member["type"] == "Gene":
-                    cobra_obj = model.genes.get_by_id(
-                        F_REPLACE[F_GENE](member["idRef"])
-                    )
-                    cobra_members.append(cobra_obj)
-            new_group.add_members(cobra_members)
-        elif k == "id":
-            setattr(new_group, k, F_REPLACE[F_GROUP](v))
-        else:
-            setattr(new_group, k, v)
+def group_from_dict(group: Dict, model: Model, f_replace=F_REPLACE) -> Group:
+    if f_replace is None:
+        f_replace = {}
+
+    new_group = Group(_fix_id_from_dict(group["id"], "Group"))
+    [
+        setattr(new_group, k, _fix_value_from_dict(k, v))
+        for k, v in group.items()
+        if k not in {"id", "members"}
+    ]
+    cobra_members = [
+        _get_by_id(
+            _fix_id_from_dict(member["idRef"], member["type"], f_replace),
+            member["type"],
+            model,
+        )
+        for member in group["members"]
+    ]
+    new_group.add_members(cobra_members)
     return new_group
 
 
-def model_to_dict(model: Model, sort: bool = False, f_replace: dict = F_REPLACE) -> OrderedDict:
+def model_to_dict(
+    model: Model, sort: bool = False, f_replace: dict = F_REPLACE
+) -> OrderedDict:
     """Convert a cobra Model to a dictionary.
 
     Parameters
@@ -515,7 +560,9 @@ def model_to_dict(model: Model, sort: bool = False, f_replace: dict = F_REPLACE)
         f_replace = {}
 
     obj = OrderedDict()
-    obj["metabolites"] = [_metabolite_to_dict(met, f_replace) for met in model.metabolites]
+    obj["metabolites"] = [
+        _metabolite_to_dict(met, f_replace) for met in model.metabolites
+    ]
     obj["reactions"] = list(map(_reaction_to_dict, model.reactions))
     obj["genes"] = list(map(_gene_to_dict, model.genes))
     obj["groups"] = list(map(group_to_dict, model.groups))
@@ -596,21 +643,13 @@ def model_from_dict(obj: Dict) -> Model:
 
     # sbml meta info
     if "sbml_info" in obj:
-        meta = {}
-        for k, v in obj["sbml_info"].items():
-            if k == "annotation":
-                v = MetaData.from_dict(v)
-            elif k == "notes":
-                v = Notes(v)
-            meta[k] = v
+        meta = {k: _fix_value_from_dict(k, v) for k, v in obj["sbml_info"].items()}
         model._sbml = meta
 
-    for k, v in obj.items():
-        if k not in {"id", "name", "compartments", "annotation", "notes"}:
-            continue
-        if k == "annotation":
-            v = MetaData.from_dict(v)
-        elif k == "notes":
-            v = Notes(v)
-        setattr(model, k, v)
+    [
+        setattr(model, k, _fix_value_from_dict(k, v))
+        for k, v in obj.items()
+        if k in {"id", "name", "compartments", "annotation", "notes"}
+    ]
+
     return model
