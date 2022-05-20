@@ -49,7 +49,7 @@ def test_annotation():
     s.annotation["chebi"] = ["CHEBI:43215", "CHEBI:11881"]
 
     # checking old (fixed) annotation format
-    assert s.annotation == {"chebi": ["CHEBI:43215", "CHEBI:11881"]}
+    assert s.annotation == {"chebi": sorted(["CHEBI:43215", "CHEBI:11881"])}
 
     # checking new cvterms
     cvt = CVTerms(
@@ -71,7 +71,7 @@ def test_annotation():
     assert "chebi" in s.annotation
     assert "sbo" in s.annotation
     assert s.annotation == {
-        "chebi": ["CHEBI:43215", "CHEBI:11881"],
+        "chebi": sorted(["CHEBI:43215", "CHEBI:11881"]),
         "sbo": ["SBO:0000123"],
     }
 
@@ -84,7 +84,7 @@ def test_nested_annotation(data_directory):
     s = Species()
     s.annotation.add_cvterms(cvterms_data)
     assert s.annotation == {
-        "uniprot": ["P69905", "P68871", "P69905"],
+        "uniprot": ["P68871", "P69905", "P69905"],
         "kegg.compound": ["C00032"],
         "chebi": ["CHEBI:17627"],
     }
@@ -187,11 +187,11 @@ def test_read_old_json_model(data_directory):
         "bigg.metabolite": ["13dpg"],
         "biocyc": ["DPG"],
         "chebi": [
+            "CHEBI:11881",
             "CHEBI:16001",
             "CHEBI:1658",
             "CHEBI:20189",
             "CHEBI:57604",
-            "CHEBI:11881",
         ],
         "hmdb": ["HMDB01270"],
         "kegg.compound": ["C00236"],

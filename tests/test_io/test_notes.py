@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from cobra import Metabolite, Model, Reaction
+from cobra.core import Notes
 from cobra.io import read_sbml_model, write_sbml_model
 
 
@@ -19,13 +20,13 @@ def test_notes(tmp_path: Path) -> None:
 
     # making a minimal cobra model to test notes
     model = Model("e_coli_core")
-    model.notes["Remark"] = "...Model Notes..."
+    model.notes = Notes().notes_from_dict({"Remark" : "...Model Notes..."})
     met = Metabolite("pyr_c", compartment="c")
     model.add_metabolites([met])
-    met.notes["Remark"] = "Note with \n newline"
+    met.notes = Notes().notes_from_dict({"Remark" : "Note with \n newline"})
     rxn = Reaction("R_ATPM")
     model.add_reactions([rxn])
-    rxn.notes["Remark"] = "What about me?"
+    rxn.notes = Notes().notes_from_dict({"Remark" : "What about me?"})
     model.objective_direction = "max"
     model.objective = rxn
     write_sbml_model(model, str(path_to_file.resolve()))
