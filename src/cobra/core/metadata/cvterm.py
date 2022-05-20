@@ -282,7 +282,7 @@ class CVTerms(collections.MutableMapping):
     @property
     def annotations(self) -> Dict:
         """Annotation in old format"""
-        return self._annotations
+        return {k: sorted(v) for k, v in self._annotations.items()}
 
     def __getitem__(self, key: str) -> "CVList":
         """Get CVList corresponding to a qualifier"""
