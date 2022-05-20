@@ -1,11 +1,12 @@
 """ Define the Controlled Vocabulary term class."""
 
 import collections
+import re
 from collections import OrderedDict, defaultdict
 from enum import Enum
-from typing import Dict, Iterator, List, Optional, Tuple, Union
+from typing import Dict, Iterator, List, Optional, Tuple, Union, FrozenSet
 from warnings import warn
-from .helper import *
+from .helper import URL_IDENTIFIERS_PATTERN, _parse_identifiers_uri
 
 
 class Qualifier(Enum):
@@ -66,22 +67,7 @@ class CVTerm:
         if self.uri is None:
             raise ValueError(f"'uri' set for this cvterm is None: {self}")
         else:
-            match = URL_IDENTIFIERS_PATTERN.match(self.uri)
-            if match:
-                provider, identifier = match.group(1), match.group(2)
-                if provider.isupper():
-                    identifier = f"{provider}:{identifier}"
-                    provider = provider.lower()
-            else:
-                warn(
-                    f"{self.uri} does not conform to "
-                    f"'http(s)://identifiers.org/collection/id' or "
-                    f"'http(s)://identifiers.org/COLLECTION:id, so "
-                    f"is not added to annotation dictionary."
-                )
-                return None
-
-            return provider, identifier
+            return _parse_identifiers_uri(self.uri)
 
 
 class CVTerms(collections.MutableMapping):
@@ -283,6 +269,36 @@ class CVTerms(collections.MutableMapping):
     def annotations(self) -> Dict:
         """Annotation in old format"""
         return {k: sorted(v) for k, v in self._annotations.items()}
+
+    def annotations2(self) -> Dict:
+        annotation_dict = dict()
+        resources = self.resources
+        for res in resources:
+            if re.match(URL_IDENTIFIERS_PATTERN, res):
+                provider, identifier = _parse_identifiers_uri(res)
+                if provider in annotation_dict.keys():
+                    annotation_dict[provider].append(identifier)
+                else:
+                    annotation_dict[provider] = [identifier]
+        return {k: sorted(annotation_dict[k]) for k in sorted(annotation_dict.keys())}
+
+    @property
+    def resources(self) -> FrozenSet:
+        """Get all resources.
+
+        Returns:
+        -------
+        FrozenSet:
+            a set of all external resources in the original self._cvterms dictionary
+            including external resources of nested data
+        """
+        resources = set()
+        for value in self._cvterms.values():
+            for ex_res in value:
+                resources.update(ex_res.resources)
+                if ex_res.nested_data:
+                    resources.update(ex_res.nested_data.resources)
+        return frozenset(resources)
 
     def __getitem__(self, key: str) -> "CVList":
         """Get CVList corresponding to a qualifier"""
