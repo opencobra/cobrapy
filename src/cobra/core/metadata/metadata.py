@@ -1,5 +1,5 @@
 from collections import MutableMapping, OrderedDict
-from typing import Dict, Iterator, List, Union
+from typing import Dict, Iterator, List, Union, Any
 
 from cobra.core.metadata.cvterm import CVTerms
 from cobra.core.metadata.history import Creator, History, HistoryDatetime
@@ -28,6 +28,9 @@ class MetaData(MutableMapping):
     history : dict, History
         The history stores information about the creator,
         created and modified dates.
+    sbo: str
+        The sbo term to use for the entity. If you want to use more than one SBO term
+        (not recommended), use SBO in identifers.org format and put it in cvterms.
     keyvaluepairs : list
         Key-value pairs which are not suitable to be
         represented anywhere else in the model.
@@ -38,10 +41,16 @@ class MetaData(MutableMapping):
         self,
         cvterms: Union[Dict, CVTerms] = None,
         history: Union[Dict, History] = None,
+        sbo: str = "",
         keyvaluepairs: List = None,
     ):
+        self._cvterms = CVTerms.from_data(cvterms)
+        self._history = History.from_data(history)
+        self._keyvaluepairs = KeyValuePairs(keyvaluepairs)
+        self._sbo = sbo
 
         # use setters
+        self.sbo = sbo
         self.cvterms = cvterms
         self.history = history
         self.keyvaluepairs = keyvaluepairs
@@ -51,19 +60,33 @@ class MetaData(MutableMapping):
         """Backwards compatible annotations."""
         return self.cvterms.annotations
 
-    def __setitem__(self, key: str, value: List) -> None:
-        self._cvterms.add_simple_annotations(dict({key: value}))
+    @property
+    def sbo(self) -> str:
+        return self._sbo
 
-    def __getitem__(self, key: str) -> List:
-        if key == "sbo" and len(self.annotations[key]) == 0:
-            # TODO - why is this if necessary? because test_write2 (fbc2, fbc2Gz, fbc2Bz2)
-            value = self._cvterms._annotations[key]
-            del self._cvterms._annotations[key]
-            return value
-        return self.annotations[key]
+    @sbo.setter
+    def sbo(self, value) -> None:
+        self._sbo = value
+
+    def __setitem__(self, key: str, value: List) -> None:
+        if key == "sbo":
+            if isinstance(value, list):
+                value = value[0]
+            self.sbo = value
+        else:
+            self._cvterms.add_simple_annotations(dict({key: value}))
+
+    def __getitem__(self, key: str) -> Union[str, List]:
+        if key == "sbo":
+            return [self.sbo]
+        else:
+            return self.annotations[key]
 
     def __delitem__(self, key: str) -> None:
-        del self.annotations[key]
+        if key == "sbo":
+            self.sbo = ""
+        else:
+            del self.annotations[key]
 
     def __iter__(self) -> Iterator:
         return iter(self.annotations)
@@ -110,9 +133,9 @@ class MetaData(MutableMapping):
     def to_dict(self) -> Dict:
         """Creates string dictionary for serialization"""
         d = OrderedDict()
-        if "sbo" in self and self["sbo"] != []:
+        if self.sbo:
             # set first SBO term as sbo
-            d["sbo"] = self["sbo"][0]
+            d["sbo"] = self.sbo
 
         if self.cvterms:
             d["cvterms"] = self.cvterms.to_dict()

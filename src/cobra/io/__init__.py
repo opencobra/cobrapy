@@ -9,7 +9,7 @@ from cobra.io.json import (
     to_json,
     validate_json_model,
 )
-from cobra.io.mat import load_matlab_model, save_matlab_model
+from cobra.io.mat import load_matlab_model, save_matlab_model, create_mat_dict
 from cobra.io.sbml import read_sbml_model, write_sbml_model, validate_sbml_model
 from cobra.io.yaml import from_yaml, load_yaml_model, save_yaml_model, to_yaml
 from cobra.io.web import AbstractModelRepository, BiGGModels, BioModels, load_model

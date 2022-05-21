@@ -7,8 +7,8 @@
     - charge: -4
     - formula: C3H4O10P2
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/13dpg
             - http://identifiers.org/biocyc/DPG
@@ -23,7 +23,7 @@
             - http://identifiers.org/reactome/REACT_29800
             - http://identifiers.org/seed.compound/cpd00203
             - http://identifiers.org/unipathway.compound/UPC00236
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_2pg_c
     - name: D-Glycerate 2-phosphate
@@ -31,8 +31,8 @@
     - charge: -3
     - formula: C3H4O7P
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/2pg
             - http://identifiers.org/biocyc/2-PG
@@ -51,7 +51,7 @@
             - http://identifiers.org/reactome/REACT_30485
             - http://identifiers.org/seed.compound/cpd00482
             - http://identifiers.org/unipathway.compound/UPC00631
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_3pg_c
     - name: 3-Phospho-D-glycerate
@@ -59,8 +59,8 @@
     - charge: -3
     - formula: C3H4O7P
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/3pg
             - http://identifiers.org/biocyc/G3P
@@ -85,7 +85,7 @@
             - http://identifiers.org/seed.compound/cpd00169
             - http://identifiers.org/unipathway.compound/UPC00597
             - http://identifiers.org/unipathway.compound/UPC00197
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_adp_c
     - name: ADP
@@ -93,8 +93,8 @@
     - charge: -3
     - formula: C10H12N5O10P2
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/adp
             - http://identifiers.org/biocyc/ADP
@@ -124,7 +124,7 @@
             - http://identifiers.org/reactome/REACT_429153
             - http://identifiers.org/seed.compound/cpd00008
             - http://identifiers.org/unipathway.compound/UPC00008
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_atp_c
     - name: ATP
@@ -132,8 +132,8 @@
     - charge: -4
     - formula: C10H12N5O13P3
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/atp
             - http://identifiers.org/biocyc/ATP
@@ -162,7 +162,7 @@
             - http://identifiers.org/reactome/REACT_211579
             - http://identifiers.org/seed.compound/cpd00002
             - http://identifiers.org/unipathway.compound/UPC00002
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_dhap_c
     - name: Dihydroxyacetone phosphate
@@ -170,8 +170,8 @@
     - charge: -2
     - formula: C3H5O6P
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/dhap
             - http://identifiers.org/biocyc/DIHYDROXY-ACETONE-PHOSPHATE
@@ -193,7 +193,7 @@
             - http://identifiers.org/reactome/REACT_390404
             - http://identifiers.org/seed.compound/cpd00095
             - http://identifiers.org/unipathway.compound/UPC00111
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_f6p_c
     - name: D-Fructose 6-phosphate
@@ -201,8 +201,8 @@
     - charge: -2
     - formula: C6H11O9P
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/f6p
             - http://identifiers.org/biocyc/FRUCTOSE-6P
@@ -224,7 +224,7 @@
             - http://identifiers.org/seed.compound/cpd00072
             - http://identifiers.org/unipathway.compound/UPC05345
             - http://identifiers.org/unipathway.compound/UPC00085
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_fdp_c
     - name: D-Fructose 1,6-bisphosphate
@@ -232,8 +232,8 @@
     - charge: -4
     - formula: C6H10O12P2
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/fdp
             - http://identifiers.org/biocyc/FRUCTOSE-16-DIPHOSPHATE
@@ -256,7 +256,7 @@
             - http://identifiers.org/pubchem.substance/3647
             - http://identifiers.org/seed.compound/cpd00290
             - http://identifiers.org/unipathway.compound/UPC00354
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_g3p_c
     - name: Glyceraldehyde 3-phosphate
@@ -264,8 +264,8 @@
     - charge: -2
     - formula: C3H5O6P
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/g3p
             - http://identifiers.org/cas/142-10-9
@@ -281,7 +281,7 @@
             - http://identifiers.org/seed.compound/cpd00102
             - http://identifiers.org/unipathway.compound/UPC00661
             - http://identifiers.org/unipathway.compound/UPC00118
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_g6p_c
     - name: D-Glucose 6-phosphate
@@ -289,8 +289,8 @@
     - charge: -2
     - formula: C6H11O9P
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/g6p
             - http://identifiers.org/biocyc/D-glucose-6-phosphate
@@ -315,7 +315,7 @@
             - http://identifiers.org/reactome/REACT_1629756
             - http://identifiers.org/seed.compound/cpd00079
             - http://identifiers.org/unipathway.compound/UPC00092
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_glc__D_e
     - name: D-Glucose
@@ -323,15 +323,15 @@
     - charge: 0
     - formula: C6H12O6
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/glc__D
             - http://identifiers.org/cas/50-99-7
             - http://identifiers.org/cas/50-99-7
             - http://identifiers.org/kegg.compound/C00031
             - http://identifiers.org/pubchem.substance/3333
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_h2o_c
     - name: H2O
@@ -339,8 +339,8 @@
     - charge: 0
     - formula: H2O
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/h2o
             - http://identifiers.org/biocyc/WATER
@@ -401,7 +401,7 @@
             - http://identifiers.org/seed.compound/cpd00001
             - http://identifiers.org/unipathway.compound/UPC00001
             - http://identifiers.org/unipathway.compound/UPC01328
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_h2o_e
     - name: H2O
@@ -409,8 +409,8 @@
     - charge: 0
     - formula: H2O
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/h2o
             - http://identifiers.org/biocyc/WATER
@@ -471,7 +471,7 @@
             - http://identifiers.org/seed.compound/cpd00001
             - http://identifiers.org/unipathway.compound/UPC00001
             - http://identifiers.org/unipathway.compound/UPC01328
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_h_c
     - name: H+
@@ -479,8 +479,8 @@
     - charge: 1
     - formula: H
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/h
             - http://identifiers.org/biocyc/PROTON
@@ -514,7 +514,7 @@
             - http://identifiers.org/reactome/REACT_427899
             - http://identifiers.org/seed.compound/cpd00067
             - http://identifiers.org/unipathway.compound/UPC00080
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_h_e
     - name: H+
@@ -522,8 +522,8 @@
     - charge: 1
     - formula: H
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/h
             - http://identifiers.org/biocyc/PROTON
@@ -557,7 +557,7 @@
             - http://identifiers.org/reactome/REACT_427899
             - http://identifiers.org/seed.compound/cpd00067
             - http://identifiers.org/unipathway.compound/UPC00080
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_lac__D_c
     - name: D-Lactate
@@ -565,8 +565,8 @@
     - charge: -1
     - formula: C3H5O3
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/lac__D
             - http://identifiers.org/biocyc/META:D-LACTATE
@@ -582,7 +582,7 @@
             - http://identifiers.org/kegg.compound/C00256
             - http://identifiers.org/metanetx.chemical/MNXM285
             - http://identifiers.org/seed.compound/cpd00221
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_lac__D_e
     - name: D-Lactate
@@ -590,8 +590,8 @@
     - charge: -1
     - formula: C3H5O3
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/lac__D
             - http://identifiers.org/biocyc/META:D-LACTATE
@@ -607,7 +607,7 @@
             - http://identifiers.org/kegg.compound/C00256
             - http://identifiers.org/metanetx.chemical/MNXM285
             - http://identifiers.org/seed.compound/cpd00221
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_nad_c
     - name: Nicotinamide adenine dinucleotide
@@ -615,8 +615,8 @@
     - charge: -1
     - formula: C21H26N7O14P2
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/nad
             - http://identifiers.org/biocyc/NAD
@@ -643,7 +643,7 @@
             - http://identifiers.org/reactome/REACT_113526
             - http://identifiers.org/seed.compound/cpd00003
             - http://identifiers.org/unipathway.compound/UPC00003
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_nadh_c
     - name: Nicotinamide adenine dinucleotide - reduced
@@ -651,8 +651,8 @@
     - charge: -2
     - formula: C21H27N7O14P2
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/nadh
             - http://identifiers.org/biocyc/NADH
@@ -674,7 +674,7 @@
             - http://identifiers.org/reactome/REACT_29362
             - http://identifiers.org/seed.compound/cpd00004
             - http://identifiers.org/unipathway.compound/UPC00004
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_pep_c
     - name: Phosphoenolpyruvate
@@ -682,8 +682,8 @@
     - charge: -3
     - formula: C3H2O6P
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/pep
             - http://identifiers.org/biocyc/PHOSPHO-ENOL-PYRUVATE
@@ -704,7 +704,7 @@
             - http://identifiers.org/reactome/REACT_372364
             - http://identifiers.org/seed.compound/cpd00061
             - http://identifiers.org/unipathway.compound/UPC00074
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_pi_c
     - name: Phosphate
@@ -712,8 +712,8 @@
     - charge: -2
     - formula: HO4P
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/pi
             - http://identifiers.org/biocyc/Pi
@@ -762,7 +762,7 @@
             - http://identifiers.org/seed.compound/cpd09463
             - http://identifiers.org/seed.compound/cpd00009
             - http://identifiers.org/unipathway.compound/UPC00009
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_pi_e
     - name: Phosphate
@@ -770,8 +770,8 @@
     - charge: -2
     - formula: HO4P
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/pi
             - http://identifiers.org/biocyc/Pi
@@ -820,7 +820,7 @@
             - http://identifiers.org/seed.compound/cpd09463
             - http://identifiers.org/seed.compound/cpd00009
             - http://identifiers.org/unipathway.compound/UPC00009
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: M_pyr_c
     - name: Pyruvate
@@ -828,8 +828,8 @@
     - charge: -1
     - formula: C3H3O3
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.metabolite/pyr
             - http://identifiers.org/biocyc/PYRUVATE
@@ -851,7 +851,7 @@
             - http://identifiers.org/reactome/REACT_29398
             - http://identifiers.org/seed.compound/cpd00020
             - http://identifiers.org/unipathway.compound/UPC00022
-            nested_data: !!omap []
+            nested_data: {}
 - reactions:
   - !!omap
     - id: R_ATPM
@@ -867,11 +867,11 @@
     - gene_reaction_rule: ''
     - objective_coefficient: 1.0
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/ATPM
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: R_D_LACt2
     - name: ''
@@ -890,11 +890,11 @@
     - upper_bound: 1000.0
     - gene_reaction_rule: b2779
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/ENO
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: R_EX_glc__D_e
     - name: D-Glucose exchange
@@ -904,11 +904,11 @@
     - upper_bound: 1000.0
     - gene_reaction_rule: ''
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/glc
-            nested_data: !!omap []
+            nested_data: {}
       - sbo: SBO:0000627
   - !!omap
     - id: R_EX_h_e
@@ -919,11 +919,11 @@
     - upper_bound: 1000.0
     - gene_reaction_rule: ''
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/h
-            nested_data: !!omap []
+            nested_data: {}
       - sbo: SBO:0000627
   - !!omap
     - id: R_EX_lac__D_e
@@ -934,11 +934,11 @@
     - upper_bound: 1000.0
     - gene_reaction_rule: ''
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/lac__D
-            nested_data: !!omap []
+            nested_data: {}
       - sbo: SBO:0000627
   - !!omap
     - id: R_FBA
@@ -951,11 +951,11 @@
     - upper_bound: 1000.0
     - gene_reaction_rule: b1773 or b2097 or b2925
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/FBA
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: R_GAPD
     - name: glyceraldehyde-3-phosphate dehydrogenase
@@ -970,11 +970,11 @@
     - upper_bound: 1000.0
     - gene_reaction_rule: b1779
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/GAPD
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: R_GLCpts
     - name: D-glucose transport via PEP:Pyr PTS
@@ -988,11 +988,11 @@
     - gene_reaction_rule: (b2415 and b2417 and b1101 and b2416) or (b2415 and b2417
         and b1621 and b2416) or (b2415 and b1818 and b1817 and b1819 and b2416)
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/GLCpts
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: R_H2Ot
     - name: R H2O transport via - diffusion
@@ -1003,11 +1003,11 @@
     - upper_bound: 1000.0
     - gene_reaction_rule: b0875 or s0001
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/H2Ot
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: R_LDH_D
     - name: D-lactate dehydrogenase
@@ -1022,8 +1022,8 @@
     - gene_reaction_rule: b2133 or b1380
     - subsystem: Pyruvate Metabolism
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/LDH_D
             - http://identifiers.org/biocyc/META:DLACTDEHYDROGNAD-RXN
@@ -1034,7 +1034,7 @@
             - http://identifiers.org/rhea/16370
             - http://identifiers.org/rhea/16371
             - http://identifiers.org/rhea/16372
-            nested_data: !!omap []
+            nested_data: {}
       - sbo: SBO:0000375
   - !!omap
     - id: R_PFK
@@ -1050,11 +1050,11 @@
     - gene_reaction_rule: b3916 or b1723
     - objective_coefficient: 1.0
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/PFK
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: R_PGI
     - name: glucose-6-phosphate isomerase
@@ -1065,11 +1065,11 @@
     - upper_bound: 1000.0
     - gene_reaction_rule: b4025
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/PGI
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: R_PGK
     - name: phosphoglycerate kinase
@@ -1082,11 +1082,11 @@
     - upper_bound: 1000.0
     - gene_reaction_rule: b2926
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/PGK
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: R_PGM
     - name: phosphoglycerate mutase
@@ -1097,11 +1097,11 @@
     - upper_bound: 1000.0
     - gene_reaction_rule: b4395 or b3612 or b0755
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/PGM
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: R_PIt2r
     - name: R phosphate reversible transport via - symport
@@ -1114,11 +1114,11 @@
     - upper_bound: 1000.0
     - gene_reaction_rule: b2987 or b3493
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/PIt2r
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: R_PYK
     - name: pyruvate kinase
@@ -1132,11 +1132,11 @@
     - upper_bound: 1000.0
     - gene_reaction_rule: b1854 or b1676
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/PYK
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: R_TPI
     - name: triose-phosphate isomerase
@@ -1147,11 +1147,11 @@
     - upper_bound: 1000.0
     - gene_reaction_rule: b3919
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/TPI
-            nested_data: !!omap []
+            nested_data: {}
 - genes:
   - !!omap
     - id: G_b0755
@@ -1172,12 +1172,12 @@
     - id: G_b1676
     - name: pykF
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/ncbiprotein/1208453
             - http://identifiers.org/ncbiprotein/1652654
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: G_b1723
     - name: pfkB
@@ -1218,11 +1218,11 @@
     - id: G_b2779
     - name: eno
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/ncbiprotein/1653839
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: G_b2925
     - name: fbaA
@@ -1230,11 +1230,11 @@
     - id: G_b2926
     - name: pgk
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/ncbiprotein/1653609
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: G_b2987
     - name: pitB
@@ -1248,12 +1248,12 @@
     - id: G_b3916
     - name: pfkA
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/ncbiprotein/1006614
             - http://identifiers.org/ncbiprotein/1651919
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: G_b3919
     - name: tpiA
@@ -1261,11 +1261,11 @@
     - id: G_b4025
     - name: pgi
     - annotation: !!omap
-      - cvterms: !!omap
-        - bqb_is:
+      - cvterms:
+          bqb_is:
           - resources:
             - http://identifiers.org/ncbiprotein/1653253
-            nested_data: !!omap []
+            nested_data: {}
   - !!omap
     - id: G_b4395
     - name: ytjC

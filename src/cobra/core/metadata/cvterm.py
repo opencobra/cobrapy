@@ -225,18 +225,6 @@ class CVTerms(collections.MutableMapping):
 
         for key, value in data.items():
 
-            # addition of "sbo" term
-            if key == "sbo":
-                if isinstance(value, str):
-                    self._annotations[key] = list([value])
-                elif isinstance(value, list):
-                    self._annotations[key] = list(value)
-                else:
-                    raise TypeError(
-                        f"'sbo' terms must be wrapped inside a list: {value}"
-                    )
-                continue
-
             # if single identifiers are put directly as string,
             # put them inside a list. For eg:
             # { "chebi": "CHEBI:17234"} -> { "chebi": ["CHEBI:17234"]}

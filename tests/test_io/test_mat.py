@@ -14,13 +14,12 @@ try:
 except ImportError:
     scipy = None
 
-
 if TYPE_CHECKING:
     from cobra import Model
 
+MINI_MAT = "mini.mat"
+RAVEN_MAT = "raven.mat"
 
-MINI_MAT = 'mini.mat'
-RAVEN_MAT = 'raven.mat'
 
 @pytest.fixture(scope="function")
 def raven_model(data_directory: Path) -> "Model":
@@ -294,8 +293,9 @@ def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) ->
         "biocyc": ["META:DLACTDEHYDROGNAD-RXN"],
         "sbo": ["SBO:0000375"],
     }
-    actual_rxn_annotation = dict(mat_wrong_caps_model.reactions.
-                                 get_by_id("LDH_D").annotation)
+    actual_rxn_annotation = dict(
+        mat_wrong_caps_model.reactions.get_by_id("LDH_D").annotation
+    )
     expected_rxn_keys = EXPECTED_RXN_ANNOTATION.keys()
     actual_rxn_keys = actual_rxn_annotation.keys()
     assert expected_rxn_keys == actual_rxn_keys
@@ -328,7 +328,9 @@ def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) ->
         "hmdb": ["HMDB00243"],
         "kegg.compound": ["C00022"],
     }
-    actual_met_annotation = mat_wrong_caps_model.metabolites.get_by_id("pyr_c").annotation.annotations
+    actual_met_annotation = mat_wrong_caps_model.metabolites.get_by_id(
+        "pyr_c"
+    ).annotation.annotations
     expected_met_keys = EXPECTED_MAT_ANNOTATION.keys()
     actual_met_keys = actual_met_annotation.keys()
     assert expected_met_keys == actual_met_keys

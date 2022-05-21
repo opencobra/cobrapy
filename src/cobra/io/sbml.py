@@ -1746,8 +1746,8 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
 
     # SBO term
     if sbase.isSetSBOTerm():
-        annotation.annotations["sbo"] = [sbase.getSBOTermID()]
-#        annotation["sbo"] = [sbase.getSBOTermID()]
+#        annotation.annotations["sbo"] = [sbase.getSBOTermID()]
+        annotation["sbo"] = sbase.getSBOTermID()
 
     # RDF annotation
     cvterms = sbase.getCVTerms()
@@ -1953,7 +1953,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
         )
         annotation["sbo"] = annotation.pop("SBO")
 
-    if "sbo" in annotation and annotation["sbo"] != []:
+    if "sbo" in annotation and annotation.sbo:
         sbo_term = annotation.pop("sbo")
         _check(sbase.setSBOTerm(sbo_term[0]), f"Setting SBOTerm: {sbo_term[0]}")
 

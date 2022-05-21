@@ -22,9 +22,10 @@ def add_SBO(model: "Model") -> None:
         The model whose demand and exchange reactions need to be annotated.
 
     """
+    #??? Should this be done with boundary?
     for r in model.reactions:
         # don't annotate already annotated reactions
-        if len(r.annotation.get("sbo")) != 0:
+        if len(r.annotation.get("sbo")) != 0 and r.annotation.sbo:
             continue
         # only doing exchanges
         if len(r.metabolites) != 1:
@@ -34,3 +35,5 @@ def add_SBO(model: "Model") -> None:
             r.annotation["sbo"] = ["SBO:0000627"]
         elif r.id.startswith("DM_") and r.id == "DM_" + met_id:
             r.annotation["sbo"] = ["SBO:0000628"]
+        elif r.id.startswith("sink_") and r.id == "Sink_" + met_id:
+            r.annotation["sbo"] = ["SBO:0000632"]
