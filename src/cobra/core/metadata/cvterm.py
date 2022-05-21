@@ -1,11 +1,12 @@
-""" Define the Controlled Vocabulary term class."""
+"""Define the Controlled Vocabulary term class."""
 
 import collections
 import re
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 from enum import Enum
-from typing import Dict, Iterator, List, Optional, Tuple, Union, FrozenSet
+from typing import Dict, FrozenSet, Iterator, List, Optional, Tuple, Union
 from warnings import warn
+
 from .helper import URL_IDENTIFIERS_PATTERN, _parse_identifiers_uri
 
 
@@ -104,9 +105,6 @@ class CVTerms(collections.MutableMapping):
 
     def __init__(self, data: Dict = None):
 
-        # storing data in old annotation format
-        self._annotations = defaultdict(list)
-
         # storing data in new annotation format
         # as described above
         self._cvterms = defaultdict(CVList)
@@ -142,8 +140,10 @@ class CVTerms(collections.MutableMapping):
         OrderedDict.
 
         """
-        return {key: [ex_res.to_dict() for ex_res in value]
-                for key, value in self._cvterms.items()}
+        return {
+            key: [ex_res.to_dict() for ex_res in value]
+            for key, value in self._cvterms.items()
+        }
 
     def add_cvterm(self, cvterm: CVTerm, index: int = 0) -> None:
         """
@@ -161,10 +161,6 @@ class CVTerms(collections.MutableMapping):
         if isinstance(cvterm, CVTerm):
             qual = str(cvterm.qualifier)
             qual = qual[10:] if qual.startswith("Qualifier.") else qual
-            data = cvterm.parse_provider_identifier()
-            if data is not None:
-                provider, identifier = data
-                self._annotations[provider].append(identifier)
         else:
             raise TypeError(f"The CVTerm passed must be a CVTerm object: {cvterm}")
 
@@ -232,7 +228,9 @@ class CVTerms(collections.MutableMapping):
                 data[key] = [value]
                 value = [value]
             if not isinstance(value, (list, str)):
-                raise TypeError(f"The value passed must be of type list or str: {value}")
+                raise TypeError(
+                    f"The value passed must be of type list or str: {value}"
+                )
 
             # adding data one by one
             for identifier in value:
@@ -255,10 +253,6 @@ class CVTerms(collections.MutableMapping):
 
     @property
     def annotations(self) -> Dict:
-        """Annotation in old format"""
-        return {k: sorted(v) for k, v in self._annotations.items()}
-
-    def annotations2(self) -> Dict:
         annotation_dict = dict()
         resources = self.resources
         for res in resources:
@@ -308,15 +302,6 @@ class CVTerms(collections.MutableMapping):
             self._cvterms[key] = value
         else:
             raise TypeError(f"The value passed must be of type list or CVList: {value}")
-
-        # update the old annotation data
-        for ex_res in self._cvterms[key]:
-            for uri in ex_res.resources:
-                cvterm = CVTerm(Qualifier[key], uri)
-                data = cvterm.parse_provider_identifier()
-                if data is not None:
-                    provider, identifier = data
-                    self._annotations[provider].append(identifier)
 
     def __eq__(self, other: "CVTerms") -> bool:
         """Compare two CVTerms objects to find out whether they

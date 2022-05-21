@@ -1946,16 +1946,18 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
             f"The annotation object must be of type 'Metadata': {annotation_data}"
         )
 
-    if "SBO" in annotation:
+    if "SBO" in annotation_data:
         LOGGER.warning(
             "'SBO' provider is deprecated, use 'sbo' provider instead. Converting to"
             "'sbo' for writing."
         )
-        annotation["sbo"] = annotation.pop("SBO")
+        annotation_data["sbo"] = annotation_data.pop("SBO")
 
     if "sbo" in annotation and annotation.sbo:
-        sbo_term = annotation.pop("sbo")
-        _check(sbase.setSBOTerm(sbo_term[0]), f"Setting SBOTerm: {sbo_term[0]}")
+        sbo_term = annotation_data.sbo
+        if isinstance(sbo_term, list):
+            sbo_term = sbo_term[0]
+        _check(sbase.setSBOTerm(sbo_term), f"Setting SBOTerm: {sbo_term}")
 
     # set metaId
     meta_id = f"meta_{sbase.getId()}"

@@ -1,5 +1,5 @@
 from collections import MutableMapping, OrderedDict
-from typing import Dict, Iterator, List, Union, Any
+from typing import Dict, Iterator, List, Union
 
 from cobra.core.metadata.cvterm import CVTerms
 from cobra.core.metadata.history import Creator, History, HistoryDatetime
