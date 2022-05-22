@@ -1,10 +1,13 @@
-"""
+"""Encodes History and Creator.
+
 The history allows to encode provenance meta-data about
 model objects. The history allows to encode who created or modified
 objects in a model with respective time stamps.
 """
 from datetime import datetime
-from typing import Dict, Iterable, List, Union
+from typing import Dict, Iterable, List, Union, Optional
+
+STRTIME_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
 
 
 class History:
@@ -26,9 +29,13 @@ class History:
         created_date: "HistoryDatetime" = None,
         modified_dates: List["HistoryDatetime"] = None,
     ):
-        self._creators = list()
+        if modified_dates is None:
+            modified_dates = []
+        if creators is None:
+            creators = []
+        self._creators = []
         self._created_date = None
-        self._modified_dates = list()
+        self._modified_dates = []
 
         # use properties to set fields
         self.creators = creators
@@ -41,9 +48,7 @@ class History:
 
     @creators.setter
     def creators(self, values: Iterable["Creator"]) -> None:
-        self._creators = list()
-        if values:
-            self._creators = [Creator.from_data(v) for v in values]
+        self._creators = [Creator.from_data(v) for v in values]
 
     @property
     def created_date(self) -> "HistoryDatetime":
@@ -59,9 +64,7 @@ class History:
 
     @modified_dates.setter
     def modified_dates(self, dates: Iterable[Union[str, "HistoryDateTime"]]) -> None:
-        self._modified_dates = list()
-        if dates:
-            self._modified_dates = [HistoryDatetime(d) for d in dates]
+        self._modified_dates = [HistoryDatetime(d) for d in dates]
 
     @staticmethod
     def from_data(data: Union[Dict, "History"]) -> "History":
@@ -89,7 +92,7 @@ class History:
         return True
 
     def __eq__(self, history: "History") -> bool:
-        """ Checking equality of two history objects.
+        """Checking equality of two history objects.
 
         A history is equal if all attributes are equal.
         """
@@ -209,7 +212,7 @@ class HistoryDatetime:
     """
 
     def __init__(self, history_datetime: str = None):
-        self._datetime = None  # type: str
+        self._datetime: Optional[str] = None
         self.datetime = history_datetime
 
     @property
@@ -220,7 +223,7 @@ class HistoryDatetime:
     def datetime(self, value: str) -> None:
         self._datetime = self.parse_datetime(value)
 
-    def parse_datetime(self, value: str) -> str:
+    def parse_datetime(self, value: str) -> Optional[str]:
         if value is None:
             return None
         if isinstance(value, HistoryDatetime):
@@ -229,7 +232,7 @@ class HistoryDatetime:
             self.validate_datetime(value)
             return value
         elif isinstance(value, datetime):
-            return value.strftime("%Y-%m-%dT%H:%M:%S%z")
+            return value.strftime(STRTIME_FORMAT)
         else:
             raise TypeError(
                 f"Invalid type passed for datetime. "
@@ -241,7 +244,7 @@ class HistoryDatetime:
     def utcnow() -> "HistoryDatetime":
         """HistoryDatetime with current UTC time."""
         utcnow = datetime.utcnow()
-        value = utcnow.strftime("%Y-%m-%dT%H:%M:%S%z")
+        value = utcnow.strftime(STRTIME_FORMAT)
         return HistoryDatetime(value)
 
     @staticmethod
@@ -251,13 +254,11 @@ class HistoryDatetime:
         Raises ValueError if not valid.
         """
         if not isinstance(datetime_str, str):
-            raise TypeError(
-                f"The date passed must be of type string: {datetime_str}"
-            )
+            raise TypeError(f"The date passed must be of type string: {datetime_str}")
 
         # python 3.6 doesn't allow : (colon) in the utc offset.
         try:
-            datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S%z")
+            datetime.strptime(datetime_str, STRTIME_FORMAT)
         except ValueError as e:
             # checking for python 3.6
             if "Z" in datetime_str:
@@ -267,14 +268,13 @@ class HistoryDatetime:
                     )
                 except ValueError as e1:
                     raise ValueError(str(e1))
-                    return False
                 return True
             else:
                 utcoff = datetime_str[20:25]
                 utcoff_p36 = utcoff.replace(":", "")
                 date_p36 = datetime_str.replace(utcoff, utcoff_p36)
                 try:
-                    datetime.strptime(date_p36, "%Y-%m-%dT%H:%M:%S%z")
+                    datetime.strptime(date_p36, STRTIME_FORMAT)
                 except ValueError:
                     raise ValueError(str(e))
                 return True

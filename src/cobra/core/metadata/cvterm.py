@@ -253,7 +253,7 @@ class CVTerms(collections.MutableMapping):
 
     @property
     def annotations(self) -> Dict:
-        annotation_dict = dict()
+        annotation_dict = {}
         resources = self.resources
         for res in resources:
             if re.match(URL_IDENTIFIERS_PATTERN, res):
