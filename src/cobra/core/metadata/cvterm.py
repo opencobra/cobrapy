@@ -207,6 +207,8 @@ class CVTerms(collections.MutableMapping):
         Adds cvterms via old annotation format. If no qualifier
         is linked to the identifier, default qualifier i.e "bqb_is"
         will be used.
+        This function will add identifiers.org to as the URI.
+        If the annotation does not match the identifier format, you should XXXXX?????
 
         Parameters
         ----------

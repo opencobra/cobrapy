@@ -2,7 +2,6 @@
 import itertools
 import re
 from collections import OrderedDict, defaultdict
-from operator import itemgetter
 from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Tuple, Union
 
 import numpy as np
@@ -109,7 +108,7 @@ def flatten(list_of_lists: Union[List, Tuple]) -> List:
 
 def _fix_type(
     value: Union[str, np.float, np.bool, Set, Dict]
-) -> Union[str, float, bool, List, OrderedDict]:
+) -> Union[str, float, bool, List, OrderedDict, Dict]:
     """Convert possible types to correct Python types.
 
     Parameters
@@ -138,6 +137,8 @@ def _fix_type(
         return OrderedDict((key, value[key]) for key in sorted(value))
     if isinstance(value, Notes):
         return str(value)
+    if isinstance(value, MetaData):
+        return value.to_dict()
     # handle legacy Formula type
     if value.__class__.__name__ == "Formula":
         return str(value)
@@ -182,8 +183,6 @@ def _update_optional(
             continue
         if value is None or value == default:
             continue
-        if key == "annotation" and not isinstance(value, dict):
-            value = value.to_dict()
         new_dict[key] = _fix_type(value)
 
 
@@ -567,24 +566,18 @@ def model_to_dict(
     obj["groups"] = list(map(group_to_dict, model.groups))
 
     # sbml meta info
-    sbml_info = OrderedDict()
     if hasattr(model, "_sbml"):
-        for key, value in model._sbml.items():
-            if key == "annotation":
-                sbml_info[key] = _fix_type(value.to_dict())
-            else:
-                sbml_info[key] = _fix_type(value)
-        obj["sbml_info"] = sbml_info
+        obj["sbml_info"] = OrderedDict({key: _fix_type(value)
+                                        for key, value in model._sbml.items()})
     obj["id"] = model.id
     _update_optional(
         model, obj, _OPTIONAL_MODEL_ATTRIBUTES, _ORDERED_OPTIONAL_MODEL_KEYS
     )
     if sort:
-        get_id = itemgetter("id")
-        obj["metabolites"].sort(key=get_id)
-        obj["reactions"].sort(key=get_id)
-        obj["genes"].sort(key=get_id)
-        obj["groups"].sort(key=get_id)
+        obj["metabolites"].sort(key=lambda x: x["id"])
+        obj["reactions"].sort(key=lambda x: x["id"])
+        obj["genes"].sort(key=lambda x: x["id"])
+        obj["groups"].sort(key=lambda x: x["id"])
     return obj
 
 

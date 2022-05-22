@@ -1,6 +1,6 @@
 """Provide functions for I/O in JSON format."""
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union, IO
 
 from .dict import model_from_dict, model_to_dict
 from cobra import io as cio
@@ -85,7 +85,7 @@ def from_json(document: str) -> "Model":
 
 def save_json_model(
     model: "Model",
-    filename: Union[str, Path],
+    filename: Union[str, Path, IO[str]],
     sort: bool = False,
     pretty: bool = False,
     **kwargs: Any
@@ -96,8 +96,8 @@ def save_json_model(
     ----------
     model : cobra.Model
         The cobra model to represent.
-    filename : str or file-like or Path
-        File path or descriptor that the JSON representation should be
+    filename : str or file-like (IO[str]) or Path
+        File path or file handle or str that the JSON representation should be
         written to.
     sort : bool, optional
         Whether to sort the metabolites, reactions, and genes or maintain the
@@ -141,7 +141,7 @@ def save_json_model(
         json.dump(obj, filename, **dump_opts)
 
 
-def load_json_model(filename: Union[str, Path]) -> "Model":
+def load_json_model(filename: Union[str, Path, IO[str]]) -> "Model":
     """Load a cobra model from a file in JSON format.
 
     Parameters
@@ -168,13 +168,13 @@ def load_json_model(filename: Union[str, Path]) -> "Model":
 
 
 def validate_json_model(
-    filename: Union[str, bytes], json_schema_version: int = 1
+    filename: Union[str, Path, IO[str]], json_schema_version: int = 1
 ) -> List:
     """
     Validate a model in json format against the schema with given version
     Parameters
     ----------
-    filename : str or file-like
+    filename : str or Path or file-like
         File path or descriptor that contains the JSON document describing the
         cobra model.
     json_schema_version : int {1, 2}
