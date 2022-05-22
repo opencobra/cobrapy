@@ -10,13 +10,13 @@ from typing import Tuple, Union
 
 LOGGER = logging.getLogger(__name__)
 
-__all__ = ["URL_IDENTIFIERS_PATTERN", "_parse_identifiers_uri"]
+__all__ = ["URL_IDENTIFIERS_PATTERN", "parse_identifiers_uri"]
 
 # the URL pattern to parse provider and identifier
 URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")
 
 
-def _parse_identifiers_uri(uri: str) -> Union[None, Tuple[str, str]]:
+def parse_identifiers_uri(uri: str) -> Union[None, Tuple[str, str]]:
     """Parse provider and term from given identifiers annotation uri.
 
     Parameters

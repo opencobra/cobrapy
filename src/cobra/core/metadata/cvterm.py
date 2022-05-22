@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Dict, FrozenSet, Iterator, List, Optional, Tuple, Union
 from warnings import warn
 
-from .helper import URL_IDENTIFIERS_PATTERN, _parse_identifiers_uri
+from .helper import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
 
 
 class Qualifier(Enum):
@@ -68,7 +68,7 @@ class CVTerm:
         if self.uri is None:
             raise ValueError(f"'uri' set for this cvterm is None: {self}")
         else:
-            return _parse_identifiers_uri(self.uri)
+            return parse_identifiers_uri(self.uri)
 
 
 class CVTerms(collections.MutableMapping):
@@ -257,7 +257,7 @@ class CVTerms(collections.MutableMapping):
         resources = self.resources
         for res in resources:
             if re.match(URL_IDENTIFIERS_PATTERN, res):
-                provider, identifier = _parse_identifiers_uri(res)
+                provider, identifier = parse_identifiers_uri(res)
                 if provider in annotation_dict.keys():
                     annotation_dict[provider].append(identifier)
                 else:

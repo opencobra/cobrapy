@@ -2,7 +2,7 @@
 import itertools
 import re
 from collections import OrderedDict, defaultdict
-from operator import attrgetter, itemgetter
+from operator import itemgetter
 from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Tuple, Union
 
 import numpy as np
@@ -11,7 +11,7 @@ from ..core import Gene, Group, Metabolite, Model, Reaction
 from ..core.metadata import MetaData, Notes
 from ..core.metadata.helper import (
     URL_IDENTIFIERS_PATTERN,
-    _parse_identifiers_uri,
+    parse_identifiers_uri,
 )
 from ..io.sbml import (
     F_GENE,
@@ -33,7 +33,6 @@ if TYPE_CHECKING:
 _REQUIRED_REACTION_ATTRIBUTES = [
     "id",
     "name",
-    "metabolites",
     "lower_bound",
     "upper_bound",
     "gene_reaction_rule",
@@ -93,7 +92,7 @@ _OPTIONAL_MODEL_ATTRIBUTES = {
 
 
 def flatten(list_of_lists: Union[List, Tuple]) -> List:
-    """This will flatten lists of lists.
+    """Flatten lists of lists.
 
     Parameters
     ----------
@@ -126,6 +125,8 @@ def _fix_type(
     """
     # Because numpy floats can not be pickled to json
     if isinstance(value, str):
+        return str(value)
+    if isinstance(value, np.float) and (np.isnan(value) or np.isinf(value)):
         return str(value)
     if isinstance(value, np.float):
         return float(value)
@@ -187,7 +188,9 @@ def _update_optional(
 
 
 def _fix_id_from_dict(
-    _id_to_fix: str, _class_to_fix_to: str, f_replace: dict = F_REPLACE
+    _id_to_fix: str,
+    _class_to_fix_to: str,
+    f_replace: dict = F_REPLACE,  # noqa:    W0102
 ):
     if f_replace is None:
         f_replace = {}
@@ -213,7 +216,7 @@ def _fix_value_from_dict(_key: str, _value_to_fix: Union[List, str]):
         if isinstance(_value_to_fix, list):
             for item in _value_to_fix:
                 if re.match(URL_IDENTIFIERS_PATTERN, item):
-                    provider, identifier = _parse_identifiers_uri(item)
+                    provider, identifier = parse_identifiers_uri(item)
                     anno_dict[provider].append(identifier)
             _value_to_fix = anno_dict
         _value_to_fix = MetaData.from_dict(_value_to_fix)
@@ -226,21 +229,21 @@ def _fix_value_from_dict(_key: str, _value_to_fix: Union[List, str]):
 
 
 def _get_by_id(
-    id: str, _object_to_get: str, model: Model
+    _id: str, _object_to_get: str, model: Model
 ) -> Union[Gene, Metabolite, Group, Reaction]:
     if _object_to_get == "Reaction":
-        return model.reactions.get_by_id(id)
+        return model.reactions.get_by_id(_id)
     elif _object_to_get == "Metabolite":
-        return model.metabolites.get_by_id(id)
+        return model.metabolites.get_by_id(_id)
     elif _object_to_get == "Group":
-        return model.groups.get_by_id(id)
+        return model.groups.get_by_id(_id)
     elif _object_to_get == "Gene":
-        return model.genes.get_by_id(id)
+        return model.genes.get_by_id(_id)
 
 
 def _metabolite_to_dict(
-    metabolite: Metabolite, f_replace: dict = F_REPLACE
-) -> OrderedDict:  # noqa:    W0102
+    metabolite: Metabolite, f_replace: dict = F_REPLACE  # noqa:    W0102
+) -> OrderedDict:
     """Convert a cobra Metabolite object to dictionary.
 
     Parameters
@@ -249,7 +252,7 @@ def _metabolite_to_dict(
         The cobra.Metabolite to convert to dictionary.
     f_replace : dict of replacement functions for id replacement
         Dictionary of replacement functions for gene, specie, and reaction.
-        By default the following id changes are performed on import:
+        By default, the following id changes are performed on import:
         clip G_ from genes, clip M_ from species, clip R_ from reactions
         If no replacements should be performed, set f_replace={} or None
 
@@ -281,7 +284,9 @@ def _metabolite_to_dict(
     return new_metabolite
 
 
-def _metabolite_from_dict(metabolite: Dict, f_replace: dict = F_REPLACE) -> Metabolite:
+def _metabolite_from_dict(
+    metabolite: Dict, f_replace: dict = F_REPLACE # noqa:    W0102
+) -> Metabolite:
     """Convert a dictionary to cobra Metabolite object.
 
     Parameters
@@ -342,7 +347,7 @@ def _gene_to_dict(gene: Gene) -> OrderedDict:
     return new_gene
 
 
-def gene_from_dict(gene: Dict, f_replace: dict = F_REPLACE) -> Gene:
+def gene_from_dict(gene: Dict, f_replace: dict = F_REPLACE) -> Gene:  # noqa:    W0102
     """Convert a dictionary to cobra Gene object.
 
     Parameters
@@ -392,25 +397,18 @@ def _reaction_to_dict(reaction: Reaction) -> OrderedDict:
     """
     new_reaction = OrderedDict()
     for key in _REQUIRED_REACTION_ATTRIBUTES:
-        if key != "metabolites":
-            if key == "lower_bound" and (
-                np.isnan(reaction.lower_bound) or np.isinf(reaction.lower_bound)
-            ):
-                new_reaction[key] = str(_fix_type(getattr(reaction, key)))
-            elif key == "upper_bound" and (
-                np.isnan(reaction.upper_bound) or np.isinf(reaction.upper_bound)
-            ):
-                new_reaction[key] = str(_fix_type(getattr(reaction, key)))
-            elif key == "id":
-                new_reaction[key] = _fix_type(F_REPLACE[F_REACTION_REV](reaction.id))
-            else:
-                new_reaction[key] = _fix_type(getattr(reaction, key))
-            continue
-        mets = OrderedDict()
-        for met in sorted(reaction.metabolites, key=attrgetter("id")):
-            _id = F_REPLACE[F_SPECIE_REV](str(met))
-            mets[_id] = reaction.metabolites[met]
-        new_reaction["metabolites"] = mets
+        if key == "id":
+            new_reaction[key] = _fix_type(F_REPLACE[F_REACTION_REV](reaction.id))
+        else:
+            new_reaction[key] = _fix_type(getattr(reaction, key))
+    if F_REPLACE and F_SPECIE_REV in F_REPLACE:
+        mets = {
+            F_REPLACE[F_SPECIE_REV](met.id): stoic
+            for met, stoic in reaction.metabolites.items()
+        }
+    else:
+        mets = {met.id: stoic for met, stoic in reaction.metabolites.items()}
+    new_reaction["metabolites"] = OrderedDict(mets)
     _update_optional(
         reaction,
         new_reaction,
@@ -421,7 +419,7 @@ def _reaction_to_dict(reaction: Reaction) -> OrderedDict:
 
 
 def _reaction_from_dict(
-    reaction: Dict, model: Model, f_replace: Dict = F_REPLACE
+    reaction: Dict, model: Model, f_replace: Dict = F_REPLACE  # noqa:    W0102
 ) -> Reaction:
     """Convert a dictionary to a cobra Reaction object.
 
@@ -459,7 +457,6 @@ def _reaction_from_dict(
         }
     ]
 
-    met_stoic = reaction.get("metabolites", dict())
     new_reaction.add_metabolites(
         OrderedDict(
             (
@@ -468,7 +465,7 @@ def _reaction_from_dict(
                 ),
                 coeff,
             )
-            for met, coeff in met_stoic.items()
+            for met, coeff in reaction.get("metabolites", {}).items()
         )
     )
     return new_reaction
@@ -503,7 +500,9 @@ def group_to_dict(group: "Group") -> Dict:
     return new_group
 
 
-def group_from_dict(group: Dict, model: Model, f_replace=F_REPLACE) -> Group:
+def group_from_dict(
+    group: Dict, model: Model, f_replace=F_REPLACE # noqa:    W0102
+) -> Group:
     if f_replace is None:
         f_replace = {}
 
@@ -526,7 +525,7 @@ def group_from_dict(group: Dict, model: Model, f_replace=F_REPLACE) -> Group:
 
 
 def model_to_dict(
-    model: Model, sort: bool = False, f_replace: dict = F_REPLACE
+    model: Model, sort: bool = False, f_replace: dict = F_REPLACE  # noqa:    W0102
 ) -> OrderedDict:
     """Convert a cobra Model to a dictionary.
 
@@ -539,7 +538,7 @@ def model_to_dict(
         order defined in the model (default False).
     f_replace : dict of replacement functions for id replacement
         Dictionary of replacement functions for gene, specie, and reaction.
-        By default the following id changes are performed on import:
+        By default, the following id changes are performed on import:
         clip G_ from genes, clip M_ from species, clip R_ from reactions
         If no replacements should be performed, set f_replace={} or None
 
