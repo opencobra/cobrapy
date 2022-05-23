@@ -1,0 +1,24 @@
+In general, have two types of annotations. Objects will have annotations for the complicated
+version, and annotation for a function that simplifies it
+1) identifiers/name space compliant
+where you have a dictionary of External Resouces and qualifiers
+There are some functions that generate dictionaries in the various formats
+a) for SBML - qualifier, list of resources,
+b) for getting annotation["X"] which will get like now - identifier and lists
+c) and setting via annotation["X"] which will be similar to now
+
+2) Things that don't have name spaces, like SMILES and confidence_level (keyvaluepairs)
+So, there is the problem of how to distinguish between them
+a) All pretend to be identifiers (some links will be broken) - simple, but impolite to other programs
+b) Non-identifiers are defined explicitly, with namespace (maybe some default of opencobra.org/XX
+where XX is the simple identifier, like SMILES or IncHI
+
+see https://synonym.caltech.edu/documents/elaborations/miriam_annotation_syntax/ (How do I put InChI strings in annotations?)
+
+c) Whenever releasing a version of cobrapy, we quickly download a version of identifiers.org
+and save it as json or something. That's checked (loaded as part of configuration)
+d) Some kind of automatic checking which is live, perhaps incorporating Matthias Konning's
+sbmlutils or pymetadata. This is complicated, and perhaps the best solution.
+
+c seem reasonable. Can write a quick script/function to save identifiers.org once and a
+function to load the file, a function to check quickly if key is there.

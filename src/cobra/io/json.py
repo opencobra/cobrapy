@@ -196,6 +196,8 @@ def validate_json_model(
             f"schema v{json_schema_version} is not supported."
         )
 
+    # TODO - Should the validator be picked by schema?
+    #  Something like validators.validator_for
     validator = jsonschema.Draft7Validator(schema)
 
     try:
