@@ -58,7 +58,10 @@ class MetaData(MutableMapping):
     @property
     def annotations(self) -> Dict:
         """Backwards compatible annotations."""
-        return self.cvterms.annotations
+        anno_dict = self.cvterms.annotations
+        if self.sbo:
+            anno_dict["sbo"] = self.sbo
+        return anno_dict
 
     @property
     def sbo(self) -> str:
@@ -161,6 +164,6 @@ class MetaData(MutableMapping):
             annotation.cvterms.add_simple_annotations(data)
 
         if "sbo" in data:
-            annotation["sbo"] = [data["sbo"]]
+            annotation["sbo"] = data["sbo"]
 
         return annotation

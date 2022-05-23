@@ -2,7 +2,7 @@
 
 import collections
 import re
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from enum import Enum
 from typing import Dict, FrozenSet, Iterator, List, Optional, Tuple, Union
 from warnings import warn
@@ -70,6 +70,11 @@ class CVTerm:
         else:
             return parse_identifiers_uri(self.uri)
 
+    def extract_qual_uri(self) -> Tuple[str, Dict]:
+        qual = str(self.qualifier)
+        qual = qual[10:] if qual.startswith("Qualifier.") else qual
+        return qual, {"resources": self.uri}
+
 
 class CVTerms(collections.MutableMapping):
     """
@@ -133,17 +138,16 @@ class CVTerms(collections.MutableMapping):
         Returns:
         -------
         dict:
-            a dict where each key has a list of all external resources in the original
-            self._cvterms dictionary for that key
-
-        Note: If this should work on Python 3.5 and lower, it needs to be an
-        OrderedDict.
+            a dict where each key has is a qualifier and has a list of all external
+            resources in the original self._cvterms dictionary for that key
 
         """
-        return {
-            key: [ex_res.to_dict() for ex_res in value]
-            for key, value in self._cvterms.items()
-        }
+        return OrderedDict(
+            {
+                qual: [ex_res.to_dict() for ex_res in value]
+                for qual, value in self._cvterms.items()
+            }
+        )
 
     def add_cvterm(self, cvterm: CVTerm, index: int = 0) -> None:
         """
@@ -159,8 +163,7 @@ class CVTerms(collections.MutableMapping):
             the CVList of corresponding qualifier
         """
         if isinstance(cvterm, CVTerm):
-            qual = str(cvterm.qualifier)
-            qual = qual[10:] if qual.startswith("Qualifier.") else qual
+            qual, resource_dict = cvterm.extract_qual_uri()
         else:
             raise TypeError(f"The CVTerm passed must be a CVTerm object: {cvterm}")
 
@@ -170,6 +173,20 @@ class CVTerms(collections.MutableMapping):
             self[qual].append({"resources": [cvterm.uri]})
         else:
             raise UnboundLocalError(f"The index is out of bound: {index}")
+
+    def add_resources(
+        self,
+        qualifier: Union[str, Qualifier],
+        resource: Union[str, "ExternalResources"],
+    ):
+        if isinstance(qualifier, str) and qualifier not in Qualifier.__members__:
+            raise TypeError(f"{qualifier} is not a supported enum Qualifier")
+        elif isinstance(qualifier, Qualifier):
+            qualifier = str(qualifier)
+            if qualifier.startswith("Qualifier."):
+                qualifier = qualifier[10:]
+        if isinstance(resource, ExternalResources):
+            resource = resource.to_dict()
 
     def add_cvterms(self, cvterms: Union[Dict, "CVTerms"] = None) -> None:
         """
@@ -226,7 +243,7 @@ class CVTerms(collections.MutableMapping):
             # if single identifiers are put directly as string,
             # put them inside a list. For eg:
             # { "chebi": "CHEBI:17234"} -> { "chebi": ["CHEBI:17234"]}
-            if isinstance(value, str) and key != "sbo":
+            if isinstance(value, str):
                 data[key] = [value]
                 value = [value]
             if not isinstance(value, (list, str)):
@@ -363,22 +380,31 @@ class CVList(collections.UserList):
 
     def __init__(self, data: List[Union[Dict, "ExternalResources"]] = None):
         super().__init__(data)
-        self.data = [
-            ExternalResources(d_item)
-            for d_item in self.data
-            if not isinstance(d_item, ExternalResources)
-        ]
+        self.data = [ExternalResources(d_item) for d_item in self.data]
 
     def insert(self, index: int, value: Union[Dict, "ExternalResources"]) -> None:
         """Insert a ExternalResource object at given index."""
-        self.data.insert(index, _check_External_Resources_type(value))
+        self.data.insert(index, self._check_External_Resources_type(value))
 
     def append(self, value: Union[Dict, "ExternalResources"]) -> None:
         """Append a ExternalResource object to this list."""
-        self.data.append(_check_External_Resources_type(value))
+        self.data.append(self._check_External_Resources_type(value))
 
     def __setitem__(self, index: int, value: Union[Dict, "ExternalResources"]) -> None:
-        self.data[index] = _check_External_Resources_type(value)
+        self.data[index] = self._check_External_Resources_type(value)
+
+    @staticmethod
+    def _check_External_Resources_type(
+        resource: Union[Dict, "ExternalResources"]
+    ) -> "ExternalResources":
+        if isinstance(resource, dict):
+            return ExternalResources(resource)
+        if isinstance(resource, ExternalResources):
+            return resource
+        raise TypeError(
+            f"The passed object {resource }for setting external resources has "
+            f"invalid type: {type(resource)}. It needs to be ExternalResouces or dict."
+        )
 
 
 class ExternalResources:
@@ -424,7 +450,7 @@ class ExternalResources:
                 raise ValueError(
                     f"Key '{key}' is not allowed. Only "
                     f"allowed keys are 'resources', "
-                    f"'nested_data'."
+                    f"'nested_data', or an allowed qualifer, see Qualifier."
                 )
 
     @property
@@ -488,15 +514,3 @@ class ExternalResources:
     def __repr__(self) -> str:
         return self.__str__()
 
-
-def _check_External_Resources_type(
-    value: Union[Dict, "ExternalResources"]
-) -> "ExternalResources":
-    if isinstance(value, dict):
-        return ExternalResources(value)
-    if isinstance(value, ExternalResources):
-        return value
-    raise TypeError(
-        f"The passed object {value }for setting external resources has "
-        f"invalid type: {type(value)}. It needs to be ExternalResouces or dict."
-    )
