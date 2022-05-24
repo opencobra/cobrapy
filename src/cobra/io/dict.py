@@ -48,6 +48,16 @@ _OPTIONAL_REACTION_ATTRIBUTES = {
     "annotation": {},
 }
 
+_REACTION_DICT = {
+    "id": "",
+    "name": None,
+    "lower_bound": None,
+    "upper_bound": None,
+    "subsystem": "",
+    "notes": {},
+    "annotation": {},
+}
+
 _REQUIRED_METABOLITE_ATTRIBUTES = ["id", "name", "compartment"]
 _ORDERED_OPTIONAL_METABOLITE_KEYS = [
     "charge",
@@ -223,14 +233,18 @@ def _update_optional_dict(
     optional_attribute_dict = optional_attribute_dict.copy()
     state = cobra_object.__getstate__()
     state["id"] = _f_replace_object(state.pop("_id"))
-    state["annotation"] = state.pop("_annotation")
-    state["notes"] = state.pop("_notes")
-    if state["notes"] is None or state["notes"].notes_xhtml is None or len(state["notes"].notes_xhtml) == 0:
+    state_fixed = {(re.sub('^_', '', key) if key != '_bound' else key):
+                       state[key] for key in state.keys() }
+    if state_fixed["notes"] is None or state_fixed["notes"].notes_xhtml is None or len(
+        state_fixed["notes"].notes_xhtml) == 0:
         optional_attribute_dict.pop("notes")
     cobra_dict = OrderedDict(
-        {key: _fix_type(state[key]) for key, default in optional_attribute_dict.items()
-         if state[key] is not None and state[key] != default}
+        {key: _fix_type(state_fixed[key]) for key, default in optional_attribute_dict.items()
+         if state_fixed[key] is not None and state_fixed[key] != default}
     )
+    if isinstance(cobra_object, Reaction):
+        cobra_dict['gene_reaction_rule'] = _fix_type(cobra_object.gene_reaction_rule)
+        cobra_dict['objective_coefficient'] = _fix_type(cobra_object.objective_coefficient)
     return cobra_dict
 
 
@@ -461,7 +475,7 @@ def gene_from_dict(gene: Dict, f_replace: dict = F_REPLACE) -> Gene:  # noqa:   
     return new_gene
 
 
-def _reaction_to_dict(reaction: Reaction) -> OrderedDict:
+def _reaction_to_dict(reaction: Reaction, f_replace=None) -> OrderedDict:
     """Convert a cobra Reaction object to a dictionary.
 
     Parameters
@@ -479,12 +493,17 @@ def _reaction_to_dict(reaction: Reaction) -> OrderedDict:
     _reaction_from_dict : Convert a dictionary to a cobra Reaction object.
 
     """
-    new_reaction = OrderedDict()
-    for key in _REQUIRED_REACTION_ATTRIBUTES:
-        if key == "id":
-            new_reaction[key] = _fix_type(F_REPLACE[F_REACTION_REV](reaction.id))
-        else:
-            new_reaction[key] = _fix_type(getattr(reaction, key))
+
+    def _f_replace_object(x):
+        return x
+
+    if f_replace and f_replace[F_REACTION_REV]:
+        _f_replace_object = f_replace[F_REACTION_REV]
+
+    new_reaction = _update_optional_dict(
+        reaction, _REACTION_DICT, _f_replace_object=_f_replace_object
+    )
+
     if F_REPLACE and F_SPECIE_REV in F_REPLACE:
         mets = {
             F_REPLACE[F_SPECIE_REV](met.id): stoic
@@ -493,12 +512,6 @@ def _reaction_to_dict(reaction: Reaction) -> OrderedDict:
     else:
         mets = {met.id: stoic for met, stoic in reaction.metabolites.items()}
     new_reaction["metabolites"] = OrderedDict(mets)
-    _update_optional(
-        reaction,
-        new_reaction,
-        _OPTIONAL_REACTION_ATTRIBUTES,
-        _ORDERED_OPTIONAL_REACTION_KEYS,
-    )
     return new_reaction
 
 
