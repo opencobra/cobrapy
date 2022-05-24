@@ -2,7 +2,16 @@
 import itertools
 import re
 from collections import OrderedDict, defaultdict
-from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Tuple, Union, Callable
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Dict,
+    List,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+)
 
 import numpy as np
 
@@ -25,28 +34,9 @@ from ..io.sbml import (
 )
 from ..util.solver import set_objective
 
+
 if TYPE_CHECKING:
     from cobra import Object
-
-_REQUIRED_REACTION_ATTRIBUTES = [
-    "id",
-    "name",
-    "lower_bound",
-    "upper_bound",
-    "gene_reaction_rule",
-]
-_ORDERED_OPTIONAL_REACTION_KEYS = [
-    "objective_coefficient",
-    "subsystem",
-    "notes",
-    "annotation",
-]
-_OPTIONAL_REACTION_ATTRIBUTES = {
-    "objective_coefficient": 0,
-    "subsystem": "",
-    "notes": {},
-    "annotation": {},
-}
 
 _REACTION_DICT = {
     "id": "",
@@ -58,15 +48,10 @@ _REACTION_DICT = {
     "annotation": {},
 }
 
-_REQUIRED_METABOLITE_ATTRIBUTES = ["id", "name", "compartment"]
-_ORDERED_OPTIONAL_METABOLITE_KEYS = [
-    "charge",
-    "formula",
-    "_bound",
-    "notes",
-    "annotation",
-]
-_OPTIONAL_METABOLITE_ATTRIBUTES = {
+_METABOLITE_DICT = {
+    "id": "",
+    "name": None,
+    "compartment": None,
     "charge": None,
     "formula": None,
     "_bound": 0,
@@ -74,22 +59,9 @@ _OPTIONAL_METABOLITE_ATTRIBUTES = {
     "annotation": {},
 }
 
-_METABOLITE_DICT = OrderedDict(
-    {
-        "id": "",
-        "name": None,
-        "compartment": None,
-        "charge": None,
-        "formula": None,
-        "_bound": 0,
-        "notes": {},
-        "annotation": {},
-    }
-)
-
-_REQUIRED_GENE_ATTRIBUTES = ["id", "name"]
-_ORDERED_OPTIONAL_GENE_KEYS = ["notes", "annotation"]
-_OPTIONAL_GENE_ATTRIBUTES = {
+_GENE_DICT = {
+    "id": "",
+    "name": None,
     "notes": {},
     "annotation": {},
 }
@@ -97,6 +69,13 @@ _OPTIONAL_GENE_ATTRIBUTES = {
 _REQUIRED_GROUP_ATTRIBUTES = ["id", "kind", "members"]
 _ORDERED_OPTIONAL_GROUP_KEYS = ["name", "notes", "annotation"]
 _OPTIONAL_GROUP_ATTRIBUTES = {
+    "name": "",
+    "notes": {},
+    "annotation": {},
+}
+
+_GROUP_DICT = {
+    "id": "",
     "name": "",
     "notes": {},
     "annotation": {},
@@ -210,7 +189,7 @@ def _update_optional(
 
 def _update_optional_dict(
     cobra_object: "Object",
-    optional_attribute_dict: OrderedDict,
+    optional_attribute_dict: Dict,
     _f_replace_object: Callable = None,
 ) -> OrderedDict:
     """Update `new_dict` with optional attributes from `cobra_object`.
@@ -233,18 +212,23 @@ def _update_optional_dict(
     optional_attribute_dict = optional_attribute_dict.copy()
     state = cobra_object.__getstate__()
     state["id"] = _f_replace_object(state.pop("_id"))
-    state_fixed = {(re.sub('^_', '', key) if key != '_bound' else key):
-                       state[key] for key in state.keys() }
-    if state_fixed["notes"] is None or state_fixed["notes"].notes_xhtml is None or len(
-        state_fixed["notes"].notes_xhtml) == 0:
+    state_fixed = {
+        (re.sub("^_", "", key) if key != "_bound" else key): state[key]
+        for key in state.keys()
+    }
+    if (
+        state_fixed["notes"] is None
+        or state_fixed["notes"].notes_xhtml is None
+        or len(state_fixed["notes"].notes_xhtml) == 0
+    ):
         optional_attribute_dict.pop("notes")
     cobra_dict = OrderedDict(
-        {key: _fix_type(state_fixed[key]) for key, default in optional_attribute_dict.items()
-         if state_fixed[key] is not None and state_fixed[key] != default}
+        {
+            key: _fix_type(state_fixed[key])
+            for key, default in optional_attribute_dict.items()
+            if state_fixed[key] is not None and state_fixed[key] != default
+        }
     )
-    if isinstance(cobra_object, Reaction):
-        cobra_dict['gene_reaction_rule'] = _fix_type(cobra_object.gene_reaction_rule)
-        cobra_dict['objective_coefficient'] = _fix_type(cobra_object.objective_coefficient)
     return cobra_dict
 
 
@@ -302,51 +286,8 @@ def _get_by_id(
         return model.genes.get_by_id(_id)
 
 
-def _metabolite_to_dict1(
-    metabolite: Metabolite, f_replace: dict = F_REPLACE  # noqa:    W0102
-) -> OrderedDict:
-    """Convert a cobra Metabolite object to dictionary.
-
-    Parameters
-    ----------
-    metabolite : cobra.Metabolite
-        The cobra.Metabolite to convert to dictionary.
-    f_replace : dict of replacement functions for id replacement
-        Dictionary of replacement functions for gene, specie, and reaction.
-        By default, the following id changes are performed on import:
-        clip G_ from genes, clip M_ from species, clip R_ from reactions
-        If no replacements should be performed, set f_replace={} or None
-
-    Returns
-    -------
-    dict
-        The converted dictionary object.
-
-    See Also
-    --------
-    _metabolite_from_dict : Convert a dictionary to cobra Metabolite object.
-
-    """
-    if f_replace is None:
-        f_replace = {}
-
-    new_metabolite = OrderedDict()
-    for key in _REQUIRED_METABOLITE_ATTRIBUTES:
-        if key == "id" and f_replace and F_SPECIE_REV in f_replace:
-            new_metabolite[key] = _fix_type(f_replace[F_SPECIE_REV](metabolite.id))
-        else:
-            new_metabolite[key] = _fix_type(getattr(metabolite, key))
-    _update_optional(
-        metabolite,
-        new_metabolite,
-        _OPTIONAL_METABOLITE_ATTRIBUTES,
-        _ORDERED_OPTIONAL_METABOLITE_KEYS,
-    )
-    return new_metabolite
-
-
 def _metabolite_to_dict(
-    metabolite: Metabolite, f_replace: dict = F_REPLACE  # noqa:    W0102
+    metabolite: Metabolite, f_replace: dict = None  # noqa:    W0102
 ) -> OrderedDict:
     """Convert a cobra Metabolite object to dictionary.
 
@@ -415,7 +356,7 @@ def _metabolite_from_dict(
     return new_metabolite
 
 
-def _gene_to_dict(gene: Gene) -> OrderedDict:
+def _gene_to_dict(gene: Gene, f_replace=None) -> OrderedDict:
     """Convert a cobra Gene object to dictionary.
 
     Parameters
@@ -433,16 +374,14 @@ def _gene_to_dict(gene: Gene) -> OrderedDict:
     _gene_from_dict : Convert a dictionary to cobra Gene object.
 
     """
-    new_gene = OrderedDict()
-    for key in _REQUIRED_GENE_ATTRIBUTES:
-        if key == "id":
-            new_gene[key] = _fix_type(F_REPLACE[F_GENE_REV](gene.id))
-        else:
-            new_gene[key] = _fix_type(getattr(gene, key))
-    _update_optional(
-        gene, new_gene, _OPTIONAL_GENE_ATTRIBUTES, _ORDERED_OPTIONAL_GENE_KEYS
-    )
-    return new_gene
+
+    def _f_replace_object(x):
+        return x
+
+    if f_replace and f_replace[F_GENE_REV]:
+        _f_replace_object = f_replace[F_GENE_REV]
+
+    return _update_optional_dict(gene, _GENE_DICT, _f_replace_object=_f_replace_object)
 
 
 def gene_from_dict(gene: Dict, f_replace: dict = F_REPLACE) -> Gene:  # noqa:    W0102
@@ -512,6 +451,8 @@ def _reaction_to_dict(reaction: Reaction, f_replace=None) -> OrderedDict:
     else:
         mets = {met.id: stoic for met, stoic in reaction.metabolites.items()}
     new_reaction["metabolites"] = OrderedDict(mets)
+    new_reaction["gene_reaction_rule"] = _fix_type(reaction.gene_reaction_rule)
+    new_reaction["objective_coefficient"] = _fix_type(reaction.objective_coefficient)
     return new_reaction
 
 
@@ -659,9 +600,9 @@ def model_to_dict(
     obj["metabolites"] = [
         _metabolite_to_dict(met, f_replace) for met in model.metabolites
     ]
-    obj["reactions"] = list(map(_reaction_to_dict, model.reactions))
-    obj["genes"] = list(map(_gene_to_dict, model.genes))
-    obj["groups"] = list(map(group_to_dict, model.groups))
+    obj["reactions"] = [_reaction_to_dict(rxn, f_replace) for rxn in model.reactions]
+    obj["genes"] = [_gene_to_dict(gene, f_replace) for gene in model.genes]
+    obj["groups"] = [group_to_dict(group) for group in model.groups]
 
     # sbml meta info
     if hasattr(model, "_sbml"):
@@ -734,8 +675,9 @@ def model_from_dict(obj: Dict) -> Model:
 
     # sbml meta info
     if "sbml_info" in obj:
-        meta = {k: _fix_value_from_dict(k, v) for k, v in obj["sbml_info"].items()}
-        model._sbml = meta
+        model._sbml = {
+            k: _fix_value_from_dict(k, v) for k, v in obj["sbml_info"].items()
+        }
 
     [
         setattr(model, k, _fix_value_from_dict(k, v))
