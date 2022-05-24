@@ -496,15 +496,12 @@ def _reaction_from_dict(
     ]
 
     new_reaction.add_metabolites(
-        OrderedDict(
-            (
-                model.metabolites.get_by_id(
-                    _fix_id_from_dict(str(met), "Metabolite", f_replace)
-                ),
-                coeff,
-            )
+        {
+            model.metabolites.get_by_id(
+                _fix_id_from_dict(str(met), "Metabolite", f_replace)
+            ): coeff
             for met, coeff in reaction.get("metabolites", {}).items()
-        )
+        }
     )
     return new_reaction
 
