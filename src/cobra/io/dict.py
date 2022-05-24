@@ -2,7 +2,7 @@
 import itertools
 import re
 from collections import OrderedDict, defaultdict
-from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Tuple, Union, Callable
 
 import numpy as np
 
@@ -24,7 +24,6 @@ from ..io.sbml import (
     F_SPECIE_REV,
 )
 from ..util.solver import set_objective
-
 
 if TYPE_CHECKING:
     from cobra import Object
@@ -64,6 +63,19 @@ _OPTIONAL_METABOLITE_ATTRIBUTES = {
     "notes": {},
     "annotation": {},
 }
+
+_METABOLITE_DICT = OrderedDict(
+    {
+        "id": "",
+        "name": None,
+        "compartment": None,
+        "charge": None,
+        "formula": None,
+        "_bound": 0,
+        "notes": {},
+        "annotation": {},
+    }
+)
 
 _REQUIRED_GENE_ATTRIBUTES = ["id", "name"]
 _ORDERED_OPTIONAL_GENE_KEYS = ["notes", "annotation"]
@@ -186,6 +198,42 @@ def _update_optional(
         new_dict[key] = _fix_type(value)
 
 
+def _update_optional_dict(
+    cobra_object: "Object",
+    optional_attribute_dict: OrderedDict,
+    _f_replace_object: Callable = None,
+) -> OrderedDict:
+    """Update `new_dict` with optional attributes from `cobra_object`.
+
+    Parameters
+    ----------
+    cobra_object : cobra.Object
+        The cobra Object to update optional attributes from.
+    optional_attribute_dict : dict
+        The dictionary to use as default value lookup store.
+
+    Raises
+    ------
+    IndexError
+        If key in `ordered_keys` is not found in `optional_attribute_dict`.
+    AttributeError
+        If key in `ordered_keys` is not found in `cobra_object`.
+
+    """
+    optional_attribute_dict = optional_attribute_dict.copy()
+    state = cobra_object.__getstate__()
+    state["id"] = _f_replace_object(state.pop("_id"))
+    state["annotation"] = state.pop("_annotation")
+    state["notes"] = state.pop("_notes")
+    if state["notes"] is None or state["notes"].notes_xhtml is None or len(state["notes"].notes_xhtml) == 0:
+        optional_attribute_dict.pop("notes")
+    cobra_dict = OrderedDict(
+        {key: _fix_type(state[key]) for key, default in optional_attribute_dict.items()
+         if state[key] is not None and state[key] != default}
+    )
+    return cobra_dict
+
+
 def _fix_id_from_dict(
     _id_to_fix: str,
     _class_to_fix_to: str,
@@ -240,7 +288,7 @@ def _get_by_id(
         return model.genes.get_by_id(_id)
 
 
-def _metabolite_to_dict(
+def _metabolite_to_dict1(
     metabolite: Metabolite, f_replace: dict = F_REPLACE  # noqa:    W0102
 ) -> OrderedDict:
     """Convert a cobra Metabolite object to dictionary.
@@ -283,8 +331,45 @@ def _metabolite_to_dict(
     return new_metabolite
 
 
+def _metabolite_to_dict(
+    metabolite: Metabolite, f_replace: dict = F_REPLACE  # noqa:    W0102
+) -> OrderedDict:
+    """Convert a cobra Metabolite object to dictionary.
+
+    Parameters
+    ----------
+    metabolite : cobra.Metabolite
+        The cobra.Metabolite to convert to dictionary.
+    f_replace : dict of replacement functions for id replacement
+        Dictionary of replacement functions for gene, specie, and reaction.
+        By default, the following id changes are performed on import:
+        clip G_ from genes, clip M_ from species, clip R_ from reactions
+        If no replacements should be performed, set f_replace={} or None
+
+    Returns
+    -------
+    dict
+        The converted dictionary object.
+
+    See Also
+    --------
+    _metabolite_from_dict : Convert a dictionary to cobra Metabolite object.
+
+    """
+
+    def _f_replace_object(x):
+        return x
+
+    if f_replace and f_replace[F_SPECIE_REV]:
+        _f_replace_object = f_replace[F_SPECIE_REV]
+
+    return _update_optional_dict(
+        metabolite, _METABOLITE_DICT, _f_replace_object=_f_replace_object
+    )
+
+
 def _metabolite_from_dict(
-    metabolite: Dict, f_replace: dict = F_REPLACE # noqa:    W0102
+    metabolite: Dict, f_replace: dict = F_REPLACE  # noqa:    W0102
 ) -> Metabolite:
     """Convert a dictionary to cobra Metabolite object.
 
@@ -500,7 +585,7 @@ def group_to_dict(group: "Group") -> Dict:
 
 
 def group_from_dict(
-    group: Dict, model: Model, f_replace=F_REPLACE # noqa:    W0102
+    group: Dict, model: Model, f_replace=F_REPLACE  # noqa:    W0102
 ) -> Group:
     if f_replace is None:
         f_replace = {}
@@ -567,8 +652,9 @@ def model_to_dict(
 
     # sbml meta info
     if hasattr(model, "_sbml"):
-        obj["sbml_info"] = OrderedDict({key: _fix_type(value)
-                                        for key, value in model._sbml.items()})
+        obj["sbml_info"] = OrderedDict(
+            {key: _fix_type(value) for key, value in model._sbml.items()}
+        )
     obj["id"] = model.id
     _update_optional(
         model, obj, _OPTIONAL_MODEL_ATTRIBUTES, _ORDERED_OPTIONAL_MODEL_KEYS

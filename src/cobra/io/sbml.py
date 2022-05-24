@@ -1746,7 +1746,6 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
 
     # SBO term
     if sbase.isSetSBOTerm():
-#        annotation.annotations["sbo"] = [sbase.getSBOTermID()]
         annotation["sbo"] = sbase.getSBOTermID()
 
     # RDF annotation
