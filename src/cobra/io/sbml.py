@@ -1646,7 +1646,7 @@ def _parse_notes_info(sbase: libsbml.SBase) -> Notes:
     -------
     Notes object
     """
-    notes = sbase.getNotesString()
+    notes = sbase.getNotesString() or None
     cobra_notes = Notes(notes)
     return cobra_notes
 

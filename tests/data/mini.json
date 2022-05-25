@@ -1234,6 +1234,7 @@
             "lower_bound": -1000.0,
             "metabolites": {},
             "name": "",
+            "objective_coefficient": 0.0,
             "upper_bound": 1000.0
         },
         {
@@ -1258,6 +1259,7 @@
                 "M_pep_c": 1.0
             },
             "name": "enolase",
+            "objective_coefficient": 0.0,
             "upper_bound": 1000.0
         },
         {
@@ -1281,6 +1283,7 @@
                 "M_glc__D_e": -1.0
             },
             "name": "D-Glucose exchange",
+            "objective_coefficient": 0.0,
             "upper_bound": 1000.0
         },
         {
@@ -1304,6 +1307,7 @@
                 "M_h_e": -1.0
             },
             "name": "H+ exchange",
+            "objective_coefficient": 0.0,
             "upper_bound": 1000.0
         },
         {
@@ -1327,6 +1331,7 @@
                 "M_lac__D_e": -1.0
             },
             "name": "D-lactate exchange",
+            "objective_coefficient": 0.0,
             "upper_bound": 1000.0
         },
         {
@@ -1351,6 +1356,7 @@
                 "M_g3p_c": 1.0
             },
             "name": "fructose-bisphosphate aldolase",
+            "objective_coefficient": 0.0,
             "upper_bound": 1000.0
         },
         {
@@ -1378,6 +1384,7 @@
                 "M_pi_c": -1.0
             },
             "name": "glyceraldehyde-3-phosphate dehydrogenase",
+            "objective_coefficient": 0.0,
             "upper_bound": 1000.0
         },
         {
@@ -1403,6 +1410,7 @@
                 "M_pyr_c": 1.0
             },
             "name": "D-glucose transport via PEP:Pyr PTS",
+            "objective_coefficient": 0.0,
             "upper_bound": 1000.0
         },
         {
@@ -1426,6 +1434,7 @@
                 "M_h2o_e": -1.0
             },
             "name": "R H2O transport via - diffusion",
+            "objective_coefficient": 0.0,
             "upper_bound": 1000.0
         },
         {
@@ -1461,6 +1470,7 @@
                 "M_pyr_c": 1.0
             },
             "name": "D-lactate dehydrogenase",
+            "objective_coefficient": 0.0,
             "subsystem": "Pyruvate Metabolism",
             "upper_bound": 1000.0
         },
@@ -1512,6 +1522,7 @@
                 "M_g6p_c": -1.0
             },
             "name": "glucose-6-phosphate isomerase",
+            "objective_coefficient": 0.0,
             "upper_bound": 1000.0
         },
         {
@@ -1537,6 +1548,7 @@
                 "M_atp_c": -1.0
             },
             "name": "phosphoglycerate kinase",
+            "objective_coefficient": 0.0,
             "upper_bound": 1000.0
         },
         {
@@ -1560,6 +1572,7 @@
                 "M_3pg_c": 1.0
             },
             "name": "phosphoglycerate mutase",
+            "objective_coefficient": 0.0,
             "upper_bound": 1000.0
         },
         {
@@ -1585,6 +1598,7 @@
                 "M_pi_e": -1.0
             },
             "name": "R phosphate reversible transport via - symport",
+            "objective_coefficient": 0.0,
             "upper_bound": 1000.0
         },
         {
@@ -1611,6 +1625,7 @@
                 "M_pyr_c": 1.0
             },
             "name": "pyruvate kinase",
+            "objective_coefficient": 0.0,
             "upper_bound": 1000.0
         },
         {
@@ -1634,6 +1649,7 @@
                 "M_g3p_c": 1.0
             },
             "name": "triose-phosphate isomerase",
+            "objective_coefficient": 0.0,
             "upper_bound": 1000.0
         }
     ],

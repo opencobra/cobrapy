@@ -3,15 +3,7 @@ import itertools
 import re
 from collections import OrderedDict, defaultdict
 from functools import partial
-from typing import (
-    TYPE_CHECKING,
-    Callable,
-    Dict,
-    List,
-    Set,
-    Tuple,
-    Union,
-)
+from typing import TYPE_CHECKING, Callable, Dict, List, Set, Tuple, Union
 
 import numpy as np
 
@@ -44,7 +36,7 @@ _REACTION_DICT = {
     "lower_bound": None,
     "upper_bound": None,
     "subsystem": "",
-    "notes": {},
+    "notes": Notes(),
     "annotation": {},
 }
 
@@ -55,14 +47,14 @@ _METABOLITE_DICT = {
     "charge": None,
     "formula": None,
     "_bound": 0,
-    "notes": {},
+    "notes": Notes(),
     "annotation": {},
 }
 
 _GENE_DICT = {
     "id": "",
     "name": None,
-    "notes": {},
+    "notes": Notes(),
     "annotation": {},
 }
 
@@ -70,7 +62,7 @@ _GROUP_DICT = {
     "id": "",
     "name": "",
     "kind": "",
-    "notes": {},
+    "notes": Notes(),
     "annotation": {},
 }
 
@@ -78,7 +70,7 @@ _MODEL_DICT = {
     "id": "",
     "name": None,
     "compartments": [],
-    "notes": {},
+    "notes": Notes(),
     "annotation": {},
 }
 
@@ -229,19 +221,12 @@ def _object_to_dict(
         If key in `ordered_keys` is not found in `cobra_object`.
 
     """
-    optional_attribute_dict = optional_attribute_dict.copy()
     state = cobra_object.__getstate__()
     state["id"] = _f_replace_function(cobra_object)
     state_fixed = {
         (re.sub("^_", "", key) if key != "_bound" else key): state[key]
         for key in state.keys()
     }
-    if (
-        state_fixed["notes"] is None
-        or state_fixed["notes"].notes_xhtml is None
-        or len(state_fixed["notes"].notes_xhtml) == 0
-    ):
-        optional_attribute_dict.pop("notes")
     cobra_dict = OrderedDict(
         {
             key: _fix_type(state_fixed[key])
@@ -250,7 +235,6 @@ def _object_to_dict(
         }
     )
     return cobra_dict
-
 
 
 def object_from_dict(new_object: "Object", object_dict: Dict):
@@ -542,7 +526,7 @@ def model_to_dict(
     return obj
 
 
-def model_from_dict(obj: Dict) -> Model:
+def model_from_dict(obj: Dict, f_replace=F_REPLACE) -> Model:
     """Build a cobra Model from a dictionary.
 
     Models stored in JSON are first formulated as a dictionary that can be read
@@ -585,9 +569,9 @@ def model_from_dict(obj: Dict) -> Model:
         rxn for rxn in obj["reactions"] if rxn.get("objective_coefficient", 0) != 0
     ]
     coefficients = {
-        model.reactions.get_by_id(F_REPLACE[F_REACTION](rxn["id"])): rxn[
-            "objective_coefficient"
-        ]
+        model.reactions.get_by_id(
+            _fix_id_from_dict(rxn["id"], "Reaction", f_replace)
+        ): rxn["objective_coefficient"]
         for rxn in objective_reactions
     }
     if "groups" in obj:
