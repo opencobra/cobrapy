@@ -171,7 +171,7 @@ def test_compare_xml_to_written_matlab_model(
     mat_output_file = tmp_path / xml_file.replace(".xml", ".mat")
     save_matlab_model(
         xml_model, str(mat_output_file.resolve())
-    )  # lac__D_e_boundary confuses the reading of matlab
+    )
     mat_model = load_matlab_model(str(mat_output_file.resolve()))
     assert compare_models(xml_model, mat_model) is None
 
@@ -311,17 +311,19 @@ def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) ->
         "seed.compound": ["cpd00020"],
         "unipathway.compound": ["UPC00022"],
         "lipidmaps": ["LMFA01060077"],
-        "reactome": ["REACT_113557", "REACT_389680", "REACT_29398"],
+        "reactome": sorted(["REACT_113557", "REACT_389680", "REACT_29398"]),
         "biocyc": ["PYRUVATE"],
-        "chebi": [
-            "CHEBI:15361",
-            "CHEBI:14987",
-            "CHEBI:8685",
-            "CHEBI:32816",
-            "CHEBI:45253",
-            "CHEBI:26466",
-            "CHEBI:26462",
-        ],
+        "chebi": sorted(
+            [
+                "CHEBI:15361",
+                "CHEBI:14987",
+                "CHEBI:8685",
+                "CHEBI:32816",
+                "CHEBI:45253",
+                "CHEBI:26466",
+                "CHEBI:26462",
+            ]
+        ),
         "pubchem.substance": ["3324"],
         "bigg.metabolite": ["pyr"],
         "cas": ["127-17-3"],

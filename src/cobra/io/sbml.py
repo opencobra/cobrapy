@@ -692,7 +692,7 @@ def _sbml_to_model(
                     f"Use of FORMULA in the notes element is "
                     f"discouraged, use fbc:chemicalFormula instead: {specie}"
                 )
-                met.formula = met.notes["FORMULA"]
+                met.formula = met.notes["FORMULA"] or None
 
         # Detect boundary metabolites
         if specie.getBoundaryCondition() is True:
