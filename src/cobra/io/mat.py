@@ -434,9 +434,6 @@ def mat_parse_annotations(
             prov: annotations[prov][i] for prov in providers if annotations[prov][i]
         }
 
-    # TODO - When cobrapy.notes are revised not be a dictionary (possibly when
-    #  annotations are fully SBML compliant, revise this function.
-
 
 def mat_parse_notes(
     target_list: List[Object],

@@ -1249,7 +1249,8 @@ def _model_to_sbml(
 
         # TODO: Will be implemented as part of
         #  https://github.com/opencobra/cobrapy/issues/810
-        # _check(model.setModelHistory(history), 'set model history')
+        #   I think this should be uncommented and under the if, like
+        #_check(model.setModelHistory(history), 'set model history')
 
     # Units
     flux_udef = None
