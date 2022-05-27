@@ -751,7 +751,7 @@ def eval_gpr(expr: Union[Expression, GPR], knockouts: Union[DictList, set]) -> b
         otherwise false
     """
     warn(
-        "eval_gpr() will be removed soon." "Use GPR().eval(knockouts) in the future",
+        "eval_gpr() will be removed soon. Use GPR().eval(knockouts) in the future",
         DeprecationWarning,
     )
     if isinstance(expr, GPR):

@@ -37,6 +37,7 @@ from copy import deepcopy
 from io import StringIO
 from sys import platform
 from typing import IO, Match, Optional, Pattern, Tuple, Type, Union, List
+from warnings import warn
 
 import libsbml
 
@@ -1693,21 +1694,21 @@ In the current stage the new annotation format is not completely supported yet.
 URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")
 
 URL_IDENTIFIERS_PREFIX = "https://identifiers.org"
-QUALIFIER_TYPES = {
-    "is": libsbml.BQB_IS,
-    "hasPart": libsbml.BQB_HAS_PART,
-    "isPartOf": libsbml.BQB_IS_PART_OF,
-    "isVersionOf": libsbml.BQB_IS_VERSION_OF,
-    "hasVersion": libsbml.BQB_HAS_VERSION,
-    "isHomologTo": libsbml.BQB_IS_HOMOLOG_TO,
-    "isDescribedBy": libsbml.BQB_IS_DESCRIBED_BY,
-    "isEncodedBy": libsbml.BQB_IS_ENCODED_BY,
-    "encodes": libsbml.BQB_ENCODES,
-    "occursIn": libsbml.BQB_OCCURS_IN,
-    "hasProperty": libsbml.BQB_HAS_PROPERTY,
-    "isPropertyOf": libsbml.BQB_IS_PROPERTY_OF,
-    "hasTaxon": libsbml.BQB_HAS_TAXON,
-    "unknown": libsbml.BQB_UNKNOWN,
+QUALIFIER_TYPES_COBRA_SBML_DICT = {
+    "bqb_is": libsbml.BQB_IS,
+    "bqb_hasPart": libsbml.BQB_HAS_PART,
+    "bqb_isPartOf": libsbml.BQB_IS_PART_OF,
+    "bqb_isVersionOf": libsbml.BQB_IS_VERSION_OF,
+    "bqb_hasVersion": libsbml.BQB_HAS_VERSION,
+    "bqb_isHomologTo": libsbml.BQB_IS_HOMOLOG_TO,
+    "bqb_isDescribedBy": libsbml.BQB_IS_DESCRIBED_BY,
+    "bqb_isEncodedBy": libsbml.BQB_IS_ENCODED_BY,
+    "bqb_encodes": libsbml.BQB_ENCODES,
+    "bqb_occursIn": libsbml.BQB_OCCURS_IN,
+    "bqb_hasProperty": libsbml.BQB_HAS_PROPERTY,
+    "bqb_isPropertyOf": libsbml.BQB_IS_PROPERTY_OF,
+    "bqb_hasTaxon": libsbml.BQB_HAS_TAXON,
+    "bqb_unknown": libsbml.BQB_UNKNOWN,
     "bqm_is": libsbml.BQM_IS,
     "bqm_isDescribedBy": libsbml.BQM_IS_DESCRIBED_BY,
     "bqm_isDerivedFrom": libsbml.BQM_IS_DERIVED_FROM,
@@ -1825,7 +1826,15 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
     Returns
     -------
     (provider, identifier) if resolvable, None otherwise
+
+    .. deprecated ::
+    Use cobra.core.metadata.helper.parse_identifiers_uri()
     """
+    warn(
+        "_parse_annotation_info() is being replaced by "
+        "cobra.core.metadata.helper.parse_identifiers_uri()",
+        DeprecationWarning,
+    )
     match = URL_IDENTIFIERS_PATTERN.match(uri)
     if match:
         provider, identifier = match.group(1), match.group(2)
@@ -1901,9 +1910,9 @@ def _cobra_cvterms_to_SMBL_CVterm(
         cv: "libsbml.CVTerm" = libsbml.CVTerm()
         cv.setQualifierType(qualifier_type)
         if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
-            cv.setBiologicalQualifierType(Qualifier[qualifier].value)
+            cv.setBiologicalQualifierType(QUALIFIER_TYPES_COBRA_SBML_DICT[qualifier])
         elif qualifier_type == libsbml.MODEL_QUALIFIER:
-            cv.setModelQualifierType(Qualifier[qualifier].value - 14)
+            cv.setModelQualifierType(QUALIFIER_TYPES_COBRA_SBML_DICT[qualifier])
         else:
             raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
         for uri in ex_res.resources:

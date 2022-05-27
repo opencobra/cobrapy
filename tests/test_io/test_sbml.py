@@ -557,7 +557,7 @@ def test_gprs(data_directory: str, tmp_path: Path) -> None:
 
 def test_identifiers_annotation() -> None:
     """Test annotation with identifiers."""
-    from cobra.io.sbml import _parse_annotation_info
+    from cobra.core.metadata.helper import parse_identifiers_uri
 
     for uri in [
         "http://identifiers.org/chebi/CHEBI:000123",
@@ -565,7 +565,7 @@ def test_identifiers_annotation() -> None:
         "http://identifiers.org/CHEBI:000123",
         "https://identifiers.org/CHEBI:000123",
     ]:
-        data = _parse_annotation_info(uri)
+        data = parse_identifiers_uri(uri)
         assert data
         assert data[0] == "chebi"
         assert data[1] == "CHEBI:000123"
@@ -576,7 +576,7 @@ def test_identifiers_annotation() -> None:
         "http://identifiers.org/taxonomy:9602",
         "https://identifiers.org/taxonomy:9602",
     ]:
-        data = _parse_annotation_info(uri)
+        data = parse_identifiers_uri(uri)
         assert data
         assert data[0] == "taxonomy"
         assert data[1] == "9602"
@@ -585,7 +585,7 @@ def test_identifiers_annotation() -> None:
         "http://identifier.org/taxonomy/9602",
         "https://test.com",
     ]:
-        data = _parse_annotation_info(uri)
+        data = parse_identifiers_uri(uri)
         assert data is None
 
 
