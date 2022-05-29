@@ -7,12 +7,7 @@ from pathlib import Path
 
 from cobra.core.metadata import CVTerms
 from cobra.core.species import Species
-from cobra.io import (
-    load_json_model,
-    read_sbml_model,
-    save_json_model,
-    write_sbml_model,
-)
+from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
 
 
 PUBMED_EXAMPLE = "https://identifiers.org/pubmed/1111111"

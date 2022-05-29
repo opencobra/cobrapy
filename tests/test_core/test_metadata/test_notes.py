@@ -3,13 +3,7 @@ import os
 import pytest
 
 from cobra.core.metadata import Notes
-from cobra.io import (
-    load_json_model,
-    read_sbml_model,
-    save_json_model,
-    write_sbml_model,
-)
-
+from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
 
 NEW_VALUE1 = "New Value 1"
 NEW_VALUE3 = "New Value 3"

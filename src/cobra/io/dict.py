@@ -9,10 +9,7 @@ import numpy as np
 
 from ..core import Gene, Group, Metabolite, Model, Reaction
 from ..core.metadata import MetaData, Notes
-from ..core.metadata.helper import (
-    URL_IDENTIFIERS_PATTERN,
-    parse_identifiers_uri,
-)
+from ..core.metadata.helper import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
 from ..io.sbml import (
     F_GENE,
     F_GENE_REV,

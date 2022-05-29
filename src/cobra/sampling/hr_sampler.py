@@ -12,11 +12,7 @@ import pandas as pd
 from optlang.interface import OPTIMAL
 from optlang.symbolics import Zero
 
-from cobra.util import (
-    constraint_matrices,
-    create_stoichiometric_matrix,
-    nullspace,
-)
+from cobra.util import constraint_matrices, create_stoichiometric_matrix, nullspace
 
 
 if TYPE_CHECKING:
