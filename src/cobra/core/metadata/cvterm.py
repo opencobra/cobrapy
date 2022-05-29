@@ -1,11 +1,10 @@
 """Define the Controlled Vocabulary term class."""
 
-import collections
 import re
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict, UserList, defaultdict
+from collections.abc import MutableMapping
 from enum import Enum
 from typing import Dict, FrozenSet, Iterator, List, Optional, Tuple, Union
-from warnings import warn
 
 from .helper import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
 
@@ -76,7 +75,7 @@ class CVTerm:
         return qual, {"resources": self.uri}
 
 
-class CVTerms(collections.MutableMapping):
+class CVTerms(MutableMapping):
     """
     Representation of all CVTerms of an object in their
     dependency structure. It is like a dictionary where
@@ -351,7 +350,7 @@ class CVTerms(collections.MutableMapping):
         return self.__str__()
 
 
-class CVList(collections.UserList):
+class CVList(UserList):
     """
     Class representation of all sets of resources and their nested
     annotation corresponding to a given qualifier. It is a list but is restricted to
