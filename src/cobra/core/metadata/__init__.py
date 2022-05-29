@@ -1,3 +1,5 @@
+"""Provide functions for loading, saving and modifying metadata annotations."""
+
 from cobra.core.metadata.cvterm import (
     CVList,
     CVTerm,

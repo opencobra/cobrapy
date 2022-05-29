@@ -4,7 +4,6 @@ from os.path import join
 from pathlib import Path
 from typing import Callable
 
-
 from cobra import Model
 from cobra import io as cio
 
@@ -38,10 +37,7 @@ def test_load_json_model(
     assert compare_models(mini_model, json_model) is None
 
 
-def test_save_json_model(
-    tmp_path: Path,
-    mini_model: Model
-) -> None:
+def test_save_json_model(tmp_path: Path, mini_model: Model) -> None:
     """Test the writing of JSON model."""
     output_file = tmp_path.joinpath("mini.json")
     cio.save_json_model(mini_model, output_file, pretty=True)

@@ -3,7 +3,16 @@ import os
 import pytest
 
 from cobra.core.metadata import Notes
-from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
+from cobra.io import (
+    load_json_model,
+    read_sbml_model,
+    save_json_model,
+    write_sbml_model,
+)
+
+
+NEW_VALUE1 = "New Value 1"
+NEW_VALUE3 = "New Value 3"
 
 
 incoming_notes_str = (
@@ -46,7 +55,7 @@ modified_notes_str = (
 
 
 def test_notes(data_directory, tmp_path):
-    """reading notes from SBML to cobra model"""
+    """Test creating notes from SBML to cobra model."""
     model_path = os.path.join(data_directory, "e_coli_core_for_annotation.xml")
     assert os.path.exists(model_path)
     model = read_sbml_model(model_path)
@@ -69,18 +78,18 @@ def test_notes(data_directory, tmp_path):
     assert rx1.notes["Key3"] == "Value3"
 
     # modifying already present key-value
-    rx1.notes["Key1"] = "New Value 1"
-    rx1.notes["Key3"] = "New Value 3"
+    rx1.notes["Key1"] = NEW_VALUE1
+    rx1.notes["Key3"] = NEW_VALUE3
 
     # trying to insert a new key-value
     with pytest.raises(ValueError):
-        rx1.notes["Key4"] = "New Value 3"
+        rx1.notes["Key4"] = NEW_VALUE3
 
     # checking modified notes dict and string
     assert rx1.notes.notes_xhtml == modified_notes_str
-    assert rx1.notes["Key1"] == "New Value 1"
+    assert rx1.notes["Key1"] == NEW_VALUE1
     assert rx1.notes["Key2"] == "Value2"
-    assert rx1.notes["Key3"] == "New Value 3"
+    assert rx1.notes["Key3"] == NEW_VALUE3
 
     # writing and reading back the model
     path_to_file = os.path.join(tmp_path, "model_notes.xml")
@@ -91,9 +100,9 @@ def test_notes(data_directory, tmp_path):
 
     # checks after reading model back again
     assert rx1_after_reading.notes.notes_xhtml == modified_notes_str
-    assert rx1_after_reading.notes["Key1"] == "New Value 1"
+    assert rx1_after_reading.notes["Key1"] == NEW_VALUE1
     assert rx1_after_reading.notes["Key2"] == "Value2"
-    assert rx1_after_reading.notes["Key3"] == "New Value 3"
+    assert rx1_after_reading.notes["Key3"] == NEW_VALUE3
 
 
 def test_reading_writing_notes(data_directory, tmp_path):

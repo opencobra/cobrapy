@@ -5,7 +5,8 @@ model objects. The history allows to encode who created or modified
 objects in a model with respective time stamps.
 """
 from datetime import datetime
-from typing import Dict, Iterable, List, Union, Optional
+from typing import Dict, Iterable, List, Optional, Union
+
 
 STRTIME_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
 
@@ -243,12 +244,10 @@ class HistoryDatetime:
     @staticmethod
     def utcnow() -> "HistoryDatetime":
         """HistoryDatetime with current UTC time."""
-        utcnow = datetime.utcnow()
-        value = utcnow.strftime(STRTIME_FORMAT)
-        return HistoryDatetime(value)
+        return HistoryDatetime(datetime.utcnow().strftime(STRTIME_FORMAT))
 
     @staticmethod
-    def validate_datetime(datetime_str: str) -> bool:
+    def validate_datetime(datetime_str: str) -> None:
         """Validate if the date format is of type w3cdtf ISO 8601.
 
         Raises ValueError if not valid.
@@ -268,7 +267,6 @@ class HistoryDatetime:
                     )
                 except ValueError as e1:
                     raise ValueError(str(e1))
-                return True
             else:
                 utcoff = datetime_str[20:25]
                 utcoff_p36 = utcoff.replace(":", "")
@@ -277,9 +275,6 @@ class HistoryDatetime:
                     datetime.strptime(date_p36, STRTIME_FORMAT)
                 except ValueError:
                     raise ValueError(str(e))
-                return True
-
-        return True
 
     def __eq__(self, history_datetime: "HistoryDatetime") -> bool:
         return self.datetime == history_datetime.datetime

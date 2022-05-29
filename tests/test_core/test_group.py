@@ -6,7 +6,12 @@ import pytest
 
 from cobra import Model
 from cobra.core import Group
-from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
+from cobra.io import (
+    load_json_model,
+    read_sbml_model,
+    save_json_model,
+    write_sbml_model,
+)
 
 
 def test_group_add_elements(model: Model) -> None:

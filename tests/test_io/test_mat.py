@@ -169,9 +169,7 @@ def test_compare_xml_to_written_matlab_model(
     """
     xml_model = read_sbml_model(str((data_directory / xml_file).resolve()))
     mat_output_file = tmp_path / xml_file.replace(".xml", ".mat")
-    save_matlab_model(
-        xml_model, str(mat_output_file.resolve())
-    )
+    save_matlab_model(xml_model, str(mat_output_file.resolve()))
     mat_model = load_matlab_model(str(mat_output_file.resolve()))
     assert compare_models(xml_model, mat_model) is None
 

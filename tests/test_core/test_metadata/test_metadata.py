@@ -1,6 +1,4 @@
-"""
-Tests for the metadata structures
-"""
+"""Tests for the metadata structures."""
 
 import json
 import os
@@ -9,7 +7,13 @@ from pathlib import Path
 
 from cobra.core.metadata import CVTerms
 from cobra.core.species import Species
-from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
+from cobra.io import (
+    load_json_model,
+    read_sbml_model,
+    save_json_model,
+    write_sbml_model,
+)
+
 
 PUBMED_EXAMPLE = "https://identifiers.org/pubmed/1111111"
 ECO_EXAMPLE = "https://identifiers.org/eco/ECO:0000004"
@@ -43,7 +47,6 @@ def test_annotation():
     assert s.annotation.keyvaluepairs == {}
     assert s.annotation.history.creators == []
     assert s.annotation.history.modified_dates == []
-
 
     # setting annotation via old annotation format
     s.annotation["chebi"] = ["CHEBI:43215", "CHEBI:11881"]
@@ -84,9 +87,11 @@ def test_nested_annotation(data_directory):
     s = Species()
     s.annotation.add_cvterms(cvterms_data)
     assert s.annotation == {
-        "uniprot": ["P68871", "P69905", "P69905"],
-        "kegg.compound": ["C00032"],
         "chebi": ["CHEBI:17627"],
+        "eco": ["000000"],
+        "kegg.compound": ["C00032"],
+        "pubmed": ["1111111"],
+        "uniprot": ["P68871", "P69905"],
     }
     # check cvterms
     main_cvt = CVTerms(
@@ -153,16 +158,18 @@ def test_cvterms_from_ecoli_xml(data_directory):
 
     # check backwards compatibility
     assert model.annotation == {
-        "taxonomy": ["511145"],
         "bigg.model": ["e_coli_core"],
         "doi": ["10.1128/ecosalplus.10.2.1"],
+        "eco": ["ECO:0000004"],
         "ncbigi": ["gi:16128336"],
+        "pubmed": ["1111111"],
+        "taxonomy": ["511145"],
     }
 
 
 def test_writing_xml(data_directory, tmp_path):
     model = _read_ecoli_annotation_model(data_directory)
-    assert write_sbml_model(model, tmp_path, "e_coli_core_writing.xml") is None
+    assert write_sbml_model(model, tmp_path.joinpath("e_coli_core_writing.xml")) is None
 
 
 def test_read_write_json(data_directory, tmp_path):
@@ -172,10 +179,12 @@ def test_read_write_json(data_directory, tmp_path):
 
     model = load_json_model(json_path)
     assert model.annotation == {
-        "taxonomy": ["511145"],
         "bigg.model": ["e_coli_core"],
         "doi": ["10.1128/ecosalplus.10.2.1"],
+        "eco": ["ECO:0000004"],
         "ncbigi": ["gi:16128336"],
+        "pubmed": ["1111111"],
+        "taxonomy": ["511145"],
     }
     assert model.annotation.cvterms == CVTerms(ecoli_model_annotation)
 

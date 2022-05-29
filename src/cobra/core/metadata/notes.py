@@ -1,7 +1,9 @@
 import collections
 import re
-from typing import Iterator, Dict
-from warnings import warn
+from typing import Dict, Iterator
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Notes(collections.MutableMapping):
@@ -118,8 +120,7 @@ class Notes(collections.MutableMapping):
         return self.__str__()
 
     def update_notes_dict(self) -> None:
-        """Updates notes dictionary according to key-value stored
-        in notes string.
+        """Update notes dictionary according to key-value stored in notes string.
         """
         if self._notes_xhtml:
             for match in Notes.PATTERN_PTAG.finditer(self._notes_xhtml):
@@ -130,26 +131,24 @@ class Notes(collections.MutableMapping):
                 self._data[key.strip()] = value.strip()
 
     def update_notes_str(self, key: str, value: str) -> None:
-        """Updates the notes string according to key-value pairs
-        passed. If any such 'key' is present inside notes string
-        having format '<p> key : oldvalue </p>', then it will be
-        updated to store the new value. But if that 'key' is not
-        present, an ValueError will be thrown.
+        """Updates the notes string according to key-value pairs passed.
+
+        If any such 'key' is present inside notes string having format
+         '<p> key : oldvalue </p>', then it will be updated to store the new value.
+        But if that 'key' is not present, an ValueError will be thrown.
         """
         # if notes string is empty
         if self._notes_xhtml is None:
             raise ValueError(
-                "Notes string is not a right place "
-                "to store key value pairs. Store them "
-                "at appropriate place in the document."
+                "Notes string is not a right place to store key value pairs. "
+                "Store them at appropriate place in the document."
             )
 
-        # if value passed is not of type 'str'
         if not isinstance(value, str):
-            warn(
-                "The value must be of type string. \n"
-                "Converting value to 'string' type and "
-                "then putting in notes string...."
+            logger.warning(
+                f"The value must be of type string. \n"
+                f"Converting value {value} to 'string' type and "
+                f"then putting in notes string...."
             )
             value = str(value)
 
@@ -166,9 +165,8 @@ class Notes(collections.MutableMapping):
         if match is None:
             del self._data[key]
             raise ValueError(
-                "Notes string is not the right place "
-                "to store key value pairs. Store them "
-                "at appropriate place in the document."
+                "Notes string is not the right place to store key value pairs."
+                "Store them at appropriate place in the document."
             )
         # otherwise update the content
         else:
@@ -185,8 +183,6 @@ class Notes(collections.MutableMapping):
         dictionary. It should be used when creating notes from scratch (such as import
         if the function already sets up a dict).
 
-        This method should warn if using terms that should go into annotations.
-
         Parameters
         ----------
         data_dict: dict
@@ -197,6 +193,11 @@ class Notes(collections.MutableMapping):
         Notes
             A new Notes object.
         """
+        #TODO - make it warn about annotion terms and/or use a local version of
+        # identifiers for that. See slamonella.xml for an example, since metabolites
+        #  have PUBCHEM, KEGG. Also, some KEGG values are 0, which is invalid.
+        #TODO - Some metabolites in salmonella.xml have CHARGE in notes that disagrees
+        # with charge in the object (I think). Should warn/log.
         str_list = ['<html xmlns = "http://www.w3.org/1999/xhtml">']
         str_suffix = "</html>"
         for k, v in data_dict.items():

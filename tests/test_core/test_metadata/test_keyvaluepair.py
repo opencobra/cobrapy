@@ -1,6 +1,9 @@
 from cobra.core.metadata.keyvaluepairs import KeyValueEntry, KeyValuePairs
 
 
+EXAMPLE_URL = "https://tinyurl.com/ybyr7b62"
+
+
 def test_keyvalueentry():
     keyvaluedict = KeyValueEntry.from_data(
         {
@@ -8,7 +11,7 @@ def test_keyvalueentry():
             "name": "abc_xyz",
             "key": "keyX",
             "value": "45",
-            "uri": "https://tinyurl.com/ybyr7b62",
+            "uri": EXAMPLE_URL,
         }
     )
     assert isinstance(keyvaluedict, KeyValueEntry)
@@ -16,7 +19,24 @@ def test_keyvalueentry():
     assert keyvaluedict.name == "abc_xyz"
     assert keyvaluedict.key == "keyX"
     assert keyvaluedict.value == "45"
-    assert keyvaluedict.uri == "https://tinyurl.com/ybyr7b62"
+    assert keyvaluedict.uri == EXAMPLE_URL
+
+
+def test_keyvalueentry_empty_uri():
+    keyvaluedict = KeyValueEntry.from_data(
+        {
+            "id": "KV_id",
+            "name": "abc_xyz",
+            "key": "keyX",
+            "value": "45",
+        }
+    )
+    assert isinstance(keyvaluedict, KeyValueEntry)
+    assert keyvaluedict.id == "KV_id"
+    assert keyvaluedict.name == "abc_xyz"
+    assert keyvaluedict.key == "keyX"
+    assert keyvaluedict.value == "45"
+    assert keyvaluedict.uri is None
 
 
 def test_keyvaluepairs():
@@ -33,14 +53,12 @@ def test_keyvaluepairs():
             "name": "abc_xyz2",
             "key": "key2",
             "value": "48",
-            "uri": "https://tinyurl2.com/ybyr7b62",
+            "uri": EXAMPLE_URL,
         }
     )
 
     kvp = KeyValuePairs(entries=[entry1, entry2])
-    print(kvp)
     assert len(kvp) == 2
     for key in ["key1", "key2"]:
-        print("***", key, "***")
         assert key in kvp
     assert kvp["key2"] == entry2

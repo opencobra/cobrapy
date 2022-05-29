@@ -10,11 +10,13 @@ from cobra.manipulation import (
     remove_genes,
 )
 
+
 A_AND_B_OR_C_AND_A = "(a and b) or (c and a)"
 A_AND_B_AND_D_AND_E = "(a and b and d and e)"
 A_AND_B_OR_B_AND_C = "(a and b) or (b and c)"
 F_AND_B_OR_B_AND_C = "(f and b) or (b and c)"
 B_AND_C = "b and c"
+
 
 def test_prune_unused_metabolites_output_type(model: Model) -> None:
     """Test the output type of unused metabolites pruning."""
@@ -133,7 +135,7 @@ def test_gene_knockout(salmonella: Model) -> None:
     test_model.add_reactions([test_reaction_1])
     with test_model:
         knocked_out_reactions = knock_out_model_genes(test_model, ["eggs"])
-        assert knocked_out_reactions == list()
+        assert knocked_out_reactions == []
     with test_model:
         knocked_out_reactions = knock_out_model_genes(test_model, ["eggs", "spam"])
         expected_reactions = [test_model.reactions.get_by_id("test1")]
@@ -142,13 +144,13 @@ def test_gene_knockout(salmonella: Model) -> None:
     test_reaction_1.gene_reaction_rule = "g1 and g2 and (g3 or g4 or (g5 and g6))"
     with test_model:
         knocked_out_reactions = knock_out_model_genes(test_model, ["g3"])
-        assert knocked_out_reactions == list()
+        assert knocked_out_reactions == []
     with test_model:
         knocked_out_reactions = knock_out_model_genes(test_model, ["g1"])
         assert knocked_out_reactions == [test_reaction_1]
     with test_model:
         knocked_out_reactions = knock_out_model_genes(test_model, ["g5"])
-        assert knocked_out_reactions == list()
+        assert knocked_out_reactions == []
     with test_model:
         knocked_out_reactions = knock_out_model_genes(test_model, ["g3", "g4", "g5"])
         assert knocked_out_reactions == [test_reaction_1]
@@ -159,7 +161,7 @@ def test_gene_knockout(salmonella: Model) -> None:
         assert knocked_out_reactions == [test_reaction_1]
     with test_model:
         knocked_out_reactions = knock_out_model_genes(test_model, ["for"])
-        assert knocked_out_reactions == list()
+        assert knocked_out_reactions == []
     test_reaction_1.gene_reaction_rule = "g1 and g2 and g2.conjugate"
     with test_model:
         knocked_out_reactions = knock_out_model_genes(test_model, ["g2"])

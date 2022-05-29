@@ -1,3 +1,5 @@
+"""Define the cobra MetaData class."""
+
 from collections import MutableMapping, OrderedDict
 from typing import Dict, Iterator, List, Union
 
@@ -44,6 +46,22 @@ class MetaData(MutableMapping):
         sbo: str = "",
         keyvaluepairs: List = None,
     ):
+        """Initialize the MetaData class.
+
+        Parameters
+        ---------
+        cvterms : dict or CVTerms, optional
+            Which controlled vocabulary terms does the metadata have. Default None.
+        history: dict or History, optional
+            History of annotation, including creation data, creators, and optional
+            modificiation date. Default None.
+        sbo: str
+            SBO term, if relevant. Default "".
+            If there are
+        keyvaluepairs: KeyValuePairs
+            For annotations that don't match the identifiers.org format.
+
+        """
         self._cvterms = CVTerms.from_data(cvterms)
         self._history = History.from_data(history)
         self._keyvaluepairs = KeyValuePairs(keyvaluepairs)
@@ -65,13 +83,38 @@ class MetaData(MutableMapping):
 
     @property
     def sbo(self) -> str:
+        """Return the SBO term of the MetaData.
+
+        Returns
+        -------
+        str: SBO as string
+        """
         return self._sbo
 
     @sbo.setter
-    def sbo(self, value) -> None:
+    def sbo(self, value: str) -> None:
+        """Set the SBO term."""
         self._sbo = value
 
     def __setitem__(self, key: str, value: List) -> None:
+        """Set the item for accessing metadata as dict (the old style annotation).
+
+        Parameters
+        ----------
+        key: str
+            provider key word.
+        value: List
+            A list that will contain either term(s) or qualifier and term(s).
+
+        If the key is sbo, sets the self.sbo term to the first item in the list. If
+        you'd like to add multiple SBO terms, use the CVTerms() and add sbo as
+        identifiers.org formatted links.
+
+        See Also
+        --------
+        CVTerms().add_simple_annotations()
+
+        """
         if key == "sbo":
             if isinstance(value, list):
                 value = value[0]

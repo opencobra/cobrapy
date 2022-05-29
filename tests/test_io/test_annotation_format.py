@@ -2,8 +2,6 @@
 
 from pathlib import Path
 
-import pytest
-
 from cobra.io import load_json_model, write_sbml_model
 
 

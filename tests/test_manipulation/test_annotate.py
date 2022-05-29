@@ -7,7 +7,7 @@ from cobra.manipulation import add_SBO
 def test_sbo_annotation(model: Model) -> None:
     """Test SBO annotation function."""
     rxns = model.reactions
-    rxns.get_by_id('EX_o2_e').annotation.sbo = ''
+    rxns.get_by_id("EX_o2_e").annotation.sbo = ""
     fake_DM = Reaction("DM_h_c")
     model.add_reactions([fake_DM])
     fake_DM.add_metabolites({model.metabolites.get_by_id("h_c"): -1})

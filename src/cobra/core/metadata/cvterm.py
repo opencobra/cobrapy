@@ -2,7 +2,7 @@
 
 import collections
 import re
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict, defaultdict
 from enum import Enum
 from typing import Dict, FrozenSet, Iterator, List, Optional, Tuple, Union
 from warnings import warn
@@ -513,4 +513,3 @@ class ExternalResources:
 
     def __repr__(self) -> str:
         return self.__str__()
-
