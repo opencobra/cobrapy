@@ -1,7 +1,8 @@
 import collections
+import logging
 import re
 from typing import Dict, Iterator
-import logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -120,8 +121,7 @@ class Notes(collections.MutableMapping):
         return self.__str__()
 
     def update_notes_dict(self) -> None:
-        """Update notes dictionary according to key-value stored in notes string.
-        """
+        """Update notes dictionary according to key-value stored in notes string."""
         if self._notes_xhtml:
             for match in Notes.PATTERN_PTAG.finditer(self._notes_xhtml):
                 try:
@@ -193,10 +193,10 @@ class Notes(collections.MutableMapping):
         Notes
             A new Notes object.
         """
-        #TODO - make it warn about annotion terms and/or use a local version of
+        # TODO - make it warn about annotion terms and/or use a local version of
         # identifiers for that. See slamonella.xml for an example, since metabolites
         #  have PUBCHEM, KEGG. Also, some KEGG values are 0, which is invalid.
-        #TODO - Some metabolites in salmonella.xml have CHARGE in notes that disagrees
+        # TODO - Some metabolites in salmonella.xml have CHARGE in notes that disagrees
         # with charge in the object (I think). Should warn/log.
         str_list = ['<html xmlns = "http://www.w3.org/1999/xhtml">']
         str_suffix = "</html>"

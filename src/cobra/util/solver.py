@@ -13,7 +13,15 @@ import logging
 import re
 from functools import partial
 from types import ModuleType
-from typing import TYPE_CHECKING, Dict, List, NamedTuple, Optional, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Dict,
+    List,
+    NamedTuple,
+    Optional,
+    Tuple,
+    Union,
+)
 from warnings import warn
 
 import optlang

@@ -1,12 +1,13 @@
 """Provide functions for I/O in JSON format."""
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Union, IO
-
-from .dict import model_from_dict, model_to_dict
-from cobra import io as cio
+from typing import IO, TYPE_CHECKING, Any, Dict, List, Union
 
 import jsonschema
 from importlib_resources import open_text
+
+from cobra import io as cio
+
+from .dict import model_from_dict, model_to_dict
 
 
 try:
@@ -88,7 +89,7 @@ def save_json_model(
     filename: Union[str, Path, IO[str]],
     sort: bool = False,
     pretty: bool = False,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> None:
     """Write the cobra model to a file in JSON format.
 
@@ -201,7 +202,7 @@ def validate_json_model(
     validator = jsonschema.Draft7Validator(schema)
 
     try:
-        if isinstance(filename, (str , Path)):
+        if isinstance(filename, (str, Path)):
             with open(filename, "r") as file_handle:
                 errors = validator.iter_errors(json.load(file_handle))
         else:

@@ -159,7 +159,8 @@ class ACHRSampler(HRSampler):
             names = [r.id for r in self.model.reactions]
 
             return pd.DataFrame(
-                samples[:, self.fwd_idx] - samples[:, self.rev_idx], columns=names,
+                samples[:, self.fwd_idx] - samples[:, self.rev_idx],
+                columns=names,
             )
         else:
             names = [v.name for v in self.model.variables]

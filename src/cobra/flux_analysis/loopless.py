@@ -181,7 +181,9 @@ def loopless_solution(
         prob = model.problem
         # Needs one fixed bound for cplex...
         loopless_obj_constraint = prob.Constraint(
-            model.objective.expression, lb=-1e32, name="loopless_obj_constraint",
+            model.objective.expression,
+            lb=-1e32,
+            name="loopless_obj_constraint",
         )
         model.add_cons_vars([loopless_obj_constraint])
         _add_cycle_free(model, fluxes)

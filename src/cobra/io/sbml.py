@@ -36,16 +36,12 @@ from collections import defaultdict, namedtuple
 from copy import deepcopy
 from io import StringIO
 from sys import platform
-from typing import IO, Match, Optional, Pattern, Tuple, Type, Union, List
+from typing import IO, List, Match, Optional, Pattern, Tuple, Type, Union
 from warnings import warn
 
 import libsbml
 
 import cobra
-
-from ..core import GPR, Gene, Group, Metabolite, Model, Reaction
-from ..manipulation.validate import check_metabolite_compartment_formula
-from ..util.solver import linear_reaction_coefficients, set_objective
 from cobra.core.metadata import (
     Creator,
     CVList,
@@ -55,6 +51,10 @@ from cobra.core.metadata import (
     Notes,
     Qualifier,
 )
+
+from ..core import GPR, Gene, Group, Metabolite, Model, Reaction
+from ..manipulation.validate import check_metabolite_compartment_formula
+from ..util.solver import linear_reaction_coefficients, set_objective
 
 
 class CobraSBMLError(Exception):
@@ -1251,7 +1251,7 @@ def _model_to_sbml(
         # TODO: Will be implemented as part of
         #  https://github.com/opencobra/cobrapy/issues/810
         #   I think this should be uncommented and under the if, like
-        #_check(model.setModelHistory(history), 'set model history')
+        # _check(model.setModelHistory(history), 'set model history')
 
     # Units
     flux_udef = None
