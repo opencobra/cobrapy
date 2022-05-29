@@ -4,9 +4,9 @@ from collections import OrderedDict
 from collections.abc import MutableMapping
 from typing import Dict, Iterator, List, Union
 
-from cobra.core.metadata.cvterm import CVTerms
-from cobra.core.metadata.history import Creator, History
-from cobra.core.metadata.keyvaluepairs import KeyValuePairs
+from ..metadata.cvterm import CVTerms
+from ..metadata.history import Creator, History
+from ..metadata.keyvaluepairs import KeyValuePairs
 
 
 class MetaData(MutableMapping):

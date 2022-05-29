@@ -5,6 +5,7 @@ from os.path import join
 import pytest
 
 from cobra import Model
+from cobra.core import Group
 from cobra.io import load_json_model, read_sbml_model, save_json_model
 
 
