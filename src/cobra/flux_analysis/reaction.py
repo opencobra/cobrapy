@@ -58,7 +58,7 @@ def assess(
         if m.slim_optimize(error_value=0.0) >= flux_coefficient_cutoff:
             return True
         else:
-            results = dict()
+            results = {}
             results["precursors"] = assess_component(
                 model, reaction, "reactants", flux_coefficient_cutoff
             )
@@ -113,7 +113,7 @@ def assess_component(
 
     """
     reaction = model.reactions.get_by_any(reaction)[0]
-    result_key = dict(reactants="produced", products="capacity")[side]
+    result_key = {"reactants": "produced", "products": "capacity"}[side]
     get_components = attrgetter(side)
     with model as m:
         m.objective = reaction
