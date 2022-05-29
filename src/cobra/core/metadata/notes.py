@@ -1,4 +1,4 @@
-import collections
+from collections.abc import MutableMapping
 import logging
 import re
 from typing import Dict, Iterator
@@ -7,7 +7,7 @@ from typing import Dict, Iterator
 logger = logging.getLogger(__name__)
 
 
-class Notes(collections.MutableMapping):
+class Notes(MutableMapping):
     """Class representation of 'notes' of an object.
 
     The previous version of COBRApy was parsing entries of

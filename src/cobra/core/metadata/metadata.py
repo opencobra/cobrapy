@@ -1,6 +1,7 @@
 """Define the cobra MetaData class."""
 
-from collections import MutableMapping, OrderedDict
+from collections import OrderedDict
+from collections.abc import MutableMapping
 from typing import Dict, Iterator, List, Union
 
 from cobra.core.metadata.cvterm import CVTerms
