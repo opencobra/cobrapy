@@ -6,8 +6,14 @@ from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Union
 
 import numpy as np
 
-from ..core import Gene, Metabolite, Model, Reaction, UserDefinedConstraint, \
-    ConstraintComponent
+from ..core import (
+    ConstraintComponent,
+    Gene,
+    Metabolite,
+    Model,
+    Reaction,
+    UserDefinedConstraint,
+)
 from ..util.solver import set_objective
 
 
@@ -84,7 +90,6 @@ _OPTIONAL_CONSTRAINT_COMP_ATTRIBUTES = {
     "notes": {},
     "annotation": {},
 }
-
 
 
 def _fix_type(
@@ -390,8 +395,6 @@ def user_defined_const_from_dict(constraint: Dict) -> UserDefinedConstraint:
         else:
             setattr(new_user_defined_const, k, v)
     return new_user_defined_const
-
-
 
 
 def model_to_dict(model: Model, sort: bool = False) -> OrderedDict:

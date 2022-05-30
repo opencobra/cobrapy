@@ -145,6 +145,9 @@
     },
     "annotation": {
       "type": "object"
+    },
+    "user_defined_constraints":{
+      "type": "array"
     }
   },
   "required": [

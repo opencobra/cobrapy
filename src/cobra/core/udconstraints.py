@@ -65,7 +65,7 @@ class UserDefinedConstraint(Object):
             self.add_constraint_comps(const_comps)
 
     class ComputeNumericNodes(NodeTransformer):
-        """ Compute the value of nodes which are solvable i.e
+        """Compute the value of nodes which are solvable i.e
         node containing numeric value on both sides.
         """
 

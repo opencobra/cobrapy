@@ -100,7 +100,7 @@ class Model(Object):
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
             self.groups = DictList()  # A list of cobra.Groups
-            self.user_defined_const = DictList() # A list of UserDefinedConstraints
+            self.user_defined_const = DictList()  # A list of UserDefinedConstraints
             self._const_ids = set()
             # genes based on their ids {Gene.id: Gene}
             self._compartments = {}
@@ -432,7 +432,6 @@ class Model(Object):
                 new_user_defined_const.add_constraint_comps([new_const_comp])
 
             new.user_defined_const.append(new_user_defined_const)
-
 
         try:
             new._solver = deepcopy(self.solver)
