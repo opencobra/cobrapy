@@ -987,7 +987,7 @@ class Model(Object):
                 constraints = [constraints]
             else:
                 raise TypeError(
-                    f"The constraints passed must be inside " f"a list: {constraints}"
+                    f"The constraints passed must be inside a list: {constraints}"
                 )
 
         for constraint in constraints:
