@@ -8,3 +8,4 @@ from cobra.core.reaction import Reaction
 from cobra.core.group import Group
 from cobra.core.solution import Solution, get_solution
 from cobra.core.species import Species
+from cobra.core.udconstraints import ConstraintComponent, UserDefinedConstraint

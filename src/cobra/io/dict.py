@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Union
 
 import numpy as np
 
-from ..core import Gene, Metabolite, Model, Reaction
+from ..core import Gene, Metabolite, Model, Reaction, UserDefinedConstraint, \
+    ConstraintComponent
 from ..util.solver import set_objective
 
 
@@ -65,6 +66,25 @@ _OPTIONAL_MODEL_ATTRIBUTES = {
     "notes": {},
     "annotation": {},
 }
+
+_REQUIRED_CONSTRAINT_ATTRIBUTES = ["lower_bound", "upper_bound", "constraint_comps"]
+_ORDERED_OPTIONAL_CONSTRAINT_KEYS = ["id", "name", "notes", "annotation"]
+_OPTIONAL_CONSTRAINT_ATTRIBUTES = {
+    "id": None,
+    "name": None,
+    "notes": {},
+    "annotation": {},
+}
+
+_REQUIRED_CONSTRAINT_COMP_ATTRIBUTES = ["variable", "coefficient", "variable_type"]
+_ORDERED_OPTIONAL_CONSTRAINT_COMP_KEYS = ["id", "name", "notes", "annotation"]
+_OPTIONAL_CONSTRAINT_COMP_ATTRIBUTES = {
+    "id": None,
+    "name": None,
+    "notes": {},
+    "annotation": {},
+}
+
 
 
 def _fix_type(
@@ -325,6 +345,55 @@ def _reaction_from_dict(reaction: Dict, model: Model) -> Reaction:
     return new_reaction
 
 
+def const_comp_to_dict(component: ConstraintComponent) -> Dict:
+    new_const_comp = OrderedDict()
+    for key in _REQUIRED_CONSTRAINT_COMP_ATTRIBUTES:
+        new_const_comp[key] = _fix_type(getattr(component, key))
+    _update_optional(
+        component,
+        new_const_comp,
+        _OPTIONAL_CONSTRAINT_COMP_ATTRIBUTES,
+        _ORDERED_OPTIONAL_CONSTRAINT_COMP_KEYS,
+    )
+    return new_const_comp
+
+
+def user_defined_const_to_dict(constraint: UserDefinedConstraint) -> Dict:
+    new_const = OrderedDict()
+    for key in _REQUIRED_CONSTRAINT_ATTRIBUTES:
+        if key != "constraint_comps":
+            new_const[key] = _fix_type(getattr(constraint, key))
+            continue
+        new_const["constraint_comps"] = list(
+            map(const_comp_to_dict, constraint.constraint_comps)
+        )
+    _update_optional(
+        constraint,
+        new_const,
+        _OPTIONAL_CONSTRAINT_ATTRIBUTES,
+        _ORDERED_OPTIONAL_CONSTRAINT_KEYS,
+    )
+    return new_const
+
+
+def user_defined_const_from_dict(constraint: Dict) -> UserDefinedConstraint:
+    new_user_defined_const = UserDefinedConstraint()
+    for k, v in constraint.items():
+        if k == "constraint_comps":
+            for comp in v:
+                new_comp = ConstraintComponent(**comp)
+                new_user_defined_const.add_constraint_comps([new_comp])
+        elif k == "annotation":
+            continue
+        elif k == "notes":
+            continue
+        else:
+            setattr(new_user_defined_const, k, v)
+    return new_user_defined_const
+
+
+
+
 def model_to_dict(model: Model, sort: bool = False) -> OrderedDict:
     """Convert a cobra Model to a dictionary.
 
@@ -353,6 +422,9 @@ def model_to_dict(model: Model, sort: bool = False) -> OrderedDict:
     obj["metabolites"] = list(map(_metabolite_to_dict, model.metabolites))
     obj["reactions"] = list(map(_reaction_to_dict, model.reactions))
     obj["genes"] = list(map(_gene_to_dict, model.genes))
+    obj["user_defined_constraints"] = list(
+        map(user_defined_const_to_dict, model.user_defined_const)
+    )
     obj["id"] = model.id
     _update_optional(
         model, obj, _OPTIONAL_MODEL_ATTRIBUTES, _ORDERED_OPTIONAL_MODEL_KEYS
@@ -412,6 +484,13 @@ def model_from_dict(obj: Dict) -> Model:
         for rxn in objective_reactions
     }
     set_objective(model, coefficients)
+    if "user_defined_constraints" in obj:
+        model.add_user_defined_constraints(
+            [
+                user_defined_const_from_dict(cons)
+                for cons in obj["user_defined_constraints"]
+            ]
+        )
     for k, v in obj.items():
         if k in {"id", "name", "notes", "compartments", "annotation"}:
             setattr(model, k, v)
