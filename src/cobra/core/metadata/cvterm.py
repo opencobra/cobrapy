@@ -1,12 +1,15 @@
 """Define the Controlled Vocabulary term class."""
 
 import re
-from collections import OrderedDict, UserList, defaultdict
+from collections import OrderedDict, UserList, defaultdict, UserDict, namedtuple
 from collections.abc import MutableMapping
 from enum import Enum
-from typing import Dict, FrozenSet, Iterator, List, Optional, Tuple, Union
+from typing import Dict, FrozenSet, Iterator, List, Optional, Tuple, Union, NamedTuple
+import logging
 
 from .helper import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
+
+logger = logging.getLogger(__name__)
 
 
 class Qualifier(Enum):
@@ -73,6 +76,116 @@ class CVTerm:
         qual = str(self.qualifier)
         qual = qual[10:] if qual.startswith("Qualifier.") else qual
         return qual, {"resources": self.uri}
+
+
+class CVTerm2(UserDict):
+    """
+    Representation of one CVTerm of an object in their
+    dependency structure. It is a named tuple where the first named field is a qualifier and the second named field
+    is ExternalResources.
+
+    UserList keeps the data in the property data, which is a real list.
+
+
+    Parameters
+    ----------
+    initialdata : dict
+        a dictionary mapping qualifier to its CVList/List
+
+    This is how a CVTerm looks :
+    {
+     "bqb_is": {"resources": [
+                    "resource_uri",
+                    ...
+                ],
+                "nested_data": CVTerms Object}
+    }
+
+    The internal dictionary is an ExternalResources
+
+    1. The only way to add annotation data via old format is by
+       using the method "add_simple_annotations()".
+    2. Single CVTerm data can be added by using "add_cvterm()".
+    3. Multiple CVTerm data can be added by using "add_cvterms()".
+    """
+
+    def __init__(self, initialdata):
+        initialdata = {
+            key: value
+            for key, value in initialdata.items()
+            if self.check_qualifier_type(key) and self.check_ex_res_type(value)
+        }
+        super().__init__(initialdata)
+
+    @staticmethod
+    def check_ex_res_type(ex_res: Union["ExternalResources2", Dict]):
+        if isinstance(ex_res, ExternalResources2):
+            return ex_res
+        elif isinstance(ex_res, dict):
+            return ExternalResources2.from_dict(ex_res)
+        else:
+            logger.warning(f"Allowed types for CVTerms ex_ress are ExternalResources2 "
+                           f"or dict, not {type(ex_res)}: {ex_res}")
+            return None
+
+    @staticmethod
+    def check_qualifier_type(qual: Union[int, str, Qualifier]):
+        if (
+            isinstance(qual, str)
+            and qual not in Qualifier.__members__
+            or (isinstance(qual, int) and not 0 <= qual < Qualifier.__len__())
+        ):
+            raise TypeError(f"{qual} is not a supported enum Qualifier")
+        elif isinstance(qual, Qualifier):
+            return qual
+        elif isinstance(qual, str):
+            return Qualifier[qual]
+        elif isinstance(qual, int):
+            return Qualifier(qual)
+        else:
+            logger.warning(
+                msg=f"Allowed types for CVTerm2 qualifier must be Qualifier,"
+                f"str member of the Qualifier enum "
+                f"or an int between 0 and the Qualifier enum length "
+                f"{type(qual)}, {qual}"
+            )
+            return None
+
+
+    def to_qual_dict(self):
+        """Return the CVTerms as a dictionary with qualifiers as keys.
+
+        The external resources will be organized as a list of ExternalResources
+
+        Returns
+        -------
+        dict
+            Dictionary of qualifiers and lists of external resources.
+        """
+        qualifier_set = set()
+        for qual in self.data.values():
+            qualifier_set.update(qual)
+        qualifier_dict = dict.fromkeys(qualifier_set, [])
+        for key, qual in self.data.items():
+            qualifier_dict[qual].append(key)
+        return qualifier_dict
+
+    def to_orderd_qual_dict(self) -> dict:
+        """Represent a CVTerms object in python dict.
+
+        Returns:
+        -------
+        dict:
+            a dict where each key has is a qualifier and has a list of all external
+            resources in the original self._cvterms dictionary for that key
+
+        """
+        return OrderedDict(
+            {
+                qual: [ex_res.to_dict() for ex_res in value]
+                for qual, value in self.to_qual_dict()
+            }
+        )
 
 
 class CVTerms(MutableMapping):
@@ -404,6 +517,174 @@ class CVList(UserList):
             f"The passed object {resource }for setting external resources has "
             f"invalid type: {type(resource)}. It needs to be ExternalResouces or dict."
         )
+
+
+class CVList2(UserList):
+    """
+    Class representation of all sets of resources and their nested
+    annotation corresponding to a given qualifier. It is a list but is restricted to
+    entries of type ExternalResources within it. This list will
+    have more than one entry inside it in the case of alternative
+    set of resources linked to a given qualifier (such as "BQB_IS").
+
+    CVList : [
+                 {
+                    "resources" : [],
+                    "nested_data" : CVTerm
+                 },
+                 {
+                     "resources" : [],
+                     "nested_data" : CVTerm
+                 },
+                 ...
+              ]
+
+    Parameters
+    ----------
+    data : list
+        a list containing entries confirming to ExternalResources2 structure
+
+    """
+
+    def __init__(self, data: List[Union[Dict, "ExternalResources2"]] = None):
+        super().__init__(data)
+        self.data = [self._check_External_Resources_type(d_item) for d_item in self.data]
+
+    def insert(self, index: int, value: Union[Dict, "ExternalResources2"]) -> None:
+        """Insert a ExternalResource object at given index."""
+        self.data.insert(index, self._check_External_Resources_type(value))
+
+    def append(self, value: Union[Dict, "ExternalResources2"]) -> None:
+        """Append a ExternalResource object to this list."""
+        self.data.append(self._check_External_Resources_type(value))
+
+    def __setitem__(self, index: int, value: Union[Dict, "ExternalResources2"]) -> None:
+        self.data[index] = self._check_External_Resources_type(value)
+
+    @staticmethod
+    def _check_External_Resources_type(
+        resource: Union[Dict, "ExternalResources2"]
+    ) -> "ExternalResources2":
+        if isinstance(resource, dict):
+            return ExternalResources2().from_dict(resource)
+        if isinstance(resource, ExternalResources2):
+            return resource
+        raise TypeError(
+            f"The passed object {resource }for setting external resources has "
+            f"invalid type: {type(resource)}. It needs to be ExternalResouces or dict."
+        )
+
+
+class ExternalResources2:
+    """
+    Class representation of a single set of resources and its nested
+    annotation. It is a special type of dict with restricted keys and
+    values
+
+    Parameters
+    ----------
+    data : dict
+        A dictionary containing the resources and nested annotation
+        {
+            "resources" : [],
+            "nested_data" : CVTerms
+         }
+    """
+
+    def __init__(self, resources: List = None, nested_data=None):
+        self._resources = None
+        self._nested_data = None
+        self.resources = resources
+        if resources:
+            self.nested_data = nested_data
+
+    @property
+    def resources(self) -> List:
+        return self._resources
+
+    @resources.setter
+    def resources(self, value: List) -> None:
+        if value is None or isinstance(value, list):
+            self._resources = value
+        elif not isinstance(value, list):
+            raise TypeError(f"The resources must be wrapped inside a list: {value}")
+
+    @property
+    def nested_data(self) -> CVTerm2:
+        return self._nested_data
+
+    @nested_data.setter
+    def nested_data(self, value: Union[Dict, CVTerm2]):
+        if value is None or isinstance(value, CVTerm2):
+            self._nested_data = value
+        elif isinstance(value, dict):
+            self._nested_data = CVTerm2(value)
+        else:
+            raise TypeError(
+                f"The nested data structure does not have valid CVTerm format: {value}"
+            )
+
+    def to_dict(self):
+        """Represents a ExternalResource object as python dict"""
+        ex_dic = {"resources": list(self._resources)}
+        if self.nested_data is not None:
+            ex_dic["nested_data"] = self.nested_data.data
+        return ex_dic
+
+    @classmethod
+    def from_dict(cls, input_data: Dict) -> "ExternalResources2":
+        """
+
+        Parameters
+        ----------
+        input_data: dict
+
+        Returns
+        -------
+        ExternalResources2
+
+        Allowed Keys
+        ----------
+        "resources" : list
+            for accessing the mapped resources
+        "nested_data" : CVTerms
+            for accessing the nested annotation data
+
+        """
+        ex_res = cls(
+            resources=input_data.get("resources", None),
+            nested_data=input_data.get("nested_data", {}),
+        )
+        return ex_res
+
+    def __eq__(self, other: "ExternalResources2") -> bool:
+        """
+        Compare two ExternalResources objects to find out whether
+        they are same (have same data) or not
+        """
+        if self.resources != other.resources:
+            return False
+        if self.nested_data is None and other.nested_data is None:
+            return True
+        elif self.nested_data is None or other.nested_data is None:
+            return False
+        elif self.nested_data != other.nested_data:
+            return False
+        return True
+
+    def __str__(self) -> str:
+        return str(self.to_dict())
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
+    def _repr_html_(self):
+        return f"""
+                <p>
+                    <strong>Resources</strong>{"<p>".join(self.resources)}<p>
+                    <strong>Nested Data</strong>{self.nested_data}<p>
+                    <strong>Memory address</strong>{id(self):#x}
+                <p>"""
 
 
 class ExternalResources:

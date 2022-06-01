@@ -1771,6 +1771,9 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
         for k in range(cvterm.getNumResources()):
             uri = cvterm.getResourceURI(k)
             ext_res["resources"].append(uri)
+        from cobra.core.metadata.cvterm import ExternalResources2, CVTerm2
+        foo = ExternalResources2.from_dict(ext_res)
+        foo2 = CVTerm2(qualifier, foo)
         ext_res["nested_data"] = _set_nested_data(cvterm)
         new_cvterms = CVTerms({qualifier: CVList([ext_res])})
         annotation.add_cvterms(new_cvterms)
