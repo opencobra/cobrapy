@@ -5,7 +5,7 @@ import os
 from os.path import join
 from pathlib import Path
 
-from cobra.core.metadata import CVTerm2, CVTerms2, ExternalResources2
+from cobra.core.metadata import CVTerm, CVTerms, ExternalResources
 from cobra.core.species import Species
 from cobra.io import (
     load_json_model,
@@ -42,7 +42,7 @@ def test_annotation():
     # a cobra component
     s = Species()
     assert s.annotation == {}  # nothing set for annotation, so empty dict
-    assert s.annotation.cvterms == CVTerms2()
+    assert s.annotation.cvterms == CVTerms()
     assert not s.annotation.keys()
     assert s.annotation.keyvaluepairs == {}
     assert s.annotation.history.creators == []
@@ -60,17 +60,17 @@ def test_annotation():
     assert s.annotation == {"chebi": sorted(["CHEBI:43215", "CHEBI:11881"])}
 
     # checking new cvterms
-    cvt = CVTerms2(
+    cvt = CVTerms(
         [
-            CVTerm2(
+            CVTerm(
                 qualifier="bqb_is",
-                ex_res=ExternalResources2(
+                ex_res=ExternalResources(
                     resources=["https://identifiers.org/chebi/CHEBI:43215"]
                 ),
             ),
-            CVTerm2(
+            CVTerm(
                 qualifier="bqb_is",
-                ex_res=ExternalResources2(
+                ex_res=ExternalResources(
                     resources=["https://identifiers.org/chebi/CHEBI:11881"]
                 ),
             ),
@@ -95,7 +95,7 @@ def test_nested_annotation(data_directory):
         cvterms_data = json.load(f_cvterms)
 
     s = Species()
-    s.annotation.add_cvterms(CVTerms2.from_dict(cvterms_data))
+    s.annotation.add_cvterms(CVTerms.from_dict(cvterms_data))
     assert s.annotation == {
         "chebi": ["CHEBI:17627"],
         "eco": ["000000"],
@@ -104,7 +104,7 @@ def test_nested_annotation(data_directory):
         "uniprot": ["P68871", "P69905"],
     }
     # check cvterms
-    main_cvt = CVTerms2.from_dict(
+    main_cvt = CVTerms.from_dict(
         {
             "bqb_hasPart": [
                 {
@@ -130,7 +130,7 @@ def test_nested_annotation(data_directory):
             ]
         }
     )
-    nested_cvt = CVTerms2.from_dict(
+    nested_cvt = CVTerms.from_dict(
         {
             "bqb_isDescribedBy": [
                 {"resources": [PUBMED_EXAMPLE]},
@@ -152,7 +152,7 @@ def _read_ecoli_annotation_model(data_directory):
 def test_cvterms_from_ecoli_xml(data_directory):
     model = _read_ecoli_annotation_model(data_directory)
     qualifier_set = {"bqb_hasTaxon", "bqm_is", "bqm_isDescribedBy"}
-    nested_cvt = CVTerms2.from_dict(
+    nested_cvt = CVTerms.from_dict(
         {
             "bqb_isDescribedBy": [
                 {"resources": [PUBMED_EXAMPLE]},
@@ -160,7 +160,7 @@ def test_cvterms_from_ecoli_xml(data_directory):
             ]
         }
     )
-    ecoli_model_cvterm = CVTerms2.from_dict(ecoli_model_annotation)
+    ecoli_model_cvterm = CVTerms.from_dict(ecoli_model_annotation)
     xml_model_cvterms = model.annotation.cvterms
     model_cvterms_qualifier_set = {qual.name for qual in xml_model_cvterms.qualifiers}
     assert qualifier_set == model_cvterms_qualifier_set
@@ -199,7 +199,7 @@ def test_read_write_json(data_directory, tmp_path):
         "pubmed": ["1111111"],
         "taxonomy": ["511145"],
     }
-    assert model.annotation.cvterms == CVTerms2.from_dict(ecoli_model_annotation)
+    assert model.annotation.cvterms == CVTerms.from_dict(ecoli_model_annotation)
 
 
 def test_read_old_json_model(data_directory):
@@ -224,7 +224,7 @@ def test_read_old_json_model(data_directory):
     }
 
     # testing cvterms
-    expected_cvterms = CVTerms2.from_dict(
+    expected_cvterms = CVTerms.from_dict(
         {
             "bqb_is": [
                 {

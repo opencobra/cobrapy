@@ -19,8 +19,6 @@ notes information.
 Annotations are read in the Object.annotation fields.
 
 Some SBML related issues are still open, please refer to the respective issue:
-- update annotation format and support qualifiers (depends on decision
-    for new annotation format; https://github.com/opencobra/cobrapy/issues/684)
 - write compartment annotations and notes (depends on updated first-class
     compartments; see https://github.com/opencobra/cobrapy/issues/760)
 - support compression on file handles (depends on solution for
@@ -47,9 +45,9 @@ import cobra
 from ..core import (
     GPR,
     Creator,
-    CVTerm2,
-    CVTerms2,
-    ExternalResources2,
+    CVTerm,
+    CVTerms,
+    ExternalResources,
     Gene,
     Group,
     HistoryDatetime,
@@ -1788,7 +1786,7 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
             uri = cvterm.getResourceURI(k)
             ext_res["resources"].append(uri)
         ext_res["nested_data"] = _set_nested_data(cvterm)
-        new_cvterms.append(CVTerm2(ExternalResources2.from_dict(ext_res), qualifier))
+        new_cvterms.append(CVTerm(ExternalResources.from_dict(ext_res), qualifier))
     annotation.add_cvterms(new_cvterms)
 
     # history of the component
@@ -1868,7 +1866,7 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
     return provider, identifier
 
 
-def _set_nested_data(cvterm_obj: libsbml.CVTerm) -> CVTerms2:
+def _set_nested_data(cvterm_obj: libsbml.CVTerm) -> CVTerms:
     """Parses the nested data corresponding to a given
     libsbml.CVTerm object
     cvterm_obj : libsbml.CVTerm
@@ -1877,7 +1875,7 @@ def _set_nested_data(cvterm_obj: libsbml.CVTerm) -> CVTerms2:
         the parsed nested data of the given CVTerm object
     """
     num_nested_cvterms = cvterm_obj.getNumNestedCVTerms()
-    cobra_nested_cvterms = CVTerms2()
+    cobra_nested_cvterms = CVTerms()
     if num_nested_cvterms == 0:
         return cobra_nested_cvterms
 
@@ -1900,13 +1898,13 @@ def _set_nested_data(cvterm_obj: libsbml.CVTerm) -> CVTerms2:
             uri = cvterm.getResourceURI(k)
             ext_res["resources"].append(uri)
         ext_res["nested_data"] = _set_nested_data(cvterm)
-        new_cvterms.append(CVTerm2(ExternalResources2.from_dict(ext_res), qualifier))
+        new_cvterms.append(CVTerm(ExternalResources.from_dict(ext_res), qualifier))
     cobra_nested_cvterms.add_cvterms(new_cvterms)
 
     return cobra_nested_cvterms
 
 
-def _cvterms_to_SMBL_CVterms(cvterms: CVTerms2) -> List["libsbml.CVTerm"]:
+def _cvterms_to_SMBL_CVterms(cvterms: CVTerms) -> List["libsbml.CVTerm"]:
     """
 
     :param qualifier:

@@ -27,7 +27,6 @@
             - http://identifiers.org/reactome/REACT_29800
             - http://identifiers.org/seed.compound/cpd00203
             - http://identifiers.org/unipathway.compound/UPC00236
-            nested_data: !!omap []
   - !!omap
     - id: M_2pg_c
     - name: D-Glycerate 2-phosphate
@@ -55,7 +54,6 @@
             - http://identifiers.org/reactome/REACT_30485
             - http://identifiers.org/seed.compound/cpd00482
             - http://identifiers.org/unipathway.compound/UPC00631
-            nested_data: !!omap []
   - !!omap
     - id: M_3pg_c
     - name: 3-Phospho-D-glycerate
@@ -89,7 +87,6 @@
             - http://identifiers.org/seed.compound/cpd00169
             - http://identifiers.org/unipathway.compound/UPC00597
             - http://identifiers.org/unipathway.compound/UPC00197
-            nested_data: !!omap []
   - !!omap
     - id: M_adp_c
     - name: ADP
@@ -128,7 +125,6 @@
             - http://identifiers.org/reactome/REACT_429153
             - http://identifiers.org/seed.compound/cpd00008
             - http://identifiers.org/unipathway.compound/UPC00008
-            nested_data: !!omap []
   - !!omap
     - id: M_atp_c
     - name: ATP
@@ -166,7 +162,6 @@
             - http://identifiers.org/reactome/REACT_211579
             - http://identifiers.org/seed.compound/cpd00002
             - http://identifiers.org/unipathway.compound/UPC00002
-            nested_data: !!omap []
   - !!omap
     - id: M_dhap_c
     - name: Dihydroxyacetone phosphate
@@ -197,7 +192,6 @@
             - http://identifiers.org/reactome/REACT_390404
             - http://identifiers.org/seed.compound/cpd00095
             - http://identifiers.org/unipathway.compound/UPC00111
-            nested_data: !!omap []
   - !!omap
     - id: M_f6p_c
     - name: D-Fructose 6-phosphate
@@ -228,7 +222,6 @@
             - http://identifiers.org/seed.compound/cpd00072
             - http://identifiers.org/unipathway.compound/UPC05345
             - http://identifiers.org/unipathway.compound/UPC00085
-            nested_data: !!omap []
   - !!omap
     - id: M_fdp_c
     - name: D-Fructose 1,6-bisphosphate
@@ -260,7 +253,6 @@
             - http://identifiers.org/pubchem.substance/3647
             - http://identifiers.org/seed.compound/cpd00290
             - http://identifiers.org/unipathway.compound/UPC00354
-            nested_data: !!omap []
   - !!omap
     - id: M_g3p_c
     - name: Glyceraldehyde 3-phosphate
@@ -285,7 +277,6 @@
             - http://identifiers.org/seed.compound/cpd00102
             - http://identifiers.org/unipathway.compound/UPC00661
             - http://identifiers.org/unipathway.compound/UPC00118
-            nested_data: !!omap []
   - !!omap
     - id: M_g6p_c
     - name: D-Glucose 6-phosphate
@@ -319,7 +310,6 @@
             - http://identifiers.org/reactome/REACT_1629756
             - http://identifiers.org/seed.compound/cpd00079
             - http://identifiers.org/unipathway.compound/UPC00092
-            nested_data: !!omap []
   - !!omap
     - id: M_glc__D_e
     - name: D-Glucose
@@ -335,7 +325,6 @@
             - http://identifiers.org/cas/50-99-7
             - http://identifiers.org/kegg.compound/C00031
             - http://identifiers.org/pubchem.substance/3333
-            nested_data: !!omap []
   - !!omap
     - id: M_h2o_c
     - name: H2O
@@ -405,7 +394,6 @@
             - http://identifiers.org/seed.compound/cpd00001
             - http://identifiers.org/unipathway.compound/UPC00001
             - http://identifiers.org/unipathway.compound/UPC01328
-            nested_data: !!omap []
   - !!omap
     - id: M_h2o_e
     - name: H2O
@@ -475,7 +463,6 @@
             - http://identifiers.org/seed.compound/cpd00001
             - http://identifiers.org/unipathway.compound/UPC00001
             - http://identifiers.org/unipathway.compound/UPC01328
-            nested_data: !!omap []
   - !!omap
     - id: M_h_c
     - name: H+
@@ -518,7 +505,6 @@
             - http://identifiers.org/reactome/REACT_427899
             - http://identifiers.org/seed.compound/cpd00067
             - http://identifiers.org/unipathway.compound/UPC00080
-            nested_data: !!omap []
   - !!omap
     - id: M_h_e
     - name: H+
@@ -561,7 +547,6 @@
             - http://identifiers.org/reactome/REACT_427899
             - http://identifiers.org/seed.compound/cpd00067
             - http://identifiers.org/unipathway.compound/UPC00080
-            nested_data: !!omap []
   - !!omap
     - id: M_lac__D_c
     - name: D-Lactate
@@ -586,7 +571,6 @@
             - http://identifiers.org/kegg.compound/C00256
             - http://identifiers.org/metanetx.chemical/MNXM285
             - http://identifiers.org/seed.compound/cpd00221
-            nested_data: !!omap []
   - !!omap
     - id: M_lac__D_e
     - name: D-Lactate
@@ -611,7 +595,6 @@
             - http://identifiers.org/kegg.compound/C00256
             - http://identifiers.org/metanetx.chemical/MNXM285
             - http://identifiers.org/seed.compound/cpd00221
-            nested_data: !!omap []
   - !!omap
     - id: M_nad_c
     - name: Nicotinamide adenine dinucleotide
@@ -647,7 +630,6 @@
             - http://identifiers.org/reactome/REACT_113526
             - http://identifiers.org/seed.compound/cpd00003
             - http://identifiers.org/unipathway.compound/UPC00003
-            nested_data: !!omap []
   - !!omap
     - id: M_nadh_c
     - name: Nicotinamide adenine dinucleotide - reduced
@@ -678,7 +660,6 @@
             - http://identifiers.org/reactome/REACT_29362
             - http://identifiers.org/seed.compound/cpd00004
             - http://identifiers.org/unipathway.compound/UPC00004
-            nested_data: !!omap []
   - !!omap
     - id: M_pep_c
     - name: Phosphoenolpyruvate
@@ -708,7 +689,6 @@
             - http://identifiers.org/reactome/REACT_372364
             - http://identifiers.org/seed.compound/cpd00061
             - http://identifiers.org/unipathway.compound/UPC00074
-            nested_data: !!omap []
   - !!omap
     - id: M_pi_c
     - name: Phosphate
@@ -766,7 +746,6 @@
             - http://identifiers.org/seed.compound/cpd09463
             - http://identifiers.org/seed.compound/cpd00009
             - http://identifiers.org/unipathway.compound/UPC00009
-            nested_data: !!omap []
   - !!omap
     - id: M_pi_e
     - name: Phosphate
@@ -824,7 +803,6 @@
             - http://identifiers.org/seed.compound/cpd09463
             - http://identifiers.org/seed.compound/cpd00009
             - http://identifiers.org/unipathway.compound/UPC00009
-            nested_data: !!omap []
   - !!omap
     - id: M_pyr_c
     - name: Pyruvate
@@ -855,7 +833,6 @@
             - http://identifiers.org/reactome/REACT_29398
             - http://identifiers.org/seed.compound/cpd00020
             - http://identifiers.org/unipathway.compound/UPC00022
-            nested_data: !!omap []
 - reactions:
   - !!omap
     - id: R_ATPM
@@ -867,7 +844,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/ATPM
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_atp_c: -1.0
       - M_h2o_c: -1.0
@@ -894,7 +870,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/ENO
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_2pg_c: -1.0
       - M_pep_c: 1.0
@@ -912,7 +887,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/glc
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_glc__D_e: -1.0
     - gene_reaction_rule: ''
@@ -928,7 +902,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/h
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_h_e: -1.0
     - gene_reaction_rule: ''
@@ -944,7 +917,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/lac__D
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_lac__D_e: -1.0
     - gene_reaction_rule: ''
@@ -959,7 +931,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/FBA
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_fdp_c: -1.0
       - M_dhap_c: 1.0
@@ -976,7 +947,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/GAPD
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_nad_c: -1.0
       - M_13dpg_c: 1.0
@@ -996,7 +966,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/GLCpts
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_g6p_c: 1.0
       - M_pyr_c: 1.0
@@ -1015,7 +984,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/H2Ot
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_h2o_e: -1.0
       - M_h2o_c: 1.0
@@ -1041,7 +1009,6 @@
             - http://identifiers.org/rhea/16370
             - http://identifiers.org/rhea/16371
             - http://identifiers.org/rhea/16372
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_lac__D_c: -1.0
       - M_nad_c: -1.0
@@ -1060,7 +1027,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/PFK
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_f6p_c: -1.0
       - M_atp_c: -1.0
@@ -1079,7 +1045,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/PGI
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_g6p_c: -1.0
       - M_f6p_c: 1.0
@@ -1095,7 +1060,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/PGK
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_3pg_c: -1.0
       - M_atp_c: -1.0
@@ -1113,7 +1077,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/PGM
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_2pg_c: -1.0
       - M_3pg_c: 1.0
@@ -1129,7 +1092,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/PIt2r
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_pi_e: -1.0
       - M_h_e: -1.0
@@ -1147,7 +1109,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/PYK
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_adp_c: -1.0
       - M_h_c: -1.0
@@ -1166,7 +1127,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/bigg.reaction/TPI
-            nested_data: !!omap []
     - metabolites: !!omap
       - M_dhap_c: -1.0
       - M_g3p_c: 1.0
@@ -1197,7 +1157,6 @@
           - resources:
             - http://identifiers.org/ncbiprotein/1208453
             - http://identifiers.org/ncbiprotein/1652654
-            nested_data: !!omap []
   - !!omap
     - id: G_b1723
     - name: pfkB
@@ -1242,7 +1201,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/ncbiprotein/1653839
-            nested_data: !!omap []
   - !!omap
     - id: G_b2925
     - name: fbaA
@@ -1254,7 +1212,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/ncbiprotein/1653609
-            nested_data: !!omap []
   - !!omap
     - id: G_b2987
     - name: pitB
@@ -1273,7 +1230,6 @@
           - resources:
             - http://identifiers.org/ncbiprotein/1006614
             - http://identifiers.org/ncbiprotein/1651919
-            nested_data: !!omap []
   - !!omap
     - id: G_b3919
     - name: tpiA
@@ -1285,7 +1241,6 @@
         - bqb_is:
           - resources:
             - http://identifiers.org/ncbiprotein/1653253
-            nested_data: !!omap []
   - !!omap
     - id: G_b4395
     - name: ytjC

@@ -1,14 +1,10 @@
 """Provide functions for loading, saving and modifying metadata annotations."""
 
 from cobra.core.metadata.cvterm import (
-    CVList,
-    CVTerm,
+    Qualifier,
     CVTerms,
     ExternalResources,
-    Qualifier,
-    CVTerms2,
-    ExternalResources2,
-    CVTerm2,
+    CVTerm,
 )
 from cobra.core.metadata.history import Creator, History, HistoryDatetime
 from cobra.core.metadata.keyvaluepairs import KeyValuePairs
