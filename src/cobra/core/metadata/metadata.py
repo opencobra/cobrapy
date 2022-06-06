@@ -2,9 +2,9 @@
 
 from collections import OrderedDict
 from collections.abc import MutableMapping
-from typing import Dict, Iterator, List, Union
+from typing import Dict, Iterator, List, Union, Iterable
 
-from ..metadata.cvterm import CVTerms
+from ..metadata.cvterm import CVTerms, CVTerms2, CVTerm2
 from ..metadata.history import Creator, History
 from ..metadata.keyvaluepairs import KeyValuePairs
 
@@ -42,7 +42,7 @@ class MetaData(MutableMapping):
 
     def __init__(
         self,
-        cvterms: Union[Dict, CVTerms] = None,
+        cvterms: Union[Dict, CVTerms2] = None,
         history: Union[Dict, History] = None,
         sbo: str = "",
         keyvaluepairs: List = None,
@@ -63,7 +63,7 @@ class MetaData(MutableMapping):
             For annotations that don't match the identifiers.org format.
 
         """
-        self._cvterms = CVTerms.from_data(cvterms)
+        self._cvterms = CVTerms2.from_data(cvterms)
         self._history = History.from_data(history)
         self._keyvaluepairs = KeyValuePairs(keyvaluepairs)
         self._sbo = sbo
@@ -148,14 +148,14 @@ class MetaData(MutableMapping):
         return str(dict(self.annotations))
 
     @property
-    def cvterms(self) -> "CVTerms":
+    def cvterms(self) -> "CVTerms2":
         return self._cvterms
 
     @cvterms.setter
-    def cvterms(self, cvterms: Union[Dict, CVTerms]) -> None:
-        self._cvterms = CVTerms.from_data(cvterms)
+    def cvterms(self, cvterms: Union[Dict, CVTerms2]) -> None:
+        self._cvterms = CVTerms2.from_data(cvterms)
 
-    def add_cvterms(self, cvterms: Union[Dict, CVTerms]) -> None:
+    def add_cvterms(self, cvterms: Iterable[Union[Dict, CVTerm2]]) -> None:
         self._cvterms.add_cvterms(cvterms)
 
     @property

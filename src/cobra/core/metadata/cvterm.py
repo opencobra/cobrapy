@@ -1,11 +1,11 @@
 """Define the Controlled Vocabulary term class."""
 
 import re
-from collections import OrderedDict, UserList, defaultdict, UserDict, namedtuple
+from collections import OrderedDict, UserList, defaultdict
 from collections.abc import MutableMapping
 from enum import Enum
-from typing import Dict, FrozenSet, Iterator, List, Optional, Tuple, Union, NamedTuple, \
-    Iterable
+from typing import Dict, FrozenSet, Iterator, List, Optional, Tuple, Union, Iterable, \
+    Pattern, Callable, Any
 import logging
 
 from .helper import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
@@ -118,7 +118,7 @@ class CVTerm2:
     def __init__(
         self,
         ex_res: "ExternalResources2" = None,
-        qualifier: Qualifier = Qualifier.bqb_is,
+        qualifier: Union[Qualifier, str] = Qualifier.bqb_is,
     ):
         self._ex_res = None
         self._qualifier = None
@@ -196,7 +196,7 @@ class CVTerm2:
     @classmethod
     def from_dict(cls, data_dict: Dict):
         return cls(ex_res=data_dict.get("external_resources", None),
-                   qualifier=data_dict.get("qualifier", None))
+                   qualifier=data_dict.get("qualifier", Qualifier['bqb_is']))
 
     def __eq__(self, other: "CVTerm2") -> bool:
         if not isinstance(other, CVTerm2):
@@ -216,7 +216,7 @@ class CVTerms2(UserList):
 
     Parameters
     ----------
-    list : list
+    data : list
         a list containing qualifier and external resources in CVTerm forma
 
     This is how a CVTerms looks :
@@ -266,9 +266,11 @@ class CVTerms2(UserList):
     @staticmethod
     def from_data(data: Union[List, Dict, "CVTerm2"]) -> "CVTerms2":
         """Parses a CVTerms object from given data"""
+        if data is None:
+            return CVTerms2()
         if isinstance(data, dict):
             # TODO - need to check dict.py
-            return CVTerms2([CVTerm2.from_dict(data)])
+            return CVTerms2.from_dict(data)
         elif isinstance(data, list):
             return CVTerms2(data)
         elif isinstance(data, CVTerm2):
@@ -288,13 +290,24 @@ class CVTerms2(UserList):
         """
         qualifier_set = set()
         for cvterm in self.data:
-            qualifier_set.update(cvterm.qualifier)
-        qualifier_dict = dict.fromkeys(qualifier_set, [])
+            qualifier_set.add(cvterm.qualifier.name)
+        empty_lists = [[] for _ in qualifier_set]
+        qualifier_dict = dict(zip(qualifier_set, empty_lists))
         for cvterm in self.data:
-            qualifier_dict[cvterm.qualifier].append(cvterm.external_resources)
+            qualifier_dict[cvterm.qualifier.name].append(cvterm.external_resources.to_dict())
         return OrderedDict(qualifier_dict)
 
-    def add_cvterms(self, cvterms: Iterable[Union[Dict, "CVTerms2"]]) -> None:
+    @classmethod
+    def from_dict(cls, data_dict):
+        cvterms_list = []
+        for qual, ex_resources in data_dict.items():
+            cvterms = [CVTerm2(ex_res=ExternalResources2.from_dict(ex_res),
+                               qualifier=Qualifier[qual])
+                       for ex_res in ex_resources]
+            cvterms_list.extend(cvterms)
+        return cls(cvterms_list)
+
+    def add_cvterms(self, cvterms: Iterable[Union[Dict, "CVTerm2"]]) -> None:
         """
         Adds multiple CVTerm to CVTerms.
 
@@ -383,11 +396,24 @@ class CVTerms2(UserList):
         """
         resources = set()
         for datum in self.data:
-            for ex_res in datum.external_resources:
-                resources.update(ex_res.resources)
-                if ex_res.nested_data:
-                    resources.update(ex_res.nested_data.resources)
+            if datum.external_resources.resources:
+                resources.update(datum.external_resources.resources)
+            if datum.external_resources.nested_data:
+                resources.update(datum.external_resources.nested_data.resources)
         return frozenset(resources)
+
+    @property
+    def qualifiers(self) -> FrozenSet:
+        qualifier_set = set()
+        for datum in self.data:
+            qualifier_set.add(datum.qualifier)
+        return frozenset(qualifier_set)
+
+    def get_by_qualifier(self, qual_to_find: Union[str, Qualifier, int]) -> "CVTerms2":
+        qual_to_find = CVTerm2.check_qualifier_type(qual_to_find)
+        cvterms_to_return = [cvterm for cvterm in self.data
+                             if cvterm.qualifier == qual_to_find]
+        return self.__class__(cvterms_to_return)
 
     def __setitem__(self, key: int, value: CVTerm2) -> None:
         UserList.__setitem__(self, key, self._check_CVTerm2(value))
@@ -824,7 +850,7 @@ class ExternalResources2:
         A dictionary containing the resources and nested annotation
         {
             "resources" : [],
-            "nested_data" : CVTerms
+            "nested_data" : CVTerms2
          }
     """
 
@@ -847,15 +873,19 @@ class ExternalResources2:
             raise TypeError(f"The resources must be wrapped inside a list: {value}")
 
     @property
-    def nested_data(self) -> CVTerm2:
+    def nested_data(self) -> CVTerms2:
         return self._nested_data
 
     @nested_data.setter
-    def nested_data(self, value: Union[Dict, CVTerm2]):
-        if value is None or isinstance(value, CVTerm2):
+    def nested_data(self, value: Union[Dict, CVTerm2, CVTerms2]):
+        if value is None:
+            self._nested_data = CVTerms2()
+        elif isinstance(value, CVTerm2):
+            self._nested_data = CVTerms2([value])
+        elif isinstance(value, CVTerms2):
             self._nested_data = value
         elif isinstance(value, dict):
-            self._nested_data = CVTerm2.from_dict(value)
+            self._nested_data = CVTerms2.from_dict(value)
         else:
             raise TypeError(
                 f"The nested data structure does not have valid CVTerm format: {value}"
@@ -864,8 +894,8 @@ class ExternalResources2:
     def to_dict(self):
         """Represents a ExternalResource object as python dict"""
         ex_dic = {"resources": list(self._resources)}
-        if self.nested_data is not None:
-            ex_dic["nested_data"] = self.nested_data.to_ordered_dict()
+        if self.nested_data is not None and len(self.nested_data):
+            ex_dic["nested_data"] = self.nested_data.to_dict()
         return ex_dic
 
     @classmethod
@@ -883,7 +913,7 @@ class ExternalResources2:
         """
         ex_res = cls(
             resources=input_data.get("resources", None),
-            nested_data=input_data.get("nested_data", {}),
+            nested_data=input_data.get("nested_data", None),
         )
         return ex_res
 

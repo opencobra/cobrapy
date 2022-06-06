@@ -6,7 +6,7 @@ from os.path import join, split
 from pathlib import Path
 from pickle import load
 from tempfile import gettempdir
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 
 import pytest
 from _pytest.fixtures import SubRequest
@@ -23,6 +23,8 @@ try:
     import jsonschema
 except ImportError:
     jsonschema = None
+
+TEST_XML = "test.xml"
 
 # ----------------------------------
 # Definition of SBML files to test
@@ -343,7 +345,7 @@ def test_model_history(tmp_path: Path) -> None:
     annotation = MetaData(history=history)
     model._sbml = {"annotation": annotation}
 
-    sbml_path = join(str(tmp_path), "test.xml")
+    sbml_path = join(str(tmp_path), TEST_XML)
     with open(sbml_path, "w") as f_out:
         write_sbml_model(model, f_out)
 
@@ -386,7 +388,7 @@ def test_groups(data_directory: str, tmp_path: Path) -> None:
     g1 = model.groups[0]
     assert len(g1.members) == 6
 
-    temp_path = join(str(tmp_path), "test.xml")
+    temp_path = join(str(tmp_path), TEST_XML)
     with open(temp_path, "w") as f_out:
         write_sbml_model(model, f_out)
 
@@ -492,7 +494,7 @@ def test_infinity_bounds(data_directory: str, tmp_path: Path) -> None:
     assert r.lower_bound == -float("Inf")
     assert r.upper_bound == float("Inf")
 
-    temp_path = join(str(tmp_path), "test.xml")
+    temp_path = join(str(tmp_path), TEST_XML)
     with open(temp_path, "w") as f_out:
         write_sbml_model(model, f_out)
 
@@ -539,7 +541,7 @@ def test_gprs(data_directory: str, tmp_path: Path) -> None:
     """
     model1 = read_sbml_model(join(data_directory, "iJO1366.xml.gz"))
 
-    sbml_path = join(str(tmp_path), "test.xml")
+    sbml_path = join(str(tmp_path), TEST_XML)
     with open(sbml_path, "w") as f_out:
         write_sbml_model(model1, f_out)
 
@@ -589,15 +591,13 @@ def test_identifiers_annotation() -> None:
         assert data is None
 
 
-def test_smbl_with_notes(data_directory: str, tmp_path: Path) -> None:
+def test_smbl_with_notes(data_directory: str) -> None:
     """Test that NOTES in the RECON 2.2 style are written and read correctly.
 
     Parameters
     ----------
     data_directory: str
         Directory where the data is.
-    tmp_path: Path
-        Directory to use for temporary data.
     """
     sbml_path = join(data_directory, "example_notes.xml")
     model = read_sbml_model(sbml_path)
@@ -726,3 +726,10 @@ def test_stable_gprs(data_directory: str, tmp_path: Path) -> None:
     assert (
         fixed_model.reactions.GLCpts.gene_reaction_rule == "(b2415 and b2417) or b2416"
     )
+
+
+def test_writing_xml_with_annotation(compare_models: Callable, data_directory: Path, tmp_path: Path):
+    model = read_sbml_model(data_directory.joinpath("e_coli_core_for_annotation.xml"))
+    write_sbml_model(model, tmp_path.joinpath("e_coli_core_writing.xml"))
+    reread_model = read_sbml_model(tmp_path.joinpath("e_coli_core_writing.xml"))
+    compare_models(model, reread_model)

@@ -6,6 +6,9 @@ from cobra.core.metadata.cvterm import (
     CVTerms,
     ExternalResources,
     Qualifier,
+    CVTerms2,
+    ExternalResources2,
+    CVTerm2,
 )
 from cobra.core.metadata.history import Creator, History, HistoryDatetime
 from cobra.core.metadata.keyvaluepairs import KeyValuePairs

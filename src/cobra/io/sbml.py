@@ -35,6 +35,7 @@ from ast import And, BoolOp, Module, Name, Or
 from collections import defaultdict, namedtuple
 from copy import deepcopy
 from io import StringIO
+from pathlib import Path
 from sys import platform
 from typing import IO, List, Match, Optional, Pattern, Tuple, Type, Union
 from warnings import warn
@@ -42,17 +43,22 @@ from warnings import warn
 import libsbml
 
 import cobra
-from cobra.core.metadata import (
-    Creator,
-    CVList,
-    CVTerms,
-    HistoryDatetime,
-    MetaData,
-    Notes,
-    Qualifier,
-)
 
-from ..core import GPR, Gene, Group, Metabolite, Model, Reaction
+from ..core import (
+    GPR,
+    Creator,
+    CVTerm2,
+    CVTerms2,
+    ExternalResources2,
+    Gene,
+    Group,
+    HistoryDatetime,
+    Metabolite,
+    MetaData,
+    Model,
+    Notes,
+    Reaction,
+)
 from ..manipulation.validate import check_metabolite_compartment_formula
 from ..util.solver import linear_reaction_coefficients, set_objective
 
@@ -404,7 +410,7 @@ F_REPLACE: dict = {
 # -----------------------------------------------------------------------------
 # noinspection PyDefaultArgument
 def read_sbml_model(
-    filename: Union[str, IO],
+    filename: Union[str, IO, Path],
     number: Type = float,
     f_replace: dict = F_REPLACE,
     **kwargs,
@@ -482,7 +488,7 @@ def read_sbml_model(
         raise cobra_error from original_error
 
 
-def _get_doc_from_filename(filename: Union[str, IO]) -> "libsbml.SBMLDocument":
+def _get_doc_from_filename(filename: Union[str, IO, Path]) -> "libsbml.SBMLDocument":
     """Get SBMLDocument from given filename.
 
     Parameters
@@ -527,6 +533,8 @@ def _get_doc_from_filename(filename: Union[str, IO]) -> "libsbml.SBMLDocument":
         doc = libsbml.readSBMLFromString(
             filename.read()
         )  # noqa: E501 type: libsbml.SBMLDocument
+    elif isinstance(filename, Path):
+        doc = libsbml.readSBMLFromString(filename.read_text())
     else:
         raise CobraSBMLError(
             f"Input type '{type(filename)}' for '{filename}' is not supported."
@@ -1126,7 +1134,10 @@ def _sbml_to_model(
 # -----------------------------------------------------------------------------
 # noinspection PyDefaultArgument
 def write_sbml_model(
-    cobra_model: Model, filename: Union[str, IO], f_replace: dict = F_REPLACE, **kwargs
+    cobra_model: Model,
+    filename: Union[str, IO, Path],
+    f_replace: dict = F_REPLACE,
+    **kwargs,
 ) -> None:
     """Write cobra model to filename.
 
@@ -1167,6 +1178,10 @@ def write_sbml_model(
         # write to file handle
         sbml_str = libsbml.writeSBMLToString(doc)
         filename.write(sbml_str)
+
+    elif isinstance(filename, Path):
+        sbml_str = libsbml.writeSBMLToString(doc)
+        filename.write_text(sbml_str)
 
 
 def _model_to_sbml(
@@ -1755,6 +1770,7 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
     if cvterms is None:
         return annotation
 
+    new_cvterms = []
     cvterm: "libsbml.CVTerm"
     for cvterm in cvterms:
         # reading the qualifier
@@ -1771,12 +1787,9 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
         for k in range(cvterm.getNumResources()):
             uri = cvterm.getResourceURI(k)
             ext_res["resources"].append(uri)
-        from cobra.core.metadata.cvterm import ExternalResources2, CVTerm2
-        foo = ExternalResources2.from_dict(ext_res)
-        foo2 = CVTerm2(qualifier, foo)
         ext_res["nested_data"] = _set_nested_data(cvterm)
-        new_cvterms = CVTerms({qualifier: CVList([ext_res])})
-        annotation.add_cvterms(new_cvterms)
+        new_cvterms.append(CVTerm2(ExternalResources2.from_dict(ext_res), qualifier))
+    annotation.add_cvterms(new_cvterms)
 
     # history of the component
     if sbase.isSetModelHistory():
@@ -1855,7 +1868,7 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
     return provider, identifier
 
 
-def _set_nested_data(cvterm_obj: libsbml.CVTerm) -> CVTerms:
+def _set_nested_data(cvterm_obj: libsbml.CVTerm) -> CVTerms2:
     """Parses the nested data corresponding to a given
     libsbml.CVTerm object
     cvterm_obj : libsbml.CVTerm
@@ -1864,10 +1877,11 @@ def _set_nested_data(cvterm_obj: libsbml.CVTerm) -> CVTerms:
         the parsed nested data of the given CVTerm object
     """
     num_nested_cvterms = cvterm_obj.getNumNestedCVTerms()
-    cobra_nested_cvterms = CVTerms()
+    cobra_nested_cvterms = CVTerms2()
     if num_nested_cvterms == 0:
         return cobra_nested_cvterms
 
+    new_cvterms = []
     for index in range(num_nested_cvterms):  # type libsbml.CVTerm
         # reading the qualifier
         cvterm = cvterm_obj.getNestedCVTerm(index)
@@ -1886,15 +1900,13 @@ def _set_nested_data(cvterm_obj: libsbml.CVTerm) -> CVTerms:
             uri = cvterm.getResourceURI(k)
             ext_res["resources"].append(uri)
         ext_res["nested_data"] = _set_nested_data(cvterm)
-        new_cvterms = CVTerms({qualifier: CVList([ext_res])})
-        cobra_nested_cvterms.add_cvterms(new_cvterms)
+        new_cvterms.append(CVTerm2(ExternalResources2.from_dict(ext_res), qualifier))
+    cobra_nested_cvterms.add_cvterms(new_cvterms)
 
     return cobra_nested_cvterms
 
 
-def _cobra_cvterms_to_SMBL_CVterm(
-    qualifier: str, cvterms: CVTerms
-) -> List["libsbml.CVTerm"]:
+def _cvterms_to_SMBL_CVterms(cvterms: CVTerms2) -> List["libsbml.CVTerm"]:
     """
 
     :param qualifier:
@@ -1902,31 +1914,31 @@ def _cobra_cvterms_to_SMBL_CVterm(
     :return:
     """
     cv_list = []
-    if qualifier.startswith("bqb"):
-        qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
-    elif qualifier.startswith("bqm"):
-        qualifier_type = libsbml.MODEL_QUALIFIER
-    else:
-        raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
+    for cvterm in cvterms:
+        qualifier = cvterm.qualifier
+        if qualifier.name.startswith("bqb"):
+            qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
+        elif qualifier.name.startswith("bqm"):
+            qualifier_type = libsbml.MODEL_QUALIFIER
+        else:
+            raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
 
-    for ex_res in cvterms:
         cv: "libsbml.CVTerm" = libsbml.CVTerm()
         cv.setQualifierType(qualifier_type)
         if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
-            cv.setBiologicalQualifierType(QUALIFIER_TYPES_COBRA_SBML_DICT[qualifier])
+            cv.setBiologicalQualifierType(
+                QUALIFIER_TYPES_COBRA_SBML_DICT[qualifier.name]
+            )
         elif qualifier_type == libsbml.MODEL_QUALIFIER:
-            cv.setModelQualifierType(QUALIFIER_TYPES_COBRA_SBML_DICT[qualifier])
+            cv.setModelQualifierType(QUALIFIER_TYPES_COBRA_SBML_DICT[qualifier.name])
         else:
             raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
-        for uri in ex_res.resources:
+        for uri in cvterm.external_resources.resources:
             cv.addResource(uri)
 
         [
-            [
-                _check(cv.addNestedCVTerm(_cv), f"Adding nested cvterm: {_cv}")
-                for _cv in _cobra_cvterms_to_SMBL_CVterm(_qualifier, _cvterms)
-            ]
-            for _qualifier, _cvterms in ex_res.nested_data.items()
+            _check(cv.addNestedCVTerm(_cv), f"Adding nested cvterm: {_cv}")
+            for _cv in _cvterms_to_SMBL_CVterms(cvterm.external_resources.nested_data)
         ]
 
         cv_list.append(cv)
@@ -1977,14 +1989,8 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
 
     # set cvterms
     [
-        [
-            _check(
-                sbase.addCVTerm(cv),
-                f"Setting cvterm: {cv}",
-            )
-            for cv in _cobra_cvterms_to_SMBL_CVterm(key, value)
-        ]
-        for key, value in annotation.cvterms.items()
+        _check(sbase.addCVTerm(cv), f"Setting cvterm: {cv}")
+        for cv in _cvterms_to_SMBL_CVterms(annotation.cvterms)
     ]
 
     # set history
