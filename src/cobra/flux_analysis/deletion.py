@@ -205,7 +205,7 @@ def _multi_deletion(
         elif "room" in method:
             add_room(model, solution=solution, linear="linear" in method, **kwargs)
 
-        args = set([frozenset(comb) for comb in product(*element_lists)])
+        args = {frozenset(comb) for comb in product(*element_lists)}
         processes = min(processes, len(args))
 
         def extract_knockout_results(result_iter):
@@ -223,9 +223,10 @@ def _multi_deletion(
             return result
 
         if processes > 1:
-            worker = dict(
-                gene=_gene_deletion_worker, reaction=_reaction_deletion_worker
-            )[entity]
+            worker = {
+                "gene": _gene_deletion_worker,
+                "reaction": _reaction_deletion_worker,
+            }[entity]
             chunk_size = len(args) // processes
 
             with ProcessPool(
@@ -235,7 +236,7 @@ def _multi_deletion(
                     pool.imap_unordered(worker, args, chunksize=chunk_size)
                 )
         else:
-            worker = dict(gene=_gene_deletion, reaction=_reaction_deletion)[entity]
+            worker = {"gene": _gene_deletion, "reaction": _reaction_deletion}[entity]
             results = extract_knockout_results(map(partial(worker, model), args))
         return results
 
@@ -634,7 +635,7 @@ class KnockoutAccessor:
                 args = [{obj} for obj in args]
         elif isinstance(args[0], set):
             try:
-                args = [set(elem.id for elem in obj) for obj in args]
+                args = [{elem.id for elem in obj} for obj in args]
             except AttributeError:
                 args = [set(obj) for obj in args]
         else:
