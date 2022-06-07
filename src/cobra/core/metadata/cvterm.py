@@ -1,21 +1,13 @@
 """Define the Controlled Vocabulary term class."""
 
+import logging
 import re
 from collections import OrderedDict, UserList
 from enum import Enum
-from typing import (
-    Dict,
-    FrozenSet,
-    List,
-    Optional,
-    Union,
-    Iterable,
-    Pattern,
-    Callable,
-)
-import logging
+from typing import Dict, FrozenSet, List, Optional, Union, Iterable, Pattern, Callable
 
 from .helper import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
+
 
 logger = logging.getLogger(__name__)
 
