@@ -2,9 +2,9 @@
 
 from collections import OrderedDict
 from collections.abc import MutableMapping
-from typing import Dict, Iterator, List, Union, Iterable
+from typing import Dict, Iterable, Iterator, List, Union
 
-from ..metadata.cvterm import CVTerms, CVTerms, CVTerm
+from ..metadata.cvterm import CVTerm, CVTerms
 from ..metadata.history import Creator, History
 from ..metadata.keyvaluepairs import KeyValuePairs
 
