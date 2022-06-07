@@ -4,7 +4,7 @@ import logging
 import re
 from collections import OrderedDict, UserList
 from enum import Enum
-from typing import Dict, FrozenSet, List, Optional, Union, Iterable, Pattern, Callable
+from typing import Callable, Dict, FrozenSet, Iterable, List, Optional, Pattern, Union
 
 from .helper import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
 
