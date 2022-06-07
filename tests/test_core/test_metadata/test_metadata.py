@@ -139,7 +139,7 @@ def test_nested_annotation(data_directory):
         }
     )
     assert s.annotation.cvterms == main_cvt
-    nested_data = s.annotation.cvterms.get_by_qualifier("bqb_hasPart")[1].external_resources.nested_data
+    nested_data = s.annotation.cvterms.query_qualifier("bqb_hasPart")[1].external_resources.nested_data
     assert nested_data == nested_cvt
 
 
@@ -165,8 +165,8 @@ def test_cvterms_from_ecoli_xml(data_directory):
     model_cvterms_qualifier_set = {qual.name for qual in xml_model_cvterms.qualifiers}
     assert qualifier_set == model_cvterms_qualifier_set
     assert xml_model_cvterms == ecoli_model_cvterm
-    assert len(xml_model_cvterms.get_by_qualifier("bqm_isDescribedBy")) == 2
-    nested_data = xml_model_cvterms.get_by_qualifier("bqm_is")[0].external_resources.nested_data
+    assert len(xml_model_cvterms.query_qualifier("bqm_isDescribedBy")) == 2
+    nested_data = xml_model_cvterms.query_qualifier("bqm_is")[0].external_resources.nested_data
     assert nested_data == nested_cvt
 
     # check backwards compatibility

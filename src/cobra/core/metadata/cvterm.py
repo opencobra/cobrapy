@@ -3,8 +3,16 @@
 import re
 from collections import OrderedDict, UserList
 from enum import Enum
-from typing import Dict, FrozenSet, Iterator, List, Optional, Tuple, Union, Iterable, \
-    Pattern, Callable, Any
+from typing import (
+    Dict,
+    FrozenSet,
+    List,
+    Optional,
+    Union,
+    Iterable,
+    Pattern,
+    Callable,
+)
 import logging
 
 from .helper import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
@@ -47,12 +55,6 @@ class CVTerm:
     is ExternalResources.
 
     UserList keeps the data in the property data, which is a real list.
-
-
-    Parameters
-    ----------
-    initialdata : dict
-        a dictionary mapping qualifier to its CVList/List
 
     This is how a CVTerm looks :
     CVTerm.qualifier = "bqb_is"
@@ -153,8 +155,10 @@ class CVTerm:
 
     @classmethod
     def from_dict(cls, data_dict: Dict):
-        return cls(ex_res=data_dict.get("external_resources", None),
-                   qualifier=data_dict.get("qualifier", Qualifier['bqb_is']))
+        return cls(
+            ex_res=data_dict.get("external_resources", None),
+            qualifier=data_dict.get("qualifier", Qualifier["bqb_is"]),
+        )
 
     def __eq__(self, other: "CVTerm") -> bool:
         if not isinstance(other, CVTerm):
@@ -204,11 +208,11 @@ class CVTerms(UserList):
         # as described above
         if data is None:
             data = []
-        data = [self._check_CVTerm2(datum) for datum in data]
+        data = [self._check_CVTerm(datum) for datum in data]
         super().__init__(data)
 
     @staticmethod
-    def _check_CVTerm2(cvterm: Union["CVTerm", Dict]) -> Optional["CVTerm"]:
+    def _check_CVTerm(cvterm: Union["CVTerm", Dict]) -> Optional["CVTerm"]:
         if cvterm is None:
             return
         if isinstance(cvterm, CVTerm):
@@ -252,16 +256,22 @@ class CVTerms(UserList):
         empty_lists = [[] for _ in qualifier_set]
         qualifier_dict = dict(zip(qualifier_set, empty_lists))
         for cvterm in self.data:
-            qualifier_dict[cvterm.qualifier.name].append(cvterm.external_resources.to_dict())
+            qualifier_dict[cvterm.qualifier.name].append(
+                cvterm.external_resources.to_dict()
+            )
         return OrderedDict(qualifier_dict)
 
     @classmethod
     def from_dict(cls, data_dict):
         cvterms_list = []
         for qual, ex_resources in data_dict.items():
-            cvterms = [CVTerm(ex_res=ExternalResources.from_dict(ex_res),
-                              qualifier=Qualifier[qual])
-                       for ex_res in ex_resources]
+            cvterms = [
+                CVTerm(
+                    ex_res=ExternalResources.from_dict(ex_res),
+                    qualifier=Qualifier[qual],
+                )
+                for ex_res in ex_resources
+            ]
             cvterms_list.extend(cvterms)
         return cls(cvterms_list)
 
@@ -326,7 +336,9 @@ class CVTerms(UserList):
                         f"The identifier passed must be of type string "
                         f"or list: {identifier}"
                     )
-                cvterm_list.append(CVTerm(ex_res=ExternalResources([uri]), qualifier=qual))
+                cvterm_list.append(
+                    CVTerm(ex_res=ExternalResources([uri]), qualifier=qual)
+                )
         self.add_cvterms(cvterm_list)
 
     @property
@@ -354,10 +366,11 @@ class CVTerms(UserList):
         """
         resources = set()
         for datum in self.data:
-            if datum.external_resources.resources:
-                resources.update(datum.external_resources.resources)
-            if datum.external_resources.nested_data:
-                resources.update(datum.external_resources.nested_data.resources)
+            if (
+                datum.external_resources.resources
+                or datum.external_resources.nested_data
+            ):
+                resources.update(datum.external_resources.resource_set)
         return frozenset(resources)
 
     @property
@@ -367,18 +380,115 @@ class CVTerms(UserList):
             qualifier_set.add(datum.qualifier)
         return frozenset(qualifier_set)
 
-    def get_by_qualifier(self, qual_to_find: Union[str, Qualifier, int]) -> "CVTerms":
-        qual_to_find = CVTerm.check_qualifier_type(qual_to_find)
-        cvterms_to_return = [cvterm for cvterm in self.data
-                             if cvterm.qualifier == qual_to_find]
-        return self.__class__(cvterms_to_return)
+    def query_qualifier(
+        self,
+        search_function: Union[str, Pattern, Callable, Qualifier],
+    ) -> "CVTerms":
+        """Query the CV terms by Qualifier.
+
+        Parameters
+        ----------
+        search_function : a string, regular expression, function or Qualifier
+            Used to find the matching elements in the list.
+            - a regular expression (possibly compiled), in which case the
+            given attribute of the object should match the regular expression.
+            - a function which takes one argument and returns True for
+            desired values
+
+        Returns
+        -------
+        CVTerms
+            a new list of CVTerm objects which match the query
+
+        """
+        if isinstance(search_function, Pattern):
+            # if the search_function is a regular expression
+            regex_searcher = re.compile(search_function)
+
+            matches = (
+                cvterm
+                for cvterm in self.data
+                if regex_searcher.findall(cvterm.qualifier) != []
+            )
+        elif isinstance(search_function, (Qualifier, int, str)):
+            search_function = CVTerm.check_qualifier_type(search_function)
+
+            matches = (cvterm for cvterm in self if cvterm.qualifier == search_function)
+
+        else:
+            matches = (cvterm for cvterm in self if search_function(cvterm))
+
+        results = self.__class__(matches)
+        return results
+
+    def query_resources(
+        self,
+        search_function: Union[str, Pattern, Callable, "ExternalResources"],
+        search_nested_data=False,
+    ) -> "CVTerms":
+        """Query the CV terms by External Resources.
+
+        Parameters
+        ----------
+        search_function : a string, regular expression, function or External Resources
+            Used to find the matching elements in the list.
+            - a regular expression (possibly compiled), in which case the
+            given attribute of the object should match the regular expression.
+            - a function which takes one argument and returns True for
+            desired values
+
+        search_nested_data: bool
+            Should the nested_data of each resource be searched as well. Default False.
+
+        Returns
+        -------
+        CVTerms
+            a new list of CVTerm objects which match the query
+
+        """
+        if isinstance(search_function, (Pattern, str)):
+            # if the search_function is a regular expression
+            regex_searcher = re.compile(search_function)
+
+            if search_nested_data:
+
+                def _match_resources(x):
+                    return [regex_searcher.findall(res) != [] for res in x.resource_set]
+
+            else:
+
+                def _match_resources(x):
+                    return [regex_searcher.findall(res) != [] for res in x.resources]
+
+            matches = (cvterm for cvterm in self.data if any(_match_resources(cvterm)))
+        elif isinstance(search_function, ExternalResources):
+            search_function = CVTerm.check_ex_res_type(search_function)
+
+            if search_nested_data:
+                matches = (
+                    cvterm
+                    for cvterm in self.data
+                    if search_function in cvterm.resource_set
+                )
+            else:
+                matches = (
+                    cvterm
+                    for cvterm in self.data
+                    if search_function in cvterm.external_resources
+                )
+
+        else:
+            matches = (cvterm for cvterm in self if search_function(cvterm))
+
+        results = self.__class__(matches)
+        return results
 
     def __setitem__(self, key: int, value: CVTerm) -> None:
-        UserList.__setitem__(self, key, self._check_CVTerm2(value))
+        UserList.__setitem__(self, key, self._check_CVTerm(value))
 
     def append(self, item: CVTerm) -> None:
         """Append CVTerm to end."""
-        self._check_CVTerm2(item)
+        self._check_CVTerm(item)
         UserList.append(self, item)
 
     def extend(self, iterable: Union["CVTerms", Iterable[Union[CVTerm, Dict]]]) -> None:
@@ -391,7 +501,7 @@ class CVTerms(UserList):
         if isinstance(iterable, CVTerms):
             self.data.extend(iterable.data)
         elif isinstance(iterable, Iterable):
-            self.data.extend([self._check_CVTerm2(i) for i in iterable])
+            self.data.extend([self._check_CVTerm(i) for i in iterable])
 
     def __eq__(self, other: "CVTerms") -> bool:
         """Compare two CVTerms objects to find out whether they
@@ -406,20 +516,20 @@ class CVTerms(UserList):
                 return False
         return True
 
+
 class ExternalResources:
     """
     Class representation of a single set of resources and its nested
-    annotation. It is a special type of dict with restricted keys and
-    values
+    annotation.
 
     Parameters
     ----------
-    data : dict
-        A dictionary containing the resources and nested annotation
-        {
-            "resources" : [],
-            "nested_data" : CVTerms
-         }
+    resources: list
+        A list of URLs (resources)
+    nested_data" : CVTerms
+        Nested annotation, in CVTerms format
+
+    Can also be created from dictionary, see ExternalResources.from_dict()
     """
 
     def __init__(self, resources: List = None, nested_data=None):
@@ -439,6 +549,14 @@ class ExternalResources:
             self._resources = value
         elif not isinstance(value, list):
             raise TypeError(f"The resources must be wrapped inside a list: {value}")
+
+    @property
+    def resource_set(self) -> FrozenSet:
+        resources = set()
+        resources.update(self.resources)
+        if self.nested_data:
+            resources.update(self.nested_data.resources)
+        return frozenset(resources)
 
     @property
     def nested_data(self) -> CVTerms:
