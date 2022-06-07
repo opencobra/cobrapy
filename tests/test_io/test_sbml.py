@@ -6,7 +6,7 @@ from os.path import join, split
 from pathlib import Path
 from pickle import load
 from tempfile import gettempdir
-from typing import List, Tuple, Callable
+from typing import Callable, List, Tuple
 
 import pytest
 from _pytest.fixtures import SubRequest
@@ -728,7 +728,9 @@ def test_stable_gprs(data_directory: str, tmp_path: Path) -> None:
     )
 
 
-def test_writing_xml_with_annotation(compare_models: Callable, data_directory: Path, tmp_path: Path):
+def test_writing_xml_with_annotation(
+    compare_models: Callable, data_directory: Path, tmp_path: Path
+):
     model = read_sbml_model(data_directory.joinpath("e_coli_core_for_annotation.xml"))
     write_sbml_model(model, tmp_path.joinpath("e_coli_core_writing.xml"))
     reread_model = read_sbml_model(tmp_path.joinpath("e_coli_core_writing.xml"))

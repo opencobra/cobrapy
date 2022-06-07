@@ -7,13 +7,7 @@ from pathlib import Path
 
 from cobra.core.metadata import CVTerm, CVTerms, ExternalResources
 from cobra.core.species import Species
-from cobra.io import (
-    load_json_model,
-    read_sbml_model,
-    save_json_model,
-    write_sbml_model,
-)
-
+from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
 
 PUBMED_EXAMPLE = "https://identifiers.org/pubmed/1111111"
 ECO_EXAMPLE = "https://identifiers.org/eco/ECO:0000004"
@@ -121,12 +115,12 @@ def test_nested_annotation(data_directory):
                         "https://identifiers.org/chebi/CHEBI:17627",
                     ],
                     "nested_data": {
-                    "bqb_isDescribedBy": [
-                        {"resources": [PUBMED_EXAMPLE]},
-                        {"resources": ["https://identifiers.org/eco/000000"]},
-                    ],
+                        "bqb_isDescribedBy": [
+                            {"resources": [PUBMED_EXAMPLE]},
+                            {"resources": ["https://identifiers.org/eco/000000"]},
+                        ],
+                    },
                 },
-                }
             ]
         }
     )
@@ -139,7 +133,9 @@ def test_nested_annotation(data_directory):
         }
     )
     assert s.annotation.cvterms == main_cvt
-    nested_data = s.annotation.cvterms.query_qualifier("bqb_hasPart")[1].external_resources.nested_data
+    nested_data = s.annotation.cvterms.query_qualifier("bqb_hasPart")[
+        1
+    ].external_resources.nested_data
     assert nested_data == nested_cvt
 
 
@@ -166,7 +162,9 @@ def test_cvterms_from_ecoli_xml(data_directory):
     assert qualifier_set == model_cvterms_qualifier_set
     assert xml_model_cvterms == ecoli_model_cvterm
     assert len(xml_model_cvterms.query_qualifier("bqm_isDescribedBy")) == 2
-    nested_data = xml_model_cvterms.query_qualifier("bqm_is")[0].external_resources.nested_data
+    nested_data = xml_model_cvterms.query_qualifier("bqm_is")[
+        0
+    ].external_resources.nested_data
     assert nested_data == nested_cvt
 
     # check backwards compatibility
