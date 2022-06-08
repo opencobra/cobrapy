@@ -314,11 +314,11 @@ class CVTerms(UserList):
             # adding data one by one
             for identifier in value:
                 qual = Qualifier["bqb_is"]
-                # if no qualifier is linked to identifier i.e annotation
+                # if no qualifier is linked to identifier i.e. annotation
                 # of the form { "chebi": "CHEBI:17234"}
                 if isinstance(identifier, str):
                     uri = "https://identifiers.org/" + key + "/" + identifier
-                # if some qualifier is linked to the identifier i.e annotation
+                # if some qualifier is linked to the identifier i.e. annotation
                 # of the form { "chebi": ["bqb_is", "CHEBI:17234"]}
                 elif isinstance(identifier, list):
                     uri = "https://identifiers.org/" + key + "/" + identifier[1]
@@ -397,18 +397,18 @@ class CVTerms(UserList):
             # if the search_function is a regular expression
             regex_searcher = re.compile(search_function)
 
-            matches = (
+            matches = [
                 cvterm
                 for cvterm in self.data
                 if regex_searcher.findall(cvterm.qualifier) != []
-            )
+            ]
         elif isinstance(search_function, (Qualifier, int, str)):
             search_function = CVTerm.check_qualifier_type(search_function)
 
-            matches = (cvterm for cvterm in self if cvterm.qualifier == search_function)
+            matches = [cvterm for cvterm in self if cvterm.qualifier == search_function]
 
         else:
-            matches = (cvterm for cvterm in self if search_function(cvterm))
+            matches = [cvterm for cvterm in self if search_function(cvterm)]
 
         results = self.__class__(matches)
         return results
@@ -452,25 +452,25 @@ class CVTerms(UserList):
                 def _match_resources(x):
                     return [regex_searcher.findall(res) != [] for res in x.resources]
 
-            matches = (cvterm for cvterm in self.data if any(_match_resources(cvterm)))
+            matches = [cvterm for cvterm in self.data if any(_match_resources(cvterm))]
         elif isinstance(search_function, ExternalResources):
             search_function = CVTerm.check_ex_res_type(search_function)
 
             if search_nested_data:
-                matches = (
+                matches = [
                     cvterm
                     for cvterm in self.data
                     if search_function in cvterm.resource_set
-                )
+                ]
             else:
-                matches = (
+                matches = [
                     cvterm
                     for cvterm in self.data
                     if search_function in cvterm.external_resources
-                )
+                ]
 
         else:
-            matches = (cvterm for cvterm in self if search_function(cvterm))
+            matches = [cvterm for cvterm in self if search_function(cvterm)]
 
         results = self.__class__(matches)
         return results
@@ -518,7 +518,7 @@ class ExternalResources:
     ----------
     resources: list
         A list of URLs (resources)
-    nested_data" : CVTerms
+    nested_data : CVTerms
         Nested annotation, in CVTerms format
 
     Can also be created from dictionary, see ExternalResources.from_dict()
