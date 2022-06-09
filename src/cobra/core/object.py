@@ -101,8 +101,8 @@ class Object:
             self._annotation = MetaData().from_dict(annotation)
         else:
             raise TypeError(
-                "The data passed for annotation must be inside "
-                "a dictionary or MetaData: {}".format(annotation)
+                f"The data passed for annotation must be inside "
+                f"a dictionary or MetaData: {annotation}"
             )
 
     @property
