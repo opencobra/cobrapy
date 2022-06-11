@@ -1794,10 +1794,15 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
         for k in range(_cvterm.getNumResources()):
             uri = _cvterm.getResourceURI(k)
             ext_res["resources"].append(uri)
-        nested_cv_terms = [_cvterm.getNestedCVTerm(index) for index in range(_cvterm.getNumNestedCVTerms())]
+        nested_cv_terms = [
+            _cvterm.getNestedCVTerm(index)
+            for index in range(_cvterm.getNumNestedCVTerms())
+        ]
         # This kludge is necessary since _cvterm.getListNestedCVTerms() doesn't give a
         # python list, but a Swig List_t * and then SwigPyObject is not iterable
-        ext_res["nested_data"] = CVTerms([_cvterm_to_cobra(_nested_cvterm) for _nested_cvterm in nested_cv_terms])
+        ext_res["nested_data"] = CVTerms(
+            [_cvterm_to_cobra(_nested_cvterm) for _nested_cvterm in nested_cv_terms]
+        )
         return CVTerm(ExternalResources.from_dict(ext_res), qualifier)
 
     annotation.add_cvterms([_cvterm_to_cobra(cvterm) for cvterm in cvterms])
