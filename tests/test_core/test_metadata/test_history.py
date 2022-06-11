@@ -57,10 +57,26 @@ def test_history_from_ecoli_xml(data_directory):
                 email="koenigmx@hu-berlin.de",
                 organisation="Humboldt-University Berlin, "
                 "Institute for Theoretical Biology",
+            ),
+            Creator(
+                given_name="Matthias",
+                family_name="Koenig",
+                email="koenigmx@hu-berlin.de",
+            ),
+            Creator(
+                given_name="Matthias",
+                family_name="Koenig",
+                organisation="Humboldt-University Berlin, "
+                             "Institute for Theoretical Biology",
+            ),
+            Creator(
+                given_name="Matthias",
+                family_name="Koenig",
             )
         ],
         created_date=HistoryDatetime("2019-03-06T14:40:55Z"),
-        modified_dates=[HistoryDatetime("2019-03-06T14:40:55Z")],
+        modified_dates=[HistoryDatetime("2019-03-06T14:40:55Z"),
+                        HistoryDatetime("2019-03-06T14:41:55Z")],
     )
     assert model.annotation.history == history
 
