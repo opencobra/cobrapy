@@ -1768,63 +1768,64 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
     if cvterms is None:
         return annotation
 
-    new_cvterms = []
-    cvterm: "libsbml.CVTerm"
-    for cvterm in cvterms:
-        # reading the qualifier
-        qualifier_type = cvterm.getQualifierType()
+    def _cvterm_to_cobra(_cvterm: "libsbml.CVTerm") -> CVTerm:
+        """Parses the libsbml.CVTerm object to cobra CVTerm.
+
+        Parameters
+        ----------
+        _cvterm : libsbml.CVTerm
+            The libsbml.CVTerm object from which data is to be parsed.
+
+        Returns
+        -------
+        CVTerm
+            The parsed data of the given libsbml.CVTerm object as CVTerm.
+        """
+        qualifier_type = _cvterm.getQualifierType()
         if qualifier_type == 0:
-            mq_type = cvterm.getModelQualifierType()
+            mq_type = _cvterm.getModelQualifierType()
             qualifier = "bqm_" + libsbml.ModelQualifierType_toString(mq_type)
         elif qualifier_type == 1:
-            bq_type = cvterm.getBiologicalQualifierType()
+            bq_type = _cvterm.getBiologicalQualifierType()
             qualifier = "bqb_" + libsbml.BiolQualifierType_toString(bq_type)
         else:
             qualifier = "unknown_qualifier"
         ext_res = {"resources": []}
-        for k in range(cvterm.getNumResources()):
-            uri = cvterm.getResourceURI(k)
+        for k in range(_cvterm.getNumResources()):
+            uri = _cvterm.getResourceURI(k)
             ext_res["resources"].append(uri)
-        ext_res["nested_data"] = _set_nested_data(cvterm)
-        new_cvterms.append(CVTerm(ExternalResources.from_dict(ext_res), qualifier))
-    annotation.add_cvterms(new_cvterms)
+        nested_cv_terms = [_cvterm.getNestedCVTerm(index) for index in range(_cvterm.getNumNestedCVTerms())]
+        # This kludge is necessary since _cvterm.getListNestedCVTerms() doesn't give a
+        # python list, but a Swig List_t * and then SwigPyObject is not iterable
+        ext_res["nested_data"] = CVTerms([_cvterm_to_cobra(_nested_cvterm) for _nested_cvterm in nested_cv_terms])
+        return CVTerm(ExternalResources.from_dict(ext_res), qualifier)
+
+    annotation.add_cvterms([_cvterm_to_cobra(cvterm) for cvterm in cvterms])
 
     # history of the component
     if sbase.isSetModelHistory():
         model_history: "libsbml.ModelHistory" = sbase.getModelHistory()
 
-        cobra_creators = []
-        for index in range(model_history.getNumCreators()):
-            creator: "libsbml.Creator" = model_history.getCreator(index)
-            cobra_creators.append(
-                Creator.from_data(
-                    {
-                        "family_name": creator.getFamilyName()
-                        if creator.isSetFamilyName()
-                        else None,
-                        "given_name": creator.getGivenName()
-                        if creator.isSetGivenName()
-                        else None,
-                        "organisation": creator.getOrganisation()
-                        if creator.isSetOrganisation()
-                        else None,
-                        "email": creator.getEmail() if creator.isSetEmail() else None,
-                    }
-                )
+        annotation.history.creators = [
+            Creator.from_data(
+                {
+                    "family_name": creator.getFamilyName() or None,
+                    "given_name": creator.getGivenName() or None,
+                    "organisation": creator.getOrganisation() or None,
+                    "email": creator.getEmail() or None,
+                }
             )
-
-        annotation.history.creators = cobra_creators
+            for creator in model_history.getListCreators()
+        ]
 
         if model_history.isSetCreatedDate():
             date: libsbml.Date = model_history.getCreatedDate()
             annotation.history.created_date = HistoryDatetime(date.getDateAsString())
 
-        cobra_modified_dates = []
-        for index in range(model_history.getNumModifiedDates()):
-            modified_date = model_history.getModifiedDate(index)
-            cobra_modified_date = HistoryDatetime(modified_date.getDateAsString())
-            cobra_modified_dates.append(cobra_modified_date)
-        annotation.history.modified_dates = cobra_modified_dates
+        annotation.history.modified_dates = [
+            HistoryDatetime(_date.getDateAsString())
+            for _date in model_history.getListModifiedDates()
+        ]
 
     return annotation
 
@@ -1866,50 +1867,18 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
     return provider, identifier
 
 
-def _set_nested_data(cvterm_obj: libsbml.CVTerm) -> CVTerms:
-    """Parses the nested data corresponding to a given
-    libsbml.CVTerm object
-    cvterm_obj : libsbml.CVTerm
-        The CVTerm object from which nested data is to be parsed
-    CVTerms
-        the parsed nested data of the given CVTerm object
-    """
-    num_nested_cvterms = cvterm_obj.getNumNestedCVTerms()
-    cobra_nested_cvterms = CVTerms()
-    if num_nested_cvterms == 0:
-        return cobra_nested_cvterms
+def _cvterms_to_sbml(cvterms: CVTerms) -> List["libsbml.CVTerm"]:
+    """Convert cobra CVTerms to libsbml.CVTerm list.
 
-    new_cvterms = []
-    for index in range(num_nested_cvterms):  # type libsbml.CVTerm
-        # reading the qualifier
-        cvterm = cvterm_obj.getNestedCVTerm(index)
-        qualifier_type = cvterm.getQualifierType()
-        if qualifier_type == 0:
-            mq_type = cvterm.getModelQualifierType()
-            qualifier = "bqm_" + libsbml.ModelQualifierType_toString(mq_type)
-        elif qualifier_type == 1:
-            bq_type = cvterm.getBiologicalQualifierType()
-            qualifier = "bqb_" + libsbml.BiolQualifierType_toString(bq_type)
-        else:
-            qualifier = "unknown_qualifier"
+    Parameters
+    ----------
+    cvterms: CVTerms
+        cobra CVTerms object
 
-        ext_res = {"resources": []}
-        for k in range(cvterm.getNumResources()):
-            uri = cvterm.getResourceURI(k)
-            ext_res["resources"].append(uri)
-        ext_res["nested_data"] = _set_nested_data(cvterm)
-        new_cvterms.append(CVTerm(ExternalResources.from_dict(ext_res), qualifier))
-    cobra_nested_cvterms.add_cvterms(new_cvterms)
-
-    return cobra_nested_cvterms
-
-
-def _cvterms_to_SMBL_CVterms(cvterms: CVTerms) -> List["libsbml.CVTerm"]:
-    """
-
-    :param qualifier:
-    :param external_resource:
-    :return:
+    Returns
+    -------
+    list
+        List of libsbml.cvTerm objects
     """
     cv_list = []
     for cvterm in cvterms:
@@ -1936,7 +1905,7 @@ def _cvterms_to_SMBL_CVterms(cvterms: CVTerms) -> List["libsbml.CVTerm"]:
 
         [
             _check(cv.addNestedCVTerm(_cv), f"Adding nested cvterm: {_cv}")
-            for _cv in _cvterms_to_SMBL_CVterms(cvterm.external_resources.nested_data)
+            for _cv in _cvterms_to_sbml(cvterm.external_resources.nested_data)
         ]
 
         cv_list.append(cv)
@@ -1958,8 +1927,6 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
     ------
     CobraSBMLError for unsupported qualifier
     """
-
-    # standardize annotations
     annotation_data = deepcopy(annotation)
     # TODO - devel has formatting of float and to str, and str to ["is", str] - does this happen in CVterm?
 
@@ -1988,7 +1955,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
     # set cvterms
     [
         _check(sbase.addCVTerm(cv), f"Setting cvterm: {cv}")
-        for cv in _cvterms_to_SMBL_CVterms(annotation.cvterms)
+        for cv in _cvterms_to_sbml(annotation.cvterms)
     ]
 
     # set history
@@ -1999,8 +1966,8 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
             comp_creator = libsbml.ModelCreator()
             comp_creator.setGivenName(creator.given_name)
             comp_creator.setFamilyName(creator.family_name)
-            comp_creator.setEmail(creator.email)
-            comp_creator.setOrganisation(creator.organisation)
+            creator.email and comp_creator.setEmail(creator.email)
+            creator.organisation and comp_creator.setOrganisation(creator.organisation)
             comp_history.addCreator(comp_creator)
 
         if annotation.history.created_date.datetime is not None:
