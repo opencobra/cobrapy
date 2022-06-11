@@ -2,6 +2,8 @@
 
 from typing import Optional
 
+from cobra.util import resettable
+
 
 class Object:
     """Defines common behavior of object in cobra.core."""
@@ -81,6 +83,7 @@ class Object:
         return self._annotation
 
     @annotation.setter
+    @resettable
     def annotation(self, annotation):
         """Set annotation.
 

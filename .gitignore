@@ -235,8 +235,6 @@ docs/_build/
 .pybuilder/
 target/
 
-# Jupyter Notebook
-.ipynb_checkpoints
 
 # IPython
 profile_default/
@@ -303,3 +301,6 @@ gurobi.log
 /documentation_builder/test*\.*
 /.benchmarks
 /.testmondata
+
+# sonarlint
+.idea/sonarlint*
