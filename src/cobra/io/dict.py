@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Tuple, Union
 import numpy as np
 
 from ..core import Gene, Group, Metabolite, Model, Reaction
-from ..core.metadata import MetaData, Notes
+from ..core.metadata import MetaData
 from ..core.metadata.helper import (
     URL_IDENTIFIERS_PATTERN,
     parse_identifiers_uri,
@@ -134,8 +134,6 @@ def _fix_type(
         return list(value)
     if isinstance(value, dict):
         return OrderedDict((key, value[key]) for key in sorted(value))
-    if isinstance(value, Notes):
-        return str(value)
     if isinstance(value, MetaData):
         return value.to_dict()
     # handle legacy Formula type
@@ -175,11 +173,7 @@ def _update_optional(
     """
     for key in ordered_keys:
         default = optional_attribute_dict[key]
-        value = getattr(cobra_object, key)
-        if key == "notes" and (
-            value is None or value.notes_xhtml is None or len(value.notes_xhtml) == 0
-        ):
-            continue
+        value = getattr(cobra_object, key, None)
         if value is None or value == default:
             continue
         new_dict[key] = _fix_type(value)
@@ -218,8 +212,6 @@ def _fix_value_from_dict(_key: str, _value_to_fix: Union[List, str]):
                     anno_dict[provider].append(identifier)
             _value_to_fix = anno_dict
         _value_to_fix = MetaData.from_dict(_value_to_fix)
-    elif _key == "notes":
-        _value_to_fix = Notes(_value_to_fix)
     elif _key == "lower_bound" or _key == "upper_bound":
         _value_to_fix = float(_value_to_fix)
 

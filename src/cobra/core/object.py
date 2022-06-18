@@ -1,8 +1,8 @@
 """Define base Object class in Cobra."""
 
-from typing import Optional, Union
+from typing import Optional
 
-from cobra.core.metadata import MetaData, Notes
+from cobra.core.metadata import MetaData
 
 
 class Object:
@@ -24,7 +24,7 @@ class Object:
         self._id = id
         self.name = name
 
-        self._notes = Notes()
+        self.notes = {}
         self._annotation = MetaData()
 
     @property
@@ -105,30 +105,6 @@ class Object:
                 f"a dictionary or MetaData: {annotation}"
             )
 
-    @property
-    def notes(self) -> Optional[Notes]:
-        """Get notes attribute, if exists.
-
-        Returns
-        -------
-        Notes: optional notes
-            Returns None if object has no Notes.
-        """
-        return getattr(self, "_notes", None)
-
-    @notes.setter
-    def notes(self, data: Union[Notes, str]) -> None:
-        """Set notes attribute.
-
-        Parameters
-        ----------
-        data: Notes or str (xhtml)
-            Notes or xhtml
-        """
-        if isinstance(data, Notes):
-            self._notes = data
-            return
-        self._notes.notes_xhtml = data
 
     def __getstate__(self) -> dict:
         """Get state of annotation.

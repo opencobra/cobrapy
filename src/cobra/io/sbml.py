@@ -53,7 +53,6 @@ from ..core import (
     Metabolite,
     MetaData,
     Model,
-    Notes,
     Reaction,
 )
 from ..manipulation.validate import check_metabolite_compartment_formula
@@ -632,14 +631,14 @@ def _sbml_to_model(
         "level": model.getLevel(),
         "version": model.getVersion(),
         "packages": packages,
-        "notes": _parse_notes_info(doc),
+        "notes": _parse_notes_dict(doc),
         "annotation": _parse_annotations(doc),
         "info": info,
     }
     cobra_model._sbml = meta
 
     # notes and annotations
-    cobra_model.notes = _parse_notes_info(model)
+    cobra_model.notes = _parse_notes_dict(model)
     cobra_model.annotation = _parse_annotations(model)
 
     # Compartments
@@ -665,7 +664,7 @@ def _sbml_to_model(
 
         met = Metabolite(sid)
         met.name = specie.getName()
-        met.notes = _parse_notes_info(specie)
+        met.notes = _parse_notes_dict(specie)
         met.annotation = _parse_annotations(specie)
         met.compartment = specie.getCompartment()
 
@@ -738,7 +737,7 @@ def _sbml_to_model(
             if cobra_gene.name is None:
                 cobra_gene.name = gid
             cobra_gene.annotation = _parse_annotations(gp)
-            cobra_gene.notes = _parse_notes_info(gp)
+            cobra_gene.notes = _parse_notes_dict(gp)
 
             cobra_model.genes.append(cobra_gene)
     else:
@@ -746,7 +745,7 @@ def _sbml_to_model(
             cobra_reaction
         ) in model.getListOfReactions():  # noqa: E501 type: libsbml.Reaction
             # fallback to notes information
-            notes = _parse_notes_info(cobra_reaction)
+            notes = _parse_notes_dict(cobra_reaction)
             if "GENE ASSOCIATION" in notes:
                 gpr = notes["GENE ASSOCIATION"]
             elif "GENE_ASSOCIATION" in notes:
@@ -818,7 +817,7 @@ def _sbml_to_model(
         cobra_reaction = Reaction(rid)
         cobra_reaction.name = reaction.getName().strip()
         cobra_reaction.annotation = _parse_annotations(reaction)
-        cobra_reaction.notes = _parse_notes_info(reaction)
+        cobra_reaction.notes = _parse_notes_dict(reaction)
 
         # set bounds
         p_ub, p_lb = None, None
@@ -1052,7 +1051,7 @@ def _sbml_to_model(
             if group.isSetKind():
                 cobra_group.kind = group.getKindAsString()
             cobra_group.annotation = _parse_annotations(group)
-            cobra_group.notes = _parse_notes_info(group)
+            cobra_group.notes = _parse_notes_dict(group)
 
             cobra_members = []
             member: "libsbml.Member"
@@ -1216,7 +1215,7 @@ def _model_to_sbml(
     # for parsing annotation corresponding to the model
     _sbase_annotations(model, cobra_model.annotation)
     # for parsing notes corresponding to the model
-    _set_notes(model, cobra_model.notes)
+    _sbase_notes_dict(model, cobra_model.notes)
 
     # Meta information (ModelHistory) related to SBMLDocument
     if hasattr(cobra_model, "_sbml"):
@@ -1224,7 +1223,7 @@ def _model_to_sbml(
         if "annotation" in meta:
             _sbase_annotations(doc, meta["annotation"])
         if "notes" in meta:
-            _set_notes(doc, meta["notes"])
+            _sbase_notes_dict(doc, meta["notes"])
 
         history: "libsbml.ModelHistory" = libsbml.ModelHistory()
         if "created" in meta and meta["created"]:
@@ -1323,7 +1322,7 @@ def _model_to_sbml(
             s_fbc.setChemicalFormula(metabolite.formula)
 
         _sbase_annotations(specie, metabolite.annotation)
-        _set_notes(specie, metabolite.notes)
+        _sbase_notes_dict(specie, metabolite.notes)
 
     # Genes
     for cobra_gene in cobra_model.genes:
@@ -1339,7 +1338,7 @@ def _model_to_sbml(
         gp.setLabel(gid)
 
         _sbase_annotations(gp, cobra_gene.annotation)
-        _set_notes(gp, cobra_gene.notes)
+        _sbase_notes_dict(gp, cobra_gene.notes)
 
     # Objective
     objective: "libsbml.Objective" = model_fbc.createObjective()
@@ -1359,7 +1358,7 @@ def _model_to_sbml(
         reaction.setFast(False)
         reaction.setReversible((cobra_reaction.lower_bound < 0))
         _sbase_annotations(reaction, cobra_reaction.annotation)
-        _set_notes(reaction, cobra_reaction.notes)
+        _sbase_notes_dict(reaction, cobra_reaction.notes)
 
         # stoichiometry
         for metabolite, stoichiometry in cobra_reaction.metabolites.items():
@@ -1448,7 +1447,7 @@ def _model_to_sbml(
             group.setName(cobra_group.name)
             group.setKind(cobra_group.kind)
 
-            _set_notes(group, cobra_group.notes)
+            _sbase_notes_dict(group, cobra_group.notes)
             _sbase_annotations(group, cobra_group.annotation)
 
             for cobra_member in cobra_group.members:
@@ -1647,8 +1646,8 @@ def _check(value: Union[None, int], message: str) -> None:
 # -----------------------------------------------------------------------------
 # Notes
 # -----------------------------------------------------------------------------
-def _parse_notes_info(sbase: libsbml.SBase) -> Notes:
-    """Create COBRA Notes object.
+def _parse_notes_dict(sbase) -> dict:
+    """Create dictionary of COBRA notes.
 
     Parameters
     ----------
@@ -1656,15 +1655,28 @@ def _parse_notes_info(sbase: libsbml.SBase) -> Notes:
 
     Returns
     -------
-    Notes object
+    dict of notes
     """
-    notes = sbase.getNotesString() or None
-    cobra_notes = Notes(notes)
-    return cobra_notes
+    notes = sbase.getNotesString()
+    if notes and len(notes) > 0:
+        notes_store = dict()
+        for match in pattern_notes.finditer(notes):
+            _content = match.group("content")
+            try:
+                # Python 2.7 does not allow keywords for split.
+                # Python 3 can have (":", maxsplit=1)
+                key, value = _content.split(":", maxsplit=1)
+            except ValueError:
+                LOGGER.debug(f"Unexpected content format '{_content}'.")
+                continue
+            notes_store[key.strip()] = value.strip()
+        return {k: v for k, v in notes_store.items() if len(v) > 0}
+    else:
+        return {}
 
 
-def _set_notes(sbase: libsbml.SBase, notes: Notes) -> None:
-    """Set SBase notes based on the COBRA notes object.
+def _sbase_notes_dict(sbase: libsbml.SBase, notes: dict) -> None:
+    """Set SBase notes based on dictionary.
 
     Parameters
     ----------
@@ -1673,11 +1685,16 @@ def _set_notes(sbase: libsbml.SBase, notes: Notes) -> None:
     notes : dict
         Notes information from cobra object.
     """
-    if notes.notes_xhtml is None or len(notes.notes_xhtml) == 0:
-        return
-    _check(
-        sbase.setNotes(notes.notes_xhtml), "Setting notes on sbase: {}".format(sbase)
-    )
+    if notes and len(notes) > 0:
+        tokens = (
+            ['<html xmlns = "http://www.w3.org/1999/xhtml" >']
+            + [f"<p>{k}: {v}</p>" for (k, v) in notes.items()]
+            + ["</html>"]
+        )
+        _check(
+            sbase.setNotes("\n".join(tokens)),
+            f"Setting notes on sbase: {sbase}",
+        )
 
 
 # -----------------------------------------------------------------------------
