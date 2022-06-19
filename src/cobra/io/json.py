@@ -23,13 +23,13 @@ JSON_SPEC = "1"
 
 
 def json_schema_v1() -> Dict:
-    with files(cio).joinpath("schema_v1.json").open('r') as handle:
+    with files(cio).joinpath("schema_v1.json").open("r") as handle:
         schema_v1 = json.load(handle)
     return schema_v1
 
 
 def json_schema_v2() -> Dict:
-    with files(cio).joinpath("schema_v2.json").open('r') as handle:
+    with files(cio).joinpath("schema_v2.json").open("r") as handle:
         schema_v2 = json.load(handle)
     return schema_v2
 
@@ -89,7 +89,7 @@ def save_json_model(
     filename: Union[str, Path],
     sort: bool = False,
     pretty: bool = False,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> None:
     """Write the cobra model to a file in JSON format.
 

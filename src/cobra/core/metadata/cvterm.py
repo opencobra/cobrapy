@@ -195,7 +195,8 @@ class CVTerm:
         """Return the GPR with module, class, and code to recreate it."""
         return (
             f"{self.__class__.__module__}.{self.__class__.__qualname__}"
-            f"({self.to_ordered_dict()})")
+            f"({self.to_ordered_dict()})"
+        )
 
 
 class CVTermList(UserList):

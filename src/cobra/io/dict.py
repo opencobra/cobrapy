@@ -25,6 +25,7 @@ from ..io.sbml import (
 )
 from ..util.solver import set_objective
 
+
 if TYPE_CHECKING:
     from cobra import Object
 
@@ -274,7 +275,8 @@ def _metabolite_to_dict(
     return new_metabolite
 
 
-def _metabolite_from_dict(metabolite: Dict, f_replace: dict = F_REPLACE  # noqa:    W0102
+def _metabolite_from_dict(
+    metabolite: Dict, f_replace: dict = F_REPLACE  # noqa:    W0102
 ) -> Metabolite:
     """Convert a dictionary to cobra Metabolite object.
 

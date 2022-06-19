@@ -105,7 +105,6 @@ class Object:
                 f"a dictionary or MetaData: {annotation}"
             )
 
-
     def __getstate__(self) -> dict:
         """Get state of annotation.
 

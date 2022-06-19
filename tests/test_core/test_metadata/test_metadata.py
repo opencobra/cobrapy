@@ -100,35 +100,35 @@ def test_nested_annotation(data_directory):
     }
     # check standardized
     main_cvt = {
-            "bqb_hasPart": [
-                {
-                    "resources": [
-                        "https://identifiers.org/uniprot/P69905",
-                        "https://identifiers.org/uniprot/P68871",
-                        "https://identifiers.org/kegg.compound/C00032",
-                    ]
-                },
-                {
-                    "resources": [
-                        "https://identifiers.org/uniprot/P69905",
-                        "https://www.uniprot.org/uniprot/P68871",
-                        "https://identifiers.org/chebi/CHEBI:17627",
+        "bqb_hasPart": [
+            {
+                "resources": [
+                    "https://identifiers.org/uniprot/P69905",
+                    "https://identifiers.org/uniprot/P68871",
+                    "https://identifiers.org/kegg.compound/C00032",
+                ]
+            },
+            {
+                "resources": [
+                    "https://identifiers.org/uniprot/P69905",
+                    "https://www.uniprot.org/uniprot/P68871",
+                    "https://identifiers.org/chebi/CHEBI:17627",
+                ],
+                "nested_data": {
+                    "bqb_isDescribedBy": [
+                        {"resources": [PUBMED_EXAMPLE]},
+                        {"resources": ["https://identifiers.org/eco/000000"]},
                     ],
-                    "nested_data": {
-                        "bqb_isDescribedBy": [
-                            {"resources": [PUBMED_EXAMPLE]},
-                            {"resources": ["https://identifiers.org/eco/000000"]},
-                        ],
-                    },
                 },
-            ]
-        }
+            },
+        ]
+    }
     nested_cvt = {
-            "bqb_isDescribedBy": [
-                {"resources": [PUBMED_EXAMPLE]},
-                {"resources": ["https://identifiers.org/eco/000000"]},
-            ]
-        }
+        "bqb_isDescribedBy": [
+            {"resources": [PUBMED_EXAMPLE]},
+            {"resources": ["https://identifiers.org/eco/000000"]},
+        ]
+    }
     assert s.annotation.standardized == main_cvt
     nested_data = s.annotation.standardized.query_qualifier("bqb_hasPart")[
         1
@@ -146,11 +146,11 @@ def test_cvterms_from_ecoli_xml(data_directory):
     model = _read_ecoli_annotation_model(data_directory)
     qualifier_set = {"bqb_hasTaxon", "bqm_is", "bqm_isDescribedBy"}
     nested_cvt = {
-            "bqb_isDescribedBy": [
-                {"resources": [PUBMED_EXAMPLE]},
-                {"resources": [ECO_EXAMPLE]},
-            ]
-        }
+        "bqb_isDescribedBy": [
+            {"resources": [PUBMED_EXAMPLE]},
+            {"resources": [ECO_EXAMPLE]},
+        ]
+    }
     ecoli_model_cvterm = CVTermList.from_dict(ecoli_model_annotation)
     xml_model_cvterms = model.annotation.standardized
     model_cvterms_qualifier_set = {qual.name for qual in xml_model_cvterms.qualifiers}
@@ -175,7 +175,10 @@ def test_cvterms_from_ecoli_xml(data_directory):
 
 def test_writing_xml(data_directory, tmp_path):
     model = _read_ecoli_annotation_model(data_directory)
-    assert write_sbml_model(model, str(tmp_path.joinpath("e_coli_core_writing.xml"))) is None
+    assert (
+        write_sbml_model(model, str(tmp_path.joinpath("e_coli_core_writing.xml")))
+        is None
+    )
 
 
 def test_read_write_json(data_directory, tmp_path):
@@ -243,24 +246,23 @@ def test_read_old_json_model(data_directory):
     )
     assert meta.annotation.standardized == expected_cvterms
     assert meta.annotation.standardized == {
-            "bqb_is": [
-                {
-                    "resources": [
-                        "http://identifiers.org/bigg.metabolite/13dpg",
-                        "http://identifiers.org/biocyc/DPG",
-                        "http://identifiers.org/chebi/CHEBI:16001",
-                        "http://identifiers.org/chebi/CHEBI:1658",
-                        "http://identifiers.org/chebi/CHEBI:20189",
-                        "http://identifiers.org/chebi/CHEBI:57604",
-                        "http://identifiers.org/chebi/CHEBI:11881",
-                        "http://identifiers.org/hmdb/HMDB01270",
-                        "http://identifiers.org/kegg.compound/C00236",
-                        "http://identifiers.org/pubchem.substance/3535",
-                        "http://identifiers.org/reactome/REACT_29800",
-                        "http://identifiers.org/seed.compound/cpd00203",
-                        "http://identifiers.org/unipathway.compound/UPC00236",
-                    ]
-                }
-            ]
-        }
-
+        "bqb_is": [
+            {
+                "resources": [
+                    "http://identifiers.org/bigg.metabolite/13dpg",
+                    "http://identifiers.org/biocyc/DPG",
+                    "http://identifiers.org/chebi/CHEBI:16001",
+                    "http://identifiers.org/chebi/CHEBI:1658",
+                    "http://identifiers.org/chebi/CHEBI:20189",
+                    "http://identifiers.org/chebi/CHEBI:57604",
+                    "http://identifiers.org/chebi/CHEBI:11881",
+                    "http://identifiers.org/hmdb/HMDB01270",
+                    "http://identifiers.org/kegg.compound/C00236",
+                    "http://identifiers.org/pubchem.substance/3535",
+                    "http://identifiers.org/reactome/REACT_29800",
+                    "http://identifiers.org/seed.compound/cpd00203",
+                    "http://identifiers.org/unipathway.compound/UPC00236",
+                ]
+            }
+        ]
+    }
