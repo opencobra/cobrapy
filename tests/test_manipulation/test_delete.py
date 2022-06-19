@@ -110,7 +110,7 @@ def test_gene_knockout(salmonella: Model) -> None:
         assert expected_reactions == knocked_out_reactions
     with salmonella:
         expected_reactions = [salmonella.reactions.get_by_id("4PEPTabcpp")]
-        knocked_out_reactions = knock_out_model_genes(salmonella, ["STM1746.S"])
+        knocked_out_reactions = knock_out_model_genes(salmonella, ["STM1746_S"])
         assert expected_reactions == knocked_out_reactions
     knocked_out_reactions = knock_out_model_genes(salmonella, gene_list)
     assert len(knocked_out_reactions) == 13
