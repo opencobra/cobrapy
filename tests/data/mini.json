@@ -26,7 +26,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -90,7 +90,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -109,7 +109,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -136,7 +136,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -156,7 +156,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -183,7 +183,7 @@
     "metabolites": [
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -213,7 +213,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -247,7 +247,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -287,7 +287,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -332,7 +332,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -376,7 +376,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -413,7 +413,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -450,7 +450,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -488,7 +488,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -519,7 +519,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -559,7 +559,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -581,7 +581,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -657,7 +657,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -733,7 +733,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -782,7 +782,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -831,7 +831,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -862,7 +862,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -893,7 +893,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -935,7 +935,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -972,7 +972,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1008,7 +1008,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1072,7 +1072,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1136,7 +1136,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1175,7 +1175,7 @@
     "reactions": [
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1209,7 +1209,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1232,7 +1232,8 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "sbo": "SBO:0000627",
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1240,8 +1241,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_glc__D_e",
@@ -1254,7 +1254,8 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "sbo": "SBO:0000627",
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1262,8 +1263,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_h_e",
@@ -1276,7 +1276,8 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "sbo": "SBO:0000627",
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1284,8 +1285,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000627"
+                }
             },
             "gene_reaction_rule": "",
             "id": "R_EX_lac__D_e",
@@ -1298,7 +1298,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1321,7 +1321,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1347,7 +1347,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1371,7 +1371,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1393,7 +1393,8 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "sbo": "SBO:0000375",
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1409,8 +1410,7 @@
                             ]
                         }
                     ]
-                },
-                "sbo": "SBO:0000375"
+                }
             },
             "gene_reaction_rule": "b2133 or b1380",
             "id": "R_LDH_D",
@@ -1428,7 +1428,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1454,7 +1454,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1476,7 +1476,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1500,7 +1500,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1522,7 +1522,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1546,7 +1546,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [
@@ -1571,7 +1571,7 @@
         },
         {
             "annotation": {
-                "cvterms": {
+                "standardized": {
                     "bqb_is": [
                         {
                             "resources": [

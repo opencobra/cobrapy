@@ -45,7 +45,7 @@ from ..core import (
     GPR,
     Creator,
     CVTerm,
-    CVTerms,
+    CVTermList,
     ExternalResources,
     Gene,
     Group,
@@ -1814,7 +1814,7 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
         ]
         # This kludge is necessary since _cvterm.getListNestedCVTerms() doesn't give a
         # python list, but a Swig List_t * and then SwigPyObject is not iterable
-        ext_res["nested_data"] = CVTerms(
+        ext_res["nested_data"] = CVTermList(
             [_cvterm_to_cobra(_nested_cvterm) for _nested_cvterm in nested_cv_terms]
         )
         return CVTerm(ExternalResources.from_dict(ext_res), qualifier)
@@ -1886,12 +1886,12 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
     return provider, identifier
 
 
-def _cvterms_to_sbml(cvterms: CVTerms) -> List["libsbml.CVTerm"]:
+def _cvterms_to_sbml(cvterms: CVTermList) -> List["libsbml.CVTerm"]:
     """Convert cobra CVTerms to libsbml.CVTerm list.
 
     Parameters
     ----------
-    cvterms: CVTerms
+    cvterms: CVTermList
         cobra CVTerms object
 
     Returns
@@ -1971,10 +1971,10 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
     meta_id = f"meta_{sbase.getId()}"
     sbase.setMetaId(meta_id)
 
-    # set cvterms
+    # set standardized
     [
         _check(sbase.addCVTerm(cv), f"Setting cvterm: {cv}")
-        for cv in _cvterms_to_sbml(annotation.cvterms)
+        for cv in _cvterms_to_sbml(annotation.standardized)
     ]
 
     # set history

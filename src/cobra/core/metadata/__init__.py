@@ -2,7 +2,7 @@
 
 from cobra.core.metadata.cvterm import (
     Qualifier,
-    CVTerms,
+    CVTermList,
     ExternalResources,
     CVTerm,
 )

@@ -5,7 +5,7 @@ import os
 from os.path import join
 from pathlib import Path
 
-from cobra.core.metadata import CVTerm, CVTerms, ExternalResources
+from cobra.core.metadata import CVTerm, CVTermList, ExternalResources
 from cobra.core.species import Species
 from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
 
@@ -37,7 +37,7 @@ def test_annotation():
     # a cobra component
     s = Species()
     assert s.annotation == {}  # nothing set for annotation, so empty dict
-    assert s.annotation.cvterms == CVTerms()
+    assert s.annotation.standardized == CVTermList()
     assert not s.annotation.keys()
     assert s.annotation.keyvaluepairs == {}
     assert s.annotation.history.creators == []
@@ -46,7 +46,7 @@ def test_annotation():
     # setting annotation via old annotation format
     s.annotation["chebi"] = ["CHEBI:43215", "CHEBI:11881"]
 
-    assert s.annotation.cvterms.resources == {
+    assert s.annotation.standardized.resources == {
         "https://identifiers.org/chebi/CHEBI:43215",
         "https://identifiers.org/chebi/CHEBI:11881",
     }
@@ -54,8 +54,8 @@ def test_annotation():
     # checking old (fixed) annotation format
     assert s.annotation == {"chebi": sorted(["CHEBI:43215", "CHEBI:11881"])}
 
-    # checking new cvterms
-    cvt = CVTerms(
+    # checking new standardized
+    cvt = CVTermList(
         [
             CVTerm(
                 qualifier="bqb_is",
@@ -72,7 +72,7 @@ def test_annotation():
         ]
     )
 
-    assert s.annotation.cvterms == cvt
+    assert s.annotation.standardized == cvt
 
     # adding an SBO term
     s.annotation["sbo"] = ["SBO:0000123"]
@@ -85,12 +85,12 @@ def test_annotation():
 
 
 def test_nested_annotation(data_directory):
-    # testing via cvterms
+    # testing via standardized
     with open(join(data_directory, "cvterms_nested.json"), "r") as f_cvterms:
         cvterms_data = json.load(f_cvterms)
 
     s = Species()
-    s.annotation.add_cvterms(CVTerms.from_dict(cvterms_data))
+    s.annotation.add_cvterms(cvterms_data)
     assert s.annotation == {
         "chebi": ["CHEBI:17627"],
         "eco": ["000000"],
@@ -98,9 +98,8 @@ def test_nested_annotation(data_directory):
         "pubmed": ["1111111"],
         "uniprot": ["P68871", "P69905"],
     }
-    # check cvterms
-    main_cvt = CVTerms.from_dict(
-        {
+    # check standardized
+    main_cvt = {
             "bqb_hasPart": [
                 {
                     "resources": [
@@ -124,17 +123,14 @@ def test_nested_annotation(data_directory):
                 },
             ]
         }
-    )
-    nested_cvt = CVTerms.from_dict(
-        {
+    nested_cvt = {
             "bqb_isDescribedBy": [
                 {"resources": [PUBMED_EXAMPLE]},
                 {"resources": ["https://identifiers.org/eco/000000"]},
             ]
         }
-    )
-    assert s.annotation.cvterms == main_cvt
-    nested_data = s.annotation.cvterms.query_qualifier("bqb_hasPart")[
+    assert s.annotation.standardized == main_cvt
+    nested_data = s.annotation.standardized.query_qualifier("bqb_hasPart")[
         1
     ].external_resources.nested_data
     assert nested_data == nested_cvt
@@ -149,16 +145,14 @@ def _read_ecoli_annotation_model(data_directory):
 def test_cvterms_from_ecoli_xml(data_directory):
     model = _read_ecoli_annotation_model(data_directory)
     qualifier_set = {"bqb_hasTaxon", "bqm_is", "bqm_isDescribedBy"}
-    nested_cvt = CVTerms.from_dict(
-        {
+    nested_cvt = {
             "bqb_isDescribedBy": [
                 {"resources": [PUBMED_EXAMPLE]},
                 {"resources": [ECO_EXAMPLE]},
             ]
         }
-    )
-    ecoli_model_cvterm = CVTerms.from_dict(ecoli_model_annotation)
-    xml_model_cvterms = model.annotation.cvterms
+    ecoli_model_cvterm = CVTermList.from_dict(ecoli_model_annotation)
+    xml_model_cvterms = model.annotation.standardized
     model_cvterms_qualifier_set = {qual.name for qual in xml_model_cvterms.qualifiers}
     assert qualifier_set == model_cvterms_qualifier_set
     assert xml_model_cvterms == ecoli_model_cvterm
@@ -181,7 +175,7 @@ def test_cvterms_from_ecoli_xml(data_directory):
 
 def test_writing_xml(data_directory, tmp_path):
     model = _read_ecoli_annotation_model(data_directory)
-    assert write_sbml_model(model, tmp_path.joinpath("e_coli_core_writing.xml")) is None
+    assert write_sbml_model(model, str(tmp_path.joinpath("e_coli_core_writing.xml"))) is None
 
 
 def test_read_write_json(data_directory, tmp_path):
@@ -198,12 +192,8 @@ def test_read_write_json(data_directory, tmp_path):
         "pubmed": ["1111111"],
         "taxonomy": ["511145"],
     }
-    """With manual type casting I mean model.annotations.cvterms = CVTerms({...}).
-    There is no need for the CVTerms cast/constructor. Could just have the setter
-    convert to the right class and assign the dictionary firectly. Also some of the
-    constructor arguments can be optional. """
-
-    assert model.annotation.cvterms == CVTerms.from_dict(ecoli_model_annotation)
+    assert model.annotation.standardized == CVTermList.from_dict(ecoli_model_annotation)
+    assert model.annotation.standardized == ecoli_model_annotation
 
 
 def test_read_old_json_model(data_directory):
@@ -227,8 +217,8 @@ def test_read_old_json_model(data_directory):
         "unipathway.compound": ["UPC00236"],
     }
 
-    # testing cvterms
-    expected_cvterms = CVTerms.from_dict(
+    # testing standardized
+    expected_cvterms = CVTermList.from_dict(
         {
             "bqb_is": [
                 {
@@ -251,4 +241,26 @@ def test_read_old_json_model(data_directory):
             ]
         }
     )
-    assert meta.annotation.cvterms == expected_cvterms
+    assert meta.annotation.standardized == expected_cvterms
+    assert meta.annotation.standardized == {
+            "bqb_is": [
+                {
+                    "resources": [
+                        "http://identifiers.org/bigg.metabolite/13dpg",
+                        "http://identifiers.org/biocyc/DPG",
+                        "http://identifiers.org/chebi/CHEBI:16001",
+                        "http://identifiers.org/chebi/CHEBI:1658",
+                        "http://identifiers.org/chebi/CHEBI:20189",
+                        "http://identifiers.org/chebi/CHEBI:57604",
+                        "http://identifiers.org/chebi/CHEBI:11881",
+                        "http://identifiers.org/hmdb/HMDB01270",
+                        "http://identifiers.org/kegg.compound/C00236",
+                        "http://identifiers.org/pubchem.substance/3535",
+                        "http://identifiers.org/reactome/REACT_29800",
+                        "http://identifiers.org/seed.compound/cpd00203",
+                        "http://identifiers.org/unipathway.compound/UPC00236",
+                    ]
+                }
+            ]
+        }
+

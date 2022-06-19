@@ -4,7 +4,7 @@ from collections import OrderedDict
 from collections.abc import MutableMapping
 from typing import Dict, Iterable, Iterator, List, Union
 
-from ..metadata.cvterm import CVTerm, CVTerms
+from ..metadata.cvterm import CVTerm, CVTermList
 from ..metadata.history import Creator, History
 from ..metadata.keyvaluepairs import KeyValuePairs
 
@@ -17,7 +17,7 @@ class MetaData(MutableMapping):
     annotation fields.
 
     Meta-data consists of three components:
-    - CVTerms: storing resource:identifier annotation information. The annotation
+    - CVTermList: storing resource:identifier annotation information. The annotation
       information is exposed via the dict interface for full backwards compatibility
       to the earlier object.annotation field.
     - History: storing the object history consisting of creators, created date, and
@@ -26,14 +26,14 @@ class MetaData(MutableMapping):
 
     Parameters
     ----------
-    cvterms : dict or CVTerms object
-        The cvterms store annotations to external resources
+    cvterms : dict or CVTermList object
+        The standardized store annotations to external resources
     history : dict, History
         The history stores information about the creator,
         created and modified dates.
     sbo: str
         The sbo term to use for the entity. If you want to use more than one SBO term
-        (not recommended), use SBO in identifers.org format and put it in cvterms.
+        (not recommended), use SBO in identifers.org format and put it in standardized.
     keyvaluepairs : list
         Key-value pairs which are not suitable to be
         represented anywhere else in the model.
@@ -42,7 +42,7 @@ class MetaData(MutableMapping):
 
     def __init__(
         self,
-        cvterms: Union[Dict, CVTerms] = None,
+        cvterms: Union[Dict, CVTermList] = None,
         history: Union[Dict, History] = None,
         sbo: str = "",
         keyvaluepairs: List = None,
@@ -51,7 +51,7 @@ class MetaData(MutableMapping):
 
         Parameters
         ---------
-        cvterms : dict or CVTerms, optional
+        cvterms : dict or CVTermList, optional
             Which controlled vocabulary terms does the metadata have. Default None.
         history: dict or History, optional
             History of annotation, including creation data, creators, and optional
@@ -63,25 +63,21 @@ class MetaData(MutableMapping):
             For annotations that don't match the identifiers.org format.
 
         """
-        self._cvterms = CVTerms.from_data(cvterms)
+        self._standardized = CVTermList.from_data(cvterms)
         self._history = History.from_data(history)
-        self._keyvaluepairs = KeyValuePairs(keyvaluepairs)
+        self._custompairs = KeyValuePairs(keyvaluepairs)
         self._sbo = sbo
-
-        """Model.annotations.standardized and Model.annotations.custom would be much
-        more clear than Model.annotations.cvterms and Model.annotations.keyvaluepairs
-        for beginners. """
 
         # use setters
         self.sbo = sbo
-        self.cvterms = cvterms
+        self.standardized = cvterms
         self.history = history
-        self.keyvaluepairs = keyvaluepairs
+        self.custompairs = keyvaluepairs
 
     @property
     def annotations(self) -> Dict:
         """Backwards compatible annotations."""
-        anno_dict = self.cvterms.annotations
+        anno_dict = self.standardized.annotations
         if self.sbo:
             anno_dict["sbo"] = self.sbo
         return anno_dict
@@ -112,12 +108,12 @@ class MetaData(MutableMapping):
             A list that will contain either term(s) or qualifier and term(s).
 
         If the key is sbo, sets the self.sbo term to the first item in the list. If
-        you'd like to add multiple SBO terms, use the CVTerms() and add sbo as
-        identifiers.org formatted links.
+        you'd like to add multiple SBO terms, use the CVTermList() and add sbo as
+        identifiers.org formatted external resources/links.
 
         See Also
         --------
-        CVTerms().add_simple_annotations()
+        CVTermList().add_simple_annotations()
 
         """
         if key == "sbo":
@@ -125,7 +121,7 @@ class MetaData(MutableMapping):
                 value = value[0]
             self.sbo = value
         else:
-            self._cvterms.add_simple_annotations(dict({key: value}))
+            self._standardized.add_simple_annotations(dict({key: value}))
 
     def __getitem__(self, key: str) -> Union[str, List]:
         if key == "sbo":
@@ -152,15 +148,15 @@ class MetaData(MutableMapping):
         return str(dict(self.annotations))
 
     @property
-    def cvterms(self) -> "CVTerms":
-        return self._cvterms
+    def standardized(self) -> "CVTermList":
+        return self._standardized
 
-    @cvterms.setter
-    def cvterms(self, cvterms: Union[Dict, CVTerms]) -> None:
-        self._cvterms = CVTerms.from_data(cvterms)
+    @standardized.setter
+    def standardized(self, cvterms: Union[Dict, CVTermList]) -> None:
+        self._standardized = CVTermList.from_data(cvterms)
 
     def add_cvterms(self, cvterms: Iterable[Union[Dict, CVTerm]]) -> None:
-        self._cvterms.add_cvterms(cvterms)
+        self._standardized.add_cvterms(cvterms)
 
     @property
     def history(self) -> History:
@@ -175,11 +171,11 @@ class MetaData(MutableMapping):
 
     @property
     def keyvaluepairs(self) -> KeyValuePairs:
-        return self._keyvaluepairs
+        return self._custompairs
 
     @keyvaluepairs.setter
     def keyvaluepairs(self, keyvaluepairs: Union[Dict, KeyValuePairs]) -> None:
-        self._keyvaluepairs = KeyValuePairs(keyvaluepairs)
+        self._custompairs = KeyValuePairs(keyvaluepairs)
 
     def to_dict(self) -> Dict:
         """Create string dictionary for serialization.
@@ -193,28 +189,28 @@ class MetaData(MutableMapping):
             # set first SBO term as sbo
             d["sbo"] = self.sbo
 
-        if self.cvterms:
-            d["cvterms"] = self.cvterms.to_dict()
+        if self.standardized:
+            d["standardized"] = self.standardized.to_dict()
 
         if self.history and not self.history.is_empty():
             d["history"] = self.history.to_dict()
 
         if self.keyvaluepairs:
-            d["keyvaluepairs"] = self.keyvaluepairs.to_dict()
+            d["custompairs"] = self.keyvaluepairs.to_dict()
 
         return d
 
     @staticmethod
     def from_dict(data: Dict) -> "MetaData":
-        cvterms = data["cvterms"] if "cvterms" in data else None
+        cvterms = data["standardized"] if "standardized" in data else None
         history = data["history"] if "history" in data else None
-        keyValuepairs = data["keyvaluepairs"] if "keyvaluepairs" in data else None
+        keyValuepairs = data["custompairs"] if "custompairs" in data else None
 
         if cvterms or history or keyValuepairs:
             annotation = MetaData(cvterms, history, keyValuepairs)
         else:
             annotation = MetaData()
-            annotation.cvterms.add_simple_annotations(data)
+            annotation.standardized.add_simple_annotations(data)
 
         if "sbo" in data:
             annotation["sbo"] = data["sbo"]

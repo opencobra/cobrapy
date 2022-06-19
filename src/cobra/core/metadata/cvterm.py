@@ -51,7 +51,7 @@ class CVTerm:
                     "resource_uri",
                     ...
                 ],
-                "nested_data": CVTerms Object
+                "nested_data":CVTermList Object
         }
     """
 
@@ -85,7 +85,7 @@ class CVTerm:
 
     @qualifier.setter
     def qualifier(self, qualifier: Union[str, int, Qualifier]) -> None:
-        """Set Qualifier
+        """Set Qualifier.
 
         Parameters
         ----------
@@ -137,7 +137,7 @@ class CVTerm:
             return ExternalResources.from_dict(ex_res)
         else:
             raise TypeError(
-                f"Allowed types for CVTerms ex_ress are ExternalResources "
+                f"Allowed types for CVTerm ex_ress are ExternalResources "
                 f"or dict, not {type(ex_res)}: {ex_res}"
             )
 
@@ -164,13 +164,13 @@ class CVTerm:
             )
 
     def to_ordered_dict(self) -> OrderedDict:
-        """Represent a CVTerms object in python dict.
+        """Represent a CVTermList object in python dict.
 
         Returns:
         -------
         orderddict:
             An ordered dict where each key has is a qualifier and has a list of all
-            external resources in the original self._cvterms dictionary for that key.
+            external resources in the original dictionary for that key.
 
         """
         return OrderedDict({self.qualifier: self.external_resources.to_dict()})
@@ -191,12 +191,16 @@ class CVTerm:
             return False
         return True
 
-    #TODO - make repr that has summary of CVTerm. Rename CVTerms to CVTermList
+    def __repr__(self) -> str:
+        """Return the GPR with module, class, and code to recreate it."""
+        return (
+            f"{self.__class__.__module__}.{self.__class__.__qualname__}"
+            f"({self.to_ordered_dict()})")
 
 
-class CVTerms(UserList):
+class CVTermList(UserList):
     """
-    Representation of all CVTerms of an object in their
+    Representation of all CVTermList of an object in their
     dependency structure. It is list that contains qualifiers and external resouces
     for each CVTerm.
 
@@ -229,27 +233,26 @@ class CVTerms(UserList):
             return CVTerm.from_dict(cvterm)
         else:
             raise TypeError(
-                f"Allowed types for CVTerms ex_ress are CVTerm "
+                f"Allowed types for CVTerm ex_res are CVTerm "
                 f"or dict, not {type(cvterm)}: {cvterm}"
             )
 
     @staticmethod
-    def from_data(data: Union[List, Dict, "CVTerm"]) -> "CVTerms":
-        """Parses a CVTerms object from given data"""
+    def from_data(data: Union[List, Dict, "CVTerm"]) -> "CVTermList":
+        """Parses a CVTermList object from given data"""
         if data is None:
-            return CVTerms()
+            return CVTermList()
         if isinstance(data, dict):
-            # TODO - need to check dict.py
-            return CVTerms.from_dict(data)
+            return CVTermList.from_dict(data)
         elif isinstance(data, list):
-            return CVTerms(data)
+            return CVTermList(data)
         elif isinstance(data, CVTerm):
-            return CVTerms([data])
+            return CVTermList([data])
         else:
-            raise TypeError(f"Invalid format for CVTerms: '{data}'")
+            raise TypeError(f"Invalid format for CVTermList: '{data}'")
 
     def to_dict(self) -> dict:
-        """Represent a CVTerms object in python dict.
+        """Represent a CVTermList object in python dict.
 
         Returns:
         -------
@@ -285,18 +288,21 @@ class CVTerms(UserList):
 
     def add_cvterms(self, cvterms: Iterable[Union[Dict, "CVTerm"]]) -> None:
         """
-        Adds multiple CVTerm to CVTerms.
+        Adds multiple CVTerm to CVTermList.
 
         Parameters
         ----------
-        cvterms : CVTerms list of CVTerm or dict (to be added in CVTerms dict)
-            the cvterms to be added
+        cvterms : CVTermList list of CVTerm or dict (to be added in CVTermList dict)
+            the standardized to be added
         """
+        if isinstance(cvterms, dict):
+            cvterms = CVTermList.from_dict(cvterms)
         self.extend(cvterms)
 
     def add_simple_annotations(self, data: Union[Dict, List] = None) -> None:
-        """
-        Adds cvterms via old annotation format. If no qualifier
+        """Add simple annotation.
+
+        Adds standardized via old annotation format. If no qualifier
         is linked to the identifier, default qualifier i.e "bqb_is"
         will be used.
         This function will add identifiers.org to as the URI.
@@ -369,7 +375,7 @@ class CVTerms(UserList):
         Returns:
         -------
         FrozenSet:
-            a set of all external resources in the original self._cvterms dictionary
+            a set of all external resources in the original self.data list of CVTerms
             including external resources of nested data
         """
         resources = set()
@@ -391,7 +397,7 @@ class CVTerms(UserList):
     def query_qualifier(
         self,
         search_function: Union[str, Pattern, Callable, Qualifier],
-    ) -> "CVTerms":
+    ) -> "CVTermList":
         """Query the CV terms by Qualifier.
 
         Parameters
@@ -405,7 +411,7 @@ class CVTerms(UserList):
 
         Returns
         -------
-        CVTerms
+        CVTermList
             a new list of CVTerm objects which match the query
 
         """
@@ -433,7 +439,7 @@ class CVTerms(UserList):
         self,
         search_function: Union[str, Pattern, Callable, "ExternalResources"],
         search_nested_data=False,
-    ) -> "CVTerms":
+    ) -> "CVTermList":
         """Query the CV terms by External Resources.
 
         Parameters
@@ -450,7 +456,7 @@ class CVTerms(UserList):
 
         Returns
         -------
-        CVTerms
+        CVTermList
             a new list of CVTerm objects which match the query
 
         """
@@ -499,23 +505,27 @@ class CVTerms(UserList):
         self._check_CVTerm(item)
         UserList.append(self, item)
 
-    def extend(self, iterable: Union["CVTerms", Iterable[Union[CVTerm, Dict]]]) -> None:
+    def extend(
+        self, iterable: Union["CVTermList", Iterable[Union[CVTerm, Dict]]]
+    ) -> None:
         """Extend data list by appending elements from the iterable.
 
         Parameters
         ----------
         iterable : Iterable
         """
-        if isinstance(iterable, CVTerms):
+        if isinstance(iterable, CVTermList):
             self.data.extend(iterable.data)
         elif isinstance(iterable, Iterable):
             self.data.extend([self._check_CVTerm(i) for i in iterable])
 
-    def __eq__(self, other: "CVTerms") -> bool:
-        """Compare two CVTerms objects to find out whether they
+    def __eq__(self, other: "CVTermList") -> bool:
+        """Compare two CVTermList objects to find out whether they
         are same (have same data) or not
         """
-        if not isinstance(other, CVTerms):
+        if isinstance(other, dict):
+            return self.__eq__(CVTermList.from_dict(other))
+        if not isinstance(other, CVTermList):
             return False
         if len(self.data) != len(other.data):
             return False
@@ -534,8 +544,8 @@ class ExternalResources:
     ----------
     resources: list
         A list of URLs (resources)
-    nested_data : CVTerms
-        Nested annotation, in CVTerms format
+    nested_data : CVTermList
+        Nested annotation, in CVTerm format
 
     Can also be created from dictionary, see ExternalResources.from_dict()
     """
@@ -567,19 +577,19 @@ class ExternalResources:
         return frozenset(resources)
 
     @property
-    def nested_data(self) -> CVTerms:
+    def nested_data(self) -> CVTermList:
         return self._nested_data
 
     @nested_data.setter
-    def nested_data(self, value: Union[Dict, CVTerm, CVTerms]):
+    def nested_data(self, value: Union[Dict, CVTerm, CVTermList]):
         if value is None:
-            self._nested_data = CVTerms()
+            self._nested_data = CVTermList()
         elif isinstance(value, CVTerm):
-            self._nested_data = CVTerms([value])
-        elif isinstance(value, CVTerms):
+            self._nested_data = CVTermList([value])
+        elif isinstance(value, CVTermList):
             self._nested_data = value
         elif isinstance(value, dict):
-            self._nested_data = CVTerms.from_dict(value)
+            self._nested_data = CVTermList.from_dict(value)
         else:
             raise TypeError(
                 f"The nested data structure does not have valid CVTerm format: {value}"
