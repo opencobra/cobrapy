@@ -464,7 +464,7 @@ def read_sbml_model(
             "Something went wrong reading the SBML model. Most likely the SBML"
             " model is not valid. Please check that your model is valid using "
             "the `cobra.io.sbml.validate_sbml_model` function or via the "
-            "online validator at http://sbml.org/validator .\n"
+            "online validator at https://sbml.org/validator_servlet/ .\n"
             "\t`(model, errors) = validate_sbml_model(filename)`"
             "\nIf the model is valid and cannot be read please open an issue "
             "at https://github.com/opencobra/cobrapy/issues ."
