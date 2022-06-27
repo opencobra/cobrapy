@@ -37,6 +37,7 @@ flux distribution optimal: x1=2
 from os.path import join
 
 import pytest
+from optlang import Variable, Constraint
 
 from cobra.core.model import Model
 from cobra.core.udconstraints import ConstraintComponent, UserDefinedConstraint
@@ -58,12 +59,14 @@ def test_user_defined_constraints(data_directory):
     solution1 = cons_model.optimize()
     assert solution1.objective_value == pytest.approx(5.0)
 
-    cons_comp_1 = ConstraintComponent(variable="v1")
-    cons_comp_2 = ConstraintComponent(variable="v2")
-    const_1 = UserDefinedConstraint(
-        lower_bound=0, upper_bound=4, const_comps=[cons_comp_1, cons_comp_2]
-    )
-    cons_model.add_user_defined_constraints([const_1])
+    # Could make something like _new_Variable(name, model), which checks
+    # model.variables.get(name, None) or Variable(name)
+    # Alternatively, could modify add_cons_vars to screen and replace existing variables
+    # or both
+
+    c1 = Constraint(cons_model.variables.get('v1')+ cons_model.variables.get('v2'), lb=0, ub=4, name='c1')
+
+    cons_model.add_cons_vars(c1)
     solution2 = cons_model.optimize()
     assert solution2.objective_value == pytest.approx(2.00)
 
@@ -73,11 +76,8 @@ def test_user_defined_constraints_on_single_flux(data_directory):
     solution1 = cons_model.optimize()
     assert solution1.objective_value == pytest.approx(5.0)
 
-    cons_comp_1 = ConstraintComponent(variable="v2")
-    const_1 = UserDefinedConstraint(
-        lower_bound=0, upper_bound=3, const_comps=[cons_comp_1]
-    )
-    cons_model.add_user_defined_constraints([const_1])
+    const_1 = Constraint(cons_model.variables.get('v2'), lb=0, ub=3, name='const_1')
+    cons_model.add_cons_vars(const_1)
     solution2 = cons_model.optimize()
     assert solution2.objective_value == pytest.approx(3.00)
 
@@ -85,10 +85,9 @@ def test_user_defined_constraints_on_single_flux(data_directory):
 def test_user_defined_constraints_on_single_variable():
     # an empty model
     model = Model("model_abc")
-    cc1 = ConstraintComponent(variable="new_var")
-    c1 = UserDefinedConstraint(id="c1", lower_bound=0, upper_bound=2, const_comps=[cc1])
-    model.add_user_defined_constraints([c1])
-
+    cc1 = Variable("new_var")
+    c1 = Constraint(cc1, lb=0, ub=2, name='cc1')
+    model.add_cons_vars([c1])
     model.objective = model.variables.new_var
     solution = model.optimize()
     assert solution.objective_value == pytest.approx(2.00)
@@ -96,6 +95,13 @@ def test_user_defined_constraints_on_single_variable():
 
 def test_ast_tree():
     # an expression containing variable in different possible styles
+    a=Variable('a')
+    b=Variable('b')
+    c=Variable('c')
+    d=Variable('d')
+    e=Variable('e')
+    # Need to switch solver?
+    constraint = Constraint(-(2/8+ 1)*a+(4/2+5%2) * b * b- (5 * c * c + (-d+e*e)), lb=0, ub=20)
     expr = "-(2/8+ 1)*a+(4/2+5%2) * b * b- (5 * c * c + (-d+e*e))"
     constraint = UserDefinedConstraint.constraint_from_expression(
         expression=expr, lower_bound=0, upper_bound=20
@@ -127,11 +133,10 @@ def test_helper_function(data_directory):
     cons_model = ex_model(data_directory)
     solution1 = cons_model.optimize()
     assert solution1.objective_value == pytest.approx(5.0)
-
-    const = UserDefinedConstraint.constraint_from_expression(
-        expression="3/3*v1 + v2", lower_bound=0, upper_bound=4
-    )
-    cons_model.add_user_defined_constraints([const])
+    v1 = cons_model.variables.get('v1')
+    v2 = cons_model.variables.get('v2')
+    const = Constraint(3/3*v1 + v2, lb=0, ub=4 )
+    cons_model.add_cons_vars([const])
     solution2 = cons_model.optimize()
     assert solution2.objective_value == pytest.approx(2.00)
 
