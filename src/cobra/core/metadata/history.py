@@ -26,10 +26,22 @@ class History:
 
     def __init__(
         self,
-        creators: List["Creator"] = None,
-        created_date: "HistoryDatetime" = None,
-        modified_dates: List["HistoryDatetime"] = None,
+        creators: Optional[List["Creator"]] = None,
+        created_date: Optional["HistoryDatetime"] = None,
+        modified_dates: Optional[List["HistoryDatetime"]] = None,
     ):
+        """Initialize the class.
+
+        Parameters
+        ----------
+        creators: list
+            list of Creator class. Optional, default None.
+        created_date: HistoryDatetime
+            Created date, in HistoryDateTime class. Optional, default None.
+        modified_dates: list
+            Dates when this annotation was modified. List of HistoryDateTime dates.
+            Optional, default None.
+        """
         if modified_dates is None:
             modified_dates = []
         if creators is None:
@@ -44,7 +56,7 @@ class History:
         self.modified_dates = modified_dates
 
     @property
-    def creators(self) -> List:
+    def creators(self) -> List["Creator"]:
         return self._creators
 
     @creators.setter
@@ -82,7 +94,10 @@ class History:
     def is_empty(self) -> bool:
         """Checks if history is empty.
 
-        Returns False if at least one history attribute is set, else True.
+        Returns
+        -------
+        bool
+            Returns False if at least one history attribute is set, else True.
         """
         if self.creators:
             return False
@@ -96,6 +111,10 @@ class History:
         """Checking equality of two history objects.
 
         A history is equal if all attributes are equal.
+
+        Returns
+        -------
+        bool - True if equal, False otherwise.
         """
         # check equality of creators
         if len(self.creators) != len(history.creators):
@@ -117,22 +136,29 @@ class History:
 
         return True
 
-    def to_dict(self):
-        """Returns dictionary representation."""
-        modified_dates = []
-        for modified_date in self._modified_dates:
-            modified_dates.append(modified_date.datetime)
+    def to_dict(self) -> Dict:
+        """Returns dictionary representation.
+
+        Returns
+        -------
+        dict - Dictionary representation, of this format
+        {
+        "creators": list[dict]
+        "created_date": str
+        "modified_dates": list[str]
+        """
         return {
             "creators": [c.to_dict() for c in self.creators],
             "created_date": self.created_date.datetime,
-            "modified_dates": modified_dates,
+            "modified_dates": [mod_date.datetime for mod_date in self._modified_dates],
         }
 
     def __str__(self) -> str:
         return str(self.to_dict())
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} {self.creators}>"
+        return f"<{self.__class__.__name__} {self.creators}" \
+               f" {self.created_date.datetime}>"
 
 
 class Creator:
@@ -243,14 +269,26 @@ class HistoryDatetime:
 
     @staticmethod
     def utcnow() -> "HistoryDatetime":
-        """HistoryDatetime with current UTC time."""
+        """Get HistoryDatetime with current UTC time.
+
+        Returns
+        -------
+        HistoryDatetime: describing the current UTC time.
+        """
         return HistoryDatetime(datetime.utcnow().strftime(STRTIME_FORMAT))
 
     @staticmethod
     def validate_datetime(datetime_str: str) -> None:
         """Validate if the date format is of type w3cdtf ISO 8601.
 
-        Raises ValueError if not valid.
+        Parameters
+        ----------
+        datetime_str: str
+            Datetime in string format.
+
+        Raises
+        ------
+        ValueError if not valid.
         """
         if not isinstance(datetime_str, str):
             raise TypeError(f"The date passed must be of type string: {datetime_str}")
@@ -280,7 +318,15 @@ class HistoryDatetime:
         return self.datetime == history_datetime.datetime
 
     def __str__(self) -> str:
+        """Return string representation of the datetime.
+
+        Returns
+        -------
+        str
+        """
         return self.datetime
 
-    def __repr__(self):
-        return f"<{self.__class__.__name__} {self.datetime}>"
+    def __repr__(self) -> str:
+        """Return the HistoryDateTime with module, class, and date."""
+        return f"<{self.__class__.__module__}.{self.__class__.__qualname__}" \
+               f"({self.datetime})>"
