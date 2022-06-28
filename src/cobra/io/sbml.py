@@ -710,7 +710,7 @@ def _sbml_to_model(
                     f"Use of FORMULA in the notes element is "
                     f"discouraged, use fbc:chemicalFormula instead: {specie}"
                 )
-                met.formula = met.notes["FORMULA"]
+                met.formula = met.notes["FORMULA"] or None
 
         # Detect boundary metabolites
         if specie.getBoundaryCondition() is True:
@@ -726,7 +726,7 @@ def _sbml_to_model(
         ex_rid = f"EX_{met.id}"
         ex_reaction = Reaction(ex_rid)
         ex_reaction.name = ex_rid
-        ex_reaction.annotation = {"sbo": [SBO_EXCHANGE_REACTION]}
+        ex_reaction.annotation = {"sbo": SBO_EXCHANGE_REACTION}
         ex_reaction.lower_bound = config.lower_bound
         ex_reaction.upper_bound = config.upper_bound
         LOGGER.warning(
@@ -1121,7 +1121,7 @@ def _sbml_to_model(
             if f_replace and F_GROUP in f_replace:
                 gid = f_replace[F_GROUP](gid)
             cobra_group = Group(gid, name=gid, kind="partonomy")
-            cobra_group.annotation["sbo"] = ["SBO:0000633"]
+            cobra_group.annotation["sbo"] = "SBO:0000633"
             cobra_group.add_members(cobra_members)
             groups.append(cobra_group)
 
@@ -1778,7 +1778,7 @@ def _parse_annotations(sbase: libsbml.SBase) -> dict:
     # SBO term
     if sbase.isSetSBOTerm():
         # FIXME: correct handling of annotations
-        annotation["sbo"] = [sbase.getSBOTermID()]
+        annotation["sbo"] = sbase.getSBOTermID()
 
     # RDF annotation
     cvterms = sbase.getCVTerms()
@@ -1800,10 +1800,12 @@ def _parse_annotations(sbase: libsbml.SBase) -> dict:
             if provider in annotation:
                 if isinstance(annotation[provider], str):
                     annotation[provider] = [annotation[provider]]
+                # FIXME: use a list
                 if identifier not in annotation[provider]:
                     annotation[provider].append(identifier)
             else:
-                annotation[provider] = [identifier]
+                # FIXME: always in list
+                annotation[provider] = identifier
 
     return annotation
 

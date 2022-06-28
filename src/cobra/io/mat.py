@@ -909,7 +909,7 @@ def from_mat_struct(
             new_group = Group(
                 id=g_name, name=g_name, members=group_members, kind="partonomy"
             )
-            new_group.annotation["sbo"] = ["SBO:0000633"]
+            new_group.annotation["sbo"] = "SBO:0000633"
             new_groups.append(new_group)
         model.add_groups(new_groups)
 
