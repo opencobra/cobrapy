@@ -40,7 +40,7 @@ if __name__ == "__main__":
         dump(ecoli_model, outfile, protocol=2)
 
     # salmonella
-    salmonella = load_model("salmonella")
+    salmonella = load_model("salmonella", cache=False)
     with open("salmonella.media", "rb") as infile:
         salmonella.media_compositions = load(infile)
     with open("salmonella.pickle", "wb") as outfile:

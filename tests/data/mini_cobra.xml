@@ -1351,8 +1351,8 @@
             <rdf:Description rdf:about="#meta_G_b1676">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/GI:1208453"/>
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/GI:1652654"/>
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/1208453"/>
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/1652654"/>
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -1377,7 +1377,7 @@
             <rdf:Description rdf:about="#meta_G_b2779">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/GI:1653839"/>
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/1653839"/>
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -1391,7 +1391,7 @@
             <rdf:Description rdf:about="#meta_G_b2926">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/GI:1653609"/>
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/1653609"/>
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -1407,8 +1407,8 @@
             <rdf:Description rdf:about="#meta_G_b3916">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/GI:1006614"/>
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/GI:1651919"/>
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/1006614"/>
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/1651919"/>
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -1422,7 +1422,7 @@
             <rdf:Description rdf:about="#meta_G_b4025">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/GI:1653253"/>
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/1653253"/>
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>

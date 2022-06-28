@@ -35,3 +35,5 @@ def add_SBO(model: "Model") -> None:
             r.annotation["sbo"] = ["SBO:0000627"]
         elif r.id.startswith("DM_") and r.id == "DM_" + met_id:
             r.annotation["sbo"] = ["SBO:0000628"]
+        elif r.id.startswith("SK_") and r.id == "SK_" + met_id:
+            r.annotation["sbo"] = ["SBO:0000632"]

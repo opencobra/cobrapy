@@ -1135,8 +1135,8 @@
       - standardized: !!omap
         - bqb_is:
           - resources:
-            - http://identifiers.org/ncbigi/GI:1208453
-            - http://identifiers.org/ncbigi/GI:1652654
+            - http://identifiers.org/ncbiprotein/1208453
+            - http://identifiers.org/ncbiprotein/1652654
   - !!omap
     - id: G_b1723
     - name: pfkB
@@ -1180,7 +1180,7 @@
       - standardized: !!omap
         - bqb_is:
           - resources:
-            - http://identifiers.org/ncbigi/GI:1653839
+            - http://identifiers.org/ncbiprotein/1653839
   - !!omap
     - id: G_b2925
     - name: fbaA
@@ -1191,7 +1191,7 @@
       - standardized: !!omap
         - bqb_is:
           - resources:
-            - http://identifiers.org/ncbigi/GI:1653609
+            - http://identifiers.org/ncbiprotein/1653609
   - !!omap
     - id: G_b2987
     - name: pitB
@@ -1208,8 +1208,8 @@
       - standardized: !!omap
         - bqb_is:
           - resources:
-            - http://identifiers.org/ncbigi/GI:1006614
-            - http://identifiers.org/ncbigi/GI:1651919
+            - http://identifiers.org/ncbiprotein/1006614
+            - http://identifiers.org/ncbiprotein/1651919
   - !!omap
     - id: G_b3919
     - name: tpiA
@@ -1220,7 +1220,7 @@
       - standardized: !!omap
         - bqb_is:
           - resources:
-            - http://identifiers.org/ncbigi/GI:1653253
+            - http://identifiers.org/ncbiprotein/1653253
   - !!omap
     - id: G_b4395
     - name: ytjC

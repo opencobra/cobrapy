@@ -80,14 +80,15 @@ RXN_PROVIDERS_TO_MATLAB = {
     RXN_MATLAB_TO_PROVIDERS[k]: k for k in RXN_MATLAB_TO_PROVIDERS.keys()
 }
 
+CONFIDENCE_STR = "Confidence Level"
 RXN_MATLAB_TO_NOTES = {
     "rxnReferences": "References",
     "rxnNotes": "NOTES",
-    "rxnConfidenceScores": "Confidence Level",
+    "rxnConfidenceScores": CONFIDENCE_STR,
 }
 
 RXN_NOTES_TO_MATLAB = {
-    "Confidence Level": "rxnConfidenceScores",
+    CONFIDENCE_STR: "rxnConfidenceScores",
     "NOTES": "rxnNotes",
     "References": "rxnNotes",
 }
@@ -584,7 +585,7 @@ def notes_to_mat(
         for provider_key, v in note_list[i].items():
             if provider_key not in providers_used:
                 continue
-            if provider_key == "Confidence Level":
+            if provider_key == CONFIDENCE_STR:
                 v = float(v)
             if not len(annotation_cells_to_be[annotation_matlab[provider_key]][i]):
                 annotation_cells_to_be[annotation_matlab[provider_key]][i] = v
@@ -618,13 +619,11 @@ def create_mat_dict(model: Model) -> OrderedDict:
     mat = OrderedDict()
     mat["mets"] = _cell(mets.list_attr("id"))
     model_has_compartment_names = False
-    for comp, compName in model.compartments.items():
-        if comp != compName:
-            model_has_compartment_names = True
-    if (
-        set([_get_id_compartment(met_id) for met_id in mets.list_attr("id")]) == {None}
-        or model_has_compartment_names
-    ):
+    if list(model.compartments.keys()) != list(model.compartments.values()):
+        model_has_compartment_names = True
+    if {_get_id_compartment(met_id) for met_id in mets.list_attr("id")} == {
+        None
+    } or model_has_compartment_names:
         comps = list(model.compartments.keys())
         mat["comps"] = _cell(comps)
         mat["compNames"] = _cell([model.compartments[comp] for comp in comps])
@@ -725,9 +724,7 @@ def from_mat_struct(
     """
     m = mat_struct
 
-    if m.dtype.names is None or not {"rxns", "mets", "S", "lb", "ub"} <= set(
-        m.dtype.names
-    ):
+    if m.dtype.names is None or {"rxns", "mets", "S", "lb", "ub"} > set(m.dtype.names):
         raise ValueError("Invalid MATLAB struct.")
 
     old_cobratoolbox_fields = [
@@ -772,7 +769,7 @@ def from_mat_struct(
         model.name = m["modelName"][0, 0][0]
 
     met_ids = _cell_to_str_list(m["mets"][0, 0])
-    if all(var in m.dtype.names for var in ["metComps", "comps", "compNames"]):
+    if {"metComps", "comps", "compNames"}.issubset(m.dtype.names):
         met_comp_index = [x[0] - 1 for x in m["metComps"][0][0]]
         comps = _cell_to_str_list(m["comps"][0, 0])
         comp_names = _cell_to_str_list(m["compNames"][0][0])
@@ -811,7 +808,7 @@ def from_mat_struct(
     except (IndexError, ValueError):
         # TODO: use custom cobra exception to handle exception
         pass
-    new_metabolites = list()
+    new_metabolites = []
     for i in range(len(met_ids)):
         new_metabolite = Metabolite(met_ids[i], compartment=met_comps[i])
         if met_names:
@@ -826,7 +823,6 @@ def from_mat_struct(
     model.add_metabolites(new_metabolites)
 
     if "genes" in m.dtype.names:
-        new_genes = []
         gene_names = None
         gene_ids = _cell_to_str_list(m["genes"][0, 0])
         try:
@@ -834,12 +830,10 @@ def from_mat_struct(
         except (IndexError, ValueError):
             # TODO: use custom cobra exception to handle exception
             pass
-        for i in range(len(gene_ids)):
-            if gene_names:
-                new_gene = Gene(gene_ids[i], name=gene_names[i])
-            else:
-                new_gene = Gene(gene_ids[i])
-            new_genes.append(new_gene)
+        new_genes = [
+            Gene(gene_ids[i], name=gene_names[i]) if gene_names else Gene(gene_ids[i])
+            for i in range(len(gene_ids))
+        ]
         mat_parse_annotations(new_genes, m, d_replace=DICT_GENE)
         for current_gene in new_genes:
             current_gene._model = model
@@ -907,11 +901,13 @@ def from_mat_struct(
         rxn_group_names = set(rxn_subsystems).difference({None})
         new_groups = []
         for g_name in sorted(rxn_group_names):
-            group_members = model.reactions.query(lambda x: x.subsystem == g_name)
+            group_members = model.reactions.query(
+                lambda x, g_n=g_name: x.subsystem == g_n
+            )
             new_group = Group(
                 id=g_name, name=g_name, members=group_members, kind="partonomy"
             )
-            new_group.annotation["sbo"] = "SBO:0000633"
+            new_group.annotation["sbo"] = ["SBO:0000633"]
             new_groups.append(new_group)
         model.add_groups(new_groups)
 

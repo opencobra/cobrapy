@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 from typing import Callable
 
-import pytest
 from ruamel.yaml import YAML
 
 from cobra import Model
