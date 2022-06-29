@@ -92,8 +92,7 @@ ipython_config.py
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
-.idea/**/sonar*
-.idea/sonarlint/*
+.idea/
 
 # Generated files
 .idea/**/contentModel.xml

@@ -103,7 +103,7 @@ def production_envelope(
     """
     reactions = model.reactions.get_by_any(reactions)
     objective = model.solver.objective if objective is None else objective
-    data = dict()
+    data = {}
 
     if carbon_sources is None:
         c_input = _find_carbon_sources(model)
