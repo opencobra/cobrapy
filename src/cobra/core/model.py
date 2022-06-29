@@ -4,9 +4,12 @@
 import logging
 from copy import copy, deepcopy
 from functools import partial
+from typing import List
 from warnings import warn
 
 import optlang
+from optlang import Constraint, Variable
+from optlang.container import Container
 from optlang.symbolics import Basic, Zero
 
 from cobra.core.configuration import Configuration
@@ -17,7 +20,6 @@ from cobra.core.metabolite import Metabolite
 from cobra.core.object import Object
 from cobra.core.reaction import Reaction
 from cobra.core.solution import get_solution
-from cobra.core.udconstraints import UserDefinedConstraint
 from cobra.medium import find_boundary_types, find_external_compartment, sbo_terms
 from cobra.util.context import HistoryManager, get_context, resettable
 from cobra.util.solver import (
@@ -100,7 +102,7 @@ class Model(Object):
             self.reactions = DictList()  # A list of cobra.Reactions
             self.metabolites = DictList()  # A list of cobra.Metabolites
             self.groups = DictList()  # A list of cobra.Groups
-            self.user_defined_const = DictList()  # A list of UserDefinedConstraints
+            self.user_defined_const = Container()  # A list of UserDefinedConstraints
             self._const_ids = set()
             # genes based on their ids {Gene.id: Gene}
             self._compartments = {}
@@ -409,29 +411,7 @@ class Model(Object):
                 new_objects.append(new_object)
             new_group.add_members(new_objects)
 
-        # new.user_defined_const = deepcopy(self.user_defined_const)
-
-        new.user_defined_const = DictList()
-        do_not_copy_by_ref = {"_model", "_constraint_comps", "_annotation"}
-        for const in self.user_defined_const:
-            new_user_defined_const = const.__class__()
-
-            for attr, value in const.__dict__.items():
-                if attr not in do_not_copy_by_ref:
-                    new_user_defined_const.__dict__[attr] = copy(value)
-            new_user_defined_const._model = new
-            new_user_defined_const.annotation = deepcopy(const.annotation)
-
-            do_not_copy_by_ref = {"_annotation"}
-            for const_comp in const.constraint_comps:
-                new_const_comp = const_comp.__class__(variable=const_comp.variable)
-                for attr, value in const_comp.__dict__.items():
-                    if attr not in do_not_copy_by_ref:
-                        new_const_comp.__dict__[attr] = copy(value)
-                new_const_comp.annotation = deepcopy(const_comp.annotation)
-                new_user_defined_const.add_constraint_comps([new_const_comp])
-
-            new.user_defined_const.append(new_user_defined_const)
+        new.user_defined_const = deepcopy(self.user_defined_const)
 
         try:
             new._solver = deepcopy(self.solver)
@@ -900,7 +880,7 @@ class Model(Object):
         # check whether the element is associated with the model
         return [g for g in self.groups if element in g.members]
 
-    def add_user_defined_constraints(self, constraints: list) -> None:
+    def add_user_defined_constraints(self, constraints: List[Constraint]) -> None:
         """Adds User defined constraints (FBC V3) to the model
 
         Parameters
@@ -909,69 +889,38 @@ class Model(Object):
             a list of UserDefinedConstraints
         """
 
+        if isinstance(constraints, Constraint):
+            logger.warning(
+                f"The constraints passed must be inside a list: {constraints}")
+            constraints = [constraints]
         if not isinstance(constraints, list):
-            # if single UserDefinedConstraints, convert to a list
-            if isinstance(constraints, UserDefinedConstraint):
-                warn(f"The constraints passed must be inside a list: {constraints}")
-                constraints = [constraints]
-            else:
-                raise TypeError(
-                    f"The constraints passed must be inside a list: {constraints}"
-                )
-
-        for constraint in constraints:
-            if not isinstance(constraint, UserDefinedConstraint):
-                raise TypeError(
-                    f"The user defined constraints passed must be of "
-                    f"type 'UserDefinedConstraints': {constraint}"
-                )
-
-            if constraint.lower_bound is None or constraint.upper_bound is None:
-                raise ValueError(f"Bounds must be set for the constraint: {constraint}")
-
-            if constraint.id is None or constraint.id == "":
-                constraint.id = "$_internal_const_id" + str(len(self._const_ids))
-            self._const_ids.add(constraint.id)
-            constraint._model = self
-            cons_exp = 0  # an expression involving variables
-            list_of_var_cons = []
-
-            for item in constraint.constraint_comps:
-
-                # set the exponent of variable/flux
-                if item.variable_type == "linear":
-                    var_pow = 1
-                elif item.variable_type == "quadratic":
-                    var_pow = 2
-                else:
-                    raise ValueError(f"Unexpected variable type set for item: {item}")
-
-                # checks if the reference variable is a rxn flux
-                # or variable
-                if item.variable in self.reactions:
-                    rxn = self.reactions.get_by_id(item.variable)
-                    var_to_add = rxn.flux_expression
-                else:
-                    var_to_add = self.problem.Variable(item.variable)
-                    if var_to_add not in self.variables:
-                        list_of_var_cons.append(var_to_add)
-
-                # add the variable/flux to the constraint expression
-                cons_exp += item.coefficient * pow(var_to_add, var_pow)
-
-            # make the constraint using expression and bounds
-            new_constraint = self.problem.Constraint(
-                cons_exp,
-                name=constraint.id,
-                lb=constraint.lower_bound,
-                ub=constraint.upper_bound,
+            # if single Constraint, convert to a list
+            raise TypeError(
+                f"The constraints passed must be inside a list: {constraints}"
             )
 
-            list_of_var_cons.append(new_constraint)
-            self.user_defined_const.append(constraint)
-            self.add_cons_vars(list_of_var_cons)
+        list_of_var_cons = []
+        for constraint in constraints:
+            constraint: "Constraint"
+            if not isinstance(constraint, Constraint):
+                raise TypeError(
+                    f"The user defined constraints passed must be of "
+                    f"type 'Constraints': {constraint}"
+                )
 
-    def remove_user_defined_constraints(self, constraints: list) -> None:
+            variable_substituions = dict()
+            for variable in constraint.variables:
+                if self.variables.get(variable.name, None):
+                    variable_substituions[variable] = self.variables.get(variable.name)
+                if variable.name in self.reactions:
+                    variable_substituions[variable] = self.reactions.get_by_id(variable.name).flux_expression
+            constraint._expression = constraint.expression.xreplace(variable_substituions)
+
+            list_of_var_cons.append(constraint)
+            self.user_defined_const.has_key(constraint.name) or self.user_defined_const.append(constraint)
+        self.add_cons_vars(list_of_var_cons)
+
+    def remove_user_defined_constraints(self, constraints: List[Constraint]) -> None:
         """Remove the constraints from the model
 
         Parameters
@@ -979,25 +928,28 @@ class Model(Object):
         constraints: list
             a list of UserDefinedConstraints
         """
+        if isinstance(constraints, Constraint):
+            logger.warning(
+                f"The constraints passed must be inside a list: {constraints}")
+            constraints = [constraints]
         if not isinstance(constraints, list):
-            # if single UserDefinedConstraints, convert to a list
-            if isinstance(constraints, UserDefinedConstraint):
-                warn(f"The constraints passed must be inside a list: {constraints}")
-                constraints = [constraints]
-            else:
-                raise TypeError(
-                    f"The constraints passed must be inside a list: {constraints}"
-                )
+            # if single Constraint, convert to a list
+            raise TypeError(
+                f"The constraints passed must be inside a list: {constraints}"
+            )
 
+        cons_to_remove = []
         for constraint in constraints:
-            if not isinstance(constraint, UserDefinedConstraint):
+            constraint: "Constraint"
+            if not isinstance(constraint, Constraint):
                 raise TypeError(
-                    "The user defined constraints passed must be of "
-                    "type 'UserDefinedConstraints': {constraint}"
+                    f"The user defined constraints passed must be of "
+                    f"type 'Constraint': {constraint}"
                 )
-            self._const_ids.remove(constraint.id)
-            cons_to_remove = self.constraints[constraint.id]
-            self.remove_cons_vars(cons_to_remove)
+            self._const_ids.remove(constraint.name)
+            cons_to_remove = self.constraints[constraint.name]
+            self.user_defined_const.__delitem__(constraint.name)
+        self.remove_cons_vars(cons_to_remove)
 
     def add_cons_vars(self, what, **kwargs):
         """Add constraints and variables to the model's mathematical problem.
