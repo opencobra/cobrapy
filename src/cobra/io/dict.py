@@ -1,19 +1,16 @@
 """Provide functions for cobrapy objects to generic Python objects and vice-versa."""
 import itertools
-import re
 from collections import OrderedDict, defaultdict
 from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Tuple, Union
 
 import numpy as np
 
 from ..core import (
-    ConstraintComponent,
     Gene,
     Group,
     Metabolite,
     Model,
     Reaction,
-    UserDefinedConstraint,
 )
 from ..io.sbml import (
     F_GENE,
@@ -519,52 +516,6 @@ def group_from_dict(
     ]
     new_group.add_members(cobra_members)
     return new_group
-
-def const_comp_to_dict(component: ConstraintComponent) -> Dict:
-    new_const_comp = OrderedDict()
-    for key in _REQUIRED_CONSTRAINT_COMP_ATTRIBUTES:
-        new_const_comp[key] = _fix_type(getattr(component, key))
-    _update_optional(
-        component,
-        new_const_comp,
-        _OPTIONAL_CONSTRAINT_COMP_ATTRIBUTES,
-        _ORDERED_OPTIONAL_CONSTRAINT_COMP_KEYS,
-    )
-    return new_const_comp
-
-
-def user_defined_const_to_dict(constraint: UserDefinedConstraint) -> Dict:
-    new_const = OrderedDict()
-    for key in _REQUIRED_CONSTRAINT_ATTRIBUTES:
-        if key != "constraint_comps":
-            new_const[key] = _fix_type(getattr(constraint, key))
-            continue
-        new_const["constraint_comps"] = list(
-            map(const_comp_to_dict, constraint.constraint_comps)
-        )
-    _update_optional(
-        constraint,
-        new_const,
-        _OPTIONAL_CONSTRAINT_ATTRIBUTES,
-        _ORDERED_OPTIONAL_CONSTRAINT_KEYS,
-    )
-    return new_const
-
-
-def user_defined_const_from_dict(constraint: Dict) -> UserDefinedConstraint:
-    new_user_defined_const = UserDefinedConstraint()
-    for k, v in constraint.items():
-        if k == "constraint_comps":
-            for comp in v:
-                new_comp = ConstraintComponent(**comp)
-                new_user_defined_const.add_constraint_comps([new_comp])
-        elif k == "annotation":
-            continue
-        elif k == "notes":
-            continue
-        else:
-            setattr(new_user_defined_const, k, v)
-    return new_user_defined_const
 
 
 def model_to_dict(

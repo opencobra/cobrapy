@@ -88,8 +88,8 @@ def test_user_defined_constraints_on_single_variable():
 
 
 def test_json_reading_writing(model, tmp_path):
-    cc1 = Variable("FBA")
-    cc2 = Variable('NH4t')
+    cc1 = model.reactions.get_by_id('FBA').flux_expression
+    cc2 = model.reactions.get_by_id('NH4t').flux_expression
     cc3 = Variable('difference')
     c1 = Constraint(cc1 - cc2 - cc3, lb=0, ub=0, name='c1')
 
@@ -109,7 +109,7 @@ def test_json_reading_writing(model, tmp_path):
     variable_names = {var.name for var in const_1.variables}
     assert 'FBA' in variable_names
     solution2 = model.optimize()
-    assert solution1 == pytest.approx(solution2)
+    assert solution1.objective_value == pytest.approx(solution2.objective_value)
 
 
 def test_user_defined_constraints_read_write_json(data_directory, tmp_path):
