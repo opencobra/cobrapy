@@ -1,7 +1,7 @@
 !!omap
 - metabolites:
   - !!omap
-    - id: 13dpg_c
+    - id: M_13dpg_c
     - name: 3-Phospho-D-glyceroyl phosphate
     - compartment: c
     - charge: -4
@@ -22,7 +22,7 @@
       - seed.compound: cpd00203
       - unipathway.compound: UPC00236
   - !!omap
-    - id: 2pg_c
+    - id: M_2pg_c
     - name: D-Glycerate 2-phosphate
     - compartment: c
     - charge: -3
@@ -48,7 +48,7 @@
       - seed.compound: cpd00482
       - unipathway.compound: UPC00631
   - !!omap
-    - id: 3pg_c
+    - id: M_3pg_c
     - name: 3-Phospho-D-glycerate
     - compartment: c
     - charge: -3
@@ -81,7 +81,7 @@
         - UPC00597
         - UPC00197
   - !!omap
-    - id: adp_c
+    - id: M_adp_c
     - name: ADP
     - compartment: c
     - charge: -3
@@ -119,7 +119,7 @@
       - seed.compound: cpd00008
       - unipathway.compound: UPC00008
   - !!omap
-    - id: atp_c
+    - id: M_atp_c
     - name: ATP
     - compartment: c
     - charge: -4
@@ -155,7 +155,7 @@
       - seed.compound: cpd00002
       - unipathway.compound: UPC00002
   - !!omap
-    - id: dhap_c
+    - id: M_dhap_c
     - name: Dihydroxyacetone phosphate
     - compartment: c
     - charge: -2
@@ -185,7 +185,7 @@
       - seed.compound: cpd00095
       - unipathway.compound: UPC00111
   - !!omap
-    - id: f6p_c
+    - id: M_f6p_c
     - name: D-Fructose 6-phosphate
     - compartment: c
     - charge: -2
@@ -215,7 +215,7 @@
         - UPC05345
         - UPC00085
   - !!omap
-    - id: fdp_c
+    - id: M_fdp_c
     - name: D-Fructose 1,6-bisphosphate
     - compartment: c
     - charge: -4
@@ -245,7 +245,7 @@
       - seed.compound: cpd00290
       - unipathway.compound: UPC00354
   - !!omap
-    - id: g3p_c
+    - id: M_g3p_c
     - name: Glyceraldehyde 3-phosphate
     - compartment: c
     - charge: -2
@@ -269,7 +269,7 @@
         - UPC00661
         - UPC00118
   - !!omap
-    - id: g6p_c
+    - id: M_g6p_c
     - name: D-Glucose 6-phosphate
     - compartment: c
     - charge: -2
@@ -303,7 +303,7 @@
       - seed.compound: cpd00079
       - unipathway.compound: UPC00092
   - !!omap
-    - id: glc__D_e
+    - id: M_glc__D_e
     - name: D-Glucose
     - compartment: e
     - charge: 0
@@ -315,7 +315,7 @@
       - kegg.compound: C00031
       - pubchem.substance: '3333'
   - !!omap
-    - id: h2o_c
+    - id: M_h2o_c
     - name: H2O
     - compartment: c
     - charge: 0
@@ -389,7 +389,7 @@
         - UPC00001
         - UPC01328
   - !!omap
-    - id: h2o_e
+    - id: M_h2o_e
     - name: H2O
     - compartment: e
     - charge: 0
@@ -463,7 +463,7 @@
         - UPC00001
         - UPC01328
   - !!omap
-    - id: h_c
+    - id: M_h_c
     - name: H+
     - compartment: c
     - charge: 1
@@ -504,7 +504,7 @@
       - seed.compound: cpd00067
       - unipathway.compound: UPC00080
   - !!omap
-    - id: h_e
+    - id: M_h_e
     - name: H+
     - compartment: e
     - charge: 1
@@ -545,7 +545,7 @@
       - seed.compound: cpd00067
       - unipathway.compound: UPC00080
   - !!omap
-    - id: lac__D_c
+    - id: M_lac__D_c
     - name: D-Lactate
     - compartment: c
     - charge: -1
@@ -568,7 +568,7 @@
       - metanetx.chemical: MNXM285
       - seed.compound: cpd00221
   - !!omap
-    - id: lac__D_e
+    - id: M_lac__D_e
     - name: D-Lactate
     - compartment: e
     - charge: -1
@@ -591,7 +591,7 @@
       - metanetx.chemical: MNXM285
       - seed.compound: cpd00221
   - !!omap
-    - id: nad_c
+    - id: M_nad_c
     - name: Nicotinamide adenine dinucleotide
     - compartment: c
     - charge: -1
@@ -625,7 +625,7 @@
       - seed.compound: cpd00003
       - unipathway.compound: UPC00003
   - !!omap
-    - id: nadh_c
+    - id: M_nadh_c
     - name: Nicotinamide adenine dinucleotide - reduced
     - compartment: c
     - charge: -2
@@ -654,7 +654,7 @@
       - seed.compound: cpd00004
       - unipathway.compound: UPC00004
   - !!omap
-    - id: pep_c
+    - id: M_pep_c
     - name: Phosphoenolpyruvate
     - compartment: c
     - charge: -3
@@ -682,7 +682,7 @@
       - seed.compound: cpd00061
       - unipathway.compound: UPC00074
   - !!omap
-    - id: pi_c
+    - id: M_pi_c
     - name: Phosphate
     - compartment: c
     - charge: -2
@@ -741,7 +741,7 @@
         - cpd00009
       - unipathway.compound: UPC00009
   - !!omap
-    - id: pi_e
+    - id: M_pi_e
     - name: Phosphate
     - compartment: e
     - charge: -2
@@ -800,7 +800,7 @@
         - cpd00009
       - unipathway.compound: UPC00009
   - !!omap
-    - id: pyr_c
+    - id: M_pyr_c
     - name: Pyruvate
     - compartment: c
     - charge: -1
@@ -830,136 +830,136 @@
       - unipathway.compound: UPC00022
 - reactions:
   - !!omap
-    - id: ATPM
+    - id: R_ATPM
     - name: ATP maintenance requirement
-    - metabolites: !!omap
-      - adp_c: 1.0
-      - atp_c: -1.0
-      - h2o_c: -1.0
-      - h_c: 1.0
-      - pi_c: 1.0
     - lower_bound: 8.39
     - upper_bound: 1000.0
     - gene_reaction_rule: ''
+    - metabolites: !!omap
+      - M_atp_c: -1.0
+      - M_h2o_c: -1.0
+      - M_adp_c: 1.0
+      - M_h_c: 1.0
+      - M_pi_c: 1.0
     - objective_coefficient: 1.0
     - annotation: !!omap
       - bigg.reaction: ATPM
   - !!omap
-    - id: D_LACt2
+    - id: R_D_LACt2
     - name: ''
-    - metabolites: !!omap []
     - lower_bound: -1000.0
     - upper_bound: 1000.0
     - gene_reaction_rule: ''
+    - metabolites: !!omap []
   - !!omap
-    - id: ENO
+    - id: R_ENO
     - name: enolase
-    - metabolites: !!omap
-      - 2pg_c: -1.0
-      - h2o_c: 1.0
-      - pep_c: 1.0
     - lower_bound: -1000.0
     - upper_bound: 1000.0
     - gene_reaction_rule: b2779
+    - metabolites: !!omap
+      - M_2pg_c: -1.0
+      - M_pep_c: 1.0
+      - M_h2o_c: 1.0
     - annotation: !!omap
       - bigg.reaction: ENO
   - !!omap
-    - id: EX_glc__D_e
+    - id: R_EX_glc__D_e
     - name: D-Glucose exchange
-    - metabolites: !!omap
-      - glc__D_e: -1.0
     - lower_bound: -10.0
     - upper_bound: 1000.0
     - gene_reaction_rule: ''
+    - metabolites: !!omap
+      - M_glc__D_e: -1.0
     - annotation: !!omap
       - bigg.reaction: glc
       - sbo: SBO:0000627
   - !!omap
-    - id: EX_h_e
+    - id: R_EX_h_e
     - name: H+ exchange
-    - metabolites: !!omap
-      - h_e: -1.0
     - lower_bound: -1000.0
     - upper_bound: 1000.0
     - gene_reaction_rule: ''
+    - metabolites: !!omap
+      - M_h_e: -1.0
     - annotation: !!omap
       - bigg.reaction: h
       - sbo: SBO:0000627
   - !!omap
-    - id: EX_lac__D_e
+    - id: R_EX_lac__D_e
     - name: D-lactate exchange
-    - metabolites: !!omap
-      - lac__D_e: -1.0
     - lower_bound: 0.0
     - upper_bound: 1000.0
     - gene_reaction_rule: ''
+    - metabolites: !!omap
+      - M_lac__D_e: -1.0
     - annotation: !!omap
       - bigg.reaction: lac__D
       - sbo: SBO:0000627
   - !!omap
-    - id: FBA
+    - id: R_FBA
     - name: fructose-bisphosphate aldolase
-    - metabolites: !!omap
-      - dhap_c: 1.0
-      - fdp_c: -1.0
-      - g3p_c: 1.0
     - lower_bound: -1000.0
     - upper_bound: 1000.0
     - gene_reaction_rule: b1773 or b2097 or b2925
+    - metabolites: !!omap
+      - M_fdp_c: -1.0
+      - M_dhap_c: 1.0
+      - M_g3p_c: 1.0
     - annotation: !!omap
       - bigg.reaction: FBA
   - !!omap
-    - id: GAPD
+    - id: R_GAPD
     - name: glyceraldehyde-3-phosphate dehydrogenase
-    - metabolites: !!omap
-      - 13dpg_c: 1.0
-      - g3p_c: -1.0
-      - h_c: 1.0
-      - nad_c: -1.0
-      - nadh_c: 1.0
-      - pi_c: -1.0
     - lower_bound: -1000.0
     - upper_bound: 1000.0
     - gene_reaction_rule: b1779
+    - metabolites: !!omap
+      - M_nad_c: -1.0
+      - M_13dpg_c: 1.0
+      - M_nadh_c: 1.0
+      - M_g3p_c: -1.0
+      - M_pi_c: -1.0
+      - M_h_c: 1.0
     - annotation: !!omap
       - bigg.reaction: GAPD
   - !!omap
-    - id: GLCpts
+    - id: R_GLCpts
     - name: D-glucose transport via PEP:Pyr PTS
-    - metabolites: !!omap
-      - g6p_c: 1.0
-      - glc__D_e: -1.0
-      - pep_c: -1.0
-      - pyr_c: 1.0
     - lower_bound: 0.0
     - upper_bound: 1000.0
     - gene_reaction_rule: (b2415 and b2417 and b1101 and b2416) or (b2415 and b2417
         and b1621 and b2416) or (b2415 and b1818 and b1817 and b1819 and b2416)
+    - metabolites: !!omap
+      - M_g6p_c: 1.0
+      - M_pyr_c: 1.0
+      - M_glc__D_e: -1.0
+      - M_pep_c: -1.0
     - annotation: !!omap
       - bigg.reaction: GLCpts
   - !!omap
-    - id: H2Ot
+    - id: R_H2Ot
     - name: R H2O transport via - diffusion
-    - metabolites: !!omap
-      - h2o_c: 1.0
-      - h2o_e: -1.0
     - lower_bound: -1000.0
     - upper_bound: 1000.0
     - gene_reaction_rule: b0875 or s0001
+    - metabolites: !!omap
+      - M_h2o_e: -1.0
+      - M_h2o_c: 1.0
     - annotation: !!omap
       - bigg.reaction: H2Ot
   - !!omap
-    - id: LDH_D
+    - id: R_LDH_D
     - name: D-lactate dehydrogenase
-    - metabolites: !!omap
-      - h_c: 1.0
-      - lac__D_c: -1.0
-      - nad_c: -1.0
-      - nadh_c: 1.0
-      - pyr_c: 1.0
     - lower_bound: -1000.0
     - upper_bound: 1000.0
     - gene_reaction_rule: b2133 or b1380
+    - metabolites: !!omap
+      - M_lac__D_c: -1.0
+      - M_nad_c: -1.0
+      - M_h_c: 1.0
+      - M_nadh_c: 1.0
+      - M_pyr_c: 1.0
     - annotation: !!omap
       - bigg.reaction: LDH_D
       - biocyc: META:DLACTDEHYDROGNAD-RXN
@@ -973,196 +973,196 @@
         - '16372'
       - sbo: SBO:0000375
   - !!omap
-    - id: PFK
+    - id: R_PFK
     - name: phosphofructokinase
-    - metabolites: !!omap
-      - adp_c: 1.0
-      - atp_c: -1.0
-      - f6p_c: -1.0
-      - fdp_c: 1.0
-      - h_c: 1.0
     - lower_bound: 0.0
     - upper_bound: 1000.0
     - gene_reaction_rule: b3916 or b1723
+    - metabolites: !!omap
+      - M_f6p_c: -1.0
+      - M_atp_c: -1.0
+      - M_adp_c: 1.0
+      - M_fdp_c: 1.0
+      - M_h_c: 1.0
     - objective_coefficient: 1.0
     - annotation: !!omap
       - bigg.reaction: PFK
   - !!omap
-    - id: PGI
+    - id: R_PGI
     - name: glucose-6-phosphate isomerase
-    - metabolites: !!omap
-      - f6p_c: 1.0
-      - g6p_c: -1.0
     - lower_bound: -1000.0
     - upper_bound: 1000.0
     - gene_reaction_rule: b4025
+    - metabolites: !!omap
+      - M_g6p_c: -1.0
+      - M_f6p_c: 1.0
     - annotation: !!omap
       - bigg.reaction: PGI
   - !!omap
-    - id: PGK
+    - id: R_PGK
     - name: phosphoglycerate kinase
-    - metabolites: !!omap
-      - 13dpg_c: 1.0
-      - 3pg_c: -1.0
-      - adp_c: 1.0
-      - atp_c: -1.0
     - lower_bound: -1000.0
     - upper_bound: 1000.0
     - gene_reaction_rule: b2926
+    - metabolites: !!omap
+      - M_3pg_c: -1.0
+      - M_atp_c: -1.0
+      - M_13dpg_c: 1.0
+      - M_adp_c: 1.0
     - annotation: !!omap
       - bigg.reaction: PGK
   - !!omap
-    - id: PGM
+    - id: R_PGM
     - name: phosphoglycerate mutase
-    - metabolites: !!omap
-      - 2pg_c: -1.0
-      - 3pg_c: 1.0
     - lower_bound: -1000.0
     - upper_bound: 1000.0
     - gene_reaction_rule: b4395 or b3612 or b0755
+    - metabolites: !!omap
+      - M_2pg_c: -1.0
+      - M_3pg_c: 1.0
     - annotation: !!omap
       - bigg.reaction: PGM
   - !!omap
-    - id: PIt2r
+    - id: R_PIt2r
     - name: R phosphate reversible transport via - symport
-    - metabolites: !!omap
-      - h_c: 1.0
-      - h_e: -1.0
-      - pi_c: 1.0
-      - pi_e: -1.0
     - lower_bound: -1000.0
     - upper_bound: 1000.0
     - gene_reaction_rule: b2987 or b3493
+    - metabolites: !!omap
+      - M_pi_e: -1.0
+      - M_h_e: -1.0
+      - M_h_c: 1.0
+      - M_pi_c: 1.0
     - annotation: !!omap
       - bigg.reaction: PIt2r
   - !!omap
-    - id: PYK
+    - id: R_PYK
     - name: pyruvate kinase
-    - metabolites: !!omap
-      - adp_c: -1.0
-      - atp_c: 1.0
-      - h_c: -1.0
-      - pep_c: -1.0
-      - pyr_c: 1.0
     - lower_bound: 0.0
     - upper_bound: 1000.0
     - gene_reaction_rule: b1854 or b1676
+    - metabolites: !!omap
+      - M_adp_c: -1.0
+      - M_h_c: -1.0
+      - M_pep_c: -1.0
+      - M_atp_c: 1.0
+      - M_pyr_c: 1.0
     - annotation: !!omap
       - bigg.reaction: PYK
   - !!omap
-    - id: TPI
+    - id: R_TPI
     - name: triose-phosphate isomerase
-    - metabolites: !!omap
-      - dhap_c: -1.0
-      - g3p_c: 1.0
     - lower_bound: -1000.0
     - upper_bound: 1000.0
     - gene_reaction_rule: b3919
+    - metabolites: !!omap
+      - M_dhap_c: -1.0
+      - M_g3p_c: 1.0
     - annotation: !!omap
       - bigg.reaction: TPI
 - genes:
   - !!omap
-    - id: b0755
+    - id: G_b0755
     - name: gpmA
   - !!omap
-    - id: b0875
+    - id: G_b0875
     - name: aqpZ
   - !!omap
-    - id: b1101
+    - id: G_b1101
     - name: ptsG
   - !!omap
-    - id: b1380
+    - id: G_b1380
     - name: ldhA
   - !!omap
-    - id: b1621
+    - id: G_b1621
     - name: malX
   - !!omap
-    - id: b1676
+    - id: G_b1676
     - name: pykF
     - annotation: !!omap
       - ncbigi:
         - GI:1208453
         - GI:1652654
   - !!omap
-    - id: b1723
+    - id: G_b1723
     - name: pfkB
   - !!omap
-    - id: b1773
+    - id: G_b1773
     - name: ydjI
   - !!omap
-    - id: b1779
+    - id: G_b1779
     - name: gapA
   - !!omap
-    - id: b1817
+    - id: G_b1817
     - name: manX
   - !!omap
-    - id: b1818
+    - id: G_b1818
     - name: manY
   - !!omap
-    - id: b1819
+    - id: G_b1819
     - name: manZ
   - !!omap
-    - id: b1854
+    - id: G_b1854
     - name: pykA
   - !!omap
-    - id: b2097
+    - id: G_b2097
     - name: fbaB
   - !!omap
-    - id: b2133
+    - id: G_b2133
     - name: dld
   - !!omap
-    - id: b2415
+    - id: G_b2415
     - name: ptsH
   - !!omap
-    - id: b2416
+    - id: G_b2416
     - name: ptsI
   - !!omap
-    - id: b2417
+    - id: G_b2417
     - name: crr
   - !!omap
-    - id: b2779
+    - id: G_b2779
     - name: eno
     - annotation: !!omap
       - ncbigi: GI:1653839
   - !!omap
-    - id: b2925
+    - id: G_b2925
     - name: fbaA
   - !!omap
-    - id: b2926
+    - id: G_b2926
     - name: pgk
     - annotation: !!omap
       - ncbigi: GI:1653609
   - !!omap
-    - id: b2987
+    - id: G_b2987
     - name: pitB
   - !!omap
-    - id: b3493
+    - id: G_b3493
     - name: pitA
   - !!omap
-    - id: b3612
+    - id: G_b3612
     - name: gpmM
   - !!omap
-    - id: b3916
+    - id: G_b3916
     - name: pfkA
     - annotation: !!omap
       - ncbigi:
         - GI:1006614
         - GI:1651919
   - !!omap
-    - id: b3919
+    - id: G_b3919
     - name: tpiA
   - !!omap
-    - id: b4025
+    - id: G_b4025
     - name: pgi
     - annotation: !!omap
       - ncbigi: GI:1653253
   - !!omap
-    - id: b4395
+    - id: G_b4395
     - name: ytjC
   - !!omap
-    - id: s0001
+    - id: G_s0001
     - name: G_s0001
-- user_defined_constraints: []
+- groups: []
 - id: mini_textbook
 - compartments: !!omap
   - c: cytosol

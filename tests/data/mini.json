@@ -5,23 +5,23 @@
     },
     "genes": [
         {
-            "id": "b0755",
+            "id": "G_b0755",
             "name": "gpmA"
         },
         {
-            "id": "b0875",
+            "id": "G_b0875",
             "name": "aqpZ"
         },
         {
-            "id": "b1101",
+            "id": "G_b1101",
             "name": "ptsG"
         },
         {
-            "id": "b1380",
+            "id": "G_b1380",
             "name": "ldhA"
         },
         {
-            "id": "b1621",
+            "id": "G_b1621",
             "name": "malX"
         },
         {
@@ -31,85 +31,85 @@
                     "GI:1652654"
                 ]
             },
-            "id": "b1676",
+            "id": "G_b1676",
             "name": "pykF"
         },
         {
-            "id": "b1723",
+            "id": "G_b1723",
             "name": "pfkB"
         },
         {
-            "id": "b1773",
+            "id": "G_b1773",
             "name": "ydjI"
         },
         {
-            "id": "b1779",
+            "id": "G_b1779",
             "name": "gapA"
         },
         {
-            "id": "b1817",
+            "id": "G_b1817",
             "name": "manX"
         },
         {
-            "id": "b1818",
+            "id": "G_b1818",
             "name": "manY"
         },
         {
-            "id": "b1819",
+            "id": "G_b1819",
             "name": "manZ"
         },
         {
-            "id": "b1854",
+            "id": "G_b1854",
             "name": "pykA"
         },
         {
-            "id": "b2097",
+            "id": "G_b2097",
             "name": "fbaB"
         },
         {
-            "id": "b2133",
+            "id": "G_b2133",
             "name": "dld"
         },
         {
-            "id": "b2415",
+            "id": "G_b2415",
             "name": "ptsH"
         },
         {
-            "id": "b2416",
+            "id": "G_b2416",
             "name": "ptsI"
         },
         {
-            "id": "b2417",
+            "id": "G_b2417",
             "name": "crr"
         },
         {
             "annotation": {
                 "ncbigi": "GI:1653839"
             },
-            "id": "b2779",
+            "id": "G_b2779",
             "name": "eno"
         },
         {
-            "id": "b2925",
+            "id": "G_b2925",
             "name": "fbaA"
         },
         {
             "annotation": {
                 "ncbigi": "GI:1653609"
             },
-            "id": "b2926",
+            "id": "G_b2926",
             "name": "pgk"
         },
         {
-            "id": "b2987",
+            "id": "G_b2987",
             "name": "pitB"
         },
         {
-            "id": "b3493",
+            "id": "G_b3493",
             "name": "pitA"
         },
         {
-            "id": "b3612",
+            "id": "G_b3612",
             "name": "gpmM"
         },
         {
@@ -119,29 +119,30 @@
                     "GI:1651919"
                 ]
             },
-            "id": "b3916",
+            "id": "G_b3916",
             "name": "pfkA"
         },
         {
-            "id": "b3919",
+            "id": "G_b3919",
             "name": "tpiA"
         },
         {
             "annotation": {
                 "ncbigi": "GI:1653253"
             },
-            "id": "b4025",
+            "id": "G_b4025",
             "name": "pgi"
         },
         {
-            "id": "b4395",
+            "id": "G_b4395",
             "name": "ytjC"
         },
         {
-            "id": "s0001",
+            "id": "G_s0001",
             "name": "G_s0001"
         }
     ],
+    "groups": [],
     "id": "mini_textbook",
     "metabolites": [
         {
@@ -165,7 +166,7 @@
             "charge": -4,
             "compartment": "c",
             "formula": "C3H4O10P2",
-            "id": "13dpg_c",
+            "id": "M_13dpg_c",
             "name": "3-Phospho-D-glyceroyl phosphate"
         },
         {
@@ -195,7 +196,7 @@
             "charge": -3,
             "compartment": "c",
             "formula": "C3H4O7P",
-            "id": "2pg_c",
+            "id": "M_2pg_c",
             "name": "D-Glycerate 2-phosphate"
         },
         {
@@ -233,7 +234,7 @@
             "charge": -3,
             "compartment": "c",
             "formula": "C3H4O7P",
-            "id": "3pg_c",
+            "id": "M_3pg_c",
             "name": "3-Phospho-D-glycerate"
         },
         {
@@ -277,7 +278,7 @@
             "charge": -3,
             "compartment": "c",
             "formula": "C10H12N5O10P2",
-            "id": "adp_c",
+            "id": "M_adp_c",
             "name": "ADP"
         },
         {
@@ -318,7 +319,7 @@
             "charge": -4,
             "compartment": "c",
             "formula": "C10H12N5O13P3",
-            "id": "atp_c",
+            "id": "M_atp_c",
             "name": "ATP"
         },
         {
@@ -354,7 +355,7 @@
             "charge": -2,
             "compartment": "c",
             "formula": "C3H5O6P",
-            "id": "dhap_c",
+            "id": "M_dhap_c",
             "name": "Dihydroxyacetone phosphate"
         },
         {
@@ -390,7 +391,7 @@
             "charge": -2,
             "compartment": "c",
             "formula": "C6H11O9P",
-            "id": "f6p_c",
+            "id": "M_f6p_c",
             "name": "D-Fructose 6-phosphate"
         },
         {
@@ -425,7 +426,7 @@
             "charge": -4,
             "compartment": "c",
             "formula": "C6H10O12P2",
-            "id": "fdp_c",
+            "id": "M_fdp_c",
             "name": "D-Fructose 1,6-bisphosphate"
         },
         {
@@ -455,7 +456,7 @@
             "charge": -2,
             "compartment": "c",
             "formula": "C3H5O6P",
-            "id": "g3p_c",
+            "id": "M_g3p_c",
             "name": "Glyceraldehyde 3-phosphate"
         },
         {
@@ -496,7 +497,7 @@
             "charge": -2,
             "compartment": "c",
             "formula": "C6H11O9P",
-            "id": "g6p_c",
+            "id": "M_g6p_c",
             "name": "D-Glucose 6-phosphate"
         },
         {
@@ -511,7 +512,7 @@
             "charge": 0,
             "compartment": "e",
             "formula": "C6H12O6",
-            "id": "glc__D_e",
+            "id": "M_glc__D_e",
             "name": "D-Glucose"
         },
         {
@@ -596,7 +597,7 @@
             "charge": 0,
             "compartment": "c",
             "formula": "H2O",
-            "id": "h2o_c",
+            "id": "M_h2o_c",
             "name": "H2O"
         },
         {
@@ -681,7 +682,7 @@
             "charge": 0,
             "compartment": "e",
             "formula": "H2O",
-            "id": "h2o_e",
+            "id": "M_h2o_e",
             "name": "H2O"
         },
         {
@@ -727,7 +728,7 @@
             "charge": 1,
             "compartment": "c",
             "formula": "H",
-            "id": "h_c",
+            "id": "M_h_c",
             "name": "H+"
         },
         {
@@ -773,7 +774,7 @@
             "charge": 1,
             "compartment": "e",
             "formula": "H",
-            "id": "h_e",
+            "id": "M_h_e",
             "name": "H+"
         },
         {
@@ -800,7 +801,7 @@
             "charge": -1,
             "compartment": "c",
             "formula": "C3H5O3",
-            "id": "lac__D_c",
+            "id": "M_lac__D_c",
             "name": "D-Lactate"
         },
         {
@@ -827,7 +828,7 @@
             "charge": -1,
             "compartment": "e",
             "formula": "C3H5O3",
-            "id": "lac__D_e",
+            "id": "M_lac__D_e",
             "name": "D-Lactate"
         },
         {
@@ -866,7 +867,7 @@
             "charge": -1,
             "compartment": "c",
             "formula": "C21H26N7O14P2",
-            "id": "nad_c",
+            "id": "M_nad_c",
             "name": "Nicotinamide adenine dinucleotide"
         },
         {
@@ -900,7 +901,7 @@
             "charge": -2,
             "compartment": "c",
             "formula": "C21H27N7O14P2",
-            "id": "nadh_c",
+            "id": "M_nadh_c",
             "name": "Nicotinamide adenine dinucleotide - reduced"
         },
         {
@@ -933,7 +934,7 @@
             "charge": -3,
             "compartment": "c",
             "formula": "C3H2O6P",
-            "id": "pep_c",
+            "id": "M_pep_c",
             "name": "Phosphoenolpyruvate"
         },
         {
@@ -1000,7 +1001,7 @@
             "charge": -2,
             "compartment": "c",
             "formula": "HO4P",
-            "id": "pi_c",
+            "id": "M_pi_c",
             "name": "Phosphate"
         },
         {
@@ -1067,7 +1068,7 @@
             "charge": -2,
             "compartment": "e",
             "formula": "HO4P",
-            "id": "pi_e",
+            "id": "M_pi_e",
             "name": "Phosphate"
         },
         {
@@ -1101,7 +1102,7 @@
             "charge": -1,
             "compartment": "c",
             "formula": "C3H3O3",
-            "id": "pyr_c",
+            "id": "M_pyr_c",
             "name": "Pyruvate"
         }
     ],
@@ -1111,14 +1112,14 @@
                 "bigg.reaction": "ATPM"
             },
             "gene_reaction_rule": "",
-            "id": "ATPM",
+            "id": "R_ATPM",
             "lower_bound": 8.39,
             "metabolites": {
-                "adp_c": 1.0,
-                "atp_c": -1.0,
-                "h2o_c": -1.0,
-                "h_c": 1.0,
-                "pi_c": 1.0
+                "M_adp_c": 1.0,
+                "M_atp_c": -1.0,
+                "M_h2o_c": -1.0,
+                "M_h_c": 1.0,
+                "M_pi_c": 1.0
             },
             "name": "ATP maintenance requirement",
             "objective_coefficient": 1.0,
@@ -1126,7 +1127,7 @@
         },
         {
             "gene_reaction_rule": "",
-            "id": "D_LACt2",
+            "id": "R_D_LACt2",
             "lower_bound": -1000.0,
             "metabolites": {},
             "name": "",
@@ -1137,12 +1138,12 @@
                 "bigg.reaction": "ENO"
             },
             "gene_reaction_rule": "b2779",
-            "id": "ENO",
+            "id": "R_ENO",
             "lower_bound": -1000.0,
             "metabolites": {
-                "2pg_c": -1.0,
-                "h2o_c": 1.0,
-                "pep_c": 1.0
+                "M_2pg_c": -1.0,
+                "M_h2o_c": 1.0,
+                "M_pep_c": 1.0
             },
             "name": "enolase",
             "upper_bound": 1000.0
@@ -1153,10 +1154,10 @@
                 "sbo": "SBO:0000627"
             },
             "gene_reaction_rule": "",
-            "id": "EX_glc__D_e",
+            "id": "R_EX_glc__D_e",
             "lower_bound": -10.0,
             "metabolites": {
-                "glc__D_e": -1.0
+                "M_glc__D_e": -1.0
             },
             "name": "D-Glucose exchange",
             "upper_bound": 1000.0
@@ -1167,10 +1168,10 @@
                 "sbo": "SBO:0000627"
             },
             "gene_reaction_rule": "",
-            "id": "EX_h_e",
+            "id": "R_EX_h_e",
             "lower_bound": -1000.0,
             "metabolites": {
-                "h_e": -1.0
+                "M_h_e": -1.0
             },
             "name": "H+ exchange",
             "upper_bound": 1000.0
@@ -1181,10 +1182,10 @@
                 "sbo": "SBO:0000627"
             },
             "gene_reaction_rule": "",
-            "id": "EX_lac__D_e",
+            "id": "R_EX_lac__D_e",
             "lower_bound": 0.0,
             "metabolites": {
-                "lac__D_e": -1.0
+                "M_lac__D_e": -1.0
             },
             "name": "D-lactate exchange",
             "upper_bound": 1000.0
@@ -1194,12 +1195,12 @@
                 "bigg.reaction": "FBA"
             },
             "gene_reaction_rule": "b1773 or b2097 or b2925",
-            "id": "FBA",
+            "id": "R_FBA",
             "lower_bound": -1000.0,
             "metabolites": {
-                "dhap_c": 1.0,
-                "fdp_c": -1.0,
-                "g3p_c": 1.0
+                "M_dhap_c": 1.0,
+                "M_fdp_c": -1.0,
+                "M_g3p_c": 1.0
             },
             "name": "fructose-bisphosphate aldolase",
             "upper_bound": 1000.0
@@ -1209,15 +1210,15 @@
                 "bigg.reaction": "GAPD"
             },
             "gene_reaction_rule": "b1779",
-            "id": "GAPD",
+            "id": "R_GAPD",
             "lower_bound": -1000.0,
             "metabolites": {
-                "13dpg_c": 1.0,
-                "g3p_c": -1.0,
-                "h_c": 1.0,
-                "nad_c": -1.0,
-                "nadh_c": 1.0,
-                "pi_c": -1.0
+                "M_13dpg_c": 1.0,
+                "M_g3p_c": -1.0,
+                "M_h_c": 1.0,
+                "M_nad_c": -1.0,
+                "M_nadh_c": 1.0,
+                "M_pi_c": -1.0
             },
             "name": "glyceraldehyde-3-phosphate dehydrogenase",
             "upper_bound": 1000.0
@@ -1227,13 +1228,13 @@
                 "bigg.reaction": "GLCpts"
             },
             "gene_reaction_rule": "(b2415 and b2417 and b1101 and b2416) or (b2415 and b2417 and b1621 and b2416) or (b2415 and b1818 and b1817 and b1819 and b2416)",
-            "id": "GLCpts",
+            "id": "R_GLCpts",
             "lower_bound": 0.0,
             "metabolites": {
-                "g6p_c": 1.0,
-                "glc__D_e": -1.0,
-                "pep_c": -1.0,
-                "pyr_c": 1.0
+                "M_g6p_c": 1.0,
+                "M_glc__D_e": -1.0,
+                "M_pep_c": -1.0,
+                "M_pyr_c": 1.0
             },
             "name": "D-glucose transport via PEP:Pyr PTS",
             "upper_bound": 1000.0
@@ -1243,11 +1244,11 @@
                 "bigg.reaction": "H2Ot"
             },
             "gene_reaction_rule": "b0875 or s0001",
-            "id": "H2Ot",
+            "id": "R_H2Ot",
             "lower_bound": -1000.0,
             "metabolites": {
-                "h2o_c": 1.0,
-                "h2o_e": -1.0
+                "M_h2o_c": 1.0,
+                "M_h2o_e": -1.0
             },
             "name": "R H2O transport via - diffusion",
             "upper_bound": 1000.0
@@ -1268,14 +1269,14 @@
                 "sbo": "SBO:0000375"
             },
             "gene_reaction_rule": "b2133 or b1380",
-            "id": "LDH_D",
+            "id": "R_LDH_D",
             "lower_bound": -1000.0,
             "metabolites": {
-                "h_c": 1.0,
-                "lac__D_c": -1.0,
-                "nad_c": -1.0,
-                "nadh_c": 1.0,
-                "pyr_c": 1.0
+                "M_h_c": 1.0,
+                "M_lac__D_c": -1.0,
+                "M_nad_c": -1.0,
+                "M_nadh_c": 1.0,
+                "M_pyr_c": 1.0
             },
             "name": "D-lactate dehydrogenase",
             "upper_bound": 1000.0
@@ -1285,14 +1286,14 @@
                 "bigg.reaction": "PFK"
             },
             "gene_reaction_rule": "b3916 or b1723",
-            "id": "PFK",
+            "id": "R_PFK",
             "lower_bound": 0.0,
             "metabolites": {
-                "adp_c": 1.0,
-                "atp_c": -1.0,
-                "f6p_c": -1.0,
-                "fdp_c": 1.0,
-                "h_c": 1.0
+                "M_adp_c": 1.0,
+                "M_atp_c": -1.0,
+                "M_f6p_c": -1.0,
+                "M_fdp_c": 1.0,
+                "M_h_c": 1.0
             },
             "name": "phosphofructokinase",
             "objective_coefficient": 1.0,
@@ -1303,11 +1304,11 @@
                 "bigg.reaction": "PGI"
             },
             "gene_reaction_rule": "b4025",
-            "id": "PGI",
+            "id": "R_PGI",
             "lower_bound": -1000.0,
             "metabolites": {
-                "f6p_c": 1.0,
-                "g6p_c": -1.0
+                "M_f6p_c": 1.0,
+                "M_g6p_c": -1.0
             },
             "name": "glucose-6-phosphate isomerase",
             "upper_bound": 1000.0
@@ -1317,13 +1318,13 @@
                 "bigg.reaction": "PGK"
             },
             "gene_reaction_rule": "b2926",
-            "id": "PGK",
+            "id": "R_PGK",
             "lower_bound": -1000.0,
             "metabolites": {
-                "13dpg_c": 1.0,
-                "3pg_c": -1.0,
-                "adp_c": 1.0,
-                "atp_c": -1.0
+                "M_13dpg_c": 1.0,
+                "M_3pg_c": -1.0,
+                "M_adp_c": 1.0,
+                "M_atp_c": -1.0
             },
             "name": "phosphoglycerate kinase",
             "upper_bound": 1000.0
@@ -1333,11 +1334,11 @@
                 "bigg.reaction": "PGM"
             },
             "gene_reaction_rule": "b4395 or b3612 or b0755",
-            "id": "PGM",
+            "id": "R_PGM",
             "lower_bound": -1000.0,
             "metabolites": {
-                "2pg_c": -1.0,
-                "3pg_c": 1.0
+                "M_2pg_c": -1.0,
+                "M_3pg_c": 1.0
             },
             "name": "phosphoglycerate mutase",
             "upper_bound": 1000.0
@@ -1347,13 +1348,13 @@
                 "bigg.reaction": "PIt2r"
             },
             "gene_reaction_rule": "b2987 or b3493",
-            "id": "PIt2r",
+            "id": "R_PIt2r",
             "lower_bound": -1000.0,
             "metabolites": {
-                "h_c": 1.0,
-                "h_e": -1.0,
-                "pi_c": 1.0,
-                "pi_e": -1.0
+                "M_h_c": 1.0,
+                "M_h_e": -1.0,
+                "M_pi_c": 1.0,
+                "M_pi_e": -1.0
             },
             "name": "R phosphate reversible transport via - symport",
             "upper_bound": 1000.0
@@ -1363,14 +1364,14 @@
                 "bigg.reaction": "PYK"
             },
             "gene_reaction_rule": "b1854 or b1676",
-            "id": "PYK",
+            "id": "R_PYK",
             "lower_bound": 0.0,
             "metabolites": {
-                "adp_c": -1.0,
-                "atp_c": 1.0,
-                "h_c": -1.0,
-                "pep_c": -1.0,
-                "pyr_c": 1.0
+                "M_adp_c": -1.0,
+                "M_atp_c": 1.0,
+                "M_h_c": -1.0,
+                "M_pep_c": -1.0,
+                "M_pyr_c": 1.0
             },
             "name": "pyruvate kinase",
             "upper_bound": 1000.0
@@ -1380,16 +1381,15 @@
                 "bigg.reaction": "TPI"
             },
             "gene_reaction_rule": "b3919",
-            "id": "TPI",
+            "id": "R_TPI",
             "lower_bound": -1000.0,
             "metabolites": {
-                "dhap_c": -1.0,
-                "g3p_c": 1.0
+                "M_dhap_c": -1.0,
+                "M_g3p_c": 1.0
             },
             "name": "triose-phosphate isomerase",
             "upper_bound": 1000.0
         }
     ],
-    "user_defined_constraints": [],
     "version": "1"
 }
