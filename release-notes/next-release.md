@@ -7,7 +7,7 @@
 * Reformatted example files (e_coli_core.xml, mini_cobra.xml, mini.json, mini.yml, textbook.xml.gz) to be more compliant with identifiers.org. ncbigi is not a valid identifiers.org, so it was replaced with ncbiprotein.
 * make sbml.py subsystem reading add partonomy, which matches the definition
 of SBO:0000633 (see https://sourceforge.net/p/sbo/term-request/113/)
-* Correct reading and writing of subysstem in mat.
+* Correct reading and writing of subsystem in mat.
 * General cleanup of code in mat.py
 
 ## Other
