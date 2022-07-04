@@ -1826,13 +1826,11 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
         model_history: "libsbml.ModelHistory" = sbase.getModelHistory()
 
         annotation.history.creators = [
-            Creator.from_data(
-                {
-                    "family_name": creator.getFamilyName() or None,
-                    "given_name": creator.getGivenName() or None,
-                    "organisation": creator.getOrganisation() or None,
-                    "email": creator.getEmail() or None,
-                }
+            Creator(
+                creator.getGivenName() or None,
+                creator.getFamilyName() or None,
+                creator.getOrganisation() or None,
+                creator.getEmail() or None,
             )
             for creator in model_history.getListCreators()
         ]

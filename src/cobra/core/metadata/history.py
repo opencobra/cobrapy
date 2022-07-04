@@ -410,7 +410,7 @@ class HistoryDatetime:
         """
         self._datetime = self.parse_datetime(value)
 
-    def parse_datetime(self, value: str) -> Optional[datetime]:
+    def parse_datetime(self, value: str) -> Optional["datetime"]:
         """Parse datetime into str.
 
         Parameters
