@@ -26,9 +26,9 @@
         },
         {
             "annotation": {
-                "ncbigi": [
-                    "GI:1208453",
-                    "GI:1652654"
+                "ncbiprotein": [
+                    "1208453",
+                    "1652654"
                 ]
             },
             "id": "b1676",
@@ -84,7 +84,7 @@
         },
         {
             "annotation": {
-                "ncbigi": "GI:1653839"
+                "ncbiprotein": "1653839"
             },
             "id": "b2779",
             "name": "eno"
@@ -95,7 +95,7 @@
         },
         {
             "annotation": {
-                "ncbigi": "GI:1653609"
+                "ncbiprotein": "1653609"
             },
             "id": "b2926",
             "name": "pgk"
@@ -114,9 +114,9 @@
         },
         {
             "annotation": {
-                "ncbigi": [
-                    "GI:1006614",
-                    "GI:1651919"
+                "ncbiprotein": [
+                    "1006614",
+                    "1651919"
                 ]
             },
             "id": "b3916",
@@ -128,7 +128,7 @@
         },
         {
             "annotation": {
-                "ncbigi": "GI:1653253"
+                "ncbiprotein": "1653253"
             },
             "id": "b4025",
             "name": "pgi"
@@ -1278,6 +1278,7 @@
                 "pyr_c": 1.0
             },
             "name": "D-lactate dehydrogenase",
+            "subsystem": "Pyruvate Metabolism",
             "upper_bound": 1000.0
         },
         {

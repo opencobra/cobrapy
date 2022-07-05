@@ -598,7 +598,7 @@ def _sbml_to_model(
     if not libsbml.SyntaxChecker.isValidSBMLSId(model_id):
         LOGGER.error(f"'{model_id}' is not a valid SBML 'SId'.")
     cobra_model = Model(model_id)
-    cobra_model.name = model.getName()
+    cobra_model.name = model.getName() or None
 
     # meta information
     meta = {
@@ -685,7 +685,7 @@ def _sbml_to_model(
         specie_fbc: "libsbml.FbcSpeciesPlugin" = specie.getPlugin("fbc")
         if specie_fbc:
             met.charge = specie_fbc.getCharge()
-            met.formula = specie_fbc.getChemicalFormula()
+            met.formula = specie_fbc.getChemicalFormula() or None
         else:
             if specie.isSetCharge():
                 LOGGER.warning(
@@ -710,7 +710,7 @@ def _sbml_to_model(
                     f"Use of FORMULA in the notes element is "
                     f"discouraged, use fbc:chemicalFormula instead: {specie}"
                 )
-                met.formula = met.notes["FORMULA"]
+                met.formula = met.notes["FORMULA"] or None
 
         # Detect boundary metabolites
         if specie.getBoundaryCondition() is True:
@@ -829,7 +829,7 @@ def _sbml_to_model(
         if f_replace and F_REACTION in f_replace:
             rid = f_replace[F_REACTION](rid)
         cobra_reaction = Reaction(rid)
-        cobra_reaction.name = reaction.getName()
+        cobra_reaction.name = reaction.getName().strip()
         cobra_reaction.annotation = _parse_annotations(reaction)
         cobra_reaction.notes = _parse_notes_dict(reaction)
 
@@ -1089,6 +1089,7 @@ def _sbml_to_model(
                     if f_replace and F_REACTION in f_replace:
                         obj_id = f_replace[F_REACTION](obj_id)
                     cobra_member = cobra_model.reactions.get_by_id(obj_id)
+                    cobra_member.subsystem = group.name
                 elif typecode == libsbml.SBML_FBC_GENEPRODUCT:
                     if f_replace and F_GENE in f_replace:
                         obj_id = f_replace[F_GENE](obj_id)
@@ -1110,6 +1111,7 @@ def _sbml_to_model(
         for cobra_reaction in cobra_model.reactions:
             if "SUBSYSTEM" in cobra_reaction.notes:
                 g_name = cobra_reaction.notes["SUBSYSTEM"]
+                cobra_reaction.subsystem = g_name
                 if g_name in groups_dict:
                     groups_dict[g_name].append(cobra_reaction)
                 else:
@@ -1118,7 +1120,8 @@ def _sbml_to_model(
         for gid, cobra_members in groups_dict.items():
             if f_replace and F_GROUP in f_replace:
                 gid = f_replace[F_GROUP](gid)
-            cobra_group = Group(gid, name=gid, kind="collection")
+            cobra_group = Group(gid, name=gid, kind="partonomy")
+            cobra_group.annotation["sbo"] = "SBO:0000633"
             cobra_group.add_members(cobra_members)
             groups.append(cobra_group)
 
@@ -1612,9 +1615,8 @@ def _check_required(sbase: "libsbml.Base", value: str, attribute: str) -> str:
         elif hasattr(sbase, "getMetaId") and sbase.getMetaId():
             msg += f" with metaId '{sbase.getName()}'"
         raise CobraSBMLError(msg)
-    if attribute == "id":
-        if not libsbml.SyntaxChecker.isValidSBMLSId(value):
-            LOGGER.error(f"'{value}' is not a valid SBML 'SId'.")
+    if attribute == "id" and not libsbml.SyntaxChecker.isValidSBMLSId(value):
+        LOGGER.error(f"'{value}' is not a valid SBML 'SId'.")
 
     return value
 
@@ -1669,7 +1671,7 @@ def _parse_notes_dict(sbase) -> dict:
     """
     notes = sbase.getNotesString()
     if notes and len(notes) > 0:
-        notes_store = dict()
+        notes_store = {}
         for match in pattern_notes.finditer(notes):
             _content = match.group("content")
             try:

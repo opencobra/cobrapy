@@ -960,6 +960,7 @@
     - lower_bound: -1000.0
     - upper_bound: 1000.0
     - gene_reaction_rule: b2133 or b1380
+    - subsystem: Pyruvate Metabolism
     - annotation: !!omap
       - bigg.reaction: LDH_D
       - biocyc: META:DLACTDEHYDROGNAD-RXN
@@ -1080,9 +1081,9 @@
     - id: b1676
     - name: pykF
     - annotation: !!omap
-      - ncbigi:
-        - GI:1208453
-        - GI:1652654
+      - ncbiprotein:
+        - '1208453'
+        - '1652654'
   - !!omap
     - id: b1723
     - name: pfkB
@@ -1123,7 +1124,7 @@
     - id: b2779
     - name: eno
     - annotation: !!omap
-      - ncbigi: GI:1653839
+      - ncbiprotein: '1653839'
   - !!omap
     - id: b2925
     - name: fbaA
@@ -1131,7 +1132,7 @@
     - id: b2926
     - name: pgk
     - annotation: !!omap
-      - ncbigi: GI:1653609
+      - ncbiprotein: '1653609'
   - !!omap
     - id: b2987
     - name: pitB
@@ -1145,9 +1146,9 @@
     - id: b3916
     - name: pfkA
     - annotation: !!omap
-      - ncbigi:
-        - GI:1006614
-        - GI:1651919
+      - ncbiprotein:
+        - '1006614'
+        - '1651919'
   - !!omap
     - id: b3919
     - name: tpiA
@@ -1155,7 +1156,7 @@
     - id: b4025
     - name: pgi
     - annotation: !!omap
-      - ncbigi: GI:1653253
+      - ncbiprotein: '1653253'
   - !!omap
     - id: b4395
     - name: ytjC
