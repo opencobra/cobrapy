@@ -132,12 +132,12 @@ class History:
 
         # python 3.6 doesn't allow : (colon) in the utc offset.
         try:
-            return datetime.strptime(datetime_str, STRTIME_FORMAT)
+            datetime_return = datetime.strptime(datetime_str, STRTIME_FORMAT)
         except ValueError as e:
             # checking for python 3.6
             if "Z" in datetime_str:
                 try:
-                    return datetime.strptime(
+                    datetime_return = datetime.strptime(
                         datetime_str.replace("Z", ""), "%Y-%m-%dT%H:%M:%S"
                     )
                 except ValueError as e1:
@@ -147,9 +147,10 @@ class History:
                 utcoff_p36 = utcoff.replace(":", "")
                 date_p36 = datetime_str.replace(utcoff, utcoff_p36)
                 try:
-                    return datetime.strptime(date_p36, STRTIME_FORMAT)
+                    datetime_return = datetime.strptime(date_p36, STRTIME_FORMAT)
                 except ValueError:
                     raise ValueError(str(e))
+        return datetime_return
 
     @property
     def created_date(self) -> Optional[datetime]:
