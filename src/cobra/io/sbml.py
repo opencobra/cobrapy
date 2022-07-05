@@ -49,7 +49,6 @@ from ..core import (
     ExternalResources,
     Gene,
     Group,
-    HistoryDatetime,
     Metabolite,
     MetaData,
     Model,
@@ -1837,11 +1836,10 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
 
         if model_history.isSetCreatedDate():
             date: libsbml.Date = model_history.getCreatedDate()
-            annotation.history.created_date = HistoryDatetime(date.getDateAsString())
+            annotation.history.created_date = date.getDateAsString()
 
         annotation.history.modified_dates = [
-            HistoryDatetime(_date.getDateAsString())
-            for _date in model_history.getListModifiedDates()
+            _date.getDateAsString() for _date in model_history.getListModifiedDates()
         ]
 
     return annotation
@@ -1987,12 +1985,12 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
             creator.organisation and comp_creator.setOrganisation(creator.organisation)
             comp_history.addCreator(comp_creator)
 
-        if annotation.history.created_date.datetime is not None:
-            date = libsbml.Date(annotation.history.created_date.datetime)
+        if annotation.history.created_date:
+            date = libsbml.Date(annotation.history.created_date.isoformat())
             comp_history.setCreatedDate(date)
 
         for modified_date in annotation.history.modified_dates:
-            date = libsbml.Date(modified_date.datetime)
+            date = libsbml.Date(modified_date.isoformat())
             comp_history.addModifiedDate(date)
 
         # finally add the compo_history

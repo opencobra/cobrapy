@@ -359,13 +359,13 @@ def test_model_history(tmp_path: Path) -> None:
     assert c.email == "muster@university.com"
 
     assert (
-        model2._sbml["annotation"].history.created_date.datetime
-        == "2019-10-20T12:34:32Z"
+        model2._sbml["annotation"].history.created_date.isoformat()
+        == "2019-10-20T12:34:32+00:00"
     )
     assert len(model2._sbml["annotation"].history._modified_dates) == 1
     assert (
-        model2._sbml["annotation"].history._modified_dates[0].datetime
-        == "2019-10-20T12:35:32Z"
+        model2._sbml["annotation"].history._modified_dates[0].isoformat()
+        == "2019-10-20T12:35:32+00:00"
     )
 
 

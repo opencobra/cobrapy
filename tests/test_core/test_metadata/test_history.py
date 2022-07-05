@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from cobra.core.metadata.history import Creator, History, HistoryDatetime
+from cobra.core.metadata.history import Creator, History
 from cobra.io import read_sbml_model
 
 
@@ -35,15 +35,15 @@ def test_create_history():
                 email="test2@test2.com",
             ),
         ],
-        created_date=HistoryDatetime(JUNE_26TH_530),
+        created_date=JUNE_26TH_530,
         modified_dates=[
-            HistoryDatetime(JUNE_26TH),
-            HistoryDatetime(JUNE_26TH_530),
+            JUNE_26TH,
+            JUNE_26TH_530,
         ],
     )
     assert len(history.creators) == 2
-    assert isinstance(history.created_date, HistoryDatetime)
-    assert history.created_date.datetime == JUNE_26TH_530
+    assert history.created_date.isoformat() == JUNE_26TH_530
+    assert history.created_date == History.parse_datetime(JUNE_26TH_530)
     assert len(history.modified_dates) == 2
 
 
@@ -74,10 +74,10 @@ def test_history_from_ecoli_xml(data_directory):
                 family_name="Koenig",
             ),
         ],
-        created_date=HistoryDatetime("2019-03-06T14:40:55Z"),
+        created_date="2019-03-06T14:40:55Z",
         modified_dates=[
-            HistoryDatetime("2019-03-06T14:40:55Z"),
-            HistoryDatetime("2019-03-06T14:41:55Z"),
+            "2019-03-06T14:40:55Z",
+            "2019-03-06T14:41:55Z",
         ],
     )
     assert model.annotation.history == history
@@ -99,21 +99,24 @@ def test_create_creator():
 def test_historydatetime():
     # valid date
     dt_str1 = JUNE_26TH_530
-    datetime_obj = HistoryDatetime(dt_str1)
-    assert datetime_obj.datetime == dt_str1
+    datetime_obj = History(created_date=dt_str1)
+    assert datetime_obj.created_date.isoformat() == dt_str1
 
     # valid date
-    datetime_obj.datetime = JUNE_26TH
-    assert datetime_obj.datetime == JUNE_26TH
-    datetime_obj.datetime = None
-    assert datetime_obj.datetime is None
+    datetime_obj = History(created_date=JUNE_26TH)
+    assert datetime_obj.created_date.isoformat() == JUNE_26TH
+    datetime_obj.created_date = None
+    assert datetime_obj.created_date is None
 
     # create from python datetime
-    datetime_obj.datetime = datetime.now()
-    assert datetime_obj.datetime is not None
+    datetime_obj.created_date = datetime.now()
+    assert datetime_obj.created_date is not None
 
     # incorrect format
     with pytest.raises(ValueError):
-        datetime_obj.datetime = datetime.now(timezone(timedelta(hours=1))).strftime(
+        datetime_obj.created_date = datetime.now(timezone(timedelta(hours=1))).strftime(
             "%Y-%m-%dT%H:%M:%S%Z"
         )
+
+    with pytest.raises(TypeError):
+        datetime_obj.created_date = {"date": "June 26th"}

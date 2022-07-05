@@ -18,7 +18,7 @@ class History:
     ----------
     creators : list
         A list of Creators
-    created_date : HistoryDatetime
+    created_date : datetime
         The datetime of creation in W3CDTF ISO 8601 format
     modified_dates : list
         A list of datetimes when the object was modified.
@@ -27,8 +27,8 @@ class History:
     def __init__(
         self,
         creators: Optional[List["Creator"]] = None,
-        created_date: Optional["HistoryDatetime"] = None,
-        modified_dates: Optional[List["HistoryDatetime"]] = None,
+        created_date: Optional[Union[datetime, str]] = None,
+        modified_dates: Optional[List[Union[datetime, str]]] = None,
     ):
         """Initialize the class.
 
@@ -36,10 +36,10 @@ class History:
         ----------
         creators: list
             list of Creator class. Optional, default None.
-        created_date: HistoryDatetime
+        created_date: datetime
             Created date, in HistoryDateTime class. Optional, default None.
         modified_dates: list
-            Dates when this annotation was modified. List of HistoryDateTime dates.
+            Dates when this annotation was modified. List of datetime dates or strings.
             Optional, default None.
         """
         if modified_dates is None:
@@ -77,40 +77,116 @@ class History:
         """
         self._creators = [Creator.from_data(v) for v in values]
 
+    @staticmethod
+    def parse_datetime(value: Optional[Union[str, datetime]]) -> Optional[datetime]:
+        """Parse datetime into str.
+
+        Parameters
+        ----------
+        value: str or datetime
+            Optional. If None, the function will return None.
+            str is converted to datetime.
+            If given datetime, the format will be validated.
+
+        Returns
+        -------
+        datetime: optional
+            Returns None if given None.
+
+        Raises
+        ------
+        TypeError
+            If value is not None, or an instance of str, datetime.
+        """
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            return value
+        elif isinstance(value, str):
+            return History.date_from_str(value)
+        else:
+            raise TypeError(
+                f"Invalid type passed for datetime. "
+                f"Accepted types are 'str' or 'datetime' objects: {value}"
+            )
+
+
+    @staticmethod
+    def date_from_str(datetime_str: str) -> datetime:
+        """Validate if the date format is of type w3cdtf ISO 8601.
+
+        Parameters
+        ----------
+        datetime_str: str
+            Datetime in string format.
+
+        Returns
+        -------
+        datetime if valid format
+
+        Raises
+        ------
+        ValueError if not valid.
+        """
+        if not isinstance(datetime_str, str):
+            raise TypeError(
+                f"The date passed must be of type string: {datetime_str}")
+
+        # python 3.6 doesn't allow : (colon) in the utc offset.
+        try:
+            return datetime.strptime(datetime_str, STRTIME_FORMAT)
+        except ValueError as e:
+            # checking for python 3.6
+            if "Z" in datetime_str:
+                try:
+                    return datetime.strptime(
+                        datetime_str.replace("Z", ""), "%Y-%m-%dT%H:%M:%S"
+                    )
+                except ValueError as e1:
+                    raise ValueError(str(e1))
+            else:
+                utcoff = datetime_str[20:25]
+                utcoff_p36 = utcoff.replace(":", "")
+                date_p36 = datetime_str.replace(utcoff, utcoff_p36)
+                try:
+                    return datetime.strptime(date_p36, STRTIME_FORMAT)
+                except ValueError:
+                    raise ValueError(str(e))
+
     @property
-    def created_date(self) -> "HistoryDatetime":
+    def created_date(self) -> Optional[datetime]:
         """Get created date for History.
 
         Returns
         -------
-        HistoryDatetime
+        datetime
         """
         return self._created_date
 
     @created_date.setter
-    def created_date(self, date: Union[str, "HistoryDateTime"]) -> None:
+    def created_date(self, date: Union[str, "datetime"]) -> None:
         """Set created date for History.
 
         Parameters
         ----------
         date: str or HistoryDateTime
         """
-        self._created_date = HistoryDatetime(date)
+        self._created_date = self.parse_datetime(date)
 
     @property
-    def modified_dates(self) -> List:
+    def modified_dates(self) -> List[datetime]:
         """Get modified dates.
 
         Returns
         -------
         list
-            List of HistoryDateTimes when this annotation was modified, if any exist.
+            List of datetimes when this annotation was modified, if any exist.
             List can be empty.
         """
         return self._modified_dates
 
     @modified_dates.setter
-    def modified_dates(self, dates: Iterable[Union[str, "HistoryDateTime"]]) -> None:
+    def modified_dates(self, dates: Iterable[Union[str, datetime]]) -> None:
         """Set modified dates.
 
         Parameters
@@ -118,7 +194,7 @@ class History:
         list
             List of HistoryDateTimes or dictionaries when this annotation was modified.
         """
-        self._modified_dates = [HistoryDatetime(d) for d in dates]
+        self._modified_dates = [self.parse_datetime(d) for d in dates]
 
     @staticmethod
     def from_data(data: Union[Dict, "History"]) -> "History":
@@ -157,7 +233,7 @@ class History:
         """
         if self.creators:
             return False
-        if self.created_date.datetime:
+        if self.created_date:
             return False
         if self.modified_dates:
             return False
@@ -206,8 +282,8 @@ class History:
         """
         return {
             "creators": [c.to_dict() for c in self.creators],
-            "created_date": self.created_date.datetime,
-            "modified_dates": [mod_date.datetime for mod_date in self._modified_dates],
+            "created_date": self.created_date.isoformat(),
+            "modified_dates": [mod_date.isoformat() for mod_date in self._modified_dates],
         }
 
     def __str__(self) -> str:
@@ -230,7 +306,7 @@ class History:
         """
         return (
             f"{self.__class__.__module__}.{self.__class__.__qualname__}"
-            f"({self.creators}, {self.created_date.datetime}, {self.modified_dates})"
+            f"({self.creators}, {self.created_date}, {self.modified_dates})"
         )
 
 
@@ -242,7 +318,7 @@ class Creator(NamedTuple):
     given_name: str
         Optional. Default None.
     family_name: str
-    Optional. Default None.
+        Optional. Default None.
     email: str
         Optional. Default None.
     organisation: str
@@ -319,171 +395,4 @@ class Creator(NamedTuple):
             f"{self.__class__.__module__}.{self.__class__.__qualname__}"
             f"({self.given_name} {self.family_name} {self.email} "
             f"{self.organisation})"
-        )
-
-
-class HistoryDatetime:
-    """Datetime allowed in a model history.
-
-    This class make sure that datetimes are of the form:
-    %Y-%m-%dT%H:%M:%S%z
-
-    Parameter
-    ---------
-    datetime: str, datetime
-        date in the form of a string
-    """
-
-    def __init__(self, history_datetime: str = None):
-        """Initialize the Datetime class.
-
-        Parameter
-        ---------
-        datetime: str
-            Date in the form of a string.
-            This datetimes must be of the form: %Y-%m-%dT%H:%M:%S%z
-
-        """
-        self._datetime: Optional[str] = None
-        self.datetime = history_datetime
-
-    @property
-    def datetime(self) -> str:
-        """Get datetime.
-
-        Returns
-        -------
-        str
-        """
-        return self._datetime
-
-    @datetime.setter
-    def datetime(self, value: str) -> None:
-        """Set datetime.
-
-        Parameters
-        ----------
-        value: str or datetime
-            Can be str or dateitme, and is parsed to make sure it is the right type and
-            format.
-
-        See Also
-        --------
-        self.parse_datetime()
-        """
-        self._datetime = self.parse_datetime(value)
-
-    def parse_datetime(self, value: str) -> Optional["datetime"]:
-        """Parse datetime into str.
-
-        Parameters
-        ----------
-        value: HistoryDatetime or str or datetime
-            Optional. If None, the function will return None.
-            HistoryDateTime and str are converted to datetime.
-            If given datetime, the format will be validated.
-
-        Returns
-        -------
-        datetime: optional
-            Returns None if given None.
-
-        Raises
-        ------
-        TypeError
-            If value is not None, or an instance of HistoryDateTime, str, datetime.
-        """
-        if value is None:
-            return None
-        if isinstance(value, HistoryDatetime):
-            return value.datetime
-        elif isinstance(value, str):
-            self.validate_datetime(value)
-            return value
-        elif isinstance(value, datetime):
-            return value.strftime(STRTIME_FORMAT)
-        else:
-            raise TypeError(
-                f"Invalid type passed for datetime. "
-                f"Accepted types are 'str' or "
-                f"'datetime' objects: {value}"
-            )
-
-    @staticmethod
-    def utcnow() -> "HistoryDatetime":
-        """Get HistoryDatetime with current UTC time.
-
-        Returns
-        -------
-        HistoryDatetime: describing the current UTC time.
-        """
-        return HistoryDatetime(datetime.utcnow().strftime(STRTIME_FORMAT))
-
-    @staticmethod
-    def validate_datetime(datetime_str: str) -> None:
-        """Validate if the date format is of type w3cdtf ISO 8601.
-
-        Parameters
-        ----------
-        datetime_str: str
-            Datetime in string format.
-
-        Raises
-        ------
-        ValueError if not valid.
-        """
-        if not isinstance(datetime_str, str):
-            raise TypeError(f"The date passed must be of type string: {datetime_str}")
-
-        # python 3.6 doesn't allow : (colon) in the utc offset.
-        try:
-            datetime.strptime(datetime_str, STRTIME_FORMAT)
-        except ValueError as e:
-            # checking for python 3.6
-            if "Z" in datetime_str:
-                try:
-                    datetime.strptime(
-                        datetime_str.replace("Z", ""), "%Y-%m-%dT%H:%M:%S"
-                    )
-                except ValueError as e1:
-                    raise ValueError(str(e1))
-            else:
-                utcoff = datetime_str[20:25]
-                utcoff_p36 = utcoff.replace(":", "")
-                date_p36 = datetime_str.replace(utcoff, utcoff_p36)
-                try:
-                    datetime.strptime(date_p36, STRTIME_FORMAT)
-                except ValueError:
-                    raise ValueError(str(e))
-
-    def __eq__(self, history_datetime: "HistoryDatetime") -> bool:
-        """Check equality of two HistoryDateTime entries.
-
-        Parameters
-        ----------
-        history_datetime: HistoryDatetime
-
-        Returns
-        -------
-        bool
-            True if the datetime of both entries is identical, false otherwise.
-        """
-        if not isinstance(history_datetime, HistoryDatetime):
-            return False
-        return self.datetime == history_datetime.datetime
-
-    def __str__(self) -> str:
-        """Return string representation of the datetime.
-
-        Returns
-        -------
-        str
-        """
-        return self.datetime
-
-    def __repr__(self) -> str:
-        """Return the HistoryDateTime with module, class, and date."""
-        return (
-            f"<{self.__class__.__module__}.{self.__class__.__qualname__}"
-            f"({self.datetime})>"
         )
