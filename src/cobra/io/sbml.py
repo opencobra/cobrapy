@@ -1240,13 +1240,13 @@ def _model_to_sbml(
                 "creators"
             ]:  # noqa: E501 type: libsbml.ModelCreator
                 creator = libsbml.ModelCreator()
-                if cobra_creator.get("family_name", None):
+                if cobra_creator.family_name:
                     creator.setFamilyName(cobra_creator["family_name"])
-                if cobra_creator.get("given_name", None):
+                if cobra_creator.given_name:
                     creator.setGivenName(cobra_creator["given_name"])
-                if cobra_creator.get("organisation", None):
+                if cobra_creator.organisation:
                     creator.setOrganisation(cobra_creator["organisation"])
-                if cobra_creator.get("email", None):
+                if cobra_creator.email:
                     creator.setEmail(cobra_creator["email"])
 
                 _check(history.addCreator(creator), "adding creator to ModelHistory.")
@@ -1829,8 +1829,8 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
             Creator(
                 creator.getGivenName() or None,
                 creator.getFamilyName() or None,
-                creator.getOrganisation() or None,
                 creator.getEmail() or None,
+                creator.getOrganisation() or None,
             )
             for creator in model_history.getListCreators()
         ]

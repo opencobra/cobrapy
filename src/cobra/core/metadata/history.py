@@ -5,7 +5,7 @@ model objects. The history allows to encode who created or modified
 objects in a model with respective time stamps.
 """
 from datetime import datetime
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Dict, Iterable, List, NamedTuple, Optional, Union
 
 
 STRTIME_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
@@ -234,41 +234,25 @@ class History:
         )
 
 
-class Creator:
+class Creator(NamedTuple):
     """Metadata for person who created an object.
 
     Parameters
     ----------
-        given_name : str,
-        family_name : str,
-        email : str,
-        organisation : str
+    given_name: str
+        Optional. Default None.
+    family_name: str
+    Optional. Default None.
+    email: str
+        Optional. Default None.
+    organisation: str
+        Optional. Default None.
     """
 
-    def __init__(
-        self,
-        given_name: Optional[str] = None,
-        family_name: Optional[str] = None,
-        email: Optional[str] = None,
-        organisation: Optional[str] = None,
-    ):
-        """Initialize Creator class.
-
-        Parameters
-        ----------
-        given_name: str
-            Optional. Default None.
-        family_name: str
-            Optional. Default None.
-        email: str
-            Optional. Default None.
-        organisation: str
-            Optional. Default None.
-        """
-        self.given_name: str = given_name
-        self.family_name: str = family_name
-        self.email: str = email
-        self.organisation: str = organisation
+    given_name: Optional[str] = None
+    family_name: Optional[str] = None
+    email: Optional[str] = None
+    organisation: Optional[str] = None
 
     @staticmethod
     def from_data(data: Union[Dict, "Creator"]) -> "Creator":
@@ -288,32 +272,16 @@ class Creator:
         elif isinstance(data, Creator):
             return data
         elif isinstance(data, dict):
-            return Creator(**data)
+            return Creator._make(
+                [
+                    data["given_name"],
+                    data["family_name"],
+                    data["email"],
+                    data["organisation"],
+                ]
+            )
         else:
             raise TypeError(f"Invalid format for Creator: {data}")
-
-    def __eq__(self, creator_obj: "Creator") -> bool:
-        """Compare creator objects for equality.
-
-        Two creators are equal if all fields are equal.
-
-        Parameters
-        ----------
-        creator_obj: Creator
-            Creator to compare to.
-
-        Returns
-        -------
-        bool
-            True if all fields are equal, false otherwise.
-        """
-        for field_name in {"given_name", "family_name", "email", "organisation"}:
-            if self.__getattribute__(field_name) != creator_obj.__getattribute__(
-                field_name
-            ):
-                return False
-
-        return True
 
     def to_dict(self) -> Dict:
         """Convert Creator to dictionary.
@@ -328,12 +296,7 @@ class Creator:
             "organisation": str,
         }
         """
-        return {
-            "given_name": self.given_name,
-            "family_name": self.family_name,
-            "email": self.email,
-            "organisation": self.organisation,
-        }
+        return dict(self._asdict())
 
     def __str__(self) -> str:
         """Return string representation of Creator.
@@ -353,7 +316,7 @@ class Creator:
         str
         """
         return (
-            f"{self.__class__.__module__}.{self.__class__.__qualname__} "
+            f"{self.__class__.__module__}.{self.__class__.__qualname__}"
             f"({self.given_name} {self.family_name} {self.email} "
             f"{self.organisation})"
         )
