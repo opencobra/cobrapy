@@ -37,7 +37,7 @@ class History:
         creators: list
             list of Creator class. Optional, default None.
         created_date: datetime
-            Created date, in HistoryDateTime class. Optional, default None.
+            Created date. Optional, default None.
         modified_dates: list
             Dates when this annotation was modified. List of datetime dates or strings.
             Optional, default None.
@@ -110,7 +110,6 @@ class History:
                 f"Accepted types are 'str' or 'datetime' objects: {value}"
             )
 
-
     @staticmethod
     def date_from_str(datetime_str: str) -> datetime:
         """Validate if the date format is of type w3cdtf ISO 8601.
@@ -129,8 +128,7 @@ class History:
         ValueError if not valid.
         """
         if not isinstance(datetime_str, str):
-            raise TypeError(
-                f"The date passed must be of type string: {datetime_str}")
+            raise TypeError(f"The date passed must be of type string: {datetime_str}")
 
         # python 3.6 doesn't allow : (colon) in the utc offset.
         try:
@@ -169,7 +167,7 @@ class History:
 
         Parameters
         ----------
-        date: str or HistoryDateTime
+        date: str or datetime
         """
         self._created_date = self.parse_datetime(date)
 
@@ -192,7 +190,7 @@ class History:
         Parameters
         -------
         list
-            List of HistoryDateTimes or dictionaries when this annotation was modified.
+            List of datetimes or strings when this annotation was modified.
         """
         self._modified_dates = [self.parse_datetime(d) for d in dates]
 
@@ -283,7 +281,9 @@ class History:
         return {
             "creators": [c.to_dict() for c in self.creators],
             "created_date": self.created_date.isoformat(),
-            "modified_dates": [mod_date.isoformat() for mod_date in self._modified_dates],
+            "modified_dates": [
+                mod_date.isoformat() for mod_date in self._modified_dates
+            ],
         }
 
     def __str__(self) -> str:
