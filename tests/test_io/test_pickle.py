@@ -12,7 +12,7 @@ from cobra import Model
 @pytest.mark.parametrize("load_function", [load])
 def test_read_pickle(
     compare_models: Callable,
-    cobra_data_directory: Path,
+    data_directory: Path,
     mini_model: Model,
     load_function: Callable,
 ):
@@ -20,7 +20,7 @@ def test_read_pickle(
     if load_function is None:
         pytest.skip()
 
-    with open(cobra_data_directory.joinpath("mini.pickle"), "rb") as infile:
+    with open(data_directory.joinpath("mini.pickle"), "rb") as infile:
         pickle_model = load_function(infile)
 
     assert compare_models(mini_model, pickle_model) is None

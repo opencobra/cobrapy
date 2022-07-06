@@ -99,9 +99,6 @@ if __name__ == "__main__":
     # output to various formats
     with open("mini.pickle", "wb") as outfile:
         dump(mini, outfile, protocol=2)
-    # To make sure that mini.pickle is also present as an example in cobra.data
-    with open(importlib_resources.files(cobra.data).joinpath("mini.pickle"), "wb") as outfile:
-        dump(mini, outfile, protocol=2)
     save_matlab_model(mini, importlib_resources.files(cobra.data).joinpath("mini.mat"))
     save_json_model(mini, importlib_resources.files(cobra.data).joinpath("mini.json"), pretty=True)
     save_yaml_model(mini, importlib_resources.files(cobra.data).joinpath("mini.yml"))
