@@ -1,7 +1,6 @@
 """Test functionalities of I/O in JSON format."""
 
 import json
-from os.path import join
 from pathlib import Path
 from typing import Any, Callable, Dict, Union
 
@@ -36,6 +35,11 @@ def test_load_json_model(
     """Test the reading of JSON model."""
     json_model = cio.load_json_model(cobra_data_directory / "mini.json")
     assert compare_models(mini_model, json_model) is None
+    json_model = cio.load_json_model(str(cobra_data_directory / "mini.json"))
+    assert compare_models(mini_model, json_model) is None
+    with open(cobra_data_directory / "mini.json", 'r') as json_handle:
+        json_model = cio.load_json_model(json_handle)
+        assert compare_models(mini_model, json_model) is None
 
 
 def test_save_json_model(
@@ -48,15 +52,28 @@ def test_save_json_model(
     output_file = tmp_path.joinpath("mini.json")
     cio.save_json_model(mini_model, output_file, pretty=True)
     # validate against JSONSchema
-    with open(str(output_file), "r") as infile:
+    with open(output_file, "r") as infile:
         loaded = json.load(infile)
     assert jsonschema.validate(loaded, json_schema_v1) is None
+    output_file.unlink()
+    cio.save_json_model(mini_model, str(output_file), pretty=True)
+    # validate against JSONSchema
+    with open(output_file, "r") as infile:
+        loaded = json.load(infile)
+    assert jsonschema.validate(loaded, json_schema_v1) is None
+    output_file.unlink()
+    with output_file.open('w+') as json_outfile:
+        cio.save_json_model(mini_model, json_outfile, pretty=True)
+         # validate against JSONSchema
+        json_outfile.seek(0, 0)
+        loaded = json.load(json_outfile)
+        assert jsonschema.validate(loaded, json_schema_v1) is None
 
 
 def test_reaction_bounds_json(data_directory: Path, tmp_path: Path) -> None:
     """Test reading and writing of model with inf bounds in JSON."""
     # Path to XML file with INF bounds
-    path_to_xml_inf_file = join(data_directory, "fbc_ex1.xml")
+    path_to_xml_inf_file = data_directory / "fbc_ex1.xml"
     model_xml_inf = cio.read_sbml_model(path_to_xml_inf_file)
     path_to_output = tmp_path.joinpath("fbc_ex1_json.json")
     # Saving model with inf bounds in json form without error
