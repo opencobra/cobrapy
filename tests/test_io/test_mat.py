@@ -137,60 +137,12 @@ def test_read_rewrite_matlab_model(
     assert compare_models(raven_mat_model, raven_mat_model_reload) is None
 
 
-def _fix_xml_annotation_to_identifiers(model: "Model") -> None:
-    """Fix XML annotations to respect identifiers.org .
-
-    This function will fix the dict keys of annotations to match identifiers.org.
-    Eventually, the XML models should be fixed and cobrapy should be strict, but this is
-    part of SBML rewriting of annotations
-    see: https://github.com/opencobra/cobrapy/issues/684
-
-    It also changes met formulas from empty string to None (which is the default
-    when creating a metabolite with no fomula given) and strips spaces from reaction
-    names.
-
-    Parameters
-    ----------
-    model : cobra.Model
-        The model to fix.
-
-    """
-    for met in model.metabolites:
-        if met.formula == "":
-            met.formula = None
-        if len(met.annotation):
-            if "chebi" in met.annotation.keys():
-                met.annotation["CHEBI"] = met.annotation.pop("chebi")
-            if "sbo" in met.annotation.keys():
-                met.annotation["SBO"] = met.annotation.pop("sbo")
-            for annot, val in met.annotation.items():
-                if isinstance(val, str):
-                    met.annotation[annot] = [val]
-    for rxn in model.reactions:
-        rxn.name = rxn.name.strip()
-        if "sbo" in rxn.annotation.keys():
-            rxn.annotation["SBO"] = rxn.annotation.pop("sbo")
-        if len(rxn.annotation):
-            for annot, val in rxn.annotation.items():
-                if isinstance(val, str):
-                    rxn.annotation[annot] = [val]
-    for gene in model.genes:
-        if len(gene.annotation):
-            if "ncbigi" in gene.annotation.keys():
-                gene.annotation["ncbiprotein"] = gene.annotation.pop("ncbigi")
-            for annot, val in gene.annotation.items():
-                if isinstance(val, str):
-                    gene.annotation[annot] = [val]
-
-
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
 @pytest.mark.parametrize(
     "xml_file", ["e_coli_core.xml", "salmonella.xml", "mini_cobra.xml", "mini_fbc2.xml"]
 )
 # When using a better comparison function, can run test on
 # "annotation.xml", "example_notes.xml", "fbc_ex1.xml", "fbc_ex2.xml", "validation.xml"
-# "example_notes.xml" contains a group and groups are not yet correctly exported to
-# matlab
 # "valid_annotation_output.xml" has reaction annotations in a metabolite, so they would
 # be thrown out by matlab
 def test_compare_xml_to_written_matlab_model(
@@ -214,7 +166,6 @@ def test_compare_xml_to_written_matlab_model(
 
     """
     xml_model = read_sbml_model(str((data_directory / xml_file).resolve()))
-    _fix_xml_annotation_to_identifiers(xml_model)
     mat_output_file = tmp_path / xml_file.replace(".xml", ".mat")
     save_matlab_model(
         xml_model, str(mat_output_file.resolve())

@@ -26,10 +26,6 @@ def test_group_add_elements(model: Model) -> None:
     group.add_members(reactions_for_larger_group)
     assert len(group.members) == num_total_members
 
-    # the order of members should be the same as the loaded one
-    for i in range(num_total_members):
-        assert group.members[i] == model.reactions[i]
-
 
 def test_group_kind() -> None:
     """Test SBML compliance and group kind."""

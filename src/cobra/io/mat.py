@@ -44,9 +44,9 @@ MET_MATLAB_TO_PROVIDERS = {
     "metLIPIDMAPSID": "lipidmaps",
     "metReactomeID": "reactome",
     "metSABIORKID": "sabiork.compound",
-    "metSLMID": "SLM",
+    "metSLMID": "slm",
     "metSMILES": "SMILES",
-    "metSBOTerm": "sbo",
+    "metSBOTerms": "sbo",
     "metCasNumber": "cas",
 }
 
@@ -525,27 +525,27 @@ def annotations_to_mat(
     empty_lists = [[""] * len(annotation_list) for _ in annotation_matlab]
     annotation_cells_to_be = dict(zip(annotation_matlab.values(), empty_lists))
     for i in range(len(annotation_list)):
-        for provider_key, v in annotation_list[i].items():
-            if isinstance(v, str):
-                v = [v]
+        for provider_key, obj_annotation in annotation_list[i].items():
+            if isinstance(obj_annotation, str):
+                obj_annotation = [obj_annotation]
             if provider_key == "pubmed":
-                v = ", ".join(
-                    ["PMID:" + annot if "PMID:" not in annot else annot for annot in v]
+                obj_annotation = ", ".join(
+                    ["PMID:" + annot if "PMID:" not in annot else annot for annot in obj_annotation]
                 )
             elif provider_key == "CHEBI":
-                v = ", ".join(
+                obj_annotation = ", ".join(
                     [
                         "CHEBI:" + annot if "CHBEI:" not in annot else annot
-                        for annot in v
+                        for annot in obj_annotation
                     ]
                 )
             elif provider_key == "ec-code":
-                v = " or ".join(v)
+                obj_annotation = " or ".join(obj_annotation)
             else:
-                v = ", ".join(v)
+                obj_annotation = ", ".join(obj_annotation)
             if provider_key not in providers_used:
                 continue
-            annotation_cells_to_be[annotation_matlab[provider_key]][i] = v
+            annotation_cells_to_be[annotation_matlab[provider_key]][i] = obj_annotation
     for annotation_key, item_list in annotation_cells_to_be.items():
         mat_dict[annotation_key] = _cell(item_list)
 
@@ -582,18 +582,18 @@ def notes_to_mat(
     empty_lists = [[""] * len(note_list) for _ in annotation_matlab]
     annotation_cells_to_be = dict(zip(annotation_matlab.values(), empty_lists))
     for i in range(len(note_list)):
-        for provider_key, v in note_list[i].items():
+        for provider_key, object_note in note_list[i].items():
             if provider_key not in providers_used:
                 continue
             if provider_key == CONFIDENCE_STR:
-                v = float(v)
+                object_note = float(object_note)
             if not len(annotation_cells_to_be[annotation_matlab[provider_key]][i]):
-                annotation_cells_to_be[annotation_matlab[provider_key]][i] = v
+                annotation_cells_to_be[annotation_matlab[provider_key]][i] = object_note
             else:
                 # References that aren't MIRIAM compliant will go to rxnNotes
                 annotation_cells_to_be[annotation_matlab[provider_key]][i] = (
                     annotation_cells_to_be[annotation_matlab[provider_key]][i]
-                    + f"; {v}"
+                    + f"; {object_note}"
                 )
     for annotation_key, item_list in annotation_cells_to_be.items():
         mat_dict[annotation_key] = _cell(item_list)
@@ -901,9 +901,7 @@ def from_mat_struct(
         rxn_group_names = set(rxn_subsystems).difference({None})
         new_groups = []
         for g_name in sorted(rxn_group_names):
-            group_members = model.reactions.query(
-                lambda x, g_n=g_name: x.subsystem == g_n
-            )
+            group_members = model.reactions.query(lambda x: x.subsystem == g_name)
             new_group = Group(
                 id=g_name, name=g_name, members=group_members, kind="partonomy"
             )

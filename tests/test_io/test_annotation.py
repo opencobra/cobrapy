@@ -34,7 +34,7 @@ def _check_sbml_annotations(model: "Model") -> None:
 
     # gene annotation
     # {'asap': 'ABE-0006162', 'ncbigene': '946368', 'uniprot': 'P33221',
-    #  'ncbiprotein': 'gi:16129802', 'ecogene': 'EG11809'}
+    #  'ncbiprotein': '16129802', 'ecogene': 'EG11809'}
     annotation = model.genes.G1.annotation
     assert len(annotation) == 5
     assert set(annotation.keys()) == {

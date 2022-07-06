@@ -475,7 +475,7 @@ def read_sbml_model(
             "Something went wrong reading the SBML model. Most likely the SBML"
             " model is not valid. Please check that your model is valid using "
             "the `cobra.io.sbml.validate_sbml_model` function or via the "
-            "online validator at http://sbml.org/validator .\n"
+            "online validator at https://sbml.org/validator_servlet/ .\n"
             "\t`(model, errors) = validate_sbml_model(filename)`"
             "\nIf the model is valid and cannot be read please open an issue "
             "at https://github.com/opencobra/cobrapy/issues ."
@@ -1601,9 +1601,8 @@ def _check_required(sbase: "libsbml.Base", value: str, attribute: str) -> str:
         elif hasattr(sbase, "getMetaId") and sbase.getMetaId():
             msg += f" with metaId '{sbase.getName()}'"
         raise CobraSBMLError(msg)
-    if attribute == "id":
-        if not libsbml.SyntaxChecker.isValidSBMLSId(value):
-            LOGGER.error(f"'{value}' is not a valid SBML 'SId'.")
+    if attribute == "id" and not libsbml.SyntaxChecker.isValidSBMLSId(value):
+        LOGGER.error(f"'{value}' is not a valid SBML 'SId'.")
 
     return value
 
@@ -1658,7 +1657,7 @@ def _parse_notes_dict(sbase) -> dict:
     """
     notes = sbase.getNotesString()
     if notes and len(notes) > 0:
-        notes_store = dict()
+        notes_store = {}
         for match in pattern_notes.finditer(notes):
             _content = match.group("content")
             try:

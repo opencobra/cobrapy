@@ -1,9 +1,8 @@
 """Define the group class."""
 
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Set
 from warnings import warn
 
-from .dictlist import DictList
 from .object import Object
 
 
@@ -63,7 +62,7 @@ class Group(Object):
         """
         Object.__init__(self, id, name)
 
-        self._members = DictList() if members is None else DictList(members)
+        self._members = set() if members is None else set(members)
         self._kind = None
         self.kind = "collection" if kind is None else kind
         # self.model is None or refers to the cobra.Model that
@@ -83,13 +82,13 @@ class Group(Object):
 
     # read-only
     @property
-    def members(self) -> DictList:
+    def members(self) -> Set:
         """Get members of the group.
 
         Returns
         -------
-        DictList
-            A dictlist containing the members of the group.
+        Set
+            A Set containing the members of the group.
         """
         return self._members
 
@@ -134,7 +133,7 @@ class Group(Object):
             warn("need to pass in a list")
             new_members = [new_members]
 
-        self._members.union(new_members)
+        self._members.update(new_members)
 
     def remove_members(self, to_remove: list) -> None:
         """Remove objects from the group.
@@ -148,5 +147,4 @@ class Group(Object):
             warn("need to pass in a list")
             to_remove = [to_remove]
 
-        for member_to_remove in to_remove:
-            self._members.remove(member_to_remove)
+        self._members.difference_update(to_remove)
