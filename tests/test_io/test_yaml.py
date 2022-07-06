@@ -12,10 +12,10 @@ from cobra import io as cio
 
 
 def test_load_yaml_model(
-    compare_models: Callable, data_directory: Path, mini_model: Model
+    compare_models: Callable, cobra_data_directory: Path, mini_model: Model
 ) -> None:
     """Test the reading of YAML model."""
-    yaml_model = cio.load_yaml_model(data_directory.joinpath("mini.yml"))
+    yaml_model = cio.load_yaml_model(cobra_data_directory.joinpath("mini.yml"))
     assert compare_models(mini_model, yaml_model) is None
 
 

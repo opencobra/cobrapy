@@ -18,7 +18,7 @@ def test_notes(tmp_path: Path) -> None:
     path_to_file = tmp_path / "model_notes.xml"
 
     # making a minimal cobra model to test notes
-    model = Model("e_coli_core")
+    model = Model("test_notes_model")
     model.notes["Remark"] = "...Model Notes..."
     met = Metabolite("pyr_c", compartment="c")
     model.add_metabolites([met])

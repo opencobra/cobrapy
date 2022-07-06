@@ -21,20 +21,20 @@ def json_schema_v1() -> Dict[str, Union[str, bool, Any]]:
 
 
 def test_validate_json(
-    data_directory: Path, json_schema_v1: Dict[str, Union[str, bool, Any]]
+    cobra_data_directory: Path, json_schema_v1: Dict[str, Union[str, bool, Any]]
 ) -> None:
     """Validate file according to JSON-schema."""
     jsonschema = pytest.importorskip("jsonschema")
-    with open(data_directory.joinpath("mini.json"), "r", encoding="utf-8") as infile:
+    with open(cobra_data_directory.joinpath("mini.json"), "r", encoding="utf-8") as infile:
         loaded = json.load(infile)
     assert jsonschema.validate(loaded, json_schema_v1) is None
 
 
 def test_load_json_model(
-    compare_models: Callable, data_directory: Path, mini_model: Model
+    compare_models: Callable, cobra_data_directory: Path, mini_model: Model
 ) -> None:
     """Test the reading of JSON model."""
-    json_model = cio.load_json_model(data_directory / "mini.json")
+    json_model = cio.load_json_model(cobra_data_directory / "mini.json")
     assert compare_models(mini_model, json_model) is None
 
 

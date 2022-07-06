@@ -4,14 +4,17 @@ from pathlib import Path
 from pickle import load as _load
 from typing import List, Tuple
 
+import importlib_resources
 import pytest
 
+import cobra
 from cobra import Metabolite, Model, Reaction, Solution
 from cobra.io import read_sbml_model
 from cobra.util import solver as sutil
 
 
 data_dir = Path(__file__).parent / "data"
+cobra_data_dir = importlib_resources.files(cobra.data)
 
 
 def create_test_model(model_name: str = "salmonella") -> Model:
@@ -35,10 +38,10 @@ def create_test_model(model_name: str = "salmonella") -> Model:
 
     """
     if model_name == "ecoli":
-        ecoli_sbml = str((data_dir / "iJO1366.xml.gz").resolve())
+        ecoli_sbml = str((cobra_data_dir / "iJO1366.xml.gz").resolve())
         return read_sbml_model(ecoli_sbml)
     elif model_name == "textbook":
-        textbook_sbml = str((data_dir / "textbook.xml.gz").resolve())
+        textbook_sbml = str((cobra_data_dir / "textbook.xml.gz").resolve())
         return read_sbml_model(textbook_sbml)
     elif model_name == "mini":
         mini_sbml = str((data_dir / "mini_fbc2.xml").resolve())
@@ -55,6 +58,11 @@ def data_directory() -> Path:
     """Provide session-level fixture for test data directory."""
     return data_dir
 
+
+@pytest.fixture(scope="session")
+def cobra_data_directory() -> Path:
+    """Provide session-level fixture for cobra data directory."""
+    return Path(cobra_data_dir)
 
 @pytest.fixture(scope="session")
 def empty_once() -> Model:
