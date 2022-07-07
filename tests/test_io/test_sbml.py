@@ -310,8 +310,8 @@ def test_from_sbml_string(data_directory: Path) -> None:
         Directory where the data is.
     """
     sbml_path = data_directory.joinpath("mini_fbc2.xml").resolve()
-    print(sbml_path.read_text())
-    model1 = read_sbml_model(sbml_path.read_text())
+    sbml_str = sbml_path.read_text()
+    model1 = read_sbml_model(sbml_str)
 
     model2 = read_sbml_model(sbml_path)
     TestCobraIO.compare_models(name="read from string", model1=model1, model2=model2)
