@@ -1,6 +1,6 @@
 """Provide functions for I/O in JSON format."""
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union, IO
+from typing import IO, TYPE_CHECKING, Any, Union
 
 from .dict import model_from_dict, model_to_dict
 

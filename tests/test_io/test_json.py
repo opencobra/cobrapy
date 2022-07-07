@@ -24,7 +24,9 @@ def test_validate_json(
 ) -> None:
     """Validate file according to JSON-schema."""
     jsonschema = pytest.importorskip("jsonschema")
-    with open(cobra_data_directory.joinpath("mini.json"), "r", encoding="utf-8") as infile:
+    with open(
+        cobra_data_directory.joinpath("mini.json"), "r", encoding="utf-8"
+    ) as infile:
         loaded = json.load(infile)
     assert jsonschema.validate(loaded, json_schema_v1) is None
 
@@ -37,7 +39,7 @@ def test_load_json_model(
     assert compare_models(mini_model, json_model) is None
     json_model = cio.load_json_model(str(cobra_data_directory / "mini.json"))
     assert compare_models(mini_model, json_model) is None
-    with open(cobra_data_directory / "mini.json", 'r') as json_handle:
+    with open(cobra_data_directory / "mini.json", "r") as json_handle:
         json_model = cio.load_json_model(json_handle)
         assert compare_models(mini_model, json_model) is None
 
@@ -62,9 +64,9 @@ def test_save_json_model(
         loaded = json.load(infile)
     assert jsonschema.validate(loaded, json_schema_v1) is None
     output_file.unlink()
-    with output_file.open('w+') as json_outfile:
+    with output_file.open("w+") as json_outfile:
         cio.save_json_model(mini_model, json_outfile, pretty=True)
-         # validate against JSONSchema
+        # validate against JSONSchema
         json_outfile.seek(0, 0)
         loaded = json.load(json_outfile)
         assert jsonschema.validate(loaded, json_schema_v1) is None
