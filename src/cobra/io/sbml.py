@@ -493,30 +493,22 @@ def _get_doc_from_filename(filename: Union[str, IO, Path]) -> "libsbml.SBMLDocum
     elif isinstance(filename, Path) and {".bz2", ".gz"}.intersection(filename.suffixes):
         doc: libsbml.SBMLDocument = libsbml.readSBMLFromFile(str(filename))
     elif isinstance(filename, str):
-        if (
+        if "<sbml" in filename:
+            doc: libsbml.SBMLDocument = libsbml.readSBMLFromString(filename)
+        elif (
             ("win" in platform) and (len(filename) < 260) or "win" not in platform
         ) and Path(filename).exists():
-            doc: libsbml.SBMLDocument = libsbml.readSBMLFromFile(
-                filename
-            )  # noqa: E501 type
+            doc: libsbml.SBMLDocument = libsbml.readSBMLFromFile(filename)
         else:
             # string representation
-            if "<sbml" not in filename:
-                raise IOError(
-                    f"The file with '{filename}' does not exist, "
-                    f"or is not an SBML string. Provide the path to "
-                    f"an existing SBML file or a valid SBML string representation:\n"
-                )
-
-            doc: libsbml.SBMLDocument = libsbml.readSBMLFromString(
-                filename
-            )  # noqa: E501
-
+            raise IOError(
+                f"The file with '{filename}' does not exist, "
+                f"or is not an SBML string. Provide the path to "
+                f"an existing SBML file or a valid SBML string representation:\n"
+            )
     elif hasattr(filename, "read"):
         # file handle
-        doc: libsbml.SBMLDocument = libsbml.readSBMLFromString(
-            filename.read()
-        )  # noqa: E501
+        doc: libsbml.SBMLDocument = libsbml.readSBMLFromString(filename.read())
     else:
         raise CobraSBMLError(
             f"Input type '{type(filename)}' for '{filename}' is not supported."
