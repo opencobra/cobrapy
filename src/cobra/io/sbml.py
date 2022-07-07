@@ -488,9 +488,9 @@ def _get_doc_from_filename(filename: Union[str, IO, Path]) -> "libsbml.SBMLDocum
     IOError if file not readable or does not contain SBML.
     CobraSBMLError if input type is not valid.
     """
-    if isinstance(filename, Path) and {'.bz2', '.gz'}.isdisjoint(filename.suffixes):
+    if isinstance(filename, Path) and {".bz2", ".gz"}.isdisjoint(filename.suffixes):
         doc: libsbml.SBMLDocument = libsbml.readSBMLFromString(filename.read_text())
-    elif isinstance(filename, Path) and {'.bz2', '.gz'}.intersection(filename.suffixes):
+    elif isinstance(filename, Path) and {".bz2", ".gz"}.intersection(filename.suffixes):
         doc: libsbml.SBMLDocument = libsbml.readSBMLFromFile(str(filename))
     elif isinstance(filename, str):
         if (
@@ -1142,7 +1142,10 @@ def _sbml_to_model(
 # -----------------------------------------------------------------------------
 # noinspection PyDefaultArgument
 def write_sbml_model(
-    cobra_model: Model, filename: Union[str, IO, Path], f_replace: dict = F_REPLACE, **kwargs
+    cobra_model: Model,
+    filename: Union[str, IO, Path],
+    f_replace: dict = F_REPLACE,
+    **kwargs,
 ) -> None:
     """Write cobra model to filename.
 

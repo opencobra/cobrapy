@@ -64,6 +64,7 @@ def cobra_data_directory() -> Path:
     """Provide session-level fixture for cobra data directory."""
     return Path(cobra_data_dir)
 
+
 @pytest.fixture(scope="session")
 def empty_once() -> Model:
     """Provide session-level fixture for empty model."""

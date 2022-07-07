@@ -325,7 +325,7 @@ def load_matlab_model(
     elif isinstance(infile_path, Path):
         data = scipy_io.loadmat(infile_path.open("rb"))  # noqa W9018
     else:
-        data = scipy_io.loadmat(infile_path) # noqa W9018
+        data = scipy_io.loadmat(infile_path)  # noqa W9018
     possible_names = []
     if variable_name is None:
         # skip meta variables
