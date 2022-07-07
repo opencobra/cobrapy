@@ -309,7 +309,7 @@ def test_from_sbml_string(data_directory: Path) -> None:
     data_directory: Path
         Directory where the data is.
     """
-    sbml_path = data_directory / "mini_fbc2.xml"
+    sbml_path = data_directory.joinpath("mini_fbc2.xml")
     model1 = read_sbml_model(sbml_path.read_text())
 
     model2 = read_sbml_model(sbml_path)
