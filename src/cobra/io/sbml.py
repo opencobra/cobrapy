@@ -30,7 +30,6 @@ Some SBML related issues are still open, please refer to the respective issue:
 import datetime
 import logging
 import re
-import os
 from ast import And, BoolOp, Module, Name, Or
 from collections import defaultdict, namedtuple
 from copy import deepcopy
@@ -489,21 +488,17 @@ def _get_doc_from_filename(filename: Union[str, IO, Path]) -> "libsbml.SBMLDocum
     IOError if file not readable or does not contain SBML.
     CobraSBMLError if input type is not valid.
     """
-    if isinstance(filename, Path) and {'.bz2', '.gz'}.isdisjoint(filename.suffixes):
+    if isinstance(filename, Path) and {".bz2", ".gz"}.isdisjoint(filename.suffixes):
         doc: libsbml.SBMLDocument = libsbml.readSBMLFromString(filename.read_text())
-    elif isinstance(filename, Path) and {'.bz2', '.gz'}.intersection(filename.suffixes):
+    elif isinstance(filename, Path) and {".bz2", ".gz"}.intersection(filename.suffixes):
         doc: libsbml.SBMLDocument = libsbml.readSBMLFromFile(str(filename))
     elif isinstance(filename, str):
-        if ("win" in platform) and (len(filename) < 260) and os.path.exists(filename):
-            # path (win)
-            doc = libsbml.readSBMLFromFile(
+        if (
+            ("win" in platform) and (len(filename) < 260) or "win" not in platform
+        ) and Path(filename).exists():
+            doc: libsbml.SBMLDocument = libsbml.readSBMLFromFile(
                 filename
-            )  # noqa: E501 type: libsbml.SBMLDocument
-        elif ("win" not in platform) and os.path.exists(filename):
-            # path other
-            doc = libsbml.readSBMLFromFile(
-                filename
-            )  # noqa: E501 type: libsbml.SBMLDocument
+            )  # noqa: E501 type
         else:
             # string representation
             if "<sbml" not in filename:
