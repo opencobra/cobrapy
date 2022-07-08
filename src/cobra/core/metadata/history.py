@@ -281,9 +281,9 @@ class History:
         """
         return {
             "creators": [c.to_dict() for c in self.creators],
-            "created_date": self.created_date.isoformat(),
+            "created_date": self.created_date.strftime(STRTIME_FORMAT),
             "modified_dates": [
-                mod_date.isoformat() for mod_date in self._modified_dates
+                mod_date.strftime(STRTIME_FORMAT) for mod_date in self._modified_dates
             ],
         }
 
