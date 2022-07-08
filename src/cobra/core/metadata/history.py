@@ -4,6 +4,7 @@ The history allows to encode provenance meta-data about
 model objects. The history allows to encode who created or modified
 objects in a model with respective time stamps.
 """
+import re
 from datetime import datetime
 from typing import Dict, Iterable, List, NamedTuple, Optional, Union
 
@@ -133,23 +134,14 @@ class History:
         # python 3.6 doesn't allow : (colon) in the utc offset.
         try:
             datetime_return = datetime.strptime(datetime_str, STRTIME_FORMAT)
+            return datetime_return
         except ValueError as e:
-            # checking for python 3.6
-            if "Z" in datetime_str:
-                try:
-                    datetime_return = datetime.strptime(
-                        datetime_str.replace("Z", ""), "%Y-%m-%dT%H:%M:%S"
-                    )
-                except ValueError as e1:
-                    raise ValueError(str(e1))
-            else:
-                utcoff = datetime_str[20:25]
-                utcoff_p36 = utcoff.replace(":", "")
-                date_p36 = datetime_str.replace(utcoff, utcoff_p36)
-                try:
-                    datetime_return = datetime.strptime(date_p36, STRTIME_FORMAT)
-                except ValueError:
-                    raise ValueError(str(e))
+            datetime_str = re.sub('Z\z', '\+0000', datetime_str)
+            datetime_str = re.sub('(\+\d\d):(\d\d)\z', '\1\2', datetime_str)
+        try:
+            datetime_return = datetime.strptime(datetime_str, STRTIME_FORMAT)
+        except ValueError:
+            raise ValueError(str(e))
         return datetime_return
 
     @property
