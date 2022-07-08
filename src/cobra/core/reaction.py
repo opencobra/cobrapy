@@ -915,8 +915,9 @@ class Reaction(Object):
         if "upper_bound" in state:
             state["_upper_bound"] = state.pop("upper_bound")
 
-        # Used for efficient storage
-        state["_gpr"] = GPR.from_string(state["_gpr"])
+        # Used for efficient storage in newer cobrapy versions
+        if type(state["_gpr"]) is str:
+            state["_gpr"] = GPR.from_string(state["_gpr"])
 
         self.__dict__.update(state)
         for x in state["_metabolites"]:
