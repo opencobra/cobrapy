@@ -4,6 +4,8 @@
 
 ## Fixes
 
+- serializes GPRs to strings to avoid massive storage usage
+
 ## Other
 
 ## Deprecated features
