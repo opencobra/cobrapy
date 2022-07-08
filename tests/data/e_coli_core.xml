@@ -19,35 +19,35 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
       <body xmlns="http://www.w3.org/1999/xhtml" style="margin:0 auto; width: 970px; font-size: 14px; height: 100%; color: #444444; font-family:Helvetica, sans-serif;">
       <h2>Description</h2>
       <div class="dc:description">
-        <p>This is a metabolism model of Escherichia coli str. K-12 substr. MG1655 in 
+        <p>This is a metabolism model of Escherichia coli str. K-12 substr. MG1655 in
         <a href="http://sbml.org" target="_blank" title="Access the definition of the SBML file format.">SBML</a>&#160;format.</p>
       </div>
-      <div class="dc:provenance">The content of this model has been carefully created in a manual research effort. This file has been exported from the software 
-      <a href="http://dx.doi.org/10.1186/1752-0509-7-74" title="Access publication about COBRApy." target="_blank">COBRApy</a>&#160;and further processed with the 
-      <a href="http://dx.doi.org/10.1093/bioinformatics/btv341" title="Access publication about JSBML." target="_blank">JSBML</a>-based 
+      <div class="dc:provenance">The content of this model has been carefully created in a manual research effort. This file has been exported from the software
+      <a href="http://dx.doi.org/10.1186/1752-0509-7-74" title="Access publication about COBRApy." target="_blank">COBRApy</a>&#160;and further processed with the
+      <a href="http://dx.doi.org/10.1093/bioinformatics/btv341" title="Access publication about JSBML." target="_blank">JSBML</a>-based
       <a href="http://github.com/SBRG/ModelPolisher/" target="_blank" title="Access ModelPolisher on Github">ModelPolisher</a>&#160;application.</div>
-      <div class="dc:publisher">This file has been produced by the 
-      <a href="http://systemsbiology.ucsd.edu" title="Website of the Systems Biology Research Group" target="_blank">Systems Biology Research Group</a>&#160;using 
+      <div class="dc:publisher">This file has been produced by the
+      <a href="http://systemsbiology.ucsd.edu" title="Website of the Systems Biology Research Group" target="_blank">Systems Biology Research Group</a>&#160;using
       <a href="http://bigg.ucsd.edu" title="Access BiGG Models knowledge-base." target="_blank">BiGG Models knowledge-base</a>&#160;version of Feb 24, 2018, where it is currently hosted and
-      identified by: 
+      identified by:
       <a href="http://identifiers.org/bigg.model/e_coli_core" title="Access to this model via BiGG Models knowledge-base." target="_blank">e_coli_core</a>.</div>
       <h2>Terms of use</h2>
       <div class="dc:rightsHolder">Copyright © 2017 The Regents of the University of California.</div>
       <div class="dc:license">
-        <p>Redistribution and use of any part of this model from BiGG Models knowledge-base, with or without modification, are permitted provided that the following conditions are met: 
+        <p>Redistribution and use of any part of this model from BiGG Models knowledge-base, with or without modification, are permitted provided that the following conditions are met:
         <ol>
           <li>Redistributions of this SBML file must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
           <li>Redistributions in a different form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided
           with the distribution.</li>
         </ol>This model is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</p>
-        <p>For specific licensing terms about this particular model and regulations of commercial use, see 
+        <p>For specific licensing terms about this particular model and regulations of commercial use, see
         <a href="http://identifiers.org/bigg.model/e_coli_core" title="Access to this model via BiGG Models knowledge-base." target="_blank">this model in BiGG Models knowledge-base</a>.</p>
       </div>
-      <h2>References</h2>When using content from BiGG Models knowledge-base in your research works, please cite 
+      <h2>References</h2>When using content from BiGG Models knowledge-base in your research works, please cite
       <dl>
-        <dt>King ZA, Lu JS, Dräger A, Miller PC, Federowicz S, Lerman JA, Ebrahim A, Palsson BO, and&#160;Lewis NE. (2015). 
-        <dd>BiGG Models: A platform for integrating, standardizing, and sharing genome-scale models. 
-        <i>Nucl Acids Res</i>. 
+        <dt>King ZA, Lu JS, Dräger A, Miller PC, Federowicz S, Lerman JA, Ebrahim A, Palsson BO, and&#160;Lewis NE. (2015).
+        <dd>BiGG Models: A platform for integrating, standardizing, and sharing genome-scale models.
+        <i>Nucl Acids Res</i>.
         <a href="https://dx.doi.org/10.1093/nar/gkv1049" target="_blank" title="Access the publication about BiGG Models knowledge-base">doi:10.1093/nar/gkv1049</a></dd></dt>
       </dl></body>
     </notes>
@@ -94,7 +94,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0001207" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG13625" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945008" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128336" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128336" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -115,7 +115,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0004164" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10031" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945837" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129202" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129202" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -137,7 +137,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007579" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10027" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946775" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130231" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130231" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -158,7 +158,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0010245" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11172" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947635" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:145698313" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/145698313" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -179,7 +179,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0006162" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11809" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946368" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129802" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129802" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -200,7 +200,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0004283" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11325" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946724" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129237" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129237" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -221,7 +221,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0000411" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12316" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/944864" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128111" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128111" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -242,7 +242,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0001645" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10032" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945097" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128458" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128458" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -263,7 +263,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002478" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10979" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945303" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128701" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128701" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -284,7 +284,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0000404" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10543" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/944854" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128109" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128109" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -305,7 +305,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002480" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10980" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945307" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128702" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128702" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -326,7 +326,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0008515" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10522" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947069" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130512" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130512" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -347,7 +347,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0001221" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG50010" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/944988" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128341" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128341" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -368,7 +368,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0004928" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12622" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946036" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:90111280" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/90111280" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -389,7 +389,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012217" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10103" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948247" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131604" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131604" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -410,7 +410,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012206" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10100" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948245" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131599" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131599" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -431,7 +431,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012208" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10101" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948244" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131600" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131600" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -452,7 +452,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012220" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10102" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948253" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131605" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131605" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -473,7 +473,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012213" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10098" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948242" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131602" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131602" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -494,7 +494,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012215" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10105" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948254" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131603" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131603" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -515,7 +515,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012222" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10099" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948252" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131606" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131606" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -536,7 +536,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012224" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10106" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948251" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:90111645" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/90111645" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -557,7 +557,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012211" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10104" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948243" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131601" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131601" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -578,7 +578,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002451" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10402" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945323" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128695" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128695" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -599,7 +599,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0003302" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11379" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947547" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128945" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128945" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -620,7 +620,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0003300" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11380" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945585" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128944" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128944" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -641,7 +641,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002499" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10173" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945341" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:90111166" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/90111166" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -662,7 +662,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002501" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10174" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945347" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128709" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128709" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -683,7 +683,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0009763" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12995" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947259" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130875" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130875" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -704,7 +704,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0011777" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11961" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948114" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131474" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131474" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -725,7 +725,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0009110" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10258" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945032" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130686" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130686" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -746,7 +746,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0006941" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG14062" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946632" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:90111385" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/90111385" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -767,7 +767,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0005906" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG13485" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946291" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129727" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129727" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -788,7 +788,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0009600" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10282" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947415" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130826" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130826" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -809,7 +809,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0013842" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10283" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948753" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16132054" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16132054" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -830,7 +830,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012821" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11517" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948424" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131763" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131763" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -851,7 +851,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0008206" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG14220" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/949032" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130417" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130417" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -872,7 +872,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0003073" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11258" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945513" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128871" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128871" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -893,7 +893,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0013595" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10333" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948668" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131976" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131976" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -914,7 +914,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0013598" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10332" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948680" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131977" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131977" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -935,7 +935,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0013604" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10330" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948667" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131979" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131979" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -956,7 +956,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0013602" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10331" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948666" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131978" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131978" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -977,7 +977,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007967" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10789" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946879" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130342" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130342" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -998,7 +998,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007962" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10788" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946886" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130341" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130341" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1019,7 +1019,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0006054" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10567" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946334" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129771" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129771" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1040,7 +1040,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0006056" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10568" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946332" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129772" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129772" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1061,7 +1061,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0006058" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10569" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946342" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:345452720" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/345452720" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1082,7 +1082,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0005380" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10358" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946147" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129569" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129569" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1103,7 +1103,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0013501" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10357" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948642" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131948" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131948" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1124,7 +1124,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0005392" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10356" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946826" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129570" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129570" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1145,7 +1145,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0011527" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG20044" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948039" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131400" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131400" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1166,7 +1166,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0006171" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11221" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946370" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129805" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129805" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1187,7 +1187,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0005920" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10367" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947679" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129733" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129733" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1208,7 +1208,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0003722" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10787" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945651" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129064" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129064" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1229,7 +1229,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007971" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10165" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946880" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130343" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130343" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1250,7 +1250,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0005429" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10563" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946009" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129579" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129579" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1271,7 +1271,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0004365" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG13908" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946202" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:90111244" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/90111244" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1292,7 +1292,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012640" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10383" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948370" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131710" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131710" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1313,7 +1313,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002771" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10386" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/944872" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128779" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128779" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1334,7 +1334,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002766" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10388" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945621" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128778" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128778" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1355,7 +1355,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002764" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10389" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945435" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128777" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128777" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1376,7 +1376,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0005865" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10372" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946802" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129715" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129715" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1397,7 +1397,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0001688" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG13247" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946187" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128469" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128469" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1418,7 +1418,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0005086" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG13816" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/944973" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129483" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129483" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1439,7 +1439,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0006031" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10683" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946337" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129766" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129766" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1460,7 +1460,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0010545" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10403" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947724" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:308209621" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/308209621" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1481,7 +1481,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0010547" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10404" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947723" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131103" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131103" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1502,7 +1502,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0013357" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10405" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948591" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131903" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131903" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1523,7 +1523,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0006737" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10411" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946554" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129970" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129970" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1544,7 +1544,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002976" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG13270" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945497" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128843" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128843" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1565,7 +1565,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0003823" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10489" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945702" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129099" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129099" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1586,7 +1586,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0013128" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10022" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948517" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131841" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131841" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1607,7 +1607,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007048" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10231" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946653" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130071" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130071" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1628,7 +1628,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0004619" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG13186" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946315" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129341" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129341" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1649,7 +1649,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0009767" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG20080" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948857" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130876" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130876" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1670,7 +1670,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0013125" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10023" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948512" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131840" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131840" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1691,7 +1691,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0010613" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10576" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947854" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131126" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131126" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1712,7 +1712,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0004931" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10948" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946031" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:90111281" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/90111281" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1733,7 +1733,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0008111" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG14193" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946947" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130388" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130388" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1754,7 +1754,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007526" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12093" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945136" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:145698289" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/145698289" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1775,7 +1775,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007534" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12091" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947580" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130214" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130214" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1796,7 +1796,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007553" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12082" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946764" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:49176207" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/49176207" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1817,7 +1817,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007532" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12092" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945540" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130213" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130213" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1838,7 +1838,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007549" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12084" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946759" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:145698291" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/145698291" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1859,7 +1859,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007547" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12086" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946746" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130220" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130220" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1880,7 +1880,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007543" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12087" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946762" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:145698290" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/145698290" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1901,7 +1901,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007551" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12083" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946738" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130222" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130222" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1922,7 +1922,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007545" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11774" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946753" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130219" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130219" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1943,7 +1943,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007539" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12089" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946757" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130216" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130216" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1964,7 +1964,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007529" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11773" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947731" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130212" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130212" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -1985,7 +1985,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007541" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12088" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946761" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130217" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130217" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2006,7 +2006,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007536" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12090" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946756" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130215" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130215" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2027,7 +2027,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0005354" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10744" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946628" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129561" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129561" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2048,7 +2048,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0005352" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10745" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946144" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129560" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129560" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2069,7 +2069,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012975" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11428" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948461" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:90111670" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/90111670" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2090,7 +2090,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0001564" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11821" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945084" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128436" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128436" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2111,7 +2111,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0000397" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10024" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/944834" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128107" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128107" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2132,7 +2132,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0000400" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10025" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/944794" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128108" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128108" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2153,7 +2153,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0005748" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10700" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946230" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:49176138" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/49176138" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2174,7 +2174,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012789" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10699" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948412" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131754" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131754" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2195,7 +2195,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0010242" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12758" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947623" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:49176316" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/49176316" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2216,7 +2216,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012937" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11911" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948453" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:49176447" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/49176447" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2237,7 +2237,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012934" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11910" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948454" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131789" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131789" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2258,7 +2258,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0003068" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10028" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945517" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128869" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128869" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2279,7 +2279,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0003071" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10701" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945514" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128870" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128870" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2300,7 +2300,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0008489" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11784" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947068" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130504" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130504" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2321,7 +2321,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0013163" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10702" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948535" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131851" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131851" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2342,7 +2342,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0009605" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10703" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947414" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130827" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130827" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2363,7 +2363,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002611" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG13231" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946398" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128735" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128735" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2384,7 +2384,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002563" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11699" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945068" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128723" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128723" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2405,7 +2405,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0014416" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12164" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948918" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16132212" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16132212" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2426,7 +2426,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0011818" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12296" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948130" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131483" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131483" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2447,7 +2447,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0009800" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12883" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947475" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130887" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130887" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2468,7 +2468,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0011407" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12230" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948009" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131365" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131365" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2489,7 +2489,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012950" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10756" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948457" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131794" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131794" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2510,7 +2510,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0011106" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10688" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945667" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131280" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131280" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2531,7 +2531,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0005678" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10759" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946209" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129658" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129658" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2552,7 +2552,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0007582" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG20173" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946778" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130232" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130232" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2573,7 +2573,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0008097" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG14188" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946940" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130383" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130383" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2594,7 +2594,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0005600" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10804" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946179" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129632" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129632" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2615,7 +2615,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0006182" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10803" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/946527" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16129807" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16129807" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2636,7 +2636,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0014097" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12553" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948829" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16132122" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16132122" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2657,7 +2657,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0011061" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11960" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947896" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131264" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131264" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2678,7 +2678,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0009567" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11443" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947407" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130815" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130815" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2699,7 +2699,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0013405" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11827" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948602" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131916" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131916" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2720,7 +2720,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002466" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10931" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945402" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128698" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128698" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2741,7 +2741,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002468" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10932" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945300" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128699" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128699" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2762,7 +2762,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002464" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10934" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945322" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128697" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128697" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2783,7 +2783,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002460" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10933" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945316" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128696" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128696" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2804,7 +2804,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002485" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10982" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945314" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128704" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128704" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2825,7 +2825,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0002483" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG10981" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945312" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128703" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128703" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2846,7 +2846,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0000027" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11556" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/944748" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128002" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128002" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2867,7 +2867,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0008115" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11797" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947006" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130389" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130389" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2888,7 +2888,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0009625" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11427" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/947420" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:49176286" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/49176286" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2909,7 +2909,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0008117" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG12100" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/945865" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16130390" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16130390" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -2930,7 +2930,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
                   <rdf:li rdf:resource="http://identifiers.org/asap/ABE-0012799" />
                   <rdf:li rdf:resource="http://identifiers.org/ecogene/EG11015" />
                   <rdf:li rdf:resource="http://identifiers.org/ncbigene/948409" />
-                  <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16131757" />
+                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16131757" />
                 </rdf:Bag>
               </bqbiol:isEncodedBy>
             </rdf:Description>
@@ -6035,7 +6035,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_ac_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/ac" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_ac_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6052,7 +6052,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_acald_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/acald" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_acald_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6069,7 +6069,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_akg_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/akg" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_akg_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6086,7 +6086,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_co2_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/co2" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_co2_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6103,7 +6103,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_etoh_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/etoh" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_etoh_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6120,7 +6120,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_for_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/for" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_for_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6137,7 +6137,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_fru_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/fru" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_fru_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6154,7 +6154,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_fum_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/fum" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_fum_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6171,7 +6171,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_glc__D_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/glc__D" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_glc__D_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6188,7 +6188,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_gln__L_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/gln__L" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_gln__L_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6205,7 +6205,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_glu__L_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/glu__L" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_glu__L_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6238,7 +6238,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_h2o_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/h2o" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_h2o_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6255,7 +6255,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_lac__D_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/lac__D" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_lac__D_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6272,7 +6272,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_mal__L_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/mal__L" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_mal__L_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6289,7 +6289,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_nh4_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/nh4" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_nh4_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6305,7 +6305,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_o2_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/o2" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_o2_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6322,7 +6322,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_pi_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/pi" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_pi_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6339,7 +6339,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_pyr_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/pyr" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_pyr_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -6356,7 +6356,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
             <rdf:Description rdf:about="#R_EX_succ_e">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/succ" />
+                  <rdf:li rdf:resource="http://identifiers.org/bigg.reaction/EX_succ_e" />
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -7423,7 +7423,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
           <speciesReference constant="true" sboTerm="SBO:0000011" species="M_nh4_c" stoichiometry="1" />
         </listOfProducts>
       </reaction>
-      <reaction fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub" id="R_O2t" metaid="R_O2t" name="O2 transport  diffusion " reversible="true"
+      <reaction fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub" id="R_O2t" metaid="R_O2t" name="O2 transport  diffusion" reversible="true"
       sboTerm="SBO:0000375">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">

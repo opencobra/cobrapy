@@ -51,7 +51,7 @@ class Cobrapy(AbstractModelRepository):
             A gzip-compressed, UTF-8 encoded SBML document.
         """
         return (
-            importlib_resources.files("cobra.data")
+            importlib_resources.files(cobra.data)
             .joinpath(f"{model_id}.xml.gz")
             .read_bytes()
         )

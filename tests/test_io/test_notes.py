@@ -1,28 +1,37 @@
-from os.path import join
+"""Test proper reading of SBML notes."""
 
-import cobra
+from pathlib import Path
+
+from cobra import Metabolite, Model, Reaction
 from cobra.io import read_sbml_model, write_sbml_model
 
 
-def test_notes(tmp_path):
-    """Testing if model notes are written in SBML."""
-    path_to_file = join(str(tmp_path), "model_notes.xml")
+def test_notes(tmp_path: Path) -> None:
+    """Test if model notes are written in SBML.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        The path to the temporary test assets store.
+
+    """
+    path_to_file = tmp_path / "model_notes.xml"
 
     # making a minimal cobra model to test notes
-    model = cobra.Model("e_coli_core")
+    model = Model("e_coli_core")
     model.notes["Remark"] = "...Model Notes..."
-    met = cobra.Metabolite("pyr_c", compartment="c")
+    met = Metabolite("pyr_c", compartment="c")
     model.add_metabolites([met])
     met.notes["Remark"] = "Note with \n newline"
-    rxn = cobra.Reaction("R_ATPM")
+    rxn = Reaction("R_ATPM")
     model.add_reactions([rxn])
     rxn.notes["Remark"] = "What about me?"
     model.objective_direction = "max"
     model.objective = rxn
-    write_sbml_model(model, path_to_file)
+    write_sbml_model(model, str(path_to_file.resolve()))
 
     # reading the model back
-    model_after_reading = read_sbml_model(path_to_file)
+    model_after_reading = read_sbml_model(str(path_to_file.resolve()))
     met_after_reading = model_after_reading.metabolites.get_by_id("pyr_c")
     reaction_after_reading = model_after_reading.reactions.get_by_id("R_ATPM")
 

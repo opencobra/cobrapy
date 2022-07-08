@@ -1,17 +1,19 @@
-# -*- coding: utf-8 -*-
+"""Test functions of solution.py ."""
 
-"""Test functions of solution.py"""
-
-from __future__ import absolute_import
+from typing import TYPE_CHECKING, Tuple
 
 from cobra.core import Solution
 
 
-def test_solution_contains_only_reaction_specific_values(solved_model):
+if TYPE_CHECKING:
+    from cobra import Model
+
+
+def test_solution_contains_only_reaction_specific_values(
+    solved_model: Tuple[Solution, "Model"]
+) -> None:
+    """Test solution contains specific reaction values."""
     solution, model = solved_model
     reaction_ids = set([reaction.id for reaction in model.reactions])
-    if isinstance(solution, Solution):
-        assert set(solution.fluxes.index) == reaction_ids
-        # assert set(solution.reduced_costs.index) == reaction_ids
-    else:
-        raise TypeError("solutions of type {0:r} are untested".format(type(solution)))
+    assert set(solution.fluxes.index) == reaction_ids
+    # assert set(solution.reduced_costs.index) == reaction_ids

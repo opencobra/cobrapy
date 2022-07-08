@@ -1,12 +1,14 @@
-# -*- coding: utf-8 -*-
+"""Define module level fixtures."""
 
-"""Module level fixtures"""
-
-from __future__ import absolute_import
+from typing import TYPE_CHECKING, Tuple
 
 import pytest
 
 from cobra.util.solver import solvers
+
+
+if TYPE_CHECKING:
+    from cobra import Model, Solution
 
 
 solver_trials = [
@@ -27,7 +29,10 @@ solver_trials = [
 
 
 @pytest.fixture(scope="function", params=solver_trials)
-def solved_model(request, model):
+def solved_model(
+    request: pytest.FixtureRequest, model: "Model"
+) -> Tuple["Solution", "Model"]:
+    """Return solved model."""
     model.solver = request.param
     solution = model.optimize()
     return solution, model

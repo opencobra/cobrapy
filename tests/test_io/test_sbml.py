@@ -76,7 +76,7 @@ def test_validate(trial: IOTrial, data_directory: str) -> None:
 
     Parameters
     ----------
-    IOTrial:
+    trial: IOTrial
         Which model trial to check.
     data_directory: str
         Directory where the data is.

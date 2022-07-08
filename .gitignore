@@ -92,6 +92,7 @@ ipython_config.py
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
+.idea/
 
 # Generated files
 .idea/**/contentModel.xml
@@ -302,3 +303,8 @@ gurobi.log
 /documentation_builder/test*\.*
 /.benchmarks
 /.testmondata
+/.idea/cobrapy.iml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/vcs.xml

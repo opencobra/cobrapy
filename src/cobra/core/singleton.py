@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
-
 """Define the singleton meta class."""
-
-from __future__ import absolute_import
 
 
 class Singleton(type):
