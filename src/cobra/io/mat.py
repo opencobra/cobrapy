@@ -530,7 +530,10 @@ def annotations_to_mat(
                 obj_annotation = [obj_annotation]
             if provider_key == "pubmed":
                 obj_annotation = ", ".join(
-                    ["PMID:" + annot if "PMID:" not in annot else annot for annot in obj_annotation]
+                    [
+                        "PMID:" + annot if "PMID:" not in annot else annot
+                        for annot in obj_annotation
+                    ]
                 )
             elif provider_key == "CHEBI":
                 obj_annotation = ", ".join(

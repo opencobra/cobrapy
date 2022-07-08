@@ -136,12 +136,12 @@ class History:
             datetime_return = datetime.strptime(datetime_str, STRTIME_FORMAT)
             return datetime_return
         except ValueError as e:
-            datetime_str = re.sub('Z\z', '\+0000', datetime_str)
-            datetime_str = re.sub('(\+\d\d):(\d\d)\z', '\1\2', datetime_str)
-        try:
-            datetime_return = datetime.strptime(datetime_str, STRTIME_FORMAT)
-        except ValueError:
-            raise ValueError(str(e))
+            datetime_str = datetime_str.replace("Z", "+0000")
+            datetime_str = re.sub("(\+\d\d):(\d\d)\Z", "\\1\\2", datetime_str)
+            try:
+                datetime_return = datetime.strptime(datetime_str, STRTIME_FORMAT)
+            except ValueError:
+                raise ValueError(str(e))
         return datetime_return
 
     @property
