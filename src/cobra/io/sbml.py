@@ -678,17 +678,16 @@ def _sbml_to_model(
                     f"discouraged, use fbc:charge instead: {specie}"
                 )
                 met.charge = specie.getCharge()
-            else:
-                if "CHARGE" in met.notes:
-                    LOGGER.warning(
-                        f"Use of CHARGE in the notes element is "
-                        f"discouraged, use fbc:charge instead: {specie}"
-                    )
-                    try:
-                        met.charge = int(met.notes["CHARGE"])
-                    except ValueError:
-                        # handle nan, na, NA, ...
-                        pass
+            elif "CHARGE" in met.notes:
+                LOGGER.warning(
+                    f"Use of CHARGE in the notes element is "
+                    f"discouraged, use fbc:charge instead: {specie}"
+                )
+                try:
+                    met.charge = int(met.notes["CHARGE"])
+                except ValueError:
+                    # handle nan, na, NA, ...
+                    pass
 
             if "FORMULA" in met.notes:
                 LOGGER.warning(
@@ -725,9 +724,8 @@ def _sbml_to_model(
 
     # Genes
     if model_fbc:
-        for (
-            gp
-        ) in model_fbc.getListOfGeneProducts():  # noqa: E501 type: libsbml.GeneProduct
+        gp: "libsbml.GeneProduct"
+        for gp in model_fbc.getListOfGeneProducts():
             gid = _check_required(gp, gp.getIdAttribute(), "id")
             if f_replace and F_GENE in f_replace:
                 gid = f_replace[F_GENE](gid)
@@ -740,18 +738,11 @@ def _sbml_to_model(
 
             cobra_model.genes.append(cobra_gene)
     else:
-        for (
-            cobra_reaction
-        ) in model.getListOfReactions():  # noqa: E501 type: libsbml.Reaction
+        cobra_reaction: "libsbml.Reaction"
+        for cobra_reaction in model.getListOfReactions():
             # fallback to notes information
             notes = _parse_notes_dict(cobra_reaction)
-            if "GENE ASSOCIATION" in notes:
-                gpr = notes["GENE ASSOCIATION"]
-            elif "GENE_ASSOCIATION" in notes:
-                gpr = notes["GENE_ASSOCIATION"]
-            else:
-                gpr = ""
-
+            gpr = notes.get("GENE ASSOCIATION", "") or notes.get("GENE_ASSOCIATION", "")
             if len(gpr) > 0:
                 gpr = gpr.replace("(", ";")
                 gpr = gpr.replace(")", ";")
@@ -846,14 +837,10 @@ def _sbml_to_model(
         elif reaction.isSetKineticLaw():
             # some legacy models encode bounds in kinetic laws
             klaw: "libsbml.KineticLaw" = reaction.getKineticLaw()
-            p_lb = klaw.getParameter(
-                "LOWER_BOUND"
-            )  # noqa: E501 type: libsbml.LocalParameter
+            p_lb: "libsbml.LocalParameter" = klaw.getParameter("LOWER_BOUND")
             if p_lb:
                 cobra_reaction.lower_bound = p_lb.getValue()
-            p_ub = klaw.getParameter(
-                "UPPER_BOUND"
-            )  # noqa: E501 type: libsbml.LocalParameter
+            p_ub: "libsbml.LocalParameter" = klaw.getParameter("UPPER_BOUND")
             if p_ub:
                 cobra_reaction.upper_bound = p_ub.getValue()
 
@@ -887,9 +874,8 @@ def _sbml_to_model(
 
         # parse equation
         stoichiometry = defaultdict(lambda: 0)
-        for (
-            sref
-        ) in reaction.getListOfReactants():  # noqa: E501 type: libsbml.SpeciesReference
+        sref: "libsbml.SpeciesReference"
+        for sref in reaction.getListOfReactants():
             sid = _check_required(sref, sref.getSpecies(), "species")
 
             if f_replace and F_SPECIE in f_replace:
@@ -898,9 +884,7 @@ def _sbml_to_model(
                 _check_required(sref, sref.getStoichiometry(), "stoichiometry")
             )
 
-        for (
-            sref
-        ) in reaction.getListOfProducts():  # noqa: E501 type: libsbml.SpeciesReference
+        for sref in reaction.getListOfProducts():
             sid = _check_required(sref, sref.getSpecies(), "species")
 
             if f_replace and F_SPECIE in f_replace:
@@ -919,24 +903,15 @@ def _sbml_to_model(
         # GPR
         if r_fbc:
             gpr = None
-            gpa = (
-                r_fbc.getGeneProductAssociation()
-            )  # noqa: E501 type: libsbml.GeneProductAssociation
+            gpa: libsbml.GeneProductAssociation = r_fbc.getGeneProductAssociation()
             if gpa is not None:
-                association = (
-                    gpa.getAssociation()
-                )  # noqa: E501 type: libsbml.FbcAssociation
+                association: libsbml.FbcAssociation = gpa.getAssociation()
                 gpr = Module(process_association(association))
             cobra_reaction.gpr = GPR(gpr_from=gpr)
         else:
             # fallback to notes information
             notes = cobra_reaction.notes
-            if "GENE ASSOCIATION" in notes:
-                gpr = notes["GENE ASSOCIATION"]
-            elif "GENE_ASSOCIATION" in notes:
-                gpr = notes["GENE_ASSOCIATION"]
-            else:
-                gpr = ""
+            gpr = notes.get("GENE ASSOCIATION", "") or notes.get("GENE_ASSOCIATION", "")
 
             if len(gpr) > 0:
                 LOGGER.warning(
@@ -954,9 +929,7 @@ def _sbml_to_model(
     obj_direction = "max"
     coefficients = {}
     if model_fbc:
-        obj_list = (
-            model_fbc.getListOfObjectives()
-        )  # noqa: E501 type: libsbml.ListOfObjectives
+        obj_list: "libsbml.ListOfObjectives" = model_fbc.getListOfObjectives()
         if obj_list is None:
             LOGGER.warning("listOfObjectives element not found")
         elif obj_list.size() == 0:
@@ -968,11 +941,8 @@ def _sbml_to_model(
             obj: "libsbml.Objective" = model_fbc.getObjective(obj_id)
             obj_direction = LONG_SHORT_DIRECTION[obj.getType()]
 
-            for (
-                flux_obj
-            ) in (
-                obj.getListOfFluxObjectives()
-            ):  # noqa: E501 type: libsbml.FluxObjective
+            flux_obj: "libsbml.FluxObjective"
+            for flux_obj in obj.getListOfFluxObjectives():
                 rid = flux_obj.getReaction()
                 if f_replace and F_REACTION in f_replace:
                     rid = f_replace[F_REACTION](rid)
@@ -1211,7 +1181,7 @@ def _model_to_sbml(
     if cobra_model.name is not None:
         model.setName(cobra_model.name)
 
-    # for parsing annotation corresponding to the model
+    # for parsing annotation corresponding to the model, including model history
     _sbase_annotations(model, cobra_model.annotation)
     # for parsing notes corresponding to the model
     _sbase_notes_dict(model, cobra_model.notes)
@@ -1365,16 +1335,12 @@ def _model_to_sbml(
             if f_replace and F_SPECIE_REV in f_replace:
                 sid = f_replace[F_SPECIE_REV](sid)
             if stoichiometry < 0:
-                sref = (
-                    reaction.createReactant()
-                )  # noqa: E501 type: libsbml.SpeciesReference
+                sref: libsbml.SpeciesReference = reaction.createReactant()
                 sref.setSpecies(sid)
                 sref.setStoichiometry(-stoichiometry)
                 sref.setConstant(True)
             else:
-                sref = (
-                    reaction.createProduct()
-                )  # noqa: E501 type: libsbml.SpeciesReference
+                sref: libsbml.SpeciesReference = reaction.createProduct()
                 sref.setSpecies(sid)
                 sref.setStoichiometry(stoichiometry)
                 sref.setConstant(True)
@@ -1412,18 +1378,14 @@ def _model_to_sbml(
             else:
                 gpr_new = gpr.to_string()
 
-            gpa = (
-                r_fbc.createGeneProductAssociation()
-            )  # noqa: E501 type: libsbml.GeneProductAssociation
+            gpa: libsbml.GeneProductAssociation = r_fbc.createGeneProductAssociation()
             # uses ids to identify GeneProducts (True),
             # does not create GeneProducts (False)
             _check(gpa.setAssociation(gpr_new, True, False), "set gpr: " + gpr_new)
 
         # objective coefficients
         if reaction_coefficients.get(cobra_reaction, 0) != 0:
-            flux_obj = (
-                objective.createFluxObjective()
-            )  # noqa: E501 type: libsbml.FluxObjective
+            flux_obj: libsbml.FluxObjective = objective.createFluxObjective()
             flux_obj.setReaction(rid)
             flux_obj.setCoefficient(cobra_reaction.objective_coefficient)
 
@@ -1433,9 +1395,7 @@ def _model_to_sbml(
             "http://www.sbml.org/sbml/level3/version1/groups/version1", "groups", True
         )
         doc.setPackageRequired("groups", False)
-        model_group = model.getPlugin(
-            "groups"
-        )  # noqa: E501 type: libsbml.GroupsModelPlugin
+        model_group: libsbml.GroupsModelPlugin = model.getPlugin("groups")
         for cobra_group in cobra_model.groups:
             group: "libsbml.Group" = model_group.createGroup()
             if f_replace and F_GROUP_REV in f_replace:
@@ -1455,15 +1415,12 @@ def _model_to_sbml(
                 m_type = str(type(cobra_member))
 
                 # id replacements
-                if "Reaction" in m_type:
-                    if f_replace and F_REACTION_REV in f_replace:
-                        mid = f_replace[F_REACTION_REV](mid)
-                if "Metabolite" in m_type:
-                    if f_replace and F_SPECIE_REV in f_replace:
-                        mid = f_replace[F_SPECIE_REV](mid)
-                if "Gene" in m_type:
-                    if f_replace and F_GENE_REV in f_replace:
-                        mid = f_replace[F_GENE_REV](mid)
+                if "Reaction" in m_type and f_replace and F_REACTION_REV in f_replace:
+                    mid = f_replace[F_REACTION_REV](mid)
+                if "Metabolite" in m_type and f_replace and F_SPECIE_REV in f_replace:
+                    mid = f_replace[F_SPECIE_REV](mid)
+                if "Gene" in m_type and f_replace and F_GENE_REV in f_replace:
+                    mid = f_replace[F_GENE_REV](mid)
 
                 member.setIdRef(mid)
                 if cobra_member.name and len(cobra_member.name) > 0:
@@ -1744,7 +1701,7 @@ QUALIFIER_TYPES_COBRA_SBML_DICT = {
 
 
 def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
-    """Parses cobra annotations from a given SBase object.
+    """Parse cobra annotations from a given SBase object.
 
     The annotation format has been changed. We no longer have
     simple dictionaries for storing annotation data. Dedicated
@@ -1781,7 +1738,7 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
         return annotation
 
     def _cvterm_to_cobra(_cvterm: "libsbml.CVTerm") -> CVTerm:
-        """Parses the libsbml.CVTerm object to cobra CVTerm.
+        """Parse the libsbml.CVTerm object to cobra CVTerm.
 
         Parameters
         ----------
