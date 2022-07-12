@@ -1187,43 +1187,13 @@ def _model_to_sbml(
     _sbase_notes_dict(model, cobra_model.notes)
 
     # Meta information (ModelHistory) related to SBMLDocument
-    if hasattr(cobra_model, "_sbml"):
-        meta = cobra_model._sbml
+    meta = getattr(cobra_model, "_sbml", None)
+    if meta:
         if "annotation" in meta:
             _sbase_annotations(doc, meta["annotation"])
+
         if "notes" in meta:
             _sbase_notes_dict(doc, meta["notes"])
-
-        history: "libsbml.ModelHistory" = libsbml.ModelHistory()
-        if "created" in meta and meta["created"]:
-            history.setCreatedDate(meta["created"])
-        else:
-            time = datetime.datetime.now()
-            timestr = time.strftime("%Y-%m-%dT%H:%M:%S")
-            date = libsbml.Date(timestr)
-            _check(history.setCreatedDate(date), "set creation date")
-            _check(history.setModifiedDate(date), "set modified date")
-
-        if "creators" in meta:
-            for cobra_creator in meta[
-                "creators"
-            ]:  # noqa: E501 type: libsbml.ModelCreator
-                creator = libsbml.ModelCreator()
-                if cobra_creator.family_name:
-                    creator.setFamilyName(cobra_creator["family_name"])
-                if cobra_creator.given_name:
-                    creator.setGivenName(cobra_creator["given_name"])
-                if cobra_creator.organisation:
-                    creator.setOrganisation(cobra_creator["organisation"])
-                if cobra_creator.email:
-                    creator.setEmail(cobra_creator["email"])
-
-                _check(history.addCreator(creator), "adding creator to ModelHistory.")
-
-        # TODO: Will be implemented as part of
-        #  https://github.com/opencobra/cobrapy/issues/810
-        #   I think this should be uncommented and under the if, like
-        # _check(model.setModelHistory(history), 'set model history')
 
     # Units
     flux_udef = None
@@ -1939,15 +1909,20 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
             comp_creator.setFamilyName(creator.family_name)
             creator.email and comp_creator.setEmail(creator.email)
             creator.organisation and comp_creator.setOrganisation(creator.organisation)
-            comp_history.addCreator(comp_creator)
+            _check(comp_history.addCreator(comp_creator), f"adding creator to {sbase.getId}.")
 
         if annotation.history.created_date:
             date = libsbml.Date(annotation.history.created_date.isoformat())
-            comp_history.setCreatedDate(date)
+            _check(comp_history.setCreatedDate(date), f"set creation date for {sbase.id}")
+        elif isinstance(sbase, libsbml.SBMLDocument):
+            time = datetime.datetime.now()
+            timestr = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+            date = libsbml.Date(timestr)
+            _check(comp_history.setCreatedDate(date), "set creation date for document")
 
         for modified_date in annotation.history.modified_dates:
             date = libsbml.Date(modified_date.isoformat())
-            comp_history.addModifiedDate(date)
+            _check(comp_history.addModifiedDate(date), f"add modification date for {sbase.id}")
 
         # finally add the compo_history
         _check(

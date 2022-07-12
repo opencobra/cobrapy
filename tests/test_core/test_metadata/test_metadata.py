@@ -5,13 +5,40 @@ import os
 from os.path import join
 from pathlib import Path
 
-from cobra.core.metadata import CVTerm, CVTermList, ExternalResources
+import pytest
+
+from cobra.core.metadata import (
+    CVTerm,
+    CVTermList,
+    ExternalResources,
+    Qualifier,
+)
 from cobra.core.species import Species
-from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
+from cobra.io import (
+    load_json_model,
+    read_sbml_model,
+    save_json_model,
+    write_sbml_model,
+)
 
 
 PUBMED_EXAMPLE = "https://identifiers.org/pubmed/1111111"
 ECO_EXAMPLE = "https://identifiers.org/eco/ECO:0000004"
+RESOURCE_LIST = [
+    "http://identifiers.org/bigg.metabolite/13dpg",
+    "http://identifiers.org/biocyc/DPG",
+    "http://identifiers.org/chebi/CHEBI:16001",
+    "http://identifiers.org/chebi/CHEBI:1658",
+    "http://identifiers.org/chebi/CHEBI:20189",
+    "http://identifiers.org/chebi/CHEBI:57604",
+    "http://identifiers.org/chebi/CHEBI:11881",
+    "http://identifiers.org/hmdb/HMDB01270",
+    "http://identifiers.org/kegg.compound/C00236",
+    "http://identifiers.org/pubchem.substance/3535",
+    "http://identifiers.org/reactome/REACT_29800",
+    "http://identifiers.org/seed.compound/cpd00203",
+    "http://identifiers.org/unipathway.compound/UPC00236",
+]
 
 ecoli_model_annotation = {
     "bqb_hasTaxon": [{"resources": ["http://identifiers.org/taxonomy/511145"]}],
@@ -130,9 +157,7 @@ def test_nested_annotation(data_directory):
         ]
     }
     assert s.annotation.standardized == main_cvt
-    nested_data = s.annotation.standardized.query_qualifier("bqb_hasPart")[
-        1
-    ].external_resources.nested_data
+    nested_data = s.annotation.standardized[1].external_resources.nested_data
     assert nested_data == nested_cvt
 
 
@@ -156,10 +181,8 @@ def test_cvterms_from_ecoli_xml(data_directory):
     model_cvterms_qualifier_set = {qual.name for qual in xml_model_cvterms.qualifiers}
     assert qualifier_set == model_cvterms_qualifier_set
     assert xml_model_cvterms == ecoli_model_cvterm
-    assert len(xml_model_cvterms.query_qualifier("bqm_isDescribedBy")) == 2
-    nested_data = xml_model_cvterms.query_qualifier("bqm_is")[
-        0
-    ].external_resources.nested_data
+    assert len(model.annotation.standardized.query("bqm_isDescribedBy", 'qualifier')) == 2
+    nested_data = model.annotation.standardized.query("bqm_is", 'qualifier')[0].external_resources.nested_data
     assert nested_data == nested_cvt
 
     # check backwards compatibility
@@ -221,48 +244,75 @@ def test_read_old_json_model(data_directory):
     }
 
     # testing standardized
-    expected_cvterms = CVTermList.from_dict(
-        {
-            "bqb_is": [
-                {
-                    "resources": [
-                        "http://identifiers.org/bigg.metabolite/13dpg",
-                        "http://identifiers.org/biocyc/DPG",
-                        "http://identifiers.org/chebi/CHEBI:16001",
-                        "http://identifiers.org/chebi/CHEBI:1658",
-                        "http://identifiers.org/chebi/CHEBI:20189",
-                        "http://identifiers.org/chebi/CHEBI:57604",
-                        "http://identifiers.org/chebi/CHEBI:11881",
-                        "http://identifiers.org/hmdb/HMDB01270",
-                        "http://identifiers.org/kegg.compound/C00236",
-                        "http://identifiers.org/pubchem.substance/3535",
-                        "http://identifiers.org/reactome/REACT_29800",
-                        "http://identifiers.org/seed.compound/cpd00203",
-                        "http://identifiers.org/unipathway.compound/UPC00236",
-                    ]
-                }
-            ]
-        }
-    )
+    expected_cvterms = CVTermList.from_dict({"bqb_is": [{"resources": RESOURCE_LIST}]})
     assert meta.annotation.standardized == expected_cvterms
-    assert meta.annotation.standardized == {
-        "bqb_is": [
-            {
-                "resources": [
-                    "http://identifiers.org/bigg.metabolite/13dpg",
-                    "http://identifiers.org/biocyc/DPG",
-                    "http://identifiers.org/chebi/CHEBI:16001",
-                    "http://identifiers.org/chebi/CHEBI:1658",
-                    "http://identifiers.org/chebi/CHEBI:20189",
-                    "http://identifiers.org/chebi/CHEBI:57604",
-                    "http://identifiers.org/chebi/CHEBI:11881",
-                    "http://identifiers.org/hmdb/HMDB01270",
-                    "http://identifiers.org/kegg.compound/C00236",
-                    "http://identifiers.org/pubchem.substance/3535",
-                    "http://identifiers.org/reactome/REACT_29800",
-                    "http://identifiers.org/seed.compound/cpd00203",
-                    "http://identifiers.org/unipathway.compound/UPC00236",
-                ]
-            }
+    assert meta.annotation.standardized == {"bqb_is": [{"resources": RESOURCE_LIST}]}
+
+
+def test_cvtermlist_query():
+    resources = RESOURCE_LIST
+    resources.extend(
+        [
+            "https://identifiers.org/uniprot/P69905",
+            "https://identifiers.org/uniprot/P68871",
+            "https://identifiers.org/kegg.compound/C00032",
+            "https://identifiers.org/chebi/CHEBI:17627",
+            "https://identifiers.org/chebi/CHEBI:43215",
+            "https://identifiers.org/CHebi/CHEBI:11881",
         ]
-    }
+    )
+    cvtermlist = CVTermList()
+    for i, res in enumerate(resources):
+        cvtermlist.extend([CVTerm(qualifier=Qualifier(i), ex_res=resources[i])])
+
+    cvtermlist.append(
+        CVTerm(
+            ex_res={
+                "resources": ECO_EXAMPLE,
+                "nested_data": CVTerm(
+                    qualifier="bqb_isDescribedBy", ex_res=PUBMED_EXAMPLE
+                ),
+            },
+            qualifier=Qualifier(19),
+        )
+    )
+    assert isinstance(
+        cvtermlist.query(search_function="bqm", attribute="qualifier"), CVTermList
+    )
+    assert len(cvtermlist.query(search_function="bqm", attribute="qualifier")) == 6
+    assert (
+        len(cvtermlist.query(search_function=r"bqm_is\S+", attribute="qualifier")) == 3
+    )
+    assert (
+        len(
+            cvtermlist.query(
+                search_function=lambda x: x.value > 18, attribute="qualifier"
+            )
+        )
+        == 1
+    )
+
+    assert (
+        len(
+            cvtermlist.query(
+                search_function=lambda x: x.nested_data, attribute="external_resources"
+            )
+        )
+        == 1
+    )
+    with pytest.raises(TypeError):
+        assert (
+            len(
+                cvtermlist.query(
+                    search_function="chebi", attribute="external_resources"
+                )
+            )
+            == 1
+        )
+
+    assert len(cvtermlist.query(search_function="chebi", attribute="resources")) == 7
+    assert (
+        len(cvtermlist.query(search_function=r"[cC][hH]EBI", attribute="resources"))
+        == 8
+    )
+    assert len(cvtermlist.query(search_function="pubmed", attribute="resources")) == 1

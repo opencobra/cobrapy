@@ -319,8 +319,8 @@ def test_from_sbml_string(data_directory: str) -> None:
     TestCobraIO.compare_models(name="read from string", model1=model1, model2=model2)
 
 
-def test_model_history(tmp_path: Path) -> None:
-    """Testing reading and writing of ModelHistory.
+def test_document_history(tmp_path: Path) -> None:
+    """Testing reading and writing of ModelHistory for SBMLDocument.
 
     Parameters
     ----------
@@ -365,6 +365,54 @@ def test_model_history(tmp_path: Path) -> None:
     assert len(model2._sbml["annotation"].history._modified_dates) == 1
     assert (
         model2._sbml["annotation"].history._modified_dates[0].isoformat()
+        == "2019-10-20T12:35:32+00:00"
+    )
+
+
+def test_model_history(tmp_path: Path) -> None:
+    """Testing reading and writing of ModelHistory.
+
+    Parameters
+    ----------
+    tmp_path: Path
+        Directory to use for temporary data.
+    """
+    model = Model("test")
+    history = {
+        "creators": [
+            {
+                "family_name": "Mustermann",
+                "given_name": "Max",
+                "organisation": "Muster University",
+                "email": "muster@university.com",
+            }
+        ],
+        "created_date": "2019-10-20T12:34:32Z",
+        "modified_dates": ["2019-10-20T12:35:32Z"],
+    }
+    model.annotation = MetaData(history=history)
+
+    sbml_path = join(str(tmp_path), "test.xml")
+    with open(sbml_path, "w") as f_out:
+        write_sbml_model(model, f_out)
+
+    with open(sbml_path, "r") as f_in:
+        model2 = read_sbml_model(f_in)
+
+    assert len(model2.annotation.history.creators) == 1
+    c = model2.annotation.history.creators[0]
+    assert c.family_name == "Mustermann"
+    assert c.given_name == "Max"
+    assert c.organisation == "Muster University"
+    assert c.email == "muster@university.com"
+
+    assert (
+        model2.annotation.history.created_date.isoformat()
+        == "2019-10-20T12:34:32+00:00"
+    )
+    assert len(model2.annotation.history._modified_dates) == 1
+    assert (
+        model2.annotation.history._modified_dates[0].isoformat()
         == "2019-10-20T12:35:32+00:00"
     )
 
