@@ -683,7 +683,7 @@ def create_mat_dict(model: Model) -> OrderedDict:
         )
     else:
         mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
-    stoich_mat = create_stoichiometric_matrix(model)
+    stoich_mat = create_stoichiometric_matrix(model, array_type="dok")
     mat["S"] = stoich_mat if stoich_mat is not None else [[]]
     # multiply by 1 to convert to float, working around scipy bug
     # https://github.com/scipy/scipy/issues/4537
