@@ -7,19 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from cobra.core.metadata import (
-    CVTerm,
-    CVTermList,
-    ExternalResources,
-    Qualifier,
-)
+from cobra.core.metadata import CVTerm, CVTermList, ExternalResources, Qualifier
 from cobra.core.species import Species
-from cobra.io import (
-    load_json_model,
-    read_sbml_model,
-    save_json_model,
-    write_sbml_model,
-)
+from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
 
 
 PUBMED_EXAMPLE = "https://identifiers.org/pubmed/1111111"
@@ -181,8 +171,12 @@ def test_cvterms_from_ecoli_xml(data_directory):
     model_cvterms_qualifier_set = {qual.name for qual in xml_model_cvterms.qualifiers}
     assert qualifier_set == model_cvterms_qualifier_set
     assert xml_model_cvterms == ecoli_model_cvterm
-    assert len(model.annotation.standardized.query("bqm_isDescribedBy", 'qualifier')) == 2
-    nested_data = model.annotation.standardized.query("bqm_is", 'qualifier')[0].external_resources.nested_data
+    assert (
+        len(model.annotation.standardized.query("bqm_isDescribedBy", "qualifier")) == 2
+    )
+    nested_data = model.annotation.standardized.query("bqm_is", "qualifier")[
+        0
+    ].external_resources.nested_data
     assert nested_data == nested_cvt
 
     # check backwards compatibility

@@ -4,16 +4,7 @@ import logging
 import re
 from collections import OrderedDict, UserList
 from enum import Enum
-from typing import (
-    Callable,
-    Dict,
-    FrozenSet,
-    Iterable,
-    List,
-    Optional,
-    Pattern,
-    Union,
-)
+from typing import Callable, Dict, FrozenSet, Iterable, List, Optional, Pattern, Union
 
 from .helper import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
 
@@ -22,7 +13,18 @@ logger = logging.getLogger(__name__)
 
 
 class Qualifier(Enum):
-    """The possible qualifiers inside a CVTerm."""
+    """The possible qualifiers inside a CVTerm.
+
+    The qualifiers and their detailed description are present in
+    https://co.mbine.org/standards/qualifiers.
+
+    Qualifiers are divided into two groups
+    bqb     These kinds of qualifiers define the relationship between a biological
+            object represented by a model element and its annotation.
+    bqm     These kinds of qualifiers define the relationship between a modelling
+            object and its annotation.
+
+"""
 
     bqb_is = 0
     bqb_hasPart = 1
@@ -49,11 +51,31 @@ class Qualifier(Enum):
 class CVTerm:
     """CVTerm class, representing controlled vocabulary.
 
-    Representation of one CVTerm of an object with theirdependency structure.
-    It is an object that has a qualifier and external reources
-    (see ExternalResources class).
+    Controlled Vocabulary (CVTerm) can be defined as a curated and controlled
+    relationship, described by Qualifier (see above) - the relationship between an
+    object and annotation must be part of the Qualifier class. These relationships
+    are based in biochemical or biological relationships. The qualifiers/relationships
+    are divided into bqbiol/bqb (biological qualification) and bqmodel/bqm (model
+    qualifications). See two examples:
+    "bqb_is" The biological entity represented by the SBML component is the subject
+    of the referenced resource. This could serve to link a reaction to its counterpart
+    in (e.g.) the ChEBI or Reactome databases.
+    "bqm_is" The modeling object encoded by the SBML component is the subject of
+    the referenced resource. This might be used, e.g., to link the model
+    to an entry in a model database.
+    See https://co.mbine.org/standards/qualifiers
+    For a definition of all qualifiers, see SBML Level 3, Version 2 Core, p 104
+    (http://co.mbine.org/specifications/sbml.level-3.version-2.core.release-2.pdf)
 
-    This is how a CVTerm looks :
+    The annotation will have one or more URI/URL, which are encapsulated in
+    ExternalResources class (see below).
+
+    Each CVTerm has only ONE qualifier, and can have many URI/URL in the resources. If
+    you need to use another qualifier, it can be nested data (if relevant), or it
+    should be in another CVTerm.
+    If an object has multiple CVTerms, they are placed in a CVTermList (see below).
+
+    This is how a CVTerm object looks :
     CVTerm.qualifier = "bqb_is"
     CVTerm.ex_res =
         {"resources": [
@@ -62,6 +84,35 @@ class CVTerm:
                 ],
                 "nested_data":CVTermList Object
         }
+
+    Examples of how CVTerms can be used
+
+    Model examples (Each of these is a separate CVTerm)
+    qualifier=bqm_is
+    resources=["https://identifiers.org/biomodels.db/BIOMD0000000003"]
+            A model identifier
+    qualifier=bqm_isDescribed_by
+    resources=["https://identifiers.org/pubmed/1833774"]
+            A published article detailing the model
+    qualifier=bqm_isVersionOf
+    resources=["https://identifiers.org/wikipathways/WP179",
+                "https://identifiers.org/reactome/REACT_152"/]
+            Two links to what this model is a version of (in this case, cell cycle).
+
+    Reaction examples
+    qualifier=bqb_is
+    resources=["https://identifiers.org/reactome/REACT_6327"/]
+        A link to a reaction database that details reactions.
+    qualifier=bqb_hasPart
+    resources=["http://identifiers.org/uniprot/P04551",
+                http://identifiers.org/uniprot/P10815"]
+             resources.nested_date = {
+                    qualifier=bqb_isDescribedby
+                    resources=["https://identifiers.org/pubmed/1111111"]
+        Two proteins that form part of the same complex. The nested data links to an
+        article describing the formation of the complex.
+        It is nested data because it is relevant to the hasPart CVTerm, but uses a
+        different qualifier.
     """
 
     def __init__(
