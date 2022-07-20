@@ -1,12 +1,11 @@
 """Tests for the metadata structures."""
 
 import json
-import os
-from os.path import join
 from pathlib import Path
 
 import pytest
 
+from cobra import Model
 from cobra.core.metadata import CVTerm, CVTermList, ExternalResources, Qualifier
 from cobra.core.species import Species
 from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
@@ -17,11 +16,11 @@ ECO_EXAMPLE = "https://identifiers.org/eco/ECO:0000004"
 RESOURCE_LIST = [
     "http://identifiers.org/bigg.metabolite/13dpg",
     "http://identifiers.org/biocyc/DPG",
+    "http://identifiers.org/chebi/CHEBI:11881",
     "http://identifiers.org/chebi/CHEBI:16001",
     "http://identifiers.org/chebi/CHEBI:1658",
     "http://identifiers.org/chebi/CHEBI:20189",
     "http://identifiers.org/chebi/CHEBI:57604",
-    "http://identifiers.org/chebi/CHEBI:11881",
     "http://identifiers.org/hmdb/HMDB01270",
     "http://identifiers.org/kegg.compound/C00236",
     "http://identifiers.org/pubchem.substance/3535",
@@ -30,27 +29,56 @@ RESOURCE_LIST = [
     "http://identifiers.org/unipathway.compound/UPC00236",
 ]
 
-ecoli_model_annotation = {
-    "bqb_hasTaxon": [{"resources": ["http://identifiers.org/taxonomy/511145"]}],
-    "bqm_is": [
-        {
-            "nested_data": {
-                "bqb_isDescribedBy": [
-                    {"resources": [PUBMED_EXAMPLE]},
-                    {"resources": [ECO_EXAMPLE]},
-                ]
-            },
+ecoli_model_annotation = [
+    {
+        "qualifier": "bqb_hasTaxon",
+        "external_resources": {"resources": ["http://identifiers.org/taxonomy/511145"]},
+    },
+    {
+        "qualifier": "bqm_is",
+        "external_resources": {
             "resources": ["http://identifiers.org/bigg.model/e_coli_core"],
-        }
-    ],
-    "bqm_isDescribedBy": [
-        {"resources": ["http://identifiers.org/doi/10.1128/ecosalplus.10.2.1"]},
-        {"resources": ["http://identifiers.org/ncbigi/gi:16128336"]},
-    ],
-}
+            "nested_data": [
+                {
+                    "qualifier": "bqb_isDescribedBy",
+                    "external_resources": {"resources": [PUBMED_EXAMPLE]},
+                },
+                {
+                    "qualifier": "bqb_isDescribedBy",
+                    "external_resources": {"resources": [ECO_EXAMPLE]},
+                },
+            ],
+        },
+    },
+    {
+        "qualifier": "bqm_isDescribedBy",
+        "external_resources": {
+            "resources": ["http://identifiers.org/doi/10.1128/ecosalplus.10.2.1"]
+        },
+    },
+    {
+        "qualifier": "bqm_isDescribedBy",
+        "external_resources": {
+            "resources": ["http://identifiers.org/ncbigi/gi:16128336"]
+        },
+    },
+]
 
 
-def test_annotation():
+def test_annotation() -> None:
+    """Test creating an annotation manually.
+
+    This function will test the basic functionality of creating an annotation,
+    including:
+    - creating an empty annotation
+    - assigning via dictionary assingment (like the old annotation format)
+    - checking that this assigned annotation can match identifiers.org
+    - chekcing that the annotation can be transformed to CVTermsList
+    - zeroing out annotation, and chekcing it is empty
+    - assigning via CVTermList()
+    - adding an SBO term
+
+    """
     # a cobra component
     s = Species()
     assert s.annotation == {}  # nothing set for annotation, so empty dict
@@ -90,6 +118,20 @@ def test_annotation():
     )
 
     assert s.annotation.standardized == cvt
+    s.annotation.standardized = []
+    assert s.annotation.standardized == CVTermList()
+    assert s.annotation.standardized.resources == frozenset()
+    assert s.annotation == {}
+
+    s.annotation.standardized = cvt
+
+    assert s.annotation.standardized.resources == {
+        "https://identifiers.org/chebi/CHEBI:43215",
+        "https://identifiers.org/chebi/CHEBI:11881",
+    }
+
+    # checking old (fixed) annotation format
+    assert s.annotation == {"chebi": sorted(["CHEBI:43215", "CHEBI:11881"])}
 
     # adding an SBO term
     s.annotation["sbo"] = ["SBO:0000123"]
@@ -101,9 +143,15 @@ def test_annotation():
     }
 
 
-def test_nested_annotation(data_directory):
+def test_nested_annotation(data_directory: Path) -> None:
+    """Test reading annotation from JSON, including nested data.
+
+    Parameters
+    ----------
+    data_directory: Path
+    """
     # testing via standardized
-    with open(join(data_directory, "cvterms_nested.json"), "r") as f_cvterms:
+    with data_directory.joinpath("cvterms_nested.json").open("r") as f_cvterms:
         cvterms_data = json.load(f_cvterms)
 
     s = Species()
@@ -116,59 +164,85 @@ def test_nested_annotation(data_directory):
         "uniprot": ["P68871", "P69905"],
     }
     # check standardized
-    main_cvt = {
-        "bqb_hasPart": [
-            {
+    main_cvt = [
+        {
+            "external_resources": {
                 "resources": [
                     "https://identifiers.org/uniprot/P69905",
                     "https://identifiers.org/uniprot/P68871",
                     "https://identifiers.org/kegg.compound/C00032",
                 ]
             },
-            {
+            "qualifier": "bqb_hasPart",
+        },
+        {
+            "qualifier": "bqb_hasPart",
+            "external_resources": {
                 "resources": [
                     "https://identifiers.org/uniprot/P69905",
                     "https://www.uniprot.org/uniprot/P68871",
                     "https://identifiers.org/chebi/CHEBI:17627",
                 ],
                 "nested_data": {
-                    "bqb_isDescribedBy": [
-                        {"resources": [PUBMED_EXAMPLE]},
-                        {"resources": ["https://identifiers.org/eco/000000"]},
-                    ],
+                    "qualifier": "bqb_isDescribedBy",
+                    "external_resources": {
+                        "resources": [
+                            PUBMED_EXAMPLE,
+                            "https://identifiers.org/eco/000000",
+                        ]
+                    },
                 },
             },
-        ]
-    }
-    nested_cvt = {
-        "bqb_isDescribedBy": [
-            {"resources": [PUBMED_EXAMPLE]},
-            {"resources": ["https://identifiers.org/eco/000000"]},
-        ]
-    }
+        },
+    ]
+    nested_cvt = [
+        {
+            "qualifier": "bqb_isDescribedBy",
+            "external_resources": {
+                "resources": [PUBMED_EXAMPLE, "https://identifiers.org/eco/000000"]
+            },
+        }
+    ]
     assert s.annotation.standardized == main_cvt
     nested_data = s.annotation.standardized[1].external_resources.nested_data
     assert nested_data == nested_cvt
 
 
-def _read_ecoli_annotation_model(data_directory):
-    test_xml = os.path.join(data_directory, "e_coli_core_for_annotation.xml")
-    model = read_sbml_model(test_xml)
+def _read_ecoli_annotation_model(data_directory: Path) -> Model:
+    """Read XML that contains a defined annotation.
+
+    Parameters
+    ----------
+    data_directory: Path
+        directory where example model is
+
+    Returns
+    -------
+    model: Model
+    """
+    test_xml = data_directory / "e_coli_core_for_annotation.xml"
+    model = read_sbml_model(str(test_xml))
     return model
 
 
 def test_cvterms_from_ecoli_xml(data_directory):
     model = _read_ecoli_annotation_model(data_directory)
-    qualifier_set = {"bqb_hasTaxon", "bqm_is", "bqm_isDescribedBy"}
-    nested_cvt = {
-        "bqb_isDescribedBy": [
-            {"resources": [PUBMED_EXAMPLE]},
-            {"resources": [ECO_EXAMPLE]},
-        ]
+    qualifier_set = {
+        Qualifier(qual) for qual in ["bqb_hasTaxon", "bqm_is", "bqm_isDescribedBy"]
     }
-    ecoli_model_cvterm = CVTermList.from_dict(ecoli_model_annotation)
+    nested_cvt = [
+        {
+            "qualifier": "bqb_isDescribedBy",
+            "external_resources": {"resources": [PUBMED_EXAMPLE]},
+        },
+        {
+            "qualifier": "bqb_isDescribedBy",
+            "external_resources": {"resources": [ECO_EXAMPLE]},
+        },
+    ]
+    ecoli_model_cvterm = CVTermList.from_data(ecoli_model_annotation)
     xml_model_cvterms = model.annotation.standardized
-    model_cvterms_qualifier_set = {qual.name for qual in xml_model_cvterms.qualifiers}
+    model_cvterms_qualifier_set = xml_model_cvterms.qualifiers
     assert qualifier_set == model_cvterms_qualifier_set
     assert xml_model_cvterms == ecoli_model_cvterm
     assert (
@@ -198,9 +272,9 @@ def test_writing_xml(data_directory, tmp_path):
     )
 
 
-def test_read_write_json(data_directory, tmp_path):
+def test_read_write_json(data_directory: Path, tmp_path: Path):
     model = _read_ecoli_annotation_model(data_directory)
-    json_path = join(tmp_path, "e_coli_core_json_writing.json")
+    json_path = tmp_path / "e_coli_core_json_writing.json"
     assert save_json_model(model, json_path, sort=False, pretty=True) is None
 
     model = load_json_model(json_path)
@@ -212,7 +286,7 @@ def test_read_write_json(data_directory, tmp_path):
         "pubmed": ["1111111"],
         "taxonomy": ["511145"],
     }
-    assert model.annotation.standardized == CVTermList.from_dict(ecoli_model_annotation)
+    assert model.annotation.standardized == CVTermList.from_data(ecoli_model_annotation)
     assert model.annotation.standardized == ecoli_model_annotation
 
 
@@ -238,9 +312,13 @@ def test_read_old_json_model(data_directory):
     }
 
     # testing standardized
-    expected_cvterms = CVTermList.from_dict({"bqb_is": [{"resources": RESOURCE_LIST}]})
+    expected_cvterms = CVTermList.from_data(
+        [{"qualifier": "bqb_is", "external_resources": {"resources": RESOURCE_LIST}}]
+    )
     assert meta.annotation.standardized == expected_cvterms
-    assert meta.annotation.standardized == {"bqb_is": [{"resources": RESOURCE_LIST}]}
+    assert meta.annotation.standardized == [
+        {"qualifier": "bqb_is", "external_resources": {"resources": RESOURCE_LIST}}
+    ]
 
 
 def test_cvtermlist_query():
@@ -257,7 +335,9 @@ def test_cvtermlist_query():
     )
     cvtermlist = CVTermList()
     for i, res in enumerate(resources):
-        cvtermlist.extend([CVTerm(qualifier=Qualifier(i), ex_res=resources[i])])
+        cvtermlist.extend(
+            [CVTerm(qualifier=list(Qualifier.__members__)[i], ex_res=resources[i])]
+        )
 
     cvtermlist.append(
         CVTerm(
@@ -267,7 +347,7 @@ def test_cvtermlist_query():
                     qualifier="bqb_isDescribedBy", ex_res=PUBMED_EXAMPLE
                 ),
             },
-            qualifier=Qualifier(19),
+            qualifier=list(Qualifier.__members__)[19],
         )
     )
     assert isinstance(
@@ -280,7 +360,9 @@ def test_cvtermlist_query():
     assert (
         len(
             cvtermlist.query(
-                search_function=lambda x: x.value > 18, attribute="qualifier"
+                search_function=lambda x: list(Qualifier.__members__).index(x.value)
+                > 18,
+                attribute="qualifier",
             )
         )
         == 1

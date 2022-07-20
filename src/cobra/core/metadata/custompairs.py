@@ -1,4 +1,8 @@
-"""Class to deal with Key-Value pairs."""
+"""Class to deal with Key-Value pairs.
+
+Key-Value pairs are described in SBML FBC3. For the FBC3 standard, see
+https://github.com/bgoli/sbml-fbc-spec/blob/main/sf_svn/spec/main.pdf
+"""
 
 from collections import UserDict
 from typing import Dict, Iterable, Optional, Union
@@ -74,6 +78,8 @@ class KeyValueEntry:
 
     def to_dict(self) -> dict:
         """Transform KeyValueEntry to dictionary.
+
+        Creates a dictionary with the following keys: id, name, key, value, uri.
 
         Returns
         -------

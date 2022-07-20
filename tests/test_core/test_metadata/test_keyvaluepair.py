@@ -1,4 +1,4 @@
-from cobra.core.metadata.keyvaluepairs import KeyValueEntry, KeyValuePairs
+from cobra.core.metadata.custompairs import KeyValueEntry, KeyValuePairs
 
 
 def test_keyvalueentry():

@@ -9,6 +9,7 @@ SBML import and export using python-libsbml.
 Parsing of fbc models was implemented as efficient as possible, whereas
 (discouraged) fallback solutions are not optimized for efficiency.
 
+#TODO - fix the following paragraph, which is incorrect. Load up keyvalue pairs from notes??
 Notes are only supported in a minimal way relevant for constraint-based
 models. I.e., structured information from notes in the form
    <p>key: value</p>
@@ -54,6 +55,7 @@ from ..core import (
     Model,
     Reaction,
 )
+from ..core.metadata.history import STRTIME_FORMAT
 from ..manipulation.validate import check_metabolite_compartment_formula
 from ..util.solver import linear_reaction_coefficients, set_objective
 
@@ -1668,6 +1670,16 @@ QUALIFIER_TYPES_COBRA_SBML_DICT = {
     "bqm_hasInstance": libsbml.BQM_HAS_INSTANCE,
     "bqm_unknown": libsbml.BQM_UNKNOWN,
 }
+BIOLOGY_QUALIFIER_TYPES_TO_COBRA_DICT = {
+    value: key
+    for key, value in QUALIFIER_TYPES_COBRA_SBML_DICT.items()
+    if re.match("bqb", key)
+}
+MODEL_QUALIFIER_TYPES_TO_COBRA_DICT = {
+    value: key
+    for key, value in QUALIFIER_TYPES_COBRA_SBML_DICT.items()
+    if re.match("bqm", key)
+}
 
 
 def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
@@ -1707,7 +1719,7 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
     if cvterms is None:
         return annotation
 
-    def _cvterm_to_cobra(_cvterm: "libsbml.CVTerm") -> CVTerm:
+    def _cvterm_to_cobra(_cvterm: "libsbml.CVTerm") -> Optional[CVTerm]:
         """Parse the libsbml.CVTerm object to cobra CVTerm.
 
         Parameters
@@ -1717,22 +1729,28 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
 
         Returns
         -------
-        CVTerm
+        CVTerm or None
             The parsed data of the given libsbml.CVTerm object as CVTerm.
+            If the qualifier is unknown, this function will return None.
         """
         qualifier_type = _cvterm.getQualifierType()
-        if qualifier_type == 0:
-            mq_type = _cvterm.getModelQualifierType()
-            qualifier = "bqm_" + libsbml.ModelQualifierType_toString(mq_type)
-        elif qualifier_type == 1:
-            bq_type = _cvterm.getBiologicalQualifierType()
-            qualifier = "bqb_" + libsbml.BiolQualifierType_toString(bq_type)
+        if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
+            qualifier = BIOLOGY_QUALIFIER_TYPES_TO_COBRA_DICT[
+                _cvterm.getBiologicalQualifierType()
+            ]
+        elif qualifier_type == libsbml.MODEL_QUALIFIER:
+            qualifier = MODEL_QUALIFIER_TYPES_TO_COBRA_DICT[
+                _cvterm.getModelQualifierType()
+            ]
         else:
-            qualifier = "unknown_qualifier"
-        ext_res = {"resources": []}
-        for k in range(_cvterm.getNumResources()):
-            uri = _cvterm.getResourceURI(k)
-            ext_res["resources"].append(uri)
+            LOGGER.warning(f"The cvterm {_cvterm} has an unkown qualifier. Ignoring it")
+            return None
+        ext_res = {
+            "resources": [
+                _cvterm.getResourceURI(k) for k in range(_cvterm.getNumResources())
+            ]
+        }
+
         nested_cv_terms = [
             _cvterm.getNestedCVTerm(index)
             for index in range(_cvterm.getNumNestedCVTerms())
@@ -1740,11 +1758,15 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
         # This kludge is necessary since _cvterm.getListNestedCVTerms() doesn't give a
         # python list, but a Swig List_t * and then SwigPyObject is not iterable
         ext_res["nested_data"] = CVTermList(
-            [_cvterm_to_cobra(_nested_cvterm) for _nested_cvterm in nested_cv_terms]
+            [
+                _cvterm_to_cobra(_nested_cvterm)
+                for _nested_cvterm in nested_cv_terms
+                if _nested_cvterm
+            ]
         )
         return CVTerm(ExternalResources.from_dict(ext_res), qualifier)
 
-    annotation.add_cvterms([_cvterm_to_cobra(cvterm) for cvterm in cvterms])
+    annotation.add_cvterms([_cvterm_to_cobra(cvterm) for cvterm in cvterms if cvterm])
 
     # history of the component
     if sbase.isSetModelHistory():
@@ -1841,7 +1863,7 @@ def _cvterms_to_sbml(cvterms: CVTermList) -> List["libsbml.CVTerm"]:
             cv.setModelQualifierType(QUALIFIER_TYPES_COBRA_SBML_DICT[qualifier.name])
         else:
             raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
-        for uri in cvterm.external_resources.resources:
+        for uri in sorted(cvterm.external_resources.resources):
             cv.addResource(uri)
 
         [
@@ -1886,6 +1908,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
     if "sbo" in annotation and annotation.sbo:
         sbo_term = annotation_data.sbo
         if isinstance(sbo_term, list):
+            # TODO - need to add the rest of the list, maybe
             sbo_term = sbo_term[0]
         _check(sbase.setSBOTerm(sbo_term), f"Setting SBOTerm: {sbo_term}")
 
@@ -1909,20 +1932,30 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
             comp_creator.setFamilyName(creator.family_name)
             creator.email and comp_creator.setEmail(creator.email)
             creator.organisation and comp_creator.setOrganisation(creator.organisation)
-            _check(comp_history.addCreator(comp_creator), f"adding creator to {sbase.getId}.")
+            _check(
+                comp_history.addCreator(comp_creator),
+                f"adding creator to {sbase.getId}.",
+            )
 
         if annotation.history.created_date:
-            date = libsbml.Date(annotation.history.created_date.isoformat())
-            _check(comp_history.setCreatedDate(date), f"set creation date for {sbase.id}")
+            date = libsbml.Date(
+                annotation.history.created_date.strftime(STRTIME_FORMAT)
+            )
+            _check(
+                comp_history.setCreatedDate(date), f"set creation date for {sbase.id}"
+            )
         elif isinstance(sbase, libsbml.SBMLDocument):
             time = datetime.datetime.now()
-            timestr = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+            timestr = time.strftime(STRTIME_FORMAT)
             date = libsbml.Date(timestr)
             _check(comp_history.setCreatedDate(date), "set creation date for document")
 
         for modified_date in annotation.history.modified_dates:
-            date = libsbml.Date(modified_date.isoformat())
-            _check(comp_history.addModifiedDate(date), f"add modification date for {sbase.id}")
+            date = libsbml.Date(modified_date.strftime(STRTIME_FORMAT))
+            _check(
+                comp_history.addModifiedDate(date),
+                f"add modification date for {sbase.id}",
+            )
 
         # finally add the compo_history
         _check(
@@ -1975,17 +2008,30 @@ def validate_sbml_model(
     from the libsbml validator. COBRA_* types are from the cobrapy SBML
     parser.
     """
-    keys = (
-        "SBML_FATAL",
-        "SBML_ERROR",
-        "SBML_SCHEMA_ERROR",
-        "SBML_WARNING",
-        "COBRA_FATAL",
-        "COBRA_ERROR",
-        "COBRA_WARNING",
-        "COBRA_CHECK",
-    )
-    errors = {key: [] for key in keys}
+    cobra_sbml_error_dict = {
+        "SBML_FATAL": libsbml.LIBSBML_SEV_FATAL,
+        "SBML_ERROR": libsbml.LIBSBML_SEV_ERROR,
+        "SBML_SCHEMA_ERROR": libsbml.LIBSBML_SEV_SCHEMA_ERROR,
+        "SBML_WARNING": libsbml.LIBSBML_SEV_WARNING,
+        "COBRA_FATAL": None,
+        "COBRA_ERROR": None,
+        "COBRA_WARNING": None,
+        "COBRA_CHECK": None,
+    }
+    sbml_severity_dict = {
+        value: key for key, value in cobra_sbml_error_dict.items() if value
+    }
+    errors = {key: [] for key in cobra_sbml_error_dict.keys()}
+    sbml_log_dict = {
+        "SBML_FATAL": "SBML errors",
+        "SBML_ERROR": "SBML errors",
+        "SBML_SCHEMA_ERROR": "SBML errors",
+        "SBML_WARNING": "SBML warnings",
+        "COBRA_FATAL": "COBRA errors",
+        "COBRA_ERROR": "COBRA errors",
+        "COBRA_WARNING": "COBRA warnings",
+        "COBRA_CHECK": "COBRA warnings",
+    }
 
     # [1] libsbml validation
     doc: "libsbml.SBMLDocument" = _get_doc_from_filename(filename)
@@ -2007,14 +2053,7 @@ def validate_sbml_model(
         e: "libsbml.SBMLError" = doc.getError(k)
         msg = _error_string(e, k=k)
         sev = e.getSeverity()
-        if sev == libsbml.LIBSBML_SEV_FATAL:
-            errors["SBML_FATAL"].append(msg)
-        elif sev == libsbml.LIBSBML_SEV_ERROR:
-            errors["SBML_ERROR"].append(msg)
-        elif sev == libsbml.LIBSBML_SEV_SCHEMA_ERROR:
-            errors["SBML_SCHEMA_ERROR"].append(msg)
-        elif sev == libsbml.LIBSBML_SEV_WARNING:
-            errors["SBML_WARNING"].append(msg)
+        errors[sbml_severity_dict[sev]].append(msg)
 
     # [2] cobrapy validation (check that SBML can be read into model)
     # all warnings generated while loading will be logged as errors
@@ -2055,21 +2094,11 @@ def validate_sbml_model(
     if check_model:
         errors["COBRA_CHECK"].extend(check_metabolite_compartment_formula(model))
 
-    for key in ["SBML_FATAL", "SBML_ERROR", "SBML_SCHEMA_ERROR"]:
+    for key in sbml_log_dict.keys():
         if len(errors[key]) > 0:
-            LOGGER.error("SBML errors in validation, check error log for details.")
-            break
-    for key in ["SBML_WARNING"]:
-        if len(errors[key]) > 0:
-            LOGGER.error("SBML warnings in validation, check error log for details.")
-            break
-    for key in ["COBRA_FATAL", "COBRA_ERROR"]:
-        if len(errors[key]) > 0:
-            LOGGER.error("COBRA errors in validation, check error log for details.")
-            break
-    for key in ["COBRA_WARNING", "COBRA_CHECK"]:
-        if len(errors[key]) > 0:
-            LOGGER.error("COBRA warnings in validation, check error log for details.")
+            LOGGER.error(
+                f"{sbml_log_dict[key]} in validation, check error log for details."
+            )
             break
 
     return model, errors

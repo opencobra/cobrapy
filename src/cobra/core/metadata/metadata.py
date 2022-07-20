@@ -6,7 +6,7 @@ from typing import Dict, Iterable, Iterator, List, Union
 
 from ..metadata.cvterm import CVTerm, CVTermList
 from ..metadata.history import Creator, History
-from ..metadata.keyvaluepairs import KeyValuePairs
+from ..metadata.custompairs import KeyValuePairs
 
 
 class MetaData(MutableMapping):
@@ -58,7 +58,7 @@ class MetaData(MutableMapping):
             modificiation date. Default None.
         sbo: str
             SBO term, if relevant. Default "".
-            If there are
+            If there are ????
         keyvaluepairs: KeyValuePairs
             For annotations that don't match the identifiers.org format.
 
@@ -97,7 +97,7 @@ class MetaData(MutableMapping):
         """Set the SBO term."""
         self._sbo = value
 
-    def __setitem__(self, key: str, value: List) -> None:
+    def __setitem__(self, key: str, value: Union[List, str]) -> None:
         """Set the item for accessing metadata as dict (the old style annotation).
 
         Parameters
@@ -190,7 +190,7 @@ class MetaData(MutableMapping):
             d["sbo"] = self.sbo
 
         if self.standardized:
-            d["standardized"] = self.standardized.to_dict()
+            d["standardized"] = self.standardized.to_list_of_dicts()
 
         if self.history and not self.history.is_empty():
             d["history"] = self.history.to_dict()
@@ -202,9 +202,9 @@ class MetaData(MutableMapping):
 
     @staticmethod
     def from_dict(data: Dict) -> "MetaData":
-        cvterms = data["standardized"] if "standardized" in data else None
-        history = data["history"] if "history" in data else None
-        keyValuepairs = data["custompairs"] if "custompairs" in data else None
+        cvterms = data.get("standardized", None)
+        history = data.get("history", None)
+        keyValuepairs = data.get("custompairs",  None)
 
         if cvterms or history or keyValuepairs:
             annotation = MetaData(cvterms, history, keyValuepairs)

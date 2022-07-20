@@ -1,32 +1,33 @@
-{
-  "bqb_hasPart": [
-    {
+[
+  {
+    "external_resources": {
       "resources": [
         "https://identifiers.org/uniprot/P69905",
         "https://identifiers.org/uniprot/P68871",
         "https://identifiers.org/kegg.compound/C00032"
       ]
     },
-    {
+    "qualifier": "bqb_hasPart"
+  },
+  {
+    "qualifier": "bqb_hasPart",
+    "external_resources": {
       "resources": [
         "https://identifiers.org/uniprot/P69905",
         "https://www.uniprot.org/uniprot/P68871",
         "https://identifiers.org/chebi/CHEBI:17627"
       ],
-      "nested_data": {
-        "bqb_isDescribedBy": [
-          {
+      "nested_data": [
+        {
+          "qualifier": "bqb_isDescribedBy",
+          "external_resources": {
             "resources": [
-              "https://identifiers.org/pubmed/1111111"
-            ]
-          },
-          {
-            "resources": [
+              "https://identifiers.org/pubmed/1111111",
               "https://identifiers.org/eco/000000"
             ]
           }
-        ]
-      }
+        }
+      ]
     }
-  ]
-}
+  }
+]

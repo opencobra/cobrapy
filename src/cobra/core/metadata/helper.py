@@ -12,12 +12,12 @@ LOGGER = logging.getLogger(__name__)
 
 __all__ = ["URL_IDENTIFIERS_PATTERN", "parse_identifiers_uri"]
 
-# the URL pattern to parse provider and identifier
+# the URL pattern to parse namespace and identifier
 URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")
 
 
 def parse_identifiers_uri(uri: str) -> Union[None, Tuple[str, str]]:
-    """Parse provider and term from given identifiers annotation uri.
+    """Parse namespace and term from given identifiers annotation uri.
 
     Parameters
     ----------
@@ -26,14 +26,14 @@ def parse_identifiers_uri(uri: str) -> Union[None, Tuple[str, str]]:
 
     Returns
     -------
-    (provider, identifier) if resolvable, None otherwise
+    (namespace, identifier) if resolvable, None otherwise
     """
     match = URL_IDENTIFIERS_PATTERN.match(uri)
     if match:
-        provider, identifier = match.group(1), match.group(2)
-        if provider.isupper():
-            identifier = f"{provider}:{identifier}"
-            provider = provider.lower()
+        namespace, identifier = match.group(1), match.group(2)
+        if namespace.isupper():
+            identifier = f"{namespace}:{identifier}"
+            namespace = namespace.lower()
     else:
         LOGGER.warning(
             f"{uri} does not conform to "
@@ -42,4 +42,4 @@ def parse_identifiers_uri(uri: str) -> Union[None, Tuple[str, str]]:
         )
         return None
 
-    return provider, identifier
+    return namespace, identifier
