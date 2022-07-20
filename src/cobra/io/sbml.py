@@ -9,6 +9,7 @@ SBML import and export using python-libsbml.
 Parsing of fbc models was implemented as efficient as possible, whereas
 (discouraged) fallback solutions are not optimized for efficiency.
 
+#TODO - fix the following paragraph, which is incorrect. Load up keyvalue pairs from notes??
 Notes are only supported in a minimal way relevant for constraint-based
 models. I.e., structured information from notes in the form
    <p>key: value</p>
@@ -19,8 +20,6 @@ notes information.
 Annotations are read in the Object.annotation fields.
 
 Some SBML related issues are still open, please refer to the respective issue:
-- update annotation format and support qualifiers (depends on decision
-    for new annotation format; https://github.com/opencobra/cobrapy/issues/684)
 - write compartment annotations and notes (depends on updated first-class
     compartments; see https://github.com/opencobra/cobrapy/issues/760)
 - support compression on file handles (depends on solution for
@@ -36,13 +35,27 @@ from collections import defaultdict, namedtuple
 from copy import deepcopy
 from io import StringIO
 from sys import platform
-from typing import IO, Match, Optional, Pattern, Tuple, Type, Union
+from typing import IO, List, Match, Optional, Pattern, Tuple, Type, Union
+from warnings import warn
 
 import libsbml
 
 import cobra
 
-from ..core import GPR, Gene, Group, Metabolite, Model, Reaction
+from ..core import (
+    GPR,
+    Creator,
+    CVTerm,
+    CVTermList,
+    ExternalResources,
+    Gene,
+    Group,
+    Metabolite,
+    MetaData,
+    Model,
+    Reaction,
+)
+from ..core.metadata.history import STRTIME_FORMAT
 from ..manipulation.validate import check_metabolite_compartment_formula
 from ..util.solver import linear_reaction_coefficients, set_objective
 
@@ -600,40 +613,6 @@ def _sbml_to_model(
     cobra_model = Model(model_id)
     cobra_model.name = model.getName() or None
 
-    # meta information
-    meta = {
-        "model.id": model_id,
-        "level": model.getLevel(),
-        "version": model.getVersion(),
-        "packages": [],
-    }
-    # History
-    creators = []
-    created = None
-    if model.isSetModelHistory():
-        history: "libsbml.ModelHistory" = model.getModelHistory()
-
-        if history.isSetCreatedDate():
-            created = history.getCreatedDate()
-
-        c: "libsbml.ModelCreator"
-        for c in history.getListCreators():
-            creators.append(
-                {
-                    "familyName": c.getFamilyName() if c.isSetFamilyName() else None,
-                    "givenName": c.getGivenName() if c.isSetGivenName() else None,
-                    "organisation": c.getOrganisation()
-                    if c.isSetOrganisation()
-                    else None,
-                    "email": c.getEmail() if c.isSetEmail() else None,
-                }
-            )
-
-    meta["creators"] = creators
-    meta["created"] = created
-    meta["notes"] = _parse_notes_dict(doc)
-    meta["annotation"] = _parse_annotations(doc)
-
     info = f"<{model_id}> SBML L{model.getLevel()}V{model.getVersion()}"
     packages = {}
     for k in range(doc.getNumPlugins()):
@@ -646,8 +625,17 @@ def _sbml_to_model(
                 f"SBML package '{key}' not supported by cobrapy, "
                 f"information is not parsed"
             )
-    meta["info"] = info
-    meta["packages"] = packages
+
+    # meta information
+    meta = {
+        "model.id": model_id,
+        "level": model.getLevel(),
+        "version": model.getVersion(),
+        "packages": packages,
+        "notes": _parse_notes_dict(doc),
+        "annotation": _parse_annotations(doc),
+        "info": info,
+    }
     cobra_model._sbml = meta
 
     # notes and annotations
@@ -657,9 +645,8 @@ def _sbml_to_model(
     # Compartments
     # FIXME: update with new compartments
     compartments = {}
-    for (
-        compartment
-    ) in model.getListOfCompartments():  # noqa: E501 type: libsbml.Compartment
+    compartment: libsbml.Compartment
+    for compartment in model.getListOfCompartments():
         cid = _check_required(compartment, compartment.getIdAttribute(), "id")
         compartments[cid] = compartment.getName()
     cobra_model.compartments = compartments
@@ -693,17 +680,16 @@ def _sbml_to_model(
                     f"discouraged, use fbc:charge instead: {specie}"
                 )
                 met.charge = specie.getCharge()
-            else:
-                if "CHARGE" in met.notes:
-                    LOGGER.warning(
-                        f"Use of CHARGE in the notes element is "
-                        f"discouraged, use fbc:charge instead: {specie}"
-                    )
-                    try:
-                        met.charge = int(met.notes["CHARGE"])
-                    except ValueError:
-                        # handle nan, na, NA, ...
-                        pass
+            elif "CHARGE" in met.notes:
+                LOGGER.warning(
+                    f"Use of CHARGE in the notes element is "
+                    f"discouraged, use fbc:charge instead: {specie}"
+                )
+                try:
+                    met.charge = int(met.notes["CHARGE"])
+                except ValueError:
+                    # handle nan, na, NA, ...
+                    pass
 
             if "FORMULA" in met.notes:
                 LOGGER.warning(
@@ -726,7 +712,7 @@ def _sbml_to_model(
         ex_rid = f"EX_{met.id}"
         ex_reaction = Reaction(ex_rid)
         ex_reaction.name = ex_rid
-        ex_reaction.annotation = {"sbo": SBO_EXCHANGE_REACTION}
+        ex_reaction.annotation = {"sbo": [SBO_EXCHANGE_REACTION]}
         ex_reaction.lower_bound = config.lower_bound
         ex_reaction.upper_bound = config.upper_bound
         LOGGER.warning(
@@ -740,9 +726,8 @@ def _sbml_to_model(
 
     # Genes
     if model_fbc:
-        for (
-            gp
-        ) in model_fbc.getListOfGeneProducts():  # noqa: E501 type: libsbml.GeneProduct
+        gp: "libsbml.GeneProduct"
+        for gp in model_fbc.getListOfGeneProducts():
             gid = _check_required(gp, gp.getIdAttribute(), "id")
             if f_replace and F_GENE in f_replace:
                 gid = f_replace[F_GENE](gid)
@@ -755,18 +740,11 @@ def _sbml_to_model(
 
             cobra_model.genes.append(cobra_gene)
     else:
-        for (
-            cobra_reaction
-        ) in model.getListOfReactions():  # noqa: E501 type: libsbml.Reaction
+        cobra_reaction: "libsbml.Reaction"
+        for cobra_reaction in model.getListOfReactions():
             # fallback to notes information
             notes = _parse_notes_dict(cobra_reaction)
-            if "GENE ASSOCIATION" in notes:
-                gpr = notes["GENE ASSOCIATION"]
-            elif "GENE_ASSOCIATION" in notes:
-                gpr = notes["GENE_ASSOCIATION"]
-            else:
-                gpr = ""
-
+            gpr = notes.get("GENE ASSOCIATION", "") or notes.get("GENE_ASSOCIATION", "")
             if len(gpr) > 0:
                 gpr = gpr.replace("(", ";")
                 gpr = gpr.replace(")", ";")
@@ -861,14 +839,10 @@ def _sbml_to_model(
         elif reaction.isSetKineticLaw():
             # some legacy models encode bounds in kinetic laws
             klaw: "libsbml.KineticLaw" = reaction.getKineticLaw()
-            p_lb = klaw.getParameter(
-                "LOWER_BOUND"
-            )  # noqa: E501 type: libsbml.LocalParameter
+            p_lb: "libsbml.LocalParameter" = klaw.getParameter("LOWER_BOUND")
             if p_lb:
                 cobra_reaction.lower_bound = p_lb.getValue()
-            p_ub = klaw.getParameter(
-                "UPPER_BOUND"
-            )  # noqa: E501 type: libsbml.LocalParameter
+            p_ub: "libsbml.LocalParameter" = klaw.getParameter("UPPER_BOUND")
             if p_ub:
                 cobra_reaction.upper_bound = p_ub.getValue()
 
@@ -902,9 +876,8 @@ def _sbml_to_model(
 
         # parse equation
         stoichiometry = defaultdict(lambda: 0)
-        for (
-            sref
-        ) in reaction.getListOfReactants():  # noqa: E501 type: libsbml.SpeciesReference
+        sref: "libsbml.SpeciesReference"
+        for sref in reaction.getListOfReactants():
             sid = _check_required(sref, sref.getSpecies(), "species")
 
             if f_replace and F_SPECIE in f_replace:
@@ -913,9 +886,7 @@ def _sbml_to_model(
                 _check_required(sref, sref.getStoichiometry(), "stoichiometry")
             )
 
-        for (
-            sref
-        ) in reaction.getListOfProducts():  # noqa: E501 type: libsbml.SpeciesReference
+        for sref in reaction.getListOfProducts():
             sid = _check_required(sref, sref.getSpecies(), "species")
 
             if f_replace and F_SPECIE in f_replace:
@@ -934,24 +905,15 @@ def _sbml_to_model(
         # GPR
         if r_fbc:
             gpr = None
-            gpa = (
-                r_fbc.getGeneProductAssociation()
-            )  # noqa: E501 type: libsbml.GeneProductAssociation
+            gpa: libsbml.GeneProductAssociation = r_fbc.getGeneProductAssociation()
             if gpa is not None:
-                association = (
-                    gpa.getAssociation()
-                )  # noqa: E501 type: libsbml.FbcAssociation
+                association: libsbml.FbcAssociation = gpa.getAssociation()
                 gpr = Module(process_association(association))
             cobra_reaction.gpr = GPR(gpr_from=gpr)
         else:
             # fallback to notes information
             notes = cobra_reaction.notes
-            if "GENE ASSOCIATION" in notes:
-                gpr = notes["GENE ASSOCIATION"]
-            elif "GENE_ASSOCIATION" in notes:
-                gpr = notes["GENE_ASSOCIATION"]
-            else:
-                gpr = ""
+            gpr = notes.get("GENE ASSOCIATION", "") or notes.get("GENE_ASSOCIATION", "")
 
             if len(gpr) > 0:
                 LOGGER.warning(
@@ -969,9 +931,7 @@ def _sbml_to_model(
     obj_direction = "max"
     coefficients = {}
     if model_fbc:
-        obj_list = (
-            model_fbc.getListOfObjectives()
-        )  # noqa: E501 type: libsbml.ListOfObjectives
+        obj_list: "libsbml.ListOfObjectives" = model_fbc.getListOfObjectives()
         if obj_list is None:
             LOGGER.warning("listOfObjectives element not found")
         elif obj_list.size() == 0:
@@ -983,11 +943,8 @@ def _sbml_to_model(
             obj: "libsbml.Objective" = model_fbc.getObjective(obj_id)
             obj_direction = LONG_SHORT_DIRECTION[obj.getType()]
 
-            for (
-                flux_obj
-            ) in (
-                obj.getListOfFluxObjectives()
-            ):  # noqa: E501 type: libsbml.FluxObjective
+            flux_obj: "libsbml.FluxObjective"
+            for flux_obj in obj.getListOfFluxObjectives():
                 rid = flux_obj.getReaction()
                 if f_replace and F_REACTION in f_replace:
                     rid = f_replace[F_REACTION](rid)
@@ -1121,7 +1078,7 @@ def _sbml_to_model(
             if f_replace and F_GROUP in f_replace:
                 gid = f_replace[F_GROUP](gid)
             cobra_group = Group(gid, name=gid, kind="partonomy")
-            cobra_group.annotation["sbo"] = "SBO:0000633"
+            cobra_group.annotation["sbo"] = ["SBO:0000633"]
             cobra_group.add_members(cobra_members)
             groups.append(cobra_group)
 
@@ -1226,48 +1183,19 @@ def _model_to_sbml(
     if cobra_model.name is not None:
         model.setName(cobra_model.name)
 
-    # for parsing annotation corresponding to the model
+    # for parsing annotation corresponding to the model, including model history
     _sbase_annotations(model, cobra_model.annotation)
     # for parsing notes corresponding to the model
     _sbase_notes_dict(model, cobra_model.notes)
 
     # Meta information (ModelHistory) related to SBMLDocument
-    if hasattr(cobra_model, "_sbml"):
-        meta = cobra_model._sbml
+    meta = getattr(cobra_model, "_sbml", None)
+    if meta:
         if "annotation" in meta:
             _sbase_annotations(doc, meta["annotation"])
+
         if "notes" in meta:
             _sbase_notes_dict(doc, meta["notes"])
-
-        history: "libsbml.ModelHistory" = libsbml.ModelHistory()
-        if "created" in meta and meta["created"]:
-            history.setCreatedDate(meta["created"])
-        else:
-            time = datetime.datetime.now()
-            timestr = time.strftime("%Y-%m-%dT%H:%M:%S")
-            date = libsbml.Date(timestr)
-            _check(history.setCreatedDate(date), "set creation date")
-            _check(history.setModifiedDate(date), "set modified date")
-
-        if "creators" in meta:
-            for cobra_creator in meta[
-                "creators"
-            ]:  # noqa: E501 type: libsbml.ModelCreator
-                creator = libsbml.ModelCreator()
-                if cobra_creator.get("familyName", None):
-                    creator.setFamilyName(cobra_creator["familyName"])
-                if cobra_creator.get("givenName", None):
-                    creator.setGivenName(cobra_creator["givenName"])
-                if cobra_creator.get("organisation", None):
-                    creator.setOrganisation(cobra_creator["organisation"])
-                if cobra_creator.get("email", None):
-                    creator.setEmail(cobra_creator["email"])
-
-                _check(history.addCreator(creator), "adding creator to ModelHistory.")
-
-        # TODO: Will be implemented as part of
-        #  https://github.com/opencobra/cobrapy/issues/810
-        # _check(model.setModelHistory(history), 'set model history')
 
     # Units
     flux_udef = None
@@ -1379,16 +1307,12 @@ def _model_to_sbml(
             if f_replace and F_SPECIE_REV in f_replace:
                 sid = f_replace[F_SPECIE_REV](sid)
             if stoichiometry < 0:
-                sref = (
-                    reaction.createReactant()
-                )  # noqa: E501 type: libsbml.SpeciesReference
+                sref: libsbml.SpeciesReference = reaction.createReactant()
                 sref.setSpecies(sid)
                 sref.setStoichiometry(-stoichiometry)
                 sref.setConstant(True)
             else:
-                sref = (
-                    reaction.createProduct()
-                )  # noqa: E501 type: libsbml.SpeciesReference
+                sref: libsbml.SpeciesReference = reaction.createProduct()
                 sref.setSpecies(sid)
                 sref.setStoichiometry(stoichiometry)
                 sref.setConstant(True)
@@ -1426,18 +1350,14 @@ def _model_to_sbml(
             else:
                 gpr_new = gpr.to_string()
 
-            gpa = (
-                r_fbc.createGeneProductAssociation()
-            )  # noqa: E501 type: libsbml.GeneProductAssociation
+            gpa: libsbml.GeneProductAssociation = r_fbc.createGeneProductAssociation()
             # uses ids to identify GeneProducts (True),
             # does not create GeneProducts (False)
             _check(gpa.setAssociation(gpr_new, True, False), "set gpr: " + gpr_new)
 
         # objective coefficients
         if reaction_coefficients.get(cobra_reaction, 0) != 0:
-            flux_obj = (
-                objective.createFluxObjective()
-            )  # noqa: E501 type: libsbml.FluxObjective
+            flux_obj: libsbml.FluxObjective = objective.createFluxObjective()
             flux_obj.setReaction(rid)
             flux_obj.setCoefficient(cobra_reaction.objective_coefficient)
 
@@ -1447,9 +1367,7 @@ def _model_to_sbml(
             "http://www.sbml.org/sbml/level3/version1/groups/version1", "groups", True
         )
         doc.setPackageRequired("groups", False)
-        model_group = model.getPlugin(
-            "groups"
-        )  # noqa: E501 type: libsbml.GroupsModelPlugin
+        model_group: libsbml.GroupsModelPlugin = model.getPlugin("groups")
         for cobra_group in cobra_model.groups:
             group: "libsbml.Group" = model_group.createGroup()
             if f_replace and F_GROUP_REV in f_replace:
@@ -1469,15 +1387,12 @@ def _model_to_sbml(
                 m_type = str(type(cobra_member))
 
                 # id replacements
-                if "Reaction" in m_type:
-                    if f_replace and F_REACTION_REV in f_replace:
-                        mid = f_replace[F_REACTION_REV](mid)
-                if "Metabolite" in m_type:
-                    if f_replace and F_SPECIE_REV in f_replace:
-                        mid = f_replace[F_SPECIE_REV](mid)
-                if "Gene" in m_type:
-                    if f_replace and F_GENE_REV in f_replace:
-                        mid = f_replace[F_GENE_REV](mid)
+                if "Reaction" in m_type and f_replace and F_REACTION_REV in f_replace:
+                    mid = f_replace[F_REACTION_REV](mid)
+                if "Metabolite" in m_type and f_replace and F_SPECIE_REV in f_replace:
+                    mid = f_replace[F_SPECIE_REV](mid)
+                if "Gene" in m_type and f_replace and F_GENE_REV in f_replace:
+                    mid = f_replace[F_GENE_REV](mid)
 
                 member.setIdRef(mid)
                 if cobra_member.name and len(cobra_member.name) > 0:
@@ -1733,21 +1648,21 @@ In the current stage the new annotation format is not completely supported yet.
 URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")
 
 URL_IDENTIFIERS_PREFIX = "https://identifiers.org"
-QUALIFIER_TYPES = {
-    "is": libsbml.BQB_IS,
-    "hasPart": libsbml.BQB_HAS_PART,
-    "isPartOf": libsbml.BQB_IS_PART_OF,
-    "isVersionOf": libsbml.BQB_IS_VERSION_OF,
-    "hasVersion": libsbml.BQB_HAS_VERSION,
-    "isHomologTo": libsbml.BQB_IS_HOMOLOG_TO,
-    "isDescribedBy": libsbml.BQB_IS_DESCRIBED_BY,
-    "isEncodedBy": libsbml.BQB_IS_ENCODED_BY,
-    "encodes": libsbml.BQB_ENCODES,
-    "occursIn": libsbml.BQB_OCCURS_IN,
-    "hasProperty": libsbml.BQB_HAS_PROPERTY,
-    "isPropertyOf": libsbml.BQB_IS_PROPERTY_OF,
-    "hasTaxon": libsbml.BQB_HAS_TAXON,
-    "unknown": libsbml.BQB_UNKNOWN,
+QUALIFIER_TYPES_COBRA_SBML_DICT = {
+    "bqb_is": libsbml.BQB_IS,
+    "bqb_hasPart": libsbml.BQB_HAS_PART,
+    "bqb_isPartOf": libsbml.BQB_IS_PART_OF,
+    "bqb_isVersionOf": libsbml.BQB_IS_VERSION_OF,
+    "bqb_hasVersion": libsbml.BQB_HAS_VERSION,
+    "bqb_isHomologTo": libsbml.BQB_IS_HOMOLOG_TO,
+    "bqb_isDescribedBy": libsbml.BQB_IS_DESCRIBED_BY,
+    "bqb_isEncodedBy": libsbml.BQB_IS_ENCODED_BY,
+    "bqb_encodes": libsbml.BQB_ENCODES,
+    "bqb_occursIn": libsbml.BQB_OCCURS_IN,
+    "bqb_hasProperty": libsbml.BQB_HAS_PROPERTY,
+    "bqb_isPropertyOf": libsbml.BQB_IS_PROPERTY_OF,
+    "bqb_hasTaxon": libsbml.BQB_HAS_TAXON,
+    "bqb_unknown": libsbml.BQB_UNKNOWN,
     "bqm_is": libsbml.BQM_IS,
     "bqm_isDescribedBy": libsbml.BQM_IS_DESCRIBED_BY,
     "bqm_isDerivedFrom": libsbml.BQM_IS_DERIVED_FROM,
@@ -1755,12 +1670,33 @@ QUALIFIER_TYPES = {
     "bqm_hasInstance": libsbml.BQM_HAS_INSTANCE,
     "bqm_unknown": libsbml.BQM_UNKNOWN,
 }
+BIOLOGY_QUALIFIER_TYPES_TO_COBRA_DICT = {
+    value: key
+    for key, value in QUALIFIER_TYPES_COBRA_SBML_DICT.items()
+    if re.match("bqb", key)
+}
+MODEL_QUALIFIER_TYPES_TO_COBRA_DICT = {
+    value: key
+    for key, value in QUALIFIER_TYPES_COBRA_SBML_DICT.items()
+    if re.match("bqm", key)
+}
 
 
-def _parse_annotations(sbase: libsbml.SBase) -> dict:
+def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
     """Parse cobra annotations from a given SBase object.
 
-    Annotations are dictionaries with the providers as keys.
+    The annotation format has been changed. We no longer have
+    simple dictionaries for storing annotation data. Dedicated
+    classes for storing CVTerm data, History data and key-value
+    pair data corresponding to an SBase object have been made.
+    The metadata classes inside cobra.core directory contains
+    of them. All the existing issues in old annotation format have
+    been solved. The new format annotation is completely backward
+    compatible. It can read models with old annotation format,
+    can convert old format annotation to new format annotation,
+    and writes annotation in new format only (for JSON and other
+    formats). The JSON schema v2 specifies the new format annotation
+    whereas JSON schema v1 have annotation data defined in old format.
 
     Parameters
     ----------
@@ -1769,15 +1705,13 @@ def _parse_annotations(sbase: libsbml.SBase) -> dict:
 
     Returns
     -------
-    dict (annotation dictionary)
+    MetaData
+        a metadata object storing COBRA annotation
     """
-    #     FIXME: annotation format must be updated (this is a big collection of
-    #           fixes) - see: https://github.com/opencobra/cobrapy/issues/684)
-    annotation = {}
+    annotation = MetaData()
 
     # SBO term
     if sbase.isSetSBOTerm():
-        # FIXME: correct handling of annotations
         annotation["sbo"] = sbase.getSBOTermID()
 
     # RDF annotation
@@ -1785,27 +1719,76 @@ def _parse_annotations(sbase: libsbml.SBase) -> dict:
     if cvterms is None:
         return annotation
 
-    cvterm: "libsbml.CVTerm"
-    for cvterm in cvterms:
-        for k in range(cvterm.getNumResources()):
-            # FIXME: read and store the qualifier
+    def _cvterm_to_cobra(_cvterm: "libsbml.CVTerm") -> Optional[CVTerm]:
+        """Parse the libsbml.CVTerm object to cobra CVTerm.
 
-            uri = cvterm.getResourceURI(k)
-            data = _parse_annotation_info(uri)
-            if data is None:
-                continue
-            else:
-                provider, identifier = data
+        Parameters
+        ----------
+        _cvterm : libsbml.CVTerm
+            The libsbml.CVTerm object from which data is to be parsed.
 
-            if provider in annotation:
-                if isinstance(annotation[provider], str):
-                    annotation[provider] = [annotation[provider]]
-                # FIXME: use a list
-                if identifier not in annotation[provider]:
-                    annotation[provider].append(identifier)
-            else:
-                # FIXME: always in list
-                annotation[provider] = identifier
+        Returns
+        -------
+        CVTerm or None
+            The parsed data of the given libsbml.CVTerm object as CVTerm.
+            If the qualifier is unknown, this function will return None.
+        """
+        qualifier_type = _cvterm.getQualifierType()
+        if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
+            qualifier = BIOLOGY_QUALIFIER_TYPES_TO_COBRA_DICT[
+                _cvterm.getBiologicalQualifierType()
+            ]
+        elif qualifier_type == libsbml.MODEL_QUALIFIER:
+            qualifier = MODEL_QUALIFIER_TYPES_TO_COBRA_DICT[
+                _cvterm.getModelQualifierType()
+            ]
+        else:
+            LOGGER.warning(f"The cvterm {_cvterm} has an unkown qualifier. Ignoring it")
+            return None
+        ext_res = {
+            "resources": [
+                _cvterm.getResourceURI(k) for k in range(_cvterm.getNumResources())
+            ]
+        }
+
+        nested_cv_terms = [
+            _cvterm.getNestedCVTerm(index)
+            for index in range(_cvterm.getNumNestedCVTerms())
+        ]
+        # This kludge is necessary since _cvterm.getListNestedCVTerms() doesn't give a
+        # python list, but a Swig List_t * and then SwigPyObject is not iterable
+        ext_res["nested_data"] = CVTermList(
+            [
+                _cvterm_to_cobra(_nested_cvterm)
+                for _nested_cvterm in nested_cv_terms
+                if _nested_cvterm
+            ]
+        )
+        return CVTerm(ExternalResources.from_dict(ext_res), qualifier)
+
+    annotation.add_cvterms([_cvterm_to_cobra(cvterm) for cvterm in cvterms if cvterm])
+
+    # history of the component
+    if sbase.isSetModelHistory():
+        model_history: "libsbml.ModelHistory" = sbase.getModelHistory()
+
+        annotation.history.creators = [
+            Creator(
+                creator.getGivenName() or None,
+                creator.getFamilyName() or None,
+                creator.getEmail() or None,
+                creator.getOrganisation() or None,
+            )
+            for creator in model_history.getListCreators()
+        ]
+
+        if model_history.isSetCreatedDate():
+            date: libsbml.Date = model_history.getCreatedDate()
+            annotation.history.created_date = date.getDateAsString()
+
+        annotation.history.modified_dates = [
+            _date.getDateAsString() for _date in model_history.getListModifiedDates()
+        ]
 
     return annotation
 
@@ -1821,7 +1804,15 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
     Returns
     -------
     (provider, identifier) if resolvable, None otherwise
+
+    .. deprecated ::
+    Use cobra.core.metadata.helper.parse_identifiers_uri()
     """
+    warn(
+        "_parse_annotation_info() is being replaced by "
+        "cobra.core.metadata.helper.parse_identifiers_uri()",
+        DeprecationWarning,
+    )
     match = URL_IDENTIFIERS_PATTERN.match(uri)
     if match:
         provider, identifier = match.group(1), match.group(2)
@@ -1839,7 +1830,53 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
     return provider, identifier
 
 
-def _sbase_annotations(sbase: libsbml.SBase, annotation: dict) -> None:
+def _cvterms_to_sbml(cvterms: CVTermList) -> List["libsbml.CVTerm"]:
+    """Convert cobra CVTerms to libsbml.CVTerm list.
+
+    Parameters
+    ----------
+    cvterms: CVTermList
+        cobra CVTerms object
+
+    Returns
+    -------
+    list
+        List of libsbml.cvTerm objects
+    """
+    cv_list = []
+    for cvterm in cvterms:
+        qualifier = cvterm.qualifier
+        if qualifier.name.startswith("bqb"):
+            qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
+        elif qualifier.name.startswith("bqm"):
+            qualifier_type = libsbml.MODEL_QUALIFIER
+        else:
+            raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
+
+        cv: "libsbml.CVTerm" = libsbml.CVTerm()
+        cv.setQualifierType(qualifier_type)
+        if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
+            cv.setBiologicalQualifierType(
+                QUALIFIER_TYPES_COBRA_SBML_DICT[qualifier.name]
+            )
+        elif qualifier_type == libsbml.MODEL_QUALIFIER:
+            cv.setModelQualifierType(QUALIFIER_TYPES_COBRA_SBML_DICT[qualifier.name])
+        else:
+            raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
+        for uri in sorted(cvterm.external_resources.resources):
+            cv.addResource(uri)
+
+        [
+            _check(cv.addNestedCVTerm(_cv), f"Adding nested cvterm: {_cv}")
+            for _cv in _cvterms_to_sbml(cvterm.external_resources.nested_data)
+        ]
+
+        cv_list.append(cv)
+
+    return cv_list
+
+
+def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
     """Set SBase annotations based on cobra annotations.
 
     Parameters
@@ -1853,72 +1890,78 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: dict) -> None:
     ------
     CobraSBMLError for unsupported qualifier
     """
-    #    FIXME: annotation format must be updated
-    #     (https://github.com/opencobra/cobrapy/issues/684)
-    if not annotation or len(annotation) == 0:
-        return
-
-    # standardize annotations
     annotation_data = deepcopy(annotation)
+    # TODO - devel has formatting of float and to str, and str to ["is", str] - does this happen in CVterm?
 
-    for key, value in annotation_data.items():
-        # handling of non-string annotations (e.g. integers)
-        if isinstance(value, (float, int)):
-            value = str(value)
-        if isinstance(value, str):
-            annotation_data[key] = [("is", value)]
+    if not isinstance(annotation_data, MetaData):
+        raise TypeError(
+            f"The annotation object must be of type 'Metadata': {annotation_data}"
+        )
 
-    for _key, value in annotation_data.items():
-        for idx, item in enumerate(value):
-            if isinstance(item, str):
-                value[idx] = ("is", item)
+    if "SBO" in annotation_data:
+        LOGGER.warning(
+            "'SBO' provider is deprecated, use 'sbo' provider instead. Converting to"
+            "'sbo' for writing."
+        )
+        annotation_data["sbo"] = annotation_data.pop("SBO")
+
+    if "sbo" in annotation and annotation.sbo:
+        sbo_term = annotation_data.sbo
+        if isinstance(sbo_term, list):
+            # TODO - need to add the rest of the list, maybe
+            sbo_term = sbo_term[0]
+        _check(sbase.setSBOTerm(sbo_term), f"Setting SBOTerm: {sbo_term}")
 
     # set metaId
     meta_id = f"meta_{sbase.getId()}"
     sbase.setMetaId(meta_id)
 
-    # rdf_items = []
-    for provider, data in annotation_data.items():
+    # set standardized
+    [
+        _check(sbase.addCVTerm(cv), f"Setting cvterm: {cv}")
+        for cv in _cvterms_to_sbml(annotation.standardized)
+    ]
 
-        # set SBOTerm
-        if provider in ["SBO", "sbo"]:
-            if provider == "SBO":
-                LOGGER.warning(
-                    "'SBO' provider is deprecated, use 'sbo' provider instead"
-                )
-            sbo_term = data[0][1]
-            _check(sbase.setSBOTerm(sbo_term), f"Setting SBOTerm: {sbo_term}")
+    # set history
+    if not annotation.history.is_empty():
+        comp_history = libsbml.ModelHistory()
 
-            # FIXME: sbo should also be written as CVTerm
-            continue
-
-        for item in data:
-            qualifier_str, entity = item[0], item[1]
-            qualifier = QUALIFIER_TYPES.get(qualifier_str, None)
-            if qualifier is None:
-                qualifier = libsbml.BQB_IS
-                LOGGER.error(
-                    f"Qualifier type is not supported on annotation: '{qualifier_str}'"
-                )
-
-            qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
-            if qualifier_str.startswith("bqm_"):
-                qualifier_type = libsbml.MODEL_QUALIFIER
-
-            cv: "libsbml.CVTerm" = libsbml.CVTerm()
-            cv.setQualifierType(qualifier_type)
-            if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
-                cv.setBiologicalQualifierType(qualifier)
-            elif qualifier_type == libsbml.MODEL_QUALIFIER:
-                cv.setModelQualifierType(qualifier)
-            else:
-                raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
-            resource = f"{URL_IDENTIFIERS_PREFIX}/{provider}/{entity}"
-            cv.addResource(resource)
+        for creator in annotation.history.creators:
+            comp_creator = libsbml.ModelCreator()
+            comp_creator.setGivenName(creator.given_name)
+            comp_creator.setFamilyName(creator.family_name)
+            creator.email and comp_creator.setEmail(creator.email)
+            creator.organisation and comp_creator.setOrganisation(creator.organisation)
             _check(
-                sbase.addCVTerm(cv),
-                f"Setting cvterm: {cv}, resource: {resource}",
+                comp_history.addCreator(comp_creator),
+                f"adding creator to {sbase.getId}.",
             )
+
+        if annotation.history.created_date:
+            date = libsbml.Date(
+                annotation.history.created_date.strftime(STRTIME_FORMAT)
+            )
+            _check(
+                comp_history.setCreatedDate(date), f"set creation date for {sbase.id}"
+            )
+        elif isinstance(sbase, libsbml.SBMLDocument):
+            time = datetime.datetime.now()
+            timestr = time.strftime(STRTIME_FORMAT)
+            date = libsbml.Date(timestr)
+            _check(comp_history.setCreatedDate(date), "set creation date for document")
+
+        for modified_date in annotation.history.modified_dates:
+            date = libsbml.Date(modified_date.strftime(STRTIME_FORMAT))
+            _check(
+                comp_history.addModifiedDate(date),
+                f"add modification date for {sbase.id}",
+            )
+
+        # finally add the compo_history
+        _check(
+            sbase.setModelHistory(comp_history),
+            f"Setting ModelHistory: {comp_history}",
+        )
 
 
 # -----------------------------------------------------------------------------
@@ -1965,17 +2008,30 @@ def validate_sbml_model(
     from the libsbml validator. COBRA_* types are from the cobrapy SBML
     parser.
     """
-    keys = (
-        "SBML_FATAL",
-        "SBML_ERROR",
-        "SBML_SCHEMA_ERROR",
-        "SBML_WARNING",
-        "COBRA_FATAL",
-        "COBRA_ERROR",
-        "COBRA_WARNING",
-        "COBRA_CHECK",
-    )
-    errors = {key: [] for key in keys}
+    cobra_sbml_error_dict = {
+        "SBML_FATAL": libsbml.LIBSBML_SEV_FATAL,
+        "SBML_ERROR": libsbml.LIBSBML_SEV_ERROR,
+        "SBML_SCHEMA_ERROR": libsbml.LIBSBML_SEV_SCHEMA_ERROR,
+        "SBML_WARNING": libsbml.LIBSBML_SEV_WARNING,
+        "COBRA_FATAL": None,
+        "COBRA_ERROR": None,
+        "COBRA_WARNING": None,
+        "COBRA_CHECK": None,
+    }
+    sbml_severity_dict = {
+        value: key for key, value in cobra_sbml_error_dict.items() if value
+    }
+    errors = {key: [] for key in cobra_sbml_error_dict.keys()}
+    sbml_log_dict = {
+        "SBML_FATAL": "SBML errors",
+        "SBML_ERROR": "SBML errors",
+        "SBML_SCHEMA_ERROR": "SBML errors",
+        "SBML_WARNING": "SBML warnings",
+        "COBRA_FATAL": "COBRA errors",
+        "COBRA_ERROR": "COBRA errors",
+        "COBRA_WARNING": "COBRA warnings",
+        "COBRA_CHECK": "COBRA warnings",
+    }
 
     # [1] libsbml validation
     doc: "libsbml.SBMLDocument" = _get_doc_from_filename(filename)
@@ -1997,14 +2053,7 @@ def validate_sbml_model(
         e: "libsbml.SBMLError" = doc.getError(k)
         msg = _error_string(e, k=k)
         sev = e.getSeverity()
-        if sev == libsbml.LIBSBML_SEV_FATAL:
-            errors["SBML_FATAL"].append(msg)
-        elif sev == libsbml.LIBSBML_SEV_ERROR:
-            errors["SBML_ERROR"].append(msg)
-        elif sev == libsbml.LIBSBML_SEV_SCHEMA_ERROR:
-            errors["SBML_SCHEMA_ERROR"].append(msg)
-        elif sev == libsbml.LIBSBML_SEV_WARNING:
-            errors["SBML_WARNING"].append(msg)
+        errors[sbml_severity_dict[sev]].append(msg)
 
     # [2] cobrapy validation (check that SBML can be read into model)
     # all warnings generated while loading will be logged as errors
@@ -2045,21 +2094,11 @@ def validate_sbml_model(
     if check_model:
         errors["COBRA_CHECK"].extend(check_metabolite_compartment_formula(model))
 
-    for key in ["SBML_FATAL", "SBML_ERROR", "SBML_SCHEMA_ERROR"]:
+    for key in sbml_log_dict.keys():
         if len(errors[key]) > 0:
-            LOGGER.error("SBML errors in validation, check error log for details.")
-            break
-    for key in ["SBML_WARNING"]:
-        if len(errors[key]) > 0:
-            LOGGER.error("SBML warnings in validation, check error log for details.")
-            break
-    for key in ["COBRA_FATAL", "COBRA_ERROR"]:
-        if len(errors[key]) > 0:
-            LOGGER.error("COBRA errors in validation, check error log for details.")
-            break
-    for key in ["COBRA_WARNING", "COBRA_CHECK"]:
-        if len(errors[key]) > 0:
-            LOGGER.error("COBRA warnings in validation, check error log for details.")
+            LOGGER.error(
+                f"{sbml_log_dict[key]} in validation, check error log for details."
+            )
             break
 
     return model, errors

@@ -27,24 +27,28 @@ def _check_sbml_annotations(model: "Model") -> None:
     annotation = model.annotation
     assert annotation is not None
     assert len(annotation) == 3
-    for key in ["bigg.model", "doi", "taxonomy"]:
-        assert key in annotation
-    assert annotation["bigg.model"] == "e_coli_core"
-    assert annotation["doi"] == "10.1128/ecosalplus.10.2.1"
-    assert annotation["taxonomy"] == "511145"
+    assert set(annotation.keys()) == {"bigg.model", "doi", "taxonomy"}
+    assert annotation["bigg.model"] == ["e_coli_core"]
+    assert annotation["doi"] == ["10.1128/ecosalplus.10.2.1"]
+    assert annotation["taxonomy"] == ["511145"]
 
     # gene annotation
     # {'asap': 'ABE-0006162', 'ncbigene': '946368', 'uniprot': 'P33221',
-    #  'ncbiprotein': 'gi:16129802', 'ecogene': 'EG11809'}
+    #  'ncbiprotein': '16129802', 'ecogene': 'EG11809'}
     annotation = model.genes.G1.annotation
     assert len(annotation) == 5
-    for key in ["asap", "ncbigene", "uniprot", "ncbiprotein", "ecogene"]:
-        assert key in annotation
-    assert annotation["asap"] == "ABE-0006162"
-    assert annotation["ncbigene"] == "946368"
-    assert annotation["uniprot"] == "P33221"
-    assert annotation["ncbiprotein"] == "16129802"
-    assert annotation["ecogene"] == "EG11809"
+    assert set(annotation.keys()) == {
+        "asap",
+        "ncbigene",
+        "uniprot",
+        "ncbiprotein",
+        "ecogene",
+    }
+    assert annotation["asap"] == ["ABE-0006162"]
+    assert annotation["ncbigene"] == ["946368"]
+    assert annotation["uniprot"] == ["P33221"]
+    assert annotation["ncbiprotein"] == ["16129802"]
+    assert annotation["ecogene"] == ["EG11809"]
 
     # compartment annotation
     # FIXME: add tests with first class compartment model
@@ -63,7 +67,7 @@ def _check_sbml_annotations(model: "Model") -> None:
     # 'seed.compound': 'cpd00203', 'hmdb': ['HMDB62758', 'HMDB06213'],
     # 'biocyc': 'META:DPG'}
     annotation = model.metabolites.A.annotation
-    for key in [
+    assert set(annotation.keys()) == {
         "inchi",
         "bigg.metabolite",
         "chebi",
@@ -72,11 +76,10 @@ def _check_sbml_annotations(model: "Model") -> None:
         "seed.compound",
         "hmdb",
         "biocyc",
-    ]:
-        assert key in annotation
-    assert (
-        annotation["inchi"] == "InChI=1S/C3H8O2/c1-3(5)2-4/h3-5H,2H2,1H3/t3-/m0/s1"
-    )  # noqa: E501
+    }
+    assert annotation["inchi"] == [
+        "InChI=1S/C3H8O2/c1-3(5)2-4/h3-5H,2H2,1H3/t3-/m0/s1"
+    ]  # noqa: E501
 
     # reaction annotation
     # {'kegg.reaction': 'R00228', 'sbo': 'SBO:0000375',
@@ -84,7 +87,7 @@ def _check_sbml_annotations(model: "Model") -> None:
     # 'metanetx.reaction': 'MNXR95210', 'bigg.reaction': 'ACALD',
     # 'biocyc': 'META:ACETALD-DEHYDROG-RXN'}
     annotation = model.reactions.R1.annotation
-    for key in [
+    assert set(annotation.keys()) == {
         "kegg.reaction",
         "sbo",
         "ec-code",
@@ -92,9 +95,8 @@ def _check_sbml_annotations(model: "Model") -> None:
         "metanetx.reaction",
         "bigg.reaction",
         "biocyc",
-    ]:
-        assert key in annotation
-    assert annotation["biocyc"] == "META:ACETALD-DEHYDROG-RXN"
+    }
+    assert annotation["biocyc"] == ["META:ACETALD-DEHYDROG-RXN"]
 
 
 def test_read_sbml_annotations(data_directory: Path) -> None:

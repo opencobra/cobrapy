@@ -6,13 +6,14 @@ from os.path import join, split
 from pathlib import Path
 from pickle import load
 from tempfile import gettempdir
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 
 import pytest
 from _pytest.fixtures import SubRequest
 
 import cobra
 from cobra import Model
+from cobra.core.metadata import MetaData
 from cobra.io import read_sbml_model, validate_sbml_model, write_sbml_model
 
 
@@ -318,7 +319,56 @@ def test_from_sbml_string(data_directory: str) -> None:
     TestCobraIO.compare_models(name="read from string", model1=model1, model2=model2)
 
 
-@pytest.mark.skip(reason="Model history currently not written")
+def test_document_history(tmp_path: Path) -> None:
+    """Testing reading and writing of ModelHistory for SBMLDocument.
+
+    Parameters
+    ----------
+    tmp_path: Path
+        Directory to use for temporary data.
+    """
+    model = Model("test")
+    history = {
+        "creators": [
+            {
+                "family_name": "Mustermann",
+                "given_name": "Max",
+                "organisation": "Muster University",
+                "email": "muster@university.com",
+            }
+        ],
+        "created_date": "2019-10-20T12:34:32Z",
+        "modified_dates": ["2019-10-20T12:35:32Z"],
+    }
+    annotation = MetaData(history=history)
+    model._sbml = {"annotation": annotation}
+
+    sbml_path = join(str(tmp_path), "test.xml")
+    with open(sbml_path, "w") as f_out:
+        write_sbml_model(model, f_out)
+
+    with open(sbml_path, "r") as f_in:
+        model2 = read_sbml_model(f_in)
+
+    assert "annotation" in model2._sbml
+    assert len(model2._sbml["annotation"].history.creators) == 1
+    c = model2._sbml["annotation"].history.creators[0]
+    assert c.family_name == "Mustermann"
+    assert c.given_name == "Max"
+    assert c.organisation == "Muster University"
+    assert c.email == "muster@university.com"
+
+    assert (
+        model2._sbml["annotation"].history.created_date.isoformat()
+        == "2019-10-20T12:34:32+00:00"
+    )
+    assert len(model2._sbml["annotation"].history._modified_dates) == 1
+    assert (
+        model2._sbml["annotation"].history._modified_dates[0].isoformat()
+        == "2019-10-20T12:35:32+00:00"
+    )
+
+
 def test_model_history(tmp_path: Path) -> None:
     """Testing reading and writing of ModelHistory.
 
@@ -328,16 +378,19 @@ def test_model_history(tmp_path: Path) -> None:
         Directory to use for temporary data.
     """
     model = Model("test")
-    model._sbml = {
+    history = {
         "creators": [
             {
-                "familyName": "Mustermann",
-                "givenName": "Max",
+                "family_name": "Mustermann",
+                "given_name": "Max",
                 "organisation": "Muster University",
                 "email": "muster@university.com",
             }
-        ]
+        ],
+        "created_date": "2019-10-20T12:34:32Z",
+        "modified_dates": ["2019-10-20T12:35:32Z"],
     }
+    model.annotation = MetaData(history=history)
 
     sbml_path = join(str(tmp_path), "test.xml")
     with open(sbml_path, "w") as f_out:
@@ -346,13 +399,22 @@ def test_model_history(tmp_path: Path) -> None:
     with open(sbml_path, "r") as f_in:
         model2 = read_sbml_model(f_in)
 
-    assert "creators" in model2._sbml
-    assert len(model2._sbml["creators"]) == 1
-    c = model2._sbml["creators"][0]
-    assert c["familyName"] == "Mustermann"
-    assert c["givenName"] == "Max"
-    assert c["organisation"] == "Muster University"
-    assert c["email"] == "muster@university.com"
+    assert len(model2.annotation.history.creators) == 1
+    c = model2.annotation.history.creators[0]
+    assert c.family_name == "Mustermann"
+    assert c.given_name == "Max"
+    assert c.organisation == "Muster University"
+    assert c.email == "muster@university.com"
+
+    assert (
+        model2.annotation.history.created_date.isoformat()
+        == "2019-10-20T12:34:32+00:00"
+    )
+    assert len(model2.annotation.history._modified_dates) == 1
+    assert (
+        model2.annotation.history._modified_dates[0].isoformat()
+        == "2019-10-20T12:35:32+00:00"
+    )
 
 
 def test_groups(data_directory: str, tmp_path: Path) -> None:
@@ -543,7 +605,7 @@ def test_gprs(data_directory: str, tmp_path: Path) -> None:
 
 def test_identifiers_annotation() -> None:
     """Test annotation with identifiers."""
-    from cobra.io.sbml import _parse_annotation_info
+    from cobra.core.metadata.helper import parse_identifiers_uri
 
     for uri in [
         "http://identifiers.org/chebi/CHEBI:000123",
@@ -551,7 +613,7 @@ def test_identifiers_annotation() -> None:
         "http://identifiers.org/CHEBI:000123",
         "https://identifiers.org/CHEBI:000123",
     ]:
-        data = _parse_annotation_info(uri)
+        data = parse_identifiers_uri(uri)
         assert data
         assert data[0] == "chebi"
         assert data[1] == "CHEBI:000123"
@@ -562,7 +624,7 @@ def test_identifiers_annotation() -> None:
         "http://identifiers.org/taxonomy:9602",
         "https://identifiers.org/taxonomy:9602",
     ]:
-        data = _parse_annotation_info(uri)
+        data = parse_identifiers_uri(uri)
         assert data
         assert data[0] == "taxonomy"
         assert data[1] == "9602"
@@ -571,19 +633,17 @@ def test_identifiers_annotation() -> None:
         "http://identifier.org/taxonomy/9602",
         "https://test.com",
     ]:
-        data = _parse_annotation_info(uri)
+        data = parse_identifiers_uri(uri)
         assert data is None
 
 
-def test_smbl_with_notes(data_directory: str, tmp_path: Path) -> None:
+def test_smbl_with_notes(data_directory: str) -> None:
     """Test that NOTES in the RECON 2.2 style are written and read correctly.
 
     Parameters
     ----------
     data_directory: str
         Directory where the data is.
-    tmp_path: Path
-        Directory to use for temporary data.
     """
     sbml_path = join(data_directory, "example_notes.xml")
     model = read_sbml_model(sbml_path)
@@ -609,52 +669,56 @@ def test_smbl_with_notes(data_directory: str, tmp_path: Path) -> None:
     }
     metabolite_annotations = {
         "2hb_e": {
-            "sbo": "SBO:0000247",
-            "inchi": "InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3," "(H,6,7)",
-            "chebi": "CHEBI:1148",
+            "sbo": ["SBO:0000247"],
+            "inchi": ["InChI=1S/C4H8O3/c1-2-3(5)4(6)7/h3,5H,2H2,1H3,(H,6,7)"],
+            "chebi": ["CHEBI:1148"],
         },
         "nad_e": {
-            "sbo": "SBO:0000247",
-            "inchi": "InChI=1S/C21H27N7O14P2/c22-17-12-19("
-            "25-7-24-17)28(8-26-12)21-16(32)14(30)11("
-            "41-21)6-39-44(36,37)42-43(34,35)38-5-10-13(29)15("
-            "31)20(40-10)27-3-1-2-9(4-27)18("
-            "23)33/h1-4,7-8,10-11,13-16,20-21,29-32H,5-6H2,"
-            "(H5-,22,23,24,25,33,34,35,36,37)/p-1/t10-,"
-            "11-,13-,14-,15-,16-,20-,21-/m1/s1",
-            "chebi": "CHEBI:57540",
+            "sbo": ["SBO:0000247"],
+            "inchi": [
+                "InChI=1S/C21H27N7O14P2/c22-17-12-19("
+                "25-7-24-17)28(8-26-12)21-16(32)14(30)11("
+                "41-21)6-39-44(36,37)42-43(34,35)38-5-10-13(29)15("
+                "31)20(40-10)27-3-1-2-9(4-27)18("
+                "23)33/h1-4,7-8,10-11,13-16,20-21,29-32H,5-6H2,"
+                "(H5-,22,23,24,25,33,34,35,36,37)/p-1/t10-,"
+                "11-,13-,14-,15-,16-,20-,21-/m1/s1"
+            ],
+            "chebi": ["CHEBI:57540"],
         },
         "h_e": {
-            "sbo": "SBO:0000247",
-            "inchi": "InChI=1S/p+1/i/hH",
-            "chebi": "CHEBI:24636",
+            "sbo": ["SBO:0000247"],
+            "inchi": ["InChI=1S/p+1/i/hH"],
+            "chebi": ["CHEBI:24636"],
         },
         "2obut_e": {
-            "sbo": "SBO:0000247",
-            "inchi": "InChI=1S/C4H6O3/c1-2-3(5)4(6)7/h2H2,1H3,(H,6," "7)/p-1",
-            "chebi": "CHEBI:16763",
+            "sbo": ["SBO:0000247"],
+            "inchi": ["InChI=1S/C4H6O3/c1-2-3(5)4(6)7/h2H2,1H3,(H,6,7)/p-1"],
+            "chebi": ["CHEBI:16763"],
         },
         "nadh_e": {
-            "sbo": "SBO:0000247",
-            "inchi": "InChI=1S/C21H29N7O14P2/c22-17-12-19("
-            "25-7-24-17)28(8-26-12)21-16(32)14(30)11("
-            "41-21)6-39-44(36,37)42-43(34,35)38-5-10-13("
-            "29)15(31)20(40-10)27-3-1-2-9(4-27)18("
-            "23)33/h1,3-4,7-8,10-11,13-16,20-21,29-32H,2,"
-            "5-6H2,(H2,23,33)(H,34,35)(H,36,37)(H2,22,24,"
-            "25)/p-2/t10-,11-,13-,14-,15-,16-,20-,21-/m1/s1",
-            "chebi": "CHEBI:57945",
+            "sbo": ["SBO:0000247"],
+            "inchi": [
+                "InChI=1S/C21H29N7O14P2/c22-17-12-19("
+                "25-7-24-17)28(8-26-12)21-16(32)14(30)11("
+                "41-21)6-39-44(36,37)42-43(34,35)38-5-10-13("
+                "29)15(31)20(40-10)27-3-1-2-9(4-27)18("
+                "23)33/h1,3-4,7-8,10-11,13-16,20-21,29-32H,2,"
+                "5-6H2,(H2,23,33)(H,34,35)(H,36,37)(H2,22,24,"
+                "25)/p-2/t10-,11-,13-,14-,15-,16-,20-,21-/m1/s1"
+            ],
+            "chebi": ["CHEBI:57945"],
         },
     }
     reaction_notes = {
         "CONFIDENCE_LEVEL": "4",
         "NOTES": "NCD",
         "SUBSYSTEM": "Propanoate metabolism",
-        "GENE_ASSOCIATION": "(HGNC:8546 and HGNC:8548) or" " (HGNC:8547 and HGNC:8548)",
+        "GENE_ASSOCIATION": "(HGNC:8546 and HGNC:8548) or (HGNC:8547 and HGNC:8548)",
     }
     reaction_annotations = {
-        "sbo": "SBO:0000176",
-        "ec-code": "1.1.1.27",
+        "sbo": ["SBO:0000176"],
+        "ec-code": ["1.1.1.27"],
         "pubmed": ["10108", "21765"],
     }
 
@@ -708,3 +772,12 @@ def test_stable_gprs(data_directory: str, tmp_path: Path) -> None:
     assert (
         fixed_model.reactions.GLCpts.gene_reaction_rule == "(b2415 and b2417) or b2416"
     )
+
+
+def test_writing_xml_with_annotation(
+    compare_models: Callable, data_directory: Path, tmp_path: Path
+):
+    model = read_sbml_model(str(join(data_directory, "e_coli_core_for_annotation.xml")))
+    write_sbml_model(model, str(join(tmp_path, "e_coli_core_writing.xml")))
+    reread_model = read_sbml_model(str(join(tmp_path, "e_coli_core_writing.xml")))
+    compare_models(model, reread_model)

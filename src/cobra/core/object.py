@@ -2,6 +2,8 @@
 
 from typing import Optional
 
+from cobra.core.metadata import MetaData
+
 
 class Object:
     """Defines common behavior of object in cobra.core."""
@@ -23,7 +25,7 @@ class Object:
         self.name = name
 
         self.notes = {}
-        self._annotation = {}
+        self._annotation = MetaData()
 
     @property
     def id(self) -> str:
@@ -70,7 +72,7 @@ class Object:
         self._id = value
 
     @property
-    def annotation(self) -> dict:
+    def annotation(self) -> MetaData:
         """Get annotation dictionary.
 
         Returns
@@ -93,10 +95,15 @@ class Object:
         ------
         TypeError if annotation not a dict.
         """
-        if not isinstance(annotation, dict):
-            raise TypeError("Annotation must be a dict")
-        else:
+        if isinstance(annotation, MetaData):
             self._annotation = annotation
+        elif isinstance(annotation, dict):
+            self._annotation = MetaData().from_dict(annotation)
+        else:
+            raise TypeError(
+                f"The data passed for annotation must be inside "
+                f"a dictionary or MetaData: {annotation}"
+            )
 
     def __getstate__(self) -> dict:
         """Get state of annotation.

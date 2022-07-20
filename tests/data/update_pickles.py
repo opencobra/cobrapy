@@ -14,8 +14,11 @@ from collections import OrderedDict
 from json import dump as json_dump
 from pickle import dump, load
 
+import scipy.io as scipy_io
+
 import cobra
 from cobra.io import (
+    create_mat_dict,
     load_matlab_model,
     load_model,
     read_sbml_model,
@@ -37,7 +40,7 @@ if __name__ == "__main__":
         dump(ecoli_model, outfile, protocol=2)
 
     # salmonella
-    salmonella = load_model("salmonella")
+    salmonella = load_model("salmonella", cache=False)
     with open("salmonella.media", "rb") as infile:
         salmonella.media_compositions = load(infile)
     with open("salmonella.pickle", "wb") as outfile:
@@ -108,6 +111,40 @@ if __name__ == "__main__":
     raven = load_matlab_model("raven.mat")
     with open("raven.pickle", "wb") as outfile:
         dump(raven, outfile, protocol=2)
+
+    # Make mat model with wrong fields, which needs to happen every time the mini.mat
+    # model changes, i.e. every time update_pickles.py runs.
+    mat_dict = create_mat_dict(mini)
+
+    old_new_fields = {
+        "metUniPathway": "metUNIPathway",
+        "metKEGGID": "metKeggID",
+        "metHMDBID": "methmdbid",
+        "metMetaNetXID": "metMETANETXID",
+        "metKEGGDrugID": "metKEGGDrugid",
+        "metKEGGGlycanID": "metkeggGlycanID",
+        "metBiGGID": "metBIGGID",
+        "metLIPIDMAPSID": "metLipidMapsID",
+        "metSEEDID": "metSEEDID".casefold(),
+        "metBioCycID": "metBioCYCID",
+        "metPubChemSubstance": "metPubChemSUBSTANCE",
+        "metReactomeID": "metREACTOMEid",
+        "metCasNumber": "metCASNumber".upper(),
+        "rxnECNumbers": "rxnECNumbers".upper(),
+        "rxnMetaNetXID": "rxnMetaNetXID".casefold(),
+        "rxnKEGGID": "rxnKeggID",
+        "rxnRheaID": "rxnRHEAID",
+        "rxnBioCycID": "rxnBIOCycID",
+        "rxnBiGGID": "rxnBIGGID",
+    }
+    for _old, _new in old_new_fields.items():
+        mat_dict[_new] = mat_dict.pop(_old)
+    scipy_io.savemat(
+        "mini_wrong_key_caps.mat",
+        {"mini_textbook": mat_dict},
+        appendmat=True,
+        oned_as="column",
+    )
 
     # TODO:these need a reference solutions rather than circular solution checking!
 

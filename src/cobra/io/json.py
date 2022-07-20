@@ -1,6 +1,11 @@
 """Provide functions for I/O in JSON format."""
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union
+
+import jsonschema
+from importlib_resources import files
+
+from cobra import io as cio
 
 from .dict import model_from_dict, model_to_dict
 
@@ -15,6 +20,18 @@ if TYPE_CHECKING:
 
 
 JSON_SPEC = "1"
+
+
+def json_schema_v1() -> Dict:
+    with files(cio).joinpath("schema_v1.json").open("r") as handle:
+        schema_v1 = json.load(handle)
+    return schema_v1
+
+
+def json_schema_v2() -> Dict:
+    with files(cio).joinpath("schema_v2.json").open("r") as handle:
+        schema_v2 = json.load(handle)
+    return schema_v2
 
 
 def to_json(model: "Model", sort: bool = False, **kwargs: Any) -> str:
@@ -72,7 +89,7 @@ def save_json_model(
     filename: Union[str, Path],
     sort: bool = False,
     pretty: bool = False,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> None:
     """Write the cobra model to a file in JSON format.
 
@@ -80,7 +97,7 @@ def save_json_model(
     ----------
     model : cobra.Model
         The cobra model to represent.
-    filename : str or file-like
+    filename : str or file-like or Path
         File path or descriptor that the JSON representation should be
         written to.
     sort : bool, optional
@@ -130,7 +147,7 @@ def load_json_model(filename: Union[str, Path]) -> "Model":
 
     Parameters
     ----------
-    filename : str or file-like
+    filename : str or file-like or Path
         File path or descriptor that contains the JSON document describing the
         cobra model.
 
@@ -149,3 +166,48 @@ def load_json_model(filename: Union[str, Path]) -> "Model":
             return model_from_dict(json.load(file_handle))
     else:
         return model_from_dict(json.load(filename))
+
+
+def validate_json_model(
+    filename: Union[str, bytes], json_schema_version: int = 1
+) -> List:
+    """
+    Validate a model in json format against the schema with given version
+    Parameters
+    ----------
+    filename : str or file-like
+        File path or descriptor that contains the JSON document describing the
+        cobra model.
+    json_schema_version : int {1, 2}
+        the version of schema to be used for validation.
+        Currently we have v1 and v2 only and v2 is under development
+    Returns
+    -------
+    errors : list
+        The list of errors encountered while validating
+    """
+
+    if json_schema_version == 1:
+        schema = json_schema_v1()
+    elif json_schema_version == 2:
+        schema = json_schema_v2()
+    else:
+        raise ValueError(
+            f"Only v1 and v2 of JSON schema are available. JSON "
+            f"schema v{json_schema_version} is not supported."
+        )
+
+    # TODO - Should the validator be picked by schema?
+    #  Something like validators.validator_for
+    validator = jsonschema.Draft7Validator(schema)
+
+    try:
+        if isinstance(filename, (str, Path)):
+            with open(filename, "r") as file_handle:
+                errors = validator.iter_errors(json.load(file_handle))
+        else:
+            errors = validator.iter_errors(json.load(filename))
+    except OSError:
+        errors = validator.iter_errors(json.loads(filename))
+
+    return list(errors)

@@ -282,7 +282,7 @@ def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) ->
         str(Path(data_directory, "mini_wrong_key_caps.mat").resolve())
     )
     assert compare_models(mat_model, mat_wrong_caps_model) is None
-    assert mat_wrong_caps_model.reactions.get_by_id("LDH_D").annotation == {
+    EXPECTED_RXN_ANNOTATION = {
         "rhea": ["16369", "16370", "16371", "16372"],
         "metanetx.reaction": ["MNXR101037"],
         "kegg.reaction": ["R00704"],
@@ -291,32 +291,51 @@ def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) ->
         "biocyc": ["META:DLACTDEHYDROGNAD-RXN"],
         "sbo": ["SBO:0000375"],
     }
+    actual_rxn_annotation = dict(
+        mat_wrong_caps_model.reactions.get_by_id("LDH_D").annotation
+    )
+    expected_rxn_keys = EXPECTED_RXN_ANNOTATION.keys()
+    actual_rxn_keys = actual_rxn_annotation.keys()
+    assert expected_rxn_keys == actual_rxn_keys
+    for key in actual_rxn_keys:
+        assert EXPECTED_RXN_ANNOTATION[key] == actual_rxn_annotation[key]
     for rxn in mat_model.reactions.list_attr("id"):
         assert (
             mat_wrong_caps_model.reactions.get_by_id(rxn).annotation
             == mat_model.reactions.get_by_id(rxn).annotation
         )
-    assert mat_wrong_caps_model.metabolites.get_by_id("pyr_c").annotation == {
+
+    EXPECTED_MAT_ANNOTATION = {
         "seed.compound": ["cpd00020"],
         "unipathway.compound": ["UPC00022"],
         "lipidmaps": ["LMFA01060077"],
-        "reactome": ["REACT_113557", "REACT_389680", "REACT_29398"],
+        "reactome": sorted(["REACT_113557", "REACT_389680", "REACT_29398"]),
         "biocyc": ["PYRUVATE"],
-        "chebi": [
-            "CHEBI:15361",
-            "CHEBI:14987",
-            "CHEBI:8685",
-            "CHEBI:32816",
-            "CHEBI:45253",
-            "CHEBI:26466",
-            "CHEBI:26462",
-        ],
+        "chebi": sorted(
+            [
+                "CHEBI:15361",
+                "CHEBI:14987",
+                "CHEBI:8685",
+                "CHEBI:32816",
+                "CHEBI:45253",
+                "CHEBI:26466",
+                "CHEBI:26462",
+            ]
+        ),
         "pubchem.substance": ["3324"],
         "bigg.metabolite": ["pyr"],
         "cas": ["127-17-3"],
         "hmdb": ["HMDB00243"],
         "kegg.compound": ["C00022"],
     }
+    actual_met_annotation = mat_wrong_caps_model.metabolites.get_by_id(
+        "pyr_c"
+    ).annotation.annotations
+    expected_met_keys = EXPECTED_MAT_ANNOTATION.keys()
+    actual_met_keys = actual_met_annotation.keys()
+    assert expected_met_keys == actual_met_keys
+    for key in actual_met_keys:
+        assert EXPECTED_MAT_ANNOTATION[key] == actual_met_annotation[key]
     for met in mat_model.metabolites.list_attr("id"):
         assert (
             mat_wrong_caps_model.metabolites.get_by_id(met).annotation

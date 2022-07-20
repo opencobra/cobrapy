@@ -153,5 +153,5 @@
     "metabolites",
     "genes"
   ],
-  "additionalProperties": false
+  "additionalProperties": true
 }

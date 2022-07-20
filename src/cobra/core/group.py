@@ -3,7 +3,6 @@
 from typing import Iterable, Optional, Set
 from warnings import warn
 
-from .dictlist import DictList
 from .object import Object
 
 
