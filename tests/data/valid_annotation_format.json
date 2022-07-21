@@ -5,9 +5,9 @@
       "name":"",
       "compartment":"c",
       "annotation": {
-        "bigg.reaction": [["bqb_is", "PFK26"]],
-        "kegg.reaction": [["bqb_is", "R02732"]],
-        "rhea": [["bqb_is", "15656"]]
+        "bigg.reaction": ["PFK26"],
+        "kegg.reaction": ["R02732"],
+        "rhea": ["15656"]
       }
     }
   ],

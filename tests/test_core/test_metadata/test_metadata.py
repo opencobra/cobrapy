@@ -105,11 +105,8 @@ def test_annotation() -> None:
             CVTerm(
                 qualifier="bqb_is",
                 ex_res=ExternalResources(
-                    resources=["https://identifiers.org/chebi/CHEBI:43215"]
+                    resources=["https://identifiers.org/chebi/CHEBI:43215", "https://identifiers.org/chebi/CHEBI:11881"]
                 ),
-            ),
-            CVTerm(
-                qualifier="bqb_is", ex_res="https://identifiers.org/chebi/CHEBI:11881"
             ),
         ]
     )
@@ -138,6 +135,29 @@ def test_annotation() -> None:
         "chebi": sorted(["CHEBI:43215", "CHEBI:11881"]),
         "sbo": ["SBO:0000123"],
     }
+
+    cvt2 =   CVTermList(
+        [
+            CVTerm(
+                qualifier="bqb_is",
+                ex_res=ExternalResources(
+                    resources=["https://identifiers.org/chebi/CHEBI:11881"]
+                ),
+            ),
+            CVTerm(ex_res="https://identifiers.org/chebi/CHEBI:43215"),
+        ]
+    )
+
+    s.annotation.standardized = cvt2
+    assert s.annotation.standardized.resources == {
+        "https://identifiers.org/chebi/CHEBI:43215",
+        "https://identifiers.org/chebi/CHEBI:11881",
+    }
+    s.annotation.__delitem__('sbo')
+
+    # checking old (fixed) annotation format
+    assert s.annotation == {"chebi": sorted(["CHEBI:43215", "CHEBI:11881"])}
+
 
 
 def test_old_style_annotation() -> None:
@@ -288,7 +308,7 @@ def test_cvterms_from_ecoli_xml(data_directory):
     assert nested_data == nested_cvt
 
     # check backwards compatibility
-    assert model.annotation == {
+    assert model.annotation.annotations == {
         "bigg.model": ["e_coli_core"],
         "doi": ["10.1128/ecosalplus.10.2.1"],
         "eco": ["ECO:0000004"],
@@ -312,7 +332,9 @@ def test_read_write_json(data_directory: Path, tmp_path: Path):
     assert save_json_model(model, json_path, sort=False, pretty=True) is None
 
     model = load_json_model(json_path)
-    assert model.annotation == {
+    # Because of changes to eq, to compare using the old format, we need annotation.annotations
+    # TODO - get comments from cdiener
+    assert model.annotation.annotations == {
         "bigg.model": ["e_coli_core"],
         "doi": ["10.1128/ecosalplus.10.2.1"],
         "eco": ["ECO:0000004"],
