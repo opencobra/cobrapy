@@ -79,12 +79,34 @@ class MetaData(MutableMapping):
         self.custompairs = keyvaluepairs
 
     @property
+    def standardized(self) -> "CVTermList":
+        return self._standardized
+
+    @standardized.setter
+    def standardized(self, cvterms: Union[Dict, CVTermList]) -> None:
+        self._standardized = CVTermList.from_data(cvterms)
+
+    def add_cvterms(self, cvterms: Iterable[Union[Dict, CVTerm]]) -> None:
+        self._standardized.add_cvterms(cvterms)
+
+    @property
     def annotations(self) -> Dict:
         """Backwards compatible annotations."""
         anno_dict = self.standardized.annotations
         if self.sbo:
             anno_dict["sbo"] = self.sbo
         return anno_dict
+
+    @property
+    def history(self) -> History:
+        return self._history
+
+    @history.setter
+    def history(self, history: Union[Dict, History]) -> None:
+        self._history = History.from_data(history)
+
+    def add_creator(self, creator: Creator):
+        self.history.creators.append(creator)
 
     @property
     def sbo(self) -> str:
@@ -102,6 +124,14 @@ class MetaData(MutableMapping):
         if isinstance(value, list):
             value = value[0]
         self._sbo = value
+
+    @property
+    def keyvaluepairs(self) -> KeyValuePairs:
+        return self._custompairs
+
+    @keyvaluepairs.setter
+    def keyvaluepairs(self, keyvaluepairs: Union[Dict, KeyValuePairs]) -> None:
+        self._custompairs = KeyValuePairs(keyvaluepairs)
 
     def __setitem__(self, key: str, value: Union[List, str]) -> None:
         """Set the item for accessing metadata as dict (the old style annotation).
@@ -145,6 +175,25 @@ class MetaData(MutableMapping):
                 item for item in self.standardized.data if item not in key_list
             ]
 
+    def __eq__(self, other: Union["MetaData", Dict]) -> bool:
+        if isinstance(other, dict):
+            return self == MetaData.from_dict(other)
+        if (
+            self.standardized
+            and self.history.is_empty()
+            and not self.custompairs
+            and other.standardized
+            and other.history.is_empty()
+            and not other.custompairs
+        ):
+            return self.annotations == other.annotations
+
+        return (
+            (self.standardized == other.standardized)
+            and (self.history == other.history)
+            and (self.custompairs == other.custompairs)
+        )
+
     def __iter__(self) -> Iterator:
         return iter(self.annotations)
 
@@ -156,36 +205,6 @@ class MetaData(MutableMapping):
 
     def __repr__(self) -> str:
         return str(dict(self.annotations))
-
-    @property
-    def standardized(self) -> "CVTermList":
-        return self._standardized
-
-    @standardized.setter
-    def standardized(self, cvterms: Union[Dict, CVTermList]) -> None:
-        self._standardized = CVTermList.from_data(cvterms)
-
-    def add_cvterms(self, cvterms: Iterable[Union[Dict, CVTerm]]) -> None:
-        self._standardized.add_cvterms(cvterms)
-
-    @property
-    def history(self) -> History:
-        return self._history
-
-    @history.setter
-    def history(self, history: Union[Dict, History]) -> None:
-        self._history = History.from_data(history)
-
-    def add_creator(self, creator: Creator):
-        self.history.creators.append(creator)
-
-    @property
-    def keyvaluepairs(self) -> KeyValuePairs:
-        return self._custompairs
-
-    @keyvaluepairs.setter
-    def keyvaluepairs(self, keyvaluepairs: Union[Dict, KeyValuePairs]) -> None:
-        self._custompairs = KeyValuePairs(keyvaluepairs)
 
     def to_dict(self) -> Dict:
         """Create string dictionary for serialization.
@@ -226,22 +245,3 @@ class MetaData(MutableMapping):
             annotation["sbo"] = data["sbo"]
 
         return annotation
-
-    def __eq__(self, other: Union["MetaData", Dict]) -> bool:
-        if isinstance(other, dict):
-            return self == MetaData.from_dict(other)
-        if (
-            self.standardized
-            and self.history.is_empty()
-            and not self.custompairs
-            and other.standardized
-            and other.history.is_empty()
-            and not other.custompairs
-        ):
-            return self.annotations == other.annotations
-
-        return (
-            (self.standardized == other.standardized)
-            and (self.history == other.history)
-            and (self.custompairs == other.custompairs)
-        )
