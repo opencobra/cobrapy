@@ -4,9 +4,9 @@ from collections import OrderedDict
 from collections.abc import MutableMapping
 from typing import Dict, Iterable, Iterator, List, Union
 
+from ..metadata.custompairs import KeyValuePairs
 from ..metadata.cvterm import CVTerm, CVTermList
 from ..metadata.history import Creator, History
-from ..metadata.custompairs import KeyValuePairs
 
 
 class MetaData(MutableMapping):
@@ -16,13 +16,18 @@ class MetaData(MutableMapping):
     or notes. Such information is currently stored in SBML on the notes and
     annotation fields.
 
-    Meta-data consists of three components:
-    - CVTermList: storing resource:identifier annotation information. The annotation
-      information is exposed via the dict interface for full backwards compatibility
-      to the earlier object.annotation field.
+    Meta-data consists of four components:
+    - standardized: storing resource:identifier annotation information in a CVTermList
+      object. The annotation information is exposed via the dict interface for
+      full backwards compatibility to the earlier object.annotation field. See
+      CVTermList.annotations() and MetaData.annotations()
+    - sbo - a single SBO term for the object. Can theoretically be placed in
+      standardized, but the most descriptive term should be kept in sbo. Right now,
+      cobrapy doesn't allow multiple sbo terms.
     - History: storing the object history consisting of creators, created date, and
                modified dates.
-    - KeyValuePairs, a list of key-value pairs to store additional information
+    - custompairs (KeyValuePairs), a list of key-value pairs to
+      store additional information
 
     Parameters
     ----------
@@ -58,7 +63,6 @@ class MetaData(MutableMapping):
             modificiation date. Default None.
         sbo: str
             SBO term, if relevant. Default "".
-            If there are ????
         keyvaluepairs: KeyValuePairs
             For annotations that don't match the identifiers.org format.
 
@@ -95,6 +99,8 @@ class MetaData(MutableMapping):
     @sbo.setter
     def sbo(self, value: str) -> None:
         """Set the SBO term."""
+        if isinstance(value, list):
+            value = value[0]
         self._sbo = value
 
     def __setitem__(self, key: str, value: Union[List, str]) -> None:
@@ -104,8 +110,8 @@ class MetaData(MutableMapping):
         ----------
         key: str
             provider key word.
-        value: List
-            A list that will contain either term(s) or qualifier and term(s).
+        value: List or str
+            A str that is one term or a list that will contain multiple terms
 
         If the key is sbo, sets the self.sbo term to the first item in the list. If
         you'd like to add multiple SBO terms, use the CVTermList() and add sbo as
@@ -121,6 +127,7 @@ class MetaData(MutableMapping):
                 value = value[0]
             self.sbo = value
         else:
+            self.__delitem__(key)
             self._standardized.add_simple_annotations(dict({key: value}))
 
     def __getitem__(self, key: str) -> Union[str, List]:
@@ -133,7 +140,10 @@ class MetaData(MutableMapping):
         if key == "sbo":
             self.sbo = ""
         else:
-            del self.annotations[key]
+            key_list = self._standardized.query(key).data
+            self._standardized.data = [
+                item for item in self.standardized.data if item not in key_list
+            ]
 
     def __iter__(self) -> Iterator:
         return iter(self.annotations)
@@ -204,7 +214,7 @@ class MetaData(MutableMapping):
     def from_dict(data: Dict) -> "MetaData":
         cvterms = data.get("standardized", None)
         history = data.get("history", None)
-        keyValuepairs = data.get("custompairs",  None)
+        keyValuepairs = data.get("custompairs", None)
 
         if cvterms or history or keyValuepairs:
             annotation = MetaData(cvterms, history, keyValuepairs)
@@ -216,3 +226,22 @@ class MetaData(MutableMapping):
             annotation["sbo"] = data["sbo"]
 
         return annotation
+
+    def __eq__(self, other: Union["MetaData", Dict]) -> bool:
+        if isinstance(other, dict):
+            return self == MetaData.from_dict(other)
+        if (
+            self.standardized
+            and self.history.is_empty()
+            and not self.custompairs
+            and other.standardized
+            and other.history.is_empty()
+            and not other.custompairs
+        ):
+            return self.annotations == other.annotations
+
+        return (
+            (self.standardized == other.standardized)
+            and (self.history == other.history)
+            and (self.custompairs == other.custompairs)
+        )

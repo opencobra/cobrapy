@@ -1891,7 +1891,6 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
     CobraSBMLError for unsupported qualifier
     """
     annotation_data = deepcopy(annotation)
-    # TODO - devel has formatting of float and to str, and str to ["is", str] - does this happen in CVterm?
 
     if not isinstance(annotation_data, MetaData):
         raise TypeError(
@@ -1908,7 +1907,6 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
     if "sbo" in annotation and annotation.sbo:
         sbo_term = annotation_data.sbo
         if isinstance(sbo_term, list):
-            # TODO - need to add the rest of the list, maybe
             sbo_term = sbo_term[0]
         _check(sbase.setSBOTerm(sbo_term), f"Setting SBOTerm: {sbo_term}")
 

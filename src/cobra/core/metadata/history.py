@@ -230,31 +230,39 @@ class History:
             return False
         return True
 
-    def __eq__(self, history: "History") -> bool:
+    def __eq__(self, other: "History") -> bool:
         """Check equality of two history objects.
 
         A history is equal if all attributes are equal.
+        If one and only one of self or other is empty will return False.
+        If both are empty, will return True.
 
         Returns
         -------
         bool - True if equal, False otherwise.
         """
+        if self.is_empty() and other.is_empty():
+            return True
+        elif (self.is_empty() and not other.is_empty()) or (
+            not self.is_empty() and other.is_empty()
+        ):
+            return False
         # check equality of creators
-        if len(self.creators) != len(history.creators):
+        if len(self.creators) != len(other.creators):
             return False
         for k, creator in enumerate(self.creators):
-            if creator != history.creators[k]:
+            if creator != other.creators[k]:
                 return False
 
         # checking equality of created_date
-        if self.created_date != history.created_date:
+        if self.created_date != other.created_date:
             return False
 
         # checking equality of modified_dates
-        if len(self.modified_dates) != len(history.modified_dates):
+        if len(self.modified_dates) != len(other.modified_dates):
             return False
         for k, modified_date in enumerate(self.modified_dates):
-            if modified_date != history.modified_dates[k]:
+            if modified_date != other.modified_dates[k]:
                 return False
 
         return True

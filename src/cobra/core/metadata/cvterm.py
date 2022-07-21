@@ -395,7 +395,9 @@ class CVTermList(UserList):
         a list containing qualifier and external resources in CVTerm format
 
     1. The only way to add annotation data via old format is by
-       using the method "add_simple_annotations()".
+       using the method "add_simple_annotations()". This will set all qualifiers as
+       "bqb_is". If you want to use other qualifiers and/or nested data, use
+       add_cvterms() or extend().
     2. Multiple CVTerm data can be added by using add_cvterms() or extend(). Both
        accept iterables, including CVTermList.
     """
@@ -489,12 +491,11 @@ class CVTermList(UserList):
         """
         self.extend(cvterms)
 
-    def add_simple_annotations(self, data: Union[Dict, List] = None) -> None:
+    def add_simple_annotations(self, data: Dict = None) -> None:
         """Add simple annotation.
 
         Adds standardized via old annotation format (dictionary like format).
-        If no qualifier is linked to the identifier, default qualifier i.e "bqb_is"
-        will be used.
+        The default qualifier, i.e "bqb_is", will be used.
         This function will add identifiers.org to the keys given to form  the URI.
         If the annotation does not match the identifiers format, you should use
         add_cvterms directly (and create the correct link) and/or use the
@@ -502,51 +503,54 @@ class CVTermList(UserList):
 
         Parameters
         ----------
-        data : dict or list
+        data : dict
             the data in old annotation format
+            keys are str representing namespace
+            If the value is a list, each value is added to the namespace, making a
+            CVTerm with one ExternalResources object htat has mulitple URIs. If the
+            value is a string, then only one value will be added to the namespace.
 
-        #TODO - need examples!
+        Examples
+        --------
+        >>> from cobra import Species
+        >>> s = Species()
+        >>> s.annotation.standardized.add_simple_annotations({"chebi": "CHEBI:17234"})
+        >>> s.annotation.standardized.add_simple_annotations({"chebi": ["CHBEI:1723456", "CHEBI:172345"]})
+        >>> s.annotation
+        >>> s.annotation.standardized
+        >>> s.annotation.annotations
         """
         if data is None:
             data = {}
 
-        if not isinstance(data, (dict, list)):
-            raise TypeError(f"The data passed must be of type dict or list: {data}")
+        if not isinstance(data, dict):
+            raise TypeError(f"The data passed must be of type dict: {data}")
 
         cvterm_list = []
         for key, value in data.items():
 
-            # if single identifiers are put directly as string,
-            # put them inside a list. For eg:
-            # { "chebi": "CHEBI:17234"} -> { "chebi": ["CHEBI:17234"]}
-            if isinstance(value, str):
-                data[key] = [value]
-                value = [value]
             if not isinstance(value, (list, str)):
                 raise TypeError(
                     f"The value passed must be of type list or str: {value}"
                 )
 
-            # adding data one by one
-            for identifier in value:
-                qual = Qualifier["bqb_is"]
-                # if no qualifier is linked to identifier i.e. annotation
-                # of the form { "chebi": "CHEBI:17234"}
-                if isinstance(identifier, str):
-                    uri = "https://identifiers.org/" + key + "/" + identifier
-                # if some qualifier is linked to the identifier i.e. annotation
-                # of the form { "chebi": ["bqb_is", "CHEBI:17234"]}
-                elif isinstance(identifier, list):
-                    uri = "https://identifiers.org/" + key + "/" + identifier[1]
-                    qual = Qualifier[identifier[0]]
-                else:
-                    raise TypeError(
-                        f"The identifier passed must be of type string "
-                        f"or list: {identifier}"
-                    )
-                cvterm_list.append(
-                    CVTerm(ex_res=ExternalResources([uri]), qualifier=qual)
+            qual = Qualifier["bqb_is"]
+            # if there is only one identifier i.e. annotation
+            # of the form { "chebi": ["CHEBI:17234"]}
+            if isinstance(value, str):
+                uri = ["https://identifiers.org/" + key + "/" + value]
+            # if there are multiple identifiers for this key i.e. annotation
+            # of the form { "chebi": ["CHEBI:124", "CHEBI:17234"]}
+            elif isinstance(value, list):
+                uri = [
+                    "https://identifiers.org/" + key + "/" + identifier
+                    for identifier in value
+                ]
+            else:
+                raise TypeError(
+                    f"The identifier passed must be of type string or list: {value}"
                 )
+            cvterm_list.append(CVTerm(ex_res=ExternalResources(uri), qualifier=qual))
         self.add_cvterms(cvterm_list)
 
     @property
@@ -668,14 +672,14 @@ class CVTermList(UserList):
         search_function : a string, regular expression or function
             Used to find the matching elements in the list.
             - a regular expression (possibly compiled), in which case the
-            given attribute of the object should match the regular expression. This
-            will not work on CVTermList when attribute is None.
+            given attribute of the object should match the regular expression.
             - a function which takes one argument and returns True for
             desired values
 
         attribute : string or None
             the name attribute of the object to passed as argument to the
-            `search_function`. If this is None, the object itself is used.
+            `search_function`. If this is None and a regular expression/string is given,
+             will match the regular expression to both qualifier and resources.
 
         Returns
         -------
@@ -704,6 +708,9 @@ class CVTermList(UserList):
             # if the search_function is a regular expression
             regex_searcher = re.compile(search_function)
 
+            if attribute is None:
+                attribute = ""
+
             if attribute == "qualifier":
                 matches = [
                     cvterm
@@ -719,7 +726,12 @@ class CVTermList(UserList):
                     )
                 ]
             else:
-                raise TypeError
+                matches = [
+                    cvterm
+                    for cvterm in self.data
+                    if regex_searcher.findall(cvterm.qualifier.name) != []
+                    or any(regex_searcher.findall(res) for res in cvterm.resources)
+                ]
         except TypeError:
             matches = [
                 cvterm

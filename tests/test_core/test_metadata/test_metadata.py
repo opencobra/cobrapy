@@ -109,10 +109,7 @@ def test_annotation() -> None:
                 ),
             ),
             CVTerm(
-                qualifier="bqb_is",
-                ex_res=ExternalResources(
-                    resources=["https://identifiers.org/chebi/CHEBI:11881"]
-                ),
+                qualifier="bqb_is", ex_res="https://identifiers.org/chebi/CHEBI:11881"
             ),
         ]
     )
@@ -141,6 +138,43 @@ def test_annotation() -> None:
         "chebi": sorted(["CHEBI:43215", "CHEBI:11881"]),
         "sbo": ["SBO:0000123"],
     }
+
+
+def test_old_style_annotation() -> None:
+    s = Species()
+    s.annotation.standardized.add_simple_annotations({"chebi": "CHEBI:17234"})
+    s.annotation.standardized.add_simple_annotations(
+        {"chebi": ["CHBEI:1723456", "CHEBI:172345"]}
+    )
+    with pytest.raises(TypeError):
+        s.annotation.standardized.add_simple_annotations({"chebi": [["CHEBI:123", "CHEBI:1234"]]})
+    assert len(s.annotation.standardized.resources) == 3
+    s.annotation["eco"] = "123"
+    assert len(s.annotation.standardized.resources) == 4
+    assert s.annotation == {
+        "chebi": ["CHEBI:17234", "CHBEI:1723456", "CHEBI:172345"],
+        "eco": ["123"],
+    }
+    s.annotation.__delitem__("chebi")
+    assert len(s.annotation.standardized.resources) == 1
+    s.annotation.standardized.add_simple_annotations({"chebi": "CHEBI:17234"})
+    s.annotation.standardized.add_simple_annotations(
+        {"chebi": ["CHBEI:1723456", "CHEBI:172345"]}
+    )
+    assert len(s.annotation.standardized.resources) == 4
+    s.annotation["chebi"] = ["CHEBI:123", "CHEBI:1234"]
+    assert len(s.annotation.standardized.resources) == 3
+    assert s.annotation == {"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"]}
+
+    assert len(s.annotation.keys()) == 2
+
+    s.annotation["chebi"] = []
+    assert len(s.annotation.standardized.resources) == 1
+
+    s.annotation = {}
+    assert len(s.annotation.keys()) == 0
+    s.annotation = {"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"]}
+    assert len(s.annotation.standardized.resources) == 3
 
 
 def test_nested_annotation(data_directory: Path) -> None:
@@ -392,3 +426,11 @@ def test_cvtermlist_query():
         == 8
     )
     assert len(cvtermlist.query(search_function="pubmed", attribute="resources")) == 1
+
+    assert (
+        len(cvtermlist.query(search_function=lambda x: x.qualifier.name == "bqm_is"))
+        == 1
+    )
+
+    assert len(cvtermlist.query(search_function="chebi")) == 7
+    assert len(cvtermlist.query(search_function=r"bqm_is\S+")) == 3
