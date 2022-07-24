@@ -81,6 +81,37 @@ def test_history_from_ecoli_xml(data_directory):
         ],
     )
     assert model.annotation.history == history
+    model.annotation.history.created_date = None
+    assert model.annotation.history == History(
+        creators=[
+            Creator(
+                given_name="Matthias",
+                family_name="Koenig",
+                email="koenigmx@hu-berlin.de",
+                organisation="Humboldt-University Berlin, "
+                "Institute for Theoretical Biology",
+            ),
+            Creator(
+                given_name="Matthias",
+                family_name="Koenig",
+                email="koenigmx@hu-berlin.de",
+            ),
+            Creator(
+                given_name="Matthias",
+                family_name="Koenig",
+                organisation="Humboldt-University Berlin, "
+                "Institute for Theoretical Biology",
+            ),
+            Creator(
+                given_name="Matthias",
+                family_name="Koenig",
+            ),
+        ],
+        modified_dates=[
+            "2019-03-06T14:40:55Z",
+            "2019-03-06T14:41:55Z",
+        ],
+    )
 
 
 def test_create_creator():
@@ -92,6 +123,70 @@ def test_create_creator():
     )
     assert creator.given_name == "Matthias"
     assert creator.family_name == "König"
+    assert creator.organisation == "HU"
+    assert creator.email == TEST_COM
+
+    creator = Creator(
+        given_name="Matthias",
+        organisation="HU",
+        email=TEST_COM,
+    )
+    assert creator.given_name == "Matthias"
+    assert creator.family_name is None
+    assert creator.organisation == "HU"
+    assert creator.email == TEST_COM
+
+    creator = Creator(
+        **{
+            "given_name": "Matthias",
+            "family_name": "König",
+            "organisation": "HU",
+            "email": TEST_COM,
+        }
+    )
+
+    assert creator.given_name == "Matthias"
+    assert creator.family_name == "König"
+    assert creator.organisation == "HU"
+    assert creator.email == TEST_COM
+
+    creator = Creator(
+        **{
+            "given_name": "Matthias",
+            "organisation": "HU",
+            "email": TEST_COM,
+        }
+    )
+
+    assert creator.given_name == "Matthias"
+    assert creator.family_name is None
+    assert creator.organisation == "HU"
+    assert creator.email == TEST_COM
+
+    creator = Creator().from_data(
+        {
+            "given_name": "Matthias",
+            "family_name": "König",
+            "organisation": "HU",
+            "email": TEST_COM,
+        }
+    )
+
+    assert creator.given_name == "Matthias"
+    assert creator.family_name == "König"
+    assert creator.organisation == "HU"
+    assert creator.email == TEST_COM
+
+    creator = Creator().from_data(
+        {
+            "given_name": "Matthias",
+            "organisation": "HU",
+            "email": TEST_COM,
+        }
+    )
+
+    assert creator.given_name == "Matthias"
+    assert creator.family_name is None
     assert creator.organisation == "HU"
     assert creator.email == TEST_COM
 

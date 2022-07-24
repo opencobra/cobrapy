@@ -10,7 +10,6 @@ from cobra.core.metadata import CVTerm, CVTermList, ExternalResources, Qualifier
 from cobra.core.species import Species
 from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
 
-
 PUBMED_EXAMPLE = "https://identifiers.org/pubmed/1111111"
 ECO_EXAMPLE = "https://identifiers.org/eco/ECO:0000004"
 RESOURCE_LIST = [
@@ -105,7 +104,8 @@ def test_annotation() -> None:
             CVTerm(
                 qualifier="bqb_is",
                 ex_res=ExternalResources(
-                    resources=["https://identifiers.org/chebi/CHEBI:43215", "https://identifiers.org/chebi/CHEBI:11881"]
+                    resources=["https://identifiers.org/chebi/CHEBI:43215",
+                               "https://identifiers.org/chebi/CHEBI:11881"]
                 ),
             ),
         ]
@@ -136,7 +136,7 @@ def test_annotation() -> None:
         "sbo": ["SBO:0000123"],
     }
 
-    cvt2 =   CVTermList(
+    cvt2 = CVTermList(
         [
             CVTerm(
                 qualifier="bqb_is",
@@ -159,7 +159,6 @@ def test_annotation() -> None:
     assert s.annotation == {"chebi": sorted(["CHEBI:43215", "CHEBI:11881"])}
 
 
-
 def test_old_style_annotation() -> None:
     s = Species()
     s.annotation.standardized.add_simple_annotations({"chebi": "CHEBI:17234"})
@@ -167,7 +166,8 @@ def test_old_style_annotation() -> None:
         {"chebi": ["CHBEI:1723456", "CHEBI:172345"]}
     )
     with pytest.raises(TypeError):
-        s.annotation.standardized.add_simple_annotations({"chebi": [["CHEBI:123", "CHEBI:1234"]]})
+        s.annotation.standardized.add_simple_annotations(
+            {"chebi": [["CHEBI:123", "CHEBI:1234"]]})
     assert len(s.annotation.standardized.resources) == 3
     s.annotation["eco"] = "123"
     assert len(s.annotation.standardized.resources) == 4
@@ -194,6 +194,9 @@ def test_old_style_annotation() -> None:
     s.annotation = {}
     assert len(s.annotation.keys()) == 0
     s.annotation = {"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"]}
+    assert len(s.annotation.standardized.resources) == 3
+    s.annotation = {"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"],
+                    "sbo": ["SBO:0000123"]}
     assert len(s.annotation.standardized.resources) == 3
 
 
@@ -417,7 +420,7 @@ def test_cvtermlist_query():
         len(
             cvtermlist.query(
                 search_function=lambda x: list(Qualifier.__members__).index(x.value)
-                > 18,
+                                          > 18,
                 attribute="qualifier",
             )
         )

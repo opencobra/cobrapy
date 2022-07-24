@@ -137,7 +137,7 @@ class History:
             return datetime_return
         except ValueError as e:
             datetime_str = datetime_str.replace("Z", "+0000")
-            datetime_str = re.sub("(\+\d\d):(\d\d)\Z", "\\1\\2", datetime_str)
+            datetime_str = re.sub(r"(\+\d\d):(\d\d)\Z", "\\1\\2", datetime_str)
             try:
                 datetime_return = datetime.strptime(datetime_str, STRTIME_FORMAT)
             except ValueError:
@@ -281,7 +281,7 @@ class History:
         """
         return {
             "creators": [c.to_dict() for c in self.creators],
-            "created_date": self.created_date.isoformat(),
+            "created_date": self.created_date and self.created_date.isoformat(),
             "modified_dates": [
                 mod_date.isoformat() for mod_date in self._modified_dates
             ],
@@ -349,14 +349,7 @@ class Creator(NamedTuple):
         elif isinstance(data, Creator):
             return data
         elif isinstance(data, dict):
-            return Creator._make(
-                [
-                    data["given_name"],
-                    data["family_name"],
-                    data["email"],
-                    data["organisation"],
-                ]
-            )
+            return Creator(**data)
         else:
             raise TypeError(f"Invalid format for Creator: {data}")
 
@@ -394,6 +387,6 @@ class Creator(NamedTuple):
         """
         return (
             f"{self.__class__.__module__}.{self.__class__.__qualname__}"
-            f"({self.given_name} {self.family_name} {self.email} "
-            f"{self.organisation})"
+            f"('{self.given_name}', '{self.family_name}', '{self.email}', "
+            f"'{self.organisation}')"
         )

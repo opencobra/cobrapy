@@ -481,12 +481,12 @@ class CVTermList(UserList):
         """
         return [cvterm.to_dict() for cvterm in self.data]
 
-    def add_cvterms(self, cvterms: Iterable[Union["CVTerm"]]) -> None:
+    def add_cvterms(self, cvterms: Iterable[Union["CVTerm", Dict]]) -> None:
         """Add multiple CVTerm to CVTermList.
 
         Parameters
         ----------
-        cvterms : Iterable or dicrt
+        cvterms : Iterable
             CVTermList list of CVTerms or CVTerm dicts to be added to the CVTermList
         """
         self.extend(cvterms)
@@ -500,6 +500,9 @@ class CVTermList(UserList):
         If the annotation does not match the identifiers format, you should use
         add_cvterms directly (and create the correct link) and/or use the
         custompairs field of annotation.
+
+        This function will skip "sbo" keys since they should be added via
+        annotation["sbo"], see MetaData.
 
         Parameters
         ----------
@@ -533,6 +536,8 @@ class CVTermList(UserList):
                 raise TypeError(
                     f"The value passed must be of type list or str: {value}"
                 )
+            if key.lower() == "sbo":
+                continue
 
             qual = Qualifier["bqb_is"]
             # if there is only one identifier i.e. annotation
@@ -552,6 +557,46 @@ class CVTermList(UserList):
                 )
             cvterm_list.append(CVTerm(ex_res=ExternalResources(uri), qualifier=qual))
         self.add_cvterms(cvterm_list)
+
+    def delete_annotation(self, resource: Union[str, Pattern]) -> None:
+        """Delete annotation - the converse of add_simple_annotation.
+
+        This will go over the CVTerms, and delete all resources that match the pattern.
+        It will call the funciton recursively for ExternalResources that have
+        nested_data.
+        CVTerms that end with neither resources nor nested data are removed.
+
+        Parameters
+        ----------
+        resource: str or Pattern
+
+        Examples
+        --------
+        >>> from cobra.io import load_model
+        >>> e_coli = load_model('iJO1366')
+        >>> e_coli.annotation
+        >>> e_coli.annotation.standardized.delete_annotation('bigg')
+        >>> e_coli.annotation
+        >>> e_coli.annotation.annotations
+        >>> e_coli.metabolites[0].annotation.standardized
+        >>> e_coli.metabolites[0].annotation.standardized.delete_annotation(r'/bi\S+')
+        """
+        regex_searcher = re.compile(resource)
+        tmp_cvterm_list = []
+        for cvterm in self.data:
+            cvterm.external_resources.resources = [
+                res
+                for res in cvterm.external_resources.resources
+                if not regex_searcher.findall(res)
+            ]
+            if cvterm.external_resources.nested_data:
+                cvterm.external_resources.nested_data.delete_annotation(resource)
+            if (
+                cvterm.external_resources.resources
+                or cvterm.external_resources.nested_data
+            ):
+                tmp_cvterm_list.append(cvterm)
+        self.data = tmp_cvterm_list
 
     @property
     def annotations(self) -> Dict:
@@ -717,12 +762,21 @@ class CVTermList(UserList):
                     for cvterm in self.data
                     if regex_searcher.findall(select_attribute(cvterm).name) != []
                 ]
-            elif "resource" in attribute:
+            elif attribute == "resources":
                 matches = [
                     cvterm
                     for cvterm in self.data
                     if any(
                         regex_searcher.findall(res) for res in select_attribute(cvterm)
+                    )
+                ]
+            elif attribute == "external_resources":
+                matches = [
+                    cvterm
+                    for cvterm in self.data
+                    if any(
+                        regex_searcher.findall(res)
+                        for res in select_attribute(cvterm).resources
                     )
                 ]
             else:
