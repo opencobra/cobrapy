@@ -3,23 +3,16 @@
 import logging
 from copy import copy, deepcopy
 from functools import partial
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
+from types import ModuleType
+from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple, Union
 from warnings import warn
 
 import optlang
 from optlang.symbolics import Basic, Zero
 
-from cobra.core.configuration import Configuration
-from cobra.core.dictlist import DictList
-from cobra.core.gene import Gene
-from cobra.core.group import Group
-from cobra.core.metabolite import Metabolite
-from cobra.core.object import Object
-from cobra.core.reaction import Reaction
-from cobra.core.solution import get_solution
-from cobra.medium import find_boundary_types, find_external_compartment, sbo_terms
-from cobra.util.context import HistoryManager, get_context, resettable
-from cobra.util.solver import (
+from ..medium import find_boundary_types, find_external_compartment, sbo_terms
+from ..util.context import HistoryManager, get_context, resettable
+from ..util.solver import (
     add_cons_vars_to_problem,
     assert_optimal,
     check_solver,
@@ -27,14 +20,20 @@ from cobra.util.solver import (
     remove_cons_vars_from_problem,
     set_objective,
 )
-from cobra.util.util import AutoVivification, format_long_string
+from ..util.util import AutoVivification, format_long_string
+from .configuration import Configuration
+from .dictlist import DictList
+from .gene import Gene
+from .group import Group
+from .metabolite import Metabolite
+from .object import Object
+from .reaction import Reaction
+from .solution import get_solution
 
 
 if TYPE_CHECKING:
-    from types import ModuleType
-    from typing import Iterable
 
-    import pandas
+    import pandas as pd
     from optlang.container import Container
 
     from cobra import Solution
@@ -50,12 +49,14 @@ class Model(Object):
 
     Parameters
     ----------
-    id_or_model : Model, string
-        Either an existing Model object in which case a new model object is
-        instantiated with the same properties as the original model,
-        or an identifier to associate with the model as a string.
-    name : string
-        Human readable name for the model
+    id_or_model str, Model
+        String to use as model id, or actual model to base new model one.
+        If string, it is used as id. If model, a new model object is
+        instantiated with the same properties as the original model (id is None).
+        Default None.
+
+    name: str, optional
+        Human readable string to be model description (default None).
 
     Attributes
     ----------
@@ -73,15 +74,6 @@ class Model(Object):
         Group
     """
 
-    def __setstate__(self, state):
-        """Make sure all cobra.Objects in the model point to the model."""
-        self.__dict__.update(state)
-        for y in ["reactions", "genes", "metabolites"]:
-            for x in getattr(self, y):
-                x._model = self
-        if not hasattr(self, "name"):
-            self.name = None  # TODO - why is this set as None instead of?? ""
-
     def __init__(
         self, id_or_model: Union[str, "Model"] = None, name: Optional[str] = None
     ) -> None:
@@ -96,7 +88,7 @@ class Model(Object):
             Default None.
 
         name: str, optional
-            Human readable string to be model description. Default None.
+            Human readable string to be model description (default None).
         """
         if isinstance(id_or_model, Model):
             Object.__init__(self, name=name)
@@ -125,7 +117,21 @@ class Model(Object):
             self._tolerance = None
             self.tolerance = configuration.tolerance
 
-    def __getstate__(self) -> dict:
+    def __setstate__(self, state: Dict) -> None:
+        """Make sure all cobra.Objects in the model point to the model.
+
+        Parameters
+        ----------
+        state: dict
+        """
+        self.__dict__.update(state)
+        for y in ["reactions", "genes", "metabolites"]:
+            for x in getattr(self, y):
+                x._model = self
+        if not hasattr(self, "name"):
+            self.name = None
+
+    def __getstate__(self) -> Dict:
         """Get state for serialization.
 
         Ensures that the context stack is cleared prior to serialization,
@@ -133,7 +139,7 @@ class Model(Object):
 
         Returns
         -------
-        odict: dict
+        odict: Dict
             A dictionary of state, based on self.__dict__.
         """
         odict = self.__dict__.copy()
@@ -141,7 +147,7 @@ class Model(Object):
         return odict
 
     @property
-    def solver(self) -> "optlang.interface.Model":  # ??I think that's the right type??
+    def solver(self) -> "optlang.interface.Model":
         """Get the attached solver instance.
 
         The associated the solver object, which manages the interaction with
@@ -161,7 +167,7 @@ class Model(Object):
 
     @solver.setter
     @resettable
-    def solver(self, value: Union[str, "ModuleType"]) -> None:
+    def solver(self, value: Union[str, ModuleType]) -> None:
         """Set the attached solver instance.
 
         The associated the solver object, which manages the interaction with
@@ -169,10 +175,11 @@ class Model(Object):
 
         This property is useful for accessing the optimization problem
         directly and to define additional non-metabolic constraints.
+
         Parameters
         ----------
         value: ModuleType or str
-            The solver to set, which will be checked by check_solver.
+            The solver to set, which will be checked by `check_solver()`.
         """
         interface = check_solver(value)
 
@@ -187,7 +194,7 @@ class Model(Object):
 
         Returns
         -------
-        _tolerance: float
+        float
             The tolerance of the mdoel.
         """
         return self._tolerance
@@ -229,38 +236,6 @@ class Model(Object):
 
         self._tolerance = value
 
-    @property
-    def description(self) -> str:
-        """Get (deprecated) Description.
-
-        Returns
-        -------
-        name: str
-            Returns the name instead of description. Description is deprecated.
-            Use name directly in the future.
-
-        .. deprecated ::
-            Use model.name() in the future.
-        """
-        warn("description deprecated", DeprecationWarning)
-        return self.name if self.name is not None else ""
-
-    @description.setter
-    def description(self, value: str) -> None:
-        """Set Name.
-
-        Parameters
-        ----------
-        value: str
-            value to set name.
-
-        Since description is deprecated, it will set name. Use name directly.
-        .. deprecated ::
-            Use model.name() in the future.
-        """
-        self.name = value
-        warn("description deprecated. Use model.name() next time.", DeprecationWarning)
-
     def get_metabolite_compartments(self) -> set:
         """Return all metabolites' compartments.
 
@@ -278,7 +253,7 @@ class Model(Object):
         }
 
     @property
-    def compartments(self) -> dict:
+    def compartments(self) -> Dict:
         """Return all metabolites' compartments.
 
         Returns
@@ -295,7 +270,7 @@ class Model(Object):
         }
 
     @compartments.setter
-    def compartments(self, value: dict) -> None:
+    def compartments(self, value: Dict) -> None:
         """Get or set the dictionary of current compartment descriptions.
 
         Assigning a dictionary to this property updates the model's
@@ -332,7 +307,7 @@ class Model(Object):
         """
 
         def is_active(reaction: Reaction) -> bool:
-            """Determine if boundary reaction permits flux.
+            """Determine if boundary reaction permits flux towards creating metabolites.
 
             Parameters
             ----------
@@ -344,10 +319,6 @@ class Model(Object):
                 True if reaction produces metaoblites and has upper_bound above 0
                 or if reaction consumes metabolites and has lower_bound below 0 (so
                 could be reversed).
-
-
-            Determine if a boundary reaction permits flux towards creating
-            metabolites.
             """
             return (bool(reaction.products) and (reaction.upper_bound > 0)) or (
                 bool(reaction.reactants) and (reaction.lower_bound < 0)
@@ -422,49 +393,24 @@ class Model(Object):
             # noinspection PyTypeChecker
             set_active_bound(rxn, bound)
 
-        media_rxns = frozenset(media_rxns)
+        frozen_media_rxns = frozenset(media_rxns)
 
-        # noinspection PyTypeChecker
         # Turn off reactions not present in media
-        for rxn in exchange_rxns - media_rxns:
+        for rxn in exchange_rxns - frozen_media_rxns:
             is_export = rxn.reactants and not rxn.products
-            # noinspection PyTypeChecker
             set_active_bound(
-                rxn, min(0, -rxn.lower_bound if is_export else rxn.upper_bound)
+                rxn, min(0.0, -rxn.lower_bound if is_export else rxn.upper_bound)
             )
-
-    def __add__(self, other_model: "Model") -> "Model":
-        """Add the content of another model to this model (+).
-
-        The model is copied as a new object, with a new model identifier,
-        and copies of all the reactions in the other model are added to this
-        model. The objective is the sum of the objective expressions for the
-        two models.
-
-        .. deprecated ::
-            Use model.merge instead, with inplace = False.
-        """
-        warn("use model.merge instead", DeprecationWarning)
-        return self.merge(other_model, objective="sum", inplace=False)
-
-    def __iadd__(self, other_model: "Model") -> "Model":
-        """Incrementally add the content of another model to this model (+=).
-
-        Copies of all the reactions in the other model are added to this
-        model. The objective is the sum of the objective expressions for the
-        two models.
-
-        .. deprecated ::
-            Use model.merge instead, with inplace = True.
-        """
-        warn("use model.merge instead", DeprecationWarning)
-        return self.merge(other_model, objective="sum", inplace=True)
 
     def copy(self: "Model") -> "Model":
         """Provide a partial 'deepcopy' of the Model.
 
-        All of the Metabolite, Gene, and Reaction objects are created anew but
+        All the Metabolite, Gene, and Reaction objects are created anew but
         in a faster fashion than deepcopy.
+
+        Returns
+        -------
+        cobra.Model: new model copy
         """
         new = self.__class__()
         do_not_copy_by_ref = {
@@ -530,7 +476,6 @@ class Model(Object):
             new_group._model = new
             new.groups.append(new_group)
         for group in self.groups:
-            # noinspection PyTypeChecker
             new_group = new.groups.get_by_id(group.id)
             # update awareness, as in the reaction copies
             new_objects = []
@@ -639,47 +584,28 @@ class Model(Object):
 
             # remove reference to the metabolite in all groups
             associated_groups = self.get_associated_groups(x)
-            [group.remove_members(x) for group in associated_groups]
+            for group in associated_groups:
+                group.remove_members(x)
 
             if not destructive:
-                # noinspection PyProtectedMember
-                for the_reaction in list(x._reaction):
-                    # noinspection PyProtectedMember
-                    the_coefficient = the_reaction._metabolites[x]
+                for the_reaction in list(x._reaction):  # noqa W0212
+                    the_coefficient = the_reaction._metabolites[x]  # noqa W0212
                     the_reaction.subtract_metabolites({x: the_coefficient})
 
             else:
-                # noinspection PyProtectedMember
-                [x2.remove_from_model() for x2 in list(x._reaction)]
+                for x2 in list(x._reaction):  # noqa W0212
+                    x2.remove_from_model()
 
         self.metabolites -= metabolite_list
 
-        # noinspection PyUnresolvedReferences
         to_remove = [self.solver.constraints[m.id] for m in metabolite_list]
         self.remove_cons_vars(to_remove)
 
         context = get_context(self)
         if context:
             context(partial(self.metabolites.__iadd__, metabolite_list))
-            [context(partial(setattr, x, "_model", self)) for x in metabolite_list]
-
-    def add_reaction(self, reaction: Reaction) -> None:
-        """Add reaction to model.
-
-        Will add a cobra.Reaction object to the model, if
-        reaction.id is not in self.reactions.
-
-        Parameters
-        ----------
-        reaction : cobra.Reaction
-            The reaction to add
-
-        .. deprecated :: 0.6
-            Use `~cobra.Model.add_reactions` instead.
-        """
-        warn("add_reaction deprecated. Use add_reactions instead", DeprecationWarning)
-
-        self.add_reactions([reaction])
+            for x in metabolite_list:
+                context(partial(setattr, x, "_model", self))
 
     def add_boundary(
         self,
@@ -790,7 +716,7 @@ class Model(Object):
         self.add_reactions([rxn])
         return rxn
 
-    def add_reactions(self, reaction_list: "Iterable") -> None:
+    def add_reactions(self, reaction_list: Iterable) -> None:
         """Add reactions to the model.
 
         Reactions with identifiers identical to a reaction already in the
@@ -834,7 +760,8 @@ class Model(Object):
                 context(partial(setattr, reaction, "_model", None))
             # Build a `list()` because the dict will be modified in the loop.
             for metabolite in list(reaction.metabolites):
-                # ?? Maybe this can happen with Reaction.add_metabolites(combine=False)
+                # TODO: Maybe this can happen with
+                #  Reaction.add_metabolites(combine=False)
                 # TODO: Should we add a copy of the metabolite instead?
                 if metabolite not in self.metabolites:
                     self.add_metabolites(metabolite)
@@ -1013,7 +940,6 @@ class Model(Object):
             warn("need to pass in a list")
             group_list = [group_list]
 
-        group: Group
         for group in group_list:
             # make sure the group is in the model
             if group.id not in self.groups:
@@ -1221,7 +1147,7 @@ class Model(Object):
             constrained.
         metabolite_list: list, optional
             A list of cobra Metabolites to add to the solver. This list will be
-            constrained. Default None.
+            constrained (default None).
         """
         constraint_terms = AutoVivification()
         to_add = []
@@ -1230,7 +1156,6 @@ class Model(Object):
                 to_add += [self.problem.Constraint(Zero, name=met.id, lb=0, ub=0)]
         self.add_cons_vars(to_add)
 
-        reaction: Reaction
         for reaction in reaction_list:
             if reaction.id not in self.variables:
                 forward_variable = self.problem.Variable(reaction.id)
@@ -1280,9 +1205,10 @@ class Model(Object):
         error_value : float, None
            The value to return if optimization failed due to e.g.
            infeasibility. If None, raise `OptimizationError` if the
-           optimization fails. Default float("nan").
+           optimization fails (default float("nan")).
         message : str, optional
-           Error message to use if the model optimization did not succeed. Default None.
+           Error message to use if the model optimization did not succeed (default
+           None).
 
         Returns
         -------
@@ -1313,10 +1239,14 @@ class Model(Object):
         ----------
         objective_sense : {None, 'maximize' 'minimize'}, optional
             Whether fluxes should be maximized or minimized. In case of None,
-            the previous direction is used. Default None.
+            the previous direction is used (default None).
         raise_error : bool
             If true, raise an OptimizationError if solver status is not
-             optimal. Default False.
+             optimal (default False).
+
+        Returns
+        -------
+        Solution
 
         Notes
         -----
@@ -1368,16 +1298,15 @@ class Model(Object):
                 _entity._model = self
 
     @property
-    def objective(self) -> Union[optlang.Objective, List[Reaction]]:
+    def objective(self) -> Union[optlang.Objective]:
         """Get the solver objective.
 
-        Before introduction of the optlang based problems,
-        this function returned the objective reactions as a list. With
-        optlang, the objective is not limited a simple linear summation of
-        individual reaction fluxes, making that return value ambiguous.
+        With optlang, the objective is not limited a simple linear summation of
+        individual reaction fluxes, making the return value ambiguous.
+
         Henceforth, use `cobra.util.solver.linear_reaction_coefficients` to
         get a dictionary of reactions with their linear coefficients (empty
-        if there are none)
+        if there are none).
 
         """
         return self.solver.objective
@@ -1403,10 +1332,7 @@ class Model(Object):
             values), string (reaction identifier), int (reaction index), Reaction or
             problem.Objective or sympy expression directly interpreted as objectives.
 
-        When using a `HistoryManager` context, this attribute can be set
-        temporarily, reversed when the exiting the context.
-
-        #TODO - check that it is reset with context.
+        When using in a context, this attribute can be set temporarily.
         """
         if isinstance(value, Basic):
             value = self.problem.Objective(value, sloppy=False)
@@ -1416,6 +1342,7 @@ class Model(Object):
             except KeyError:
                 raise ValueError("invalid objective")
             value = {rxn: 1 for rxn in reactions}
+            # TODO - check that it is reset with context.
         set_objective(self, value, additive=False)
 
     @property
@@ -1434,8 +1361,7 @@ class Model(Object):
     def objective_direction(self, value: str) -> None:
         """Set the objective direction.
 
-        When using a `HistoryManager` context, this attribute can be set
-        temporarily, reversed when exiting the context.
+        When used in a context, this attribute is set temporarily.
 
         Parameters
         ----------
@@ -1458,7 +1384,7 @@ class Model(Object):
     def summary(
         self,
         solution: Optional["Solution"] = None,
-        fva: Optional[Union["pandas.DataFrame", float]] = None,
+        fva: Optional[Union["pd.DataFrame", float]] = None,
     ) -> "ModelSummary":
         """
         Create a summary of the exchange fluxes of the model.
@@ -1469,7 +1395,7 @@ class Model(Object):
             A previous model solution to use for generating the summary. If
             ``None``, the summary method will generate a parsimonious flux
             distribution (default None).
-        fva : pandas.DataFrame or float, optional
+        fva : pd.DataFrame or float, optional
             Whether or not to include flux variability analysis in the output.
             If given, `fva` should either be a previous FVA solution matching the
             model or a float between 0 and 1 representing the fraction of the
@@ -1493,7 +1419,7 @@ class Model(Object):
         """Record future changes to the model.
 
         Record all future changes to the model, undoing them when a call to
-        __exit__ is received. Creates a new context and add it to the stack.
+        __exit__ is received. Creates a new context and adds it to the stack.
 
         Returns
         -------
@@ -1518,27 +1444,34 @@ class Model(Object):
         prefix_existing: Optional[str] = None,
         inplace: bool = True,
         objective: str = "left",
-    ):
+    ) -> "Model":
         """Merge two models to create a model with the reactions from both models.
 
         Custom constraints and variables from right models are also copied
         to left model, however note that, constraints and variables are
         assumed to be the same if they have the same name.
 
+        Parameters
+        ----------
         right : cobra.Model
             The model to add reactions from
         prefix_existing : string, optional
             Prefix the reaction identifier in the right that already exist
-            in the left model with this string. Default None.
+            in the left model with this string (default None).
         inplace : bool
             Add reactions from right directly to left model object.
             Otherwise, create a new model leaving the left model untouched.
             When done within the model as context, changes to the models are
-            reverted upon exit. Default True.
+            reverted upon exit (default True).
         objective : {'left', 'right', sum'}
             One of 'left', 'right' or 'sum' for setting the objective of the
             resulting model to that of the corresponding model or the sum of
-            both. Default 'left'.
+            both (default 'left').
+
+        Returns
+        -------
+        cobra.Model
+            The merged model.
         """
         if inplace:
             new_model = self

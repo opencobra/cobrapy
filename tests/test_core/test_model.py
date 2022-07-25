@@ -37,42 +37,6 @@ def same_ex(ex1, ex2):
     return ex1.simplify() == ex2.simplify()
 
 
-@pytest.mark.parametrize("solver", stable_optlang)
-def test_add_remove_reaction_benchmark(
-    model: Model, benchmark: BenchmarkFixture, solver: str
-) -> None:
-    """Test adding or removing a reaction, while benchmarking it.
-
-    Parameters
-    ----------
-    model: cobra.Model
-    benchmark: BenchmarkFixture
-    solver: str
-        Will use the solvers defined above in stable_optlang
-    """
-    metabolite_foo = Metabolite("test_foo")
-    metabolite_bar = Metabolite("test_bar")
-    metabolite_baz = Metabolite("test_baz")
-    actual_metabolite = model.metabolites[0]
-    dummy_reaction = Reaction("test_foo_reaction")
-    dummy_reaction.add_metabolites(
-        {
-            metabolite_foo: -1,
-            metabolite_bar: 1,
-            metabolite_baz: -2,
-            actual_metabolite: 1,
-        }
-    )
-
-    def benchmark_add_reaction():
-        model.add_reaction(dummy_reaction)  # noqa:  W6001
-        if not getattr(model, "solver", None):
-            solver_dict[solver].create_problem(model)
-        model.remove_reactions([dummy_reaction])
-
-    benchmark(benchmark_add_reaction)
-
-
 def test_add_metabolite(model: Model) -> None:
     """Tests adding a metabolite to a model, including with context.
 
@@ -160,126 +124,6 @@ def test_compartments(model: Model) -> None:
     assert model.compartments == {"c": "", "e": ""}
     model.compartments = {"c": "cytosol"}
     assert model.compartments == {"c": "cytosol", "e": ""}
-
-
-def test_add_reaction(model: Model) -> None:
-    """Tests add reaction to the model.
-
-    Parameters
-    ----------
-    model: cobra.Model
-    """
-    old_reaction_count = len(model.reactions)
-    old_metabolite_count = len(model.metabolites)
-    dummy_metabolite_1 = Metabolite("test_foo_1")
-    dummy_metabolite_2 = Metabolite("test_foo_2")
-    actual_metabolite = model.metabolites[0]
-    copy_metabolite = model.metabolites[1].copy()
-    dummy_reaction = Reaction("test_foo_reaction")
-    dummy_reaction.add_metabolites(
-        {
-            dummy_metabolite_1: -1,
-            dummy_metabolite_2: 1,
-            copy_metabolite: -2,
-            actual_metabolite: 1,
-        }
-    )
-
-    model.add_reaction(dummy_reaction)  # noqa:  W6001
-    assert model.reactions.get_by_id(dummy_reaction.id) == dummy_reaction
-    for x in [dummy_metabolite_1, dummy_metabolite_2]:
-        assert model.metabolites.get_by_id(x.id) == x
-    # Should add 1 reaction and 2 metabolites
-    assert len(model.reactions) == old_reaction_count + 1
-    assert len(model.metabolites) == old_metabolite_count + 2
-    # Test the added reaction
-    reaction_in_model = model.reactions.get_by_id(dummy_reaction.id)
-    assert type(reaction_in_model) is Reaction
-    assert reaction_in_model is dummy_reaction
-    assert len(reaction_in_model._metabolites) == 4
-    for i in reaction_in_model._metabolites:
-        assert type(i) == Metabolite
-    # Test the added metabolites
-    met1_in_model = model.metabolites.get_by_id(dummy_metabolite_1.id)
-    assert met1_in_model is dummy_metabolite_1
-    copy_in_model = model.metabolites.get_by_id(copy_metabolite.id)
-    assert copy_metabolite is not copy_in_model
-    assert type(copy_in_model) is Metabolite
-    assert dummy_reaction in actual_metabolite._reaction
-    # Test addition of a different metabolite with the same name as an
-    # existing one uses the metabolite in the model
-    r2 = Reaction("test_foo_reaction2")
-    model.add_reaction(r2)  # noqa:  W6001
-    r2.add_metabolites({Metabolite(model.metabolites[0].id): 1})
-    assert model.metabolites[0] is list(r2._metabolites)[0]
-
-
-def test_add_reaction_context(model: Model) -> None:
-    """Tests add reaction to the model with context.
-
-    Checks that the changes to the model are reversed upon exit from context.
-
-    Parameters
-    ----------
-    model: cobra.Model
-    """
-    old_reaction_count = len(model.reactions)
-    old_metabolite_count = len(model.metabolites)
-    dummy_metabolite_1 = Metabolite("test_foo_1")
-    dummy_metabolite_2 = Metabolite("test_foo_2")
-    actual_metabolite = model.metabolites[0]
-    copy_metabolite = model.metabolites[1].copy()
-    dummy_reaction = Reaction("test_foo_reaction")
-    dummy_reaction.add_metabolites(
-        {
-            dummy_metabolite_1: -1,
-            dummy_metabolite_2: 1,
-            copy_metabolite: -2,
-            actual_metabolite: 1,
-        }
-    )
-    dummy_reaction.gene_reaction_rule = "dummy_gene"
-
-    with model:
-        model.add_reaction(dummy_reaction)  # noqa:  W6001
-        assert model.reactions.get_by_id(dummy_reaction.id) == dummy_reaction
-        assert len(model.reactions) == old_reaction_count + 1
-        assert len(model.metabolites) == old_metabolite_count + 2
-        assert dummy_metabolite_1._model == model
-        assert "dummy_gene" in model.genes
-
-    assert len(model.reactions) == old_reaction_count
-    assert len(model.metabolites) == old_metabolite_count
-    with pytest.raises(KeyError):
-        model.reactions.get_by_id(dummy_reaction.id)
-    assert dummy_metabolite_1._model is None
-    assert "dummy_gene" not in model.genes
-
-
-def test_add_reaction_from_other_model(model: Model) -> None:
-    """Test adding reaction from another model.
-
-    In this case, the other model is a copy of the same model with the names of
-    reactions changed.
-
-    Parameters
-    ----------
-    model: cobra.Model
-        The cobra Model to start from.
-
-    """
-    other = model.copy()
-    for i in other.reactions:
-        i.id += "_other"
-    other.repair()
-    model.add_reactions(other.reactions)
-
-    # Check if the other reaction has an error in its GPR
-    m1 = model.copy()
-    m2 = model.copy()
-    m1.reactions.PGI.remove_from_model()
-    m2.genes.b4025._reaction.clear()
-    m1.add_reaction(m2.reactions.PGI)  # noqa:  W6001
 
 
 def test_model_remove_reaction(model: Model):
@@ -744,7 +588,7 @@ def test_copy_with_groups(model: Model) -> None:
     )
 
 
-def test_deepcopy_benchmark(model: Model, benchmark: BenchmarkFixture):
+def test_deepcopy_benchmark(model: Model, benchmark: BenchmarkFixture) -> None:
     """Benchmark deepcopying a model.
 
     Parameters
@@ -850,19 +694,11 @@ def test_merge_models(model: Model, tiny_toy_model: Model) -> None:
         assert "foo" not in model.variables
         assert "tiny_EX_glc__D_e" not in model.reactions
 
-    # Test the deprecated operator overloading
-    with model:
-        merged = model + tiny_toy_model
-        assert "ex1" in merged.reactions
-    with model:
-        model += tiny_toy_model
-        assert "ex1" in model.reactions
-
 
 @pytest.mark.parametrize("solver", stable_optlang)
 def test_change_objective_benchmark(
     model: Model, benchmark: BenchmarkFixture, solver: str
-):
+) -> None:
     """Benchmark changing objective in model.
 
     Parameters
@@ -926,7 +762,7 @@ def test_slim_optimize(model: Model) -> None:
 
 
 @pytest.mark.parametrize("solver", optlang_solvers)
-def test_optimize(model: Model, solver: str):
+def test_optimize(model: Model, solver: str) -> None:
     """Test optimizing a model.
 
     Parameters
@@ -1166,19 +1002,6 @@ def test_add_reactions_duplicate(model: Model) -> None:
     assert r1 in model.reactions
     assert rxn in model.reactions
     assert r2 is not model.reactions.get_by_id(rxn.id)
-
-
-def test_add_cobra_reaction(model: Model) -> None:
-    """Test the deprecated add_reaction() function.
-
-    Parameters
-    ----------
-    model: cobra.Model
-    """
-    r = Reaction(id="c1")
-    with pytest.warns(DeprecationWarning):
-        model.add_reaction(r)  # noqa:  W6001
-    assert isinstance(model.reactions.c1, Reaction)
 
 
 def test_all_objects_point_to_all_other_correct_objects(model: Model) -> None:
