@@ -20,7 +20,7 @@ def create_test_model(model_name: str = "salmonella") -> Model:
     Parameters
     ----------
     model_name: str
-        One of 'ecoli', 'textbook', or 'salmonella', or the
+        One of 'ecoli', 'textbook', or 'salmonella', 'ecoli_annotation' or the
         path to a pickled cobra.Model .
 
     Returns
@@ -43,6 +43,9 @@ def create_test_model(model_name: str = "salmonella") -> Model:
     elif model_name == "mini":
         mini_sbml = str((data_dir / "mini_fbc2.xml").resolve())
         return read_sbml_model(mini_sbml)
+    elif model_name == "ecoli_annotation":
+        ecoli_annotation_sbml = str((data_dir / "e_coli_core_for_annotation.xml").resolve())
+        return read_sbml_model(ecoli_annotation_sbml)
     elif model_name == "salmonella":
         salmonella_pickle = str((data_dir / "salmonella.pickle").resolve())
         model_name = salmonella_pickle
@@ -102,6 +105,18 @@ def medium_model() -> Model:
 def salmonella(medium_model: Model) -> Model:
     """Provide function-level fixture for salmonella model."""
     return medium_model.copy()
+
+
+@pytest.fixture(scope="session")
+def ecoli_annotation_model() -> Model:
+    """Provide session-level fixture for ecoli_annotation model."""
+    return create_test_model("ecoli_annotation")
+
+
+@pytest.fixture(scope="function")
+def annotation_model(ecoli_annotation_model: Model) -> Model:
+    """Provide function-level fixture for ecoli_annotation model."""
+    return ecoli_annotation_model.copy()
 
 
 @pytest.fixture(scope="function")

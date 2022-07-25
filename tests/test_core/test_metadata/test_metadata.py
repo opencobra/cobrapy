@@ -58,7 +58,7 @@ ecoli_model_annotation = [
     {
         "qualifier": "bqm_isDescribedBy",
         "external_resources": {
-            "resources": ["http://identifiers.org/ncbigi/gi:16128336"]
+            "resources": ["http://identifiers.org/ncbiprotein/16128336"]
         },
     },
 ]
@@ -175,6 +175,12 @@ def test_old_style_annotation() -> None:
         "chebi": ["CHEBI:17234", "CHBEI:1723456", "CHEBI:172345"],
         "eco": ["123"],
     }
+    s.annotation.standardized.delete_annotation('CHEBI:172345')
+    assert len(s.annotation.standardized.resources) == 3
+    assert s.annotation == {
+        "chebi": ["CHEBI:17234", "CHBEI:1723456"],
+        "eco": ["123"],
+    }
     s.annotation.__delitem__("chebi")
     assert len(s.annotation.standardized.resources) == 1
     s.annotation.standardized.add_simple_annotations({"chebi": "CHEBI:17234"})
@@ -265,25 +271,7 @@ def test_nested_annotation(data_directory: Path) -> None:
     assert nested_data == nested_cvt
 
 
-def _read_ecoli_annotation_model(data_directory: Path) -> Model:
-    """Read XML that contains a defined annotation.
-
-    Parameters
-    ----------
-    data_directory: Path
-        directory where example model is
-
-    Returns
-    -------
-    model: Model
-    """
-    test_xml = data_directory / "e_coli_core_for_annotation.xml"
-    model = read_sbml_model(str(test_xml))
-    return model
-
-
-def test_cvterms_from_ecoli_xml(data_directory):
-    model = _read_ecoli_annotation_model(data_directory)
+def test_cvterms_from_ecoli_xml(annotation_model: Model) -> None:
     qualifier_set = {
         Qualifier(qual) for qual in ["bqb_hasTaxon", "bqm_is", "bqm_isDescribedBy"]
     }
@@ -298,41 +286,46 @@ def test_cvterms_from_ecoli_xml(data_directory):
         },
     ]
     ecoli_model_cvterm = CVTermList.from_data(ecoli_model_annotation)
-    xml_model_cvterms = model.annotation.standardized
+    xml_model_cvterms = annotation_model.annotation.standardized
     model_cvterms_qualifier_set = xml_model_cvterms.qualifiers
     assert qualifier_set == model_cvterms_qualifier_set
     assert xml_model_cvterms == ecoli_model_cvterm
     assert (
-        len(model.annotation.standardized.query("bqm_isDescribedBy", "qualifier")) == 2
+        len(annotation_model.annotation.standardized.query("bqm_isDescribedBy", "qualifier")) == 2
     )
-    nested_data = model.annotation.standardized.query("bqm_is", "qualifier")[
+    nested_data = annotation_model.annotation.standardized.query("bqm_is", "qualifier")[
         0
     ].external_resources.nested_data
     assert nested_data == nested_cvt
 
     # check backwards compatibility
-    assert model.annotation.annotations == {
+    assert annotation_model.annotation.annotations == {
         "bigg.model": ["e_coli_core"],
         "doi": ["10.1128/ecosalplus.10.2.1"],
         "eco": ["ECO:0000004"],
-        "ncbigi": ["gi:16128336"],
+        "ncbiprotein": ["16128336"],
+        "pubmed": ["1111111"],
+        "taxonomy": ["511145"],
+    }
+    annotation_model.annotation.standardized.delete_annotation('coli')
+    assert annotation_model.annotation.annotations == {
+        "doi": ["10.1128/ecosalplus.10.2.1"],
+        "eco": ["ECO:0000004"],
+        "ncbiprotein": ["16128336"],
         "pubmed": ["1111111"],
         "taxonomy": ["511145"],
     }
 
 
-def test_writing_xml(data_directory, tmp_path):
-    model = _read_ecoli_annotation_model(data_directory)
+def test_writing_xml(annotation_model: Model, tmp_path):
     assert (
-        write_sbml_model(model, str(tmp_path.joinpath("e_coli_core_writing.xml")))
+        write_sbml_model(annotation_model, str(tmp_path.joinpath("e_coli_core_writing.xml")))
         is None
     )
 
-
-def test_read_write_json(data_directory: Path, tmp_path: Path):
-    model = _read_ecoli_annotation_model(data_directory)
+def test_read_write_json(annotation_model: Model, tmp_path: Path):
     json_path = tmp_path / "e_coli_core_json_writing.json"
-    assert save_json_model(model, json_path, sort=False, pretty=True) is None
+    assert save_json_model(annotation_model, json_path, sort=False, pretty=True) is None
 
     model = load_json_model(json_path)
     # Because of changes to eq, to compare using the old format, we need annotation.annotations
@@ -341,14 +334,53 @@ def test_read_write_json(data_directory: Path, tmp_path: Path):
         "bigg.model": ["e_coli_core"],
         "doi": ["10.1128/ecosalplus.10.2.1"],
         "eco": ["ECO:0000004"],
-        "ncbigi": ["gi:16128336"],
+        "ncbiprotein": ["16128336"],
         "pubmed": ["1111111"],
         "taxonomy": ["511145"],
     }
     assert model.annotation.standardized == CVTermList.from_data(ecoli_model_annotation)
     assert model.annotation.standardized == ecoli_model_annotation
 
+    for met_id in model.metabolites.list_attr('id'):
+        original_met_annot = annotation_model.metabolites.get_by_id(met_id).annotation
+        new_met_annot = model.metabolites.get_by_id(met_id).annotation
+        assert original_met_annot == new_met_annot
 
+    for rxn_id in model.reactions.list_attr('id'):
+        original_rxn_annot = annotation_model.reactions.get_by_id(rxn_id).annotation
+        new_rxn_annot = model.reactions.get_by_id(rxn_id).annotation
+        assert original_rxn_annot == new_rxn_annot
+
+
+def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
+    out_path = tmp_path / "e_coli_core_json_writing.sbml"
+    assert write_sbml_model(annotation_model, str(out_path)) is None
+
+    model = read_sbml_model(str(out_path))
+    # Because of changes to eq, to compare using the old format, we need annotation.annotations
+    # TODO - get comments from cdiener
+    assert model.annotation.annotations == {
+        "bigg.model": ["e_coli_core"],
+        "doi": ["10.1128/ecosalplus.10.2.1"],
+        "eco": ["ECO:0000004"],
+        "ncbiprotein": ["16128336"],
+        "pubmed": ["1111111"],
+        "taxonomy": ["511145"],
+    }
+    assert model.annotation.standardized == CVTermList.from_data(ecoli_model_annotation)
+    assert model.annotation.standardized == ecoli_model_annotation
+
+    for met_id in model.metabolites.list_attr('id'):
+        original_met_annot = annotation_model.metabolites.get_by_id(met_id).annotation
+        new_met_annot = model.metabolites.get_by_id(met_id).annotation
+        assert original_met_annot == new_met_annot
+
+    for rxn_id in model.reactions.list_attr('id'):
+        original_rxn_annot = annotation_model.metabolites.get_by_id(rxn_id).annotation
+        new_rxn_annot = model.metabolites.get_by_id(rxn_id).annotation
+        assert original_rxn_annot == new_rxn_annot
+
+# TODO - ask cobratoolbox mailing list about these annotations in MATLAB format
 def test_read_old_json_model(data_directory):
     model = load_json_model(Path(data_directory) / "mini.json")
     meta = model.metabolites[0]
@@ -435,15 +467,14 @@ def test_cvtermlist_query():
         )
         == 1
     )
-    with pytest.raises(TypeError):
-        assert (
-            len(
-                cvtermlist.query(
-                    search_function="chebi", attribute="external_resources"
-                )
+    assert (
+        len(
+            cvtermlist.query(
+                search_function="chebi", attribute="external_resources"
             )
-            == 1
         )
+        == 7
+    )
 
     assert len(cvtermlist.query(search_function="chebi", attribute="resources")) == 7
     assert (

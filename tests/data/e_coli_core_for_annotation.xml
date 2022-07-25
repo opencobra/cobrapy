@@ -127,7 +127,7 @@ xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="
           </bqmodel:isDescribedBy>
           <bqmodel:isDescribedBy>
             <rdf:Bag>
-              <rdf:li rdf:resource="http://identifiers.org/ncbigi/gi:16128336" />
+              <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/16128336" />
             </rdf:Bag>
           </bqmodel:isDescribedBy>
         </rdf:Description>
