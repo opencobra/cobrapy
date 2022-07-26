@@ -13,6 +13,7 @@ of SBO:0000633 (see https://sourceforge.net/p/sbo/term-request/113/)
 ## Other
 
 * Resolve `flake8` issues and add missing type annotations and docstrings in `src/cobra/io` and `tests/test_io` (#1212).
+* Change type hints in dictlist.py to include Object and derivate classes, which reduces type mismatch warnings.
 
 ## Deprecated features
 
