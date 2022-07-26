@@ -381,7 +381,8 @@ class CVTermList(UserList):
     """A list of CVTerm objects.
 
     Representation of multiple CVTerm objects in a list.  It is list that contains
-    CVTerm objects.
+    CVTerm objects. As a list, it means that objects can repeat, and that the order is
+    maintained.
 
     CVTermList is built using UserList, which means that the actual list can be
     accessed using CVTermList.data. As a list, the order is kept, items may repeat.

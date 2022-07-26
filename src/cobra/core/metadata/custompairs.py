@@ -3,13 +3,15 @@
 Key-Value pairs are described in SBML FBC3. For the FBC3 standard, see
 https://github.com/bgoli/sbml-fbc-spec/blob/main/sf_svn/spec/main.pdf
 """
-
+import uuid
 from collections import UserDict
 from typing import Dict, Iterable, Optional, Union
+from dataclasses import dataclass, field, fields, asdict
 
 from ...util import format_long_string
 
 
+@dataclass
 class KeyValueEntry:
     """Single key-value entry.
 
@@ -17,41 +19,22 @@ class KeyValueEntry:
 
     Parameters
     ----------
-        id : str
-        name : str
-        key : str
-        value : str
-        uri : str
+    key: str
+        Defined as mandatory in the FBC3 standard.
+    id: str
+        optional. Default None.
+    name: str
+        optional. Default None.
+    value: str
+        optional. Default None.
+    uri: str
+        Can be a URN or URL. Optional (default None).
     """
-
-    def __init__(
-        self,
-        id: Optional[str] = None,
-        name: Optional[str] = None,
-        key: Optional[str] = None,
-        value: Optional[str] = None,
-        uri: Optional[str] = None,
-    ):
-        """Initialize the KeyValueEntry class.
-
-        Parameters
-        ----------
-        id: str
-            optional. Default None.
-        name: str
-            optional. Default None.
-        key: str
-            optional. Default None.
-        value: str
-            optional. Default None.
-        uri: str
-            optional. Default None.
-        """
-        self.id = id
-        self.name = name
-        self.key = key
-        self.value = value
-        self.uri = uri
+    key: str
+    id: Optional[str] = None
+    name: Optional[str] = None
+    value: Optional[str] = None
+    uri: Optional[str] = None
 
     @staticmethod
     def from_data(data: Optional[Union[Dict, "KeyValueEntry"]]) -> "KeyValueEntry":
@@ -67,40 +50,23 @@ class KeyValueEntry:
         -------
         KeyValueEntry
         """
-        if data is None:
-            return KeyValueEntry()
-        elif isinstance(data, KeyValueEntry):
+        if isinstance(data, KeyValueEntry):
             return data
         elif isinstance(data, dict):
+            if 'key' not in data:
+                data['key'] = uuid.uuid4().hex
             return KeyValueEntry(**data)
         else:
             raise TypeError(f"Invalid format for KeyValueEntry: '{data}'")
 
-    def to_dict(self) -> dict:
-        """Transform KeyValueEntry to dictionary.
-
-        Creates a dictionary with the following keys: id, name, key, value, uri.
-
-        Returns
-        -------
-        dict
-        """
-        return {
-            "id": self.id,
-            "name": self.name,
-            "key": self.key,
-            "value": self.value,
-            "uri": self.uri,
-        }
-
     def __str__(self) -> str:
-        """Get string representation.
+        """Get string representation of the KeyValueEntry as dictionary.
 
         Returns
         -------
         str
         """
-        return str(self.to_dict())
+        return str(asdict(self))
 
     def __repr__(self) -> str:
         """Get string representation, including module and class name.
@@ -110,8 +76,9 @@ class KeyValueEntry:
         str
         """
         return (
-            f"<{self.__class__.__module__}.{self.__class__.__qualname__}"
-            f"({self.key}, {self.value}, {self.uri})>"
+            f"{self.__class__.__module__}.{self.__class__.__qualname__}"
+            f"({repr(self.key)}, {repr(self.id)}, {repr(self.name)}, {repr(self.value)}"
+            f", {repr(self.uri)})"
         )
 
 
@@ -197,4 +164,9 @@ class KeyValuePairs(UserDict):
             keys are the keys, and each value is the KeyValueEntry represented as
             a dict.
         """
-        return {k: v.to_dict() for k, v in self.data.items()}
+        return {k: asdict(v) for k, v in self.data.items()}
+
+    #query
+
+    #add_key_value_pair
+    #delete_key_value_pair?? Maybe with query
