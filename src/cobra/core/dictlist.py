@@ -12,16 +12,12 @@ from typing import (
     Pattern,
     Tuple,
     Type,
-    TypeVar,
     Union,
 )
 
 from numpy import bool_
 
-from .object import Object
-
-
-Object_T = TypeVar("Object_T", bound=Object)
+from cobra.core.object import Object
 
 
 class DictList(list):
@@ -54,12 +50,12 @@ class DictList(list):
                 self.extend(other)
 
     # noinspection PyShadowingBuiltins
-    def has_id(self, id: Union[Object_T, str]) -> bool:
+    def has_id(self, id: Union[Object, str]) -> bool:
         """Check if id is in DictList."""
         return id in self._dict
 
     # noinspection PyShadowingBuiltins
-    def _check(self, id: Union[Object_T, str]) -> None:
+    def _check(self, id: Union[Object, str]) -> None:
         """Make sure duplicate id's are not added.
 
         This function is called before adding in elements.
@@ -73,7 +69,7 @@ class DictList(list):
         self._dict = {v.id: k for k, v in enumerate(self)}
 
     # noinspection PyShadowingBuiltins
-    def get_by_id(self, id: Union[Object_T, str]) -> Object_T:
+    def get_by_id(self, id: Union[Object, str]) -> Object:
         """Return the element with a matching id."""
         return list.__getitem__(self, self._dict[id])
 
@@ -81,7 +77,7 @@ class DictList(list):
         """Return a list of the given attribute for every object."""
         return [getattr(i, attribute) for i in self]
 
-    def get_by_any(self, iterable: List[Union[str, Object_T, int]]) -> list:
+    def get_by_any(self, iterable: List[Union[str, Object, int]]) -> list:
         """Get a list of members using several different ways of indexing.
 
         Parameters
@@ -172,21 +168,21 @@ class DictList(list):
         results._extend_nocheck(matches)
         return results
 
-    def _replace_on_id(self, new_object: Object_T) -> None:
+    def _replace_on_id(self, new_object: Object) -> None:
         """Replace an object by another with the same id."""
         the_id = new_object.id
         the_index = self._dict[the_id]
         list.__setitem__(self, the_index, new_object)
 
     # overriding default list functions with new ones
-    def append(self, entity: Object_T) -> None:
+    def append(self, entity: Object) -> None:
         """Append object to end."""
         the_id = entity.id
         self._check(the_id)
         self._dict[the_id] = len(self)
         list.append(self, entity)
 
-    def union(self, iterable: Iterable[Object_T]) -> None:
+    def union(self, iterable: Iterable[Object]) -> None:
         """Add elements with id's not already in the model."""
         _dict = self._dict
         append = self.append
@@ -194,7 +190,7 @@ class DictList(list):
             if i.id not in _dict:
                 append(i)
 
-    def extend(self, iterable: Iterable[Object_T]) -> None:
+    def extend(self, iterable: Iterable[Object]) -> None:
         """Extend list by appending elements from the iterable.
 
         Sometimes during initialization from an older pickle, _dict
@@ -227,7 +223,7 @@ class DictList(list):
                     f"Is it present twice?"
                 )
 
-    def _extend_nocheck(self, iterable: Iterable[Object_T]) -> None:
+    def _extend_nocheck(self, iterable: Iterable[Object]) -> None:
         """Extend without checking for uniqueness.
 
         This function should only be used internally by DictList when it
@@ -249,7 +245,7 @@ class DictList(list):
         for i, obj in enumerate(islice(self, current_length, None), current_length):
             _dict[obj.id] = i
 
-    def __sub__(self, other: Iterable[Object_T]) -> "DictList":
+    def __sub__(self, other: Iterable[Object]) -> "DictList":
         """Remove a value or values, and returns the new DictList.
 
         x.__sub__(y) <==> x - y
@@ -269,7 +265,7 @@ class DictList(list):
             total.remove(item)
         return total
 
-    def __isub__(self, other: Iterable[Object_T]) -> "DictList":
+    def __isub__(self, other: Iterable[Object]) -> "DictList":
         """Remove a value or values in place.
 
         x.__sub__(y) <==> x -= y
@@ -283,7 +279,7 @@ class DictList(list):
             self.remove(item)
         return self
 
-    def __add__(self, other: Iterable[Object_T]) -> "DictList":
+    def __add__(self, other: Iterable[Object]) -> "DictList":
         """Add item while returning a new DictList.
 
         x.__add__(y) <==> x + y
@@ -299,7 +295,7 @@ class DictList(list):
         total.extend(other)
         return total
 
-    def __iadd__(self, other: Iterable[Object_T]) -> "DictList":
+    def __iadd__(self, other: Iterable[Object]) -> "DictList":
         """Add item while returning the same DictList.
 
         x.__iadd__(y) <==> x += y
@@ -341,7 +337,7 @@ class DictList(list):
         self._generate_index()
 
     # noinspection PyShadowingBuiltins
-    def index(self, id: Union[str, Object_T], *args) -> int:
+    def index(self, id: Union[str, Object], *args) -> int:
         """Determine the position in the list.
 
         Parameters
@@ -365,7 +361,7 @@ class DictList(list):
         except KeyError:
             raise ValueError(f"{str(id)} not found")
 
-    def __contains__(self, entity: Union[str, Object_T]) -> bool:
+    def __contains__(self, entity: Union[str, Object]) -> bool:
         """Ask if the DictList contain an entity.
 
         DictList.__contains__(entity) <==> entity in DictList
@@ -389,7 +385,7 @@ class DictList(list):
         the_copy._dict = self._dict.copy()
         return the_copy
 
-    def insert(self, index: int, entity: Object_T) -> None:
+    def insert(self, index: int, entity: Object) -> None:
         """Insert entity before index."""
         self._check(entity.id)
         list.insert(self, index, entity)
@@ -400,7 +396,7 @@ class DictList(list):
                 _dict[i] = j + 1
         _dict[entity.id] = index
 
-    def pop(self, *args) -> Object_T:
+    def pop(self, *args) -> Object:
         """Remove and return item at index (default last)."""
         value = list.pop(self, *args)
         index = self._dict.pop(value.id)
@@ -414,11 +410,11 @@ class DictList(list):
                 _dict[i] = j - 1
         return value
 
-    def add(self, x: Object_T) -> None:
+    def add(self, x: Object) -> None:
         """Opposite of `remove`. Mirrors set.add."""
         self.extend([x])
 
-    def remove(self, x: Union[str, Object_T]) -> None:
+    def remove(self, x: Union[str, Object]) -> None:
         """.. warning :: Internal use only.
 
         Each item is unique in the list which allows this
@@ -450,8 +446,8 @@ class DictList(list):
         self._generate_index()
 
     def __getitem__(
-        self, i: Union[int, slice, Iterable, Object_T, "DictList"]
-    ) -> Union["DictList", Object_T]:
+        self, i: Union[int, slice, Iterable, Object, "DictList"]
+    ) -> Union["DictList", Object]:
         """Get item from DictList."""
         if isinstance(i, int):
             return list.__getitem__(self, i)
@@ -470,7 +466,7 @@ class DictList(list):
         else:
             return list.__getitem__(self, i)
 
-    def __setitem__(self, i: Union[slice, int], y: Union[list, Object_T]) -> None:
+    def __setitem__(self, i: Union[slice, int], y: Union[list, Object]) -> None:
         """Set an item via index or slice.
 
         Parameters
@@ -499,7 +495,7 @@ class DictList(list):
         list.__setitem__(self, i, y)
         self._dict[the_id] = i
 
-    def __delitem__(self, index: Union[int, slice]) -> None:
+    def __delitem__(self, index: int) -> None:
         """Remove item from DictList."""
         removed = self[index]
         list.__delitem__(self, index)
@@ -516,7 +512,7 @@ class DictList(list):
         """Get a slice from it to j of DictList."""
         return self.__getitem__(slice(i, j))
 
-    def __setslice__(self, i: int, j: int, y: Union[list, Object_T]) -> None:
+    def __setslice__(self, i: int, j: int, y: Union[list, Object]) -> None:
         """Set slice, where y is an iterable."""
         self.__setitem__(slice(i, j), y)
 

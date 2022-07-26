@@ -77,19 +77,7 @@ class Model(Object):
     def __init__(
         self, id_or_model: Union[str, "Model"] = None, name: Optional[str] = None
     ) -> None:
-        """Initialize the Model.
-
-        Parameters
-        ----------
-        id_or_model str, Model
-            String to use as model id, or actual model to base new model one.
-            If string, it is used as id. If model, a new model object is
-            instantiated with the same properties as the original model (id is None).
-            Default None.
-
-        name: str, optional
-            Human readable string to be model description (default None).
-        """
+        """Initialize the Model."""
         if isinstance(id_or_model, Model):
             Object.__init__(self, name=name)
             self.__setstate__(id_or_model.__dict__)
@@ -351,7 +339,7 @@ class Model(Object):
         """Set the constraints on the model exchanges.
 
         `model.medium` returns a dictionary of the bounds for each of the
-        boundary reactions, in the form of `{rxn_id: bound}`, where `bound`
+        boundary reactions, in the form of `{rxn_id: rxn_bound}`, where `rxn_bound`
         specifies the absolute value of the bound in direction of metabolite
         creation (i.e., lower_bound for `met <--`, upper_bound for `met -->`)
 
@@ -362,27 +350,27 @@ class Model(Object):
             `{rxn_id: bound}` pairs.
         """
 
-        def set_active_bound(reaction: Reaction, _bound: float) -> None:
+        def set_active_bound(reaction: Reaction, bound: float) -> None:
             """Set active bound.
 
             Parameters
             ----------
             reaction: cobra.Reaction
                 Reaction to set
-            _bound: float
+            bound: float
                 Value to set bound to. The bound is reversed and set as lower bound
                 if reaction has reactants (metabolites that are consumed). If reaction
                 has reactants, it seems the upper bound won't be set.
             """
             if reaction.reactants:
-                reaction.lower_bound = -_bound
+                reaction.lower_bound = -bound
             elif reaction.products:
-                reaction.upper_bound = _bound
+                reaction.upper_bound = bound
 
         # Set the given media bounds
         media_rxns = []
         exchange_rxns = frozenset(self.exchanges)
-        for rxn_id, bound in medium.items():
+        for rxn_id, rxn_bound in medium.items():
             rxn = self.reactions.get_by_id(rxn_id)
             if rxn not in exchange_rxns:
                 logger.warning(
@@ -391,7 +379,7 @@ class Model(Object):
                 )
             media_rxns.append(rxn)
             # noinspection PyTypeChecker
-            set_active_bound(rxn, bound)
+            set_active_bound(rxn, rxn_bound)
 
         frozen_media_rxns = frozenset(media_rxns)
 
@@ -883,7 +871,7 @@ class Model(Object):
             warning is raised.
         """
 
-        def existing_filter(_group: Group) -> bool:
+        def existing_filter(new_group: Group) -> bool:
             """Check if the group does not exist.
 
             Parameters
@@ -896,8 +884,9 @@ class Model(Object):
             bool:
                 False if the group already exists, True if it doesn't.
             """
-            if _group.id in self.groups:
-                logger.warning(f"Ignoring group '{_group.id}' since it already exists.")
+            if new_group.id in self.groups:
+                logger.warning(f"Ignoring group '{new_group.id}'"
+                               f" since it already exists.")
                 return False
             return True
 
@@ -1293,9 +1282,9 @@ class Model(Object):
                     met._reaction.add(rxn)
 
         # point _model to self
-        for _dict_list in (self.reactions, self.genes, self.metabolites, self.groups):
-            for _entity in _dict_list:
-                _entity._model = self
+        for dict_list in (self.reactions, self.genes, self.metabolites, self.groups):
+            for entity in dict_list:
+                entity._model = self
 
     @property
     def objective(self) -> Union[optlang.Objective]:
