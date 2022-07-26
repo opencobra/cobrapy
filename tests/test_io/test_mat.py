@@ -27,65 +27,86 @@ def raven_model(data_directory: Path) -> "Model":
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
-# @pytest.mark.parametrize("ref_model, filename",
-#                          [(pytest.fixture_request("mini_model"),
-#                            "mini.mat"),
-#                           (pytest.fixture_request("raven_model"),
-#                            "raven.mat")])
-# TODO: wait for pytest.fixture_request() to get approved
+@pytest.mark.parametrize(
+    "fix_ref_model, fix_directory, filename",
+    [
+        ("mini_model", "cobra_data_directory", "mini.mat"),
+        ("raven_model", "data_directory", "raven.mat"),
+    ],
+)
 def test_load_matlab_model(
     compare_models: Callable,
-    data_directory: Path,
-    mini_model: "Model",
-    raven_model: "Model",
+    fix_ref_model: str,
+    fix_directory: str,
+    filename: str,
+    request: pytest.FixtureRequest,
 ) -> None:
     """Test the reading of MAT model.
+
+    Will check Path and str for each model.
 
     Parameters
     ----------
     compare_models : Callable
-        A callable to compare models.
-    data_directory : pathlib.Path
-        The path to the test data directory.
+        A callable function to compare models.
+    fix_ref_model: str
+        Name of reference model fixture which will be requested.
+    fix_directory: str
+        Name of directory fixture which will be requested.
+    filename: str
+        Filename to use as a parameter
+    request: FixtureRequest
+        Will be used to request fixtures.
 
     """
-    mini_mat_model = load_matlab_model(str((data_directory / "mini.mat").resolve()))
-    raven_mat_model = load_matlab_model(str((data_directory / "raven.mat").resolve()))
-    assert compare_models(mini_model, mini_mat_model) is None
-    assert compare_models(raven_model, raven_mat_model) is None
+    current_model = load_matlab_model(
+        (request.getfixturevalue(fix_directory) / filename).resolve()
+    )
+    assert compare_models(request.getfixturevalue(fix_ref_model), current_model) is None
+    current_model = load_matlab_model(
+        str((request.getfixturevalue(fix_directory) / filename).resolve())
+    )
+    assert compare_models(request.getfixturevalue(fix_ref_model), current_model) is None
+    with request.getfixturevalue(fix_directory).joinpath(filename).open("rb") as file_h:
+        current_model = load_matlab_model(file_h)
+        assert (
+            compare_models(request.getfixturevalue(fix_ref_model), current_model)
+            is None
+        )
 
 
 # @pytest.mark.xfail(reason="localPath not supported yet")
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
-# @pytest.mark.parametrize("model, filename",
-#                          [(pytest.fixture_request("mini_model"),
-#                            "mini.mat"),
-#                           (pytest.fixture_request("raven_model"),
-#                            "raven.mat")])
-# TODO: wait for pytest.fixture_request() to get approved
-def test_save_matlab_model(
-    tmp_path: Path, mini_model: "Model", raven_model: "Model"
-) -> None:
+@pytest.mark.parametrize(
+    "fix_ref_model, filename",
+    [("mini_model", "mini.mat"), ("raven_model", "raven.mat")],
+)
+def test_save_matlab_model(tmp_path: Path, fix_ref_model, filename, request) -> None:
     """Test the writing of MAT model.
 
     Parameters
     ----------
     tmp_path : pathlib.Path
         The path to the temporary test assets store.
-    mini_model : cobra.Model
-        The mini model.
-    raven_model : cobra.Model
-        The RAVEN model.
-
+    fix_ref_model: str
+        Name of reference model fixture which will be requested.
+    filename: str
+        Filename to use as a parameter
+    request: FixtureRequest
+        Will be used to request fixtures.
     """
-    mini_output_file = tmp_path / "mini.mat"
-    raven_output_file = tmp_path / "raven.mat"
-    # scipy.io.savemat() doesn't support anything other than
-    # str or file-stream object, hence the str conversion
-    save_matlab_model(mini_model, str(mini_output_file.resolve()))
-    save_matlab_model(raven_model, str(raven_output_file.resolve()))
-    assert mini_output_file.exists()
-    assert raven_output_file.exists()
+    output_file = tmp_path / filename
+    save_matlab_model(
+        request.getfixturevalue(fix_ref_model), str(output_file.resolve())
+    )
+    assert output_file.exists()
+    output_file.unlink()
+    save_matlab_model(request.getfixturevalue(fix_ref_model), output_file.resolve())
+    assert output_file.exists()
+    output_file.unlink()
+    with output_file.open("wb") as file_h:
+        save_matlab_model(request.getfixturevalue(fix_ref_model), file_h)
+    assert output_file.exists()
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
@@ -102,14 +123,22 @@ def test_large_bounds(tmp_path: Path, model: "Model") -> None:
     """
     model.reactions[0].bounds = -1e6, 1e6
     filepath = tmp_path / "model.mat"
-    save_matlab_model(model, str(filepath.resolve()))
-    read = load_matlab_model(str(filepath.resolve()))
+    save_matlab_model(model, filepath.resolve())
+    read = load_matlab_model(filepath.resolve())
     assert read.reactions[0].bounds == (-1e6, 1e6)
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
+@pytest.mark.parametrize(
+    "fix_directory, filename",
+    [("cobra_data_directory", "mini.mat"), ("data_directory", "raven.mat")],
+)
 def test_read_rewrite_matlab_model(
-    compare_models: Callable, tmp_path: Path, data_directory: Path
+    compare_models: Callable,
+    tmp_path: Path,
+    fix_directory: str,
+    filename: str,
+    request: pytest.FixtureRequest,
 ) -> None:
     """Verify that rewritten matlab model is identical to original.
 
@@ -119,27 +148,30 @@ def test_read_rewrite_matlab_model(
         A callable to compare models.
     tmp_path : pathlib.Path
         The path to the temporary test assets store.
-    data_directory : pathlib.Path
-        The path to the test data directory.
+    fix_directory: str
+        Name of directory fixture which will be requested.
+    filename: str
+        Filename to use as a parameter
+    request: FixtureRequest
+        Will be used to request fixtures.
 
     """
-    mini_mat_model = load_matlab_model(str((data_directory / "mini.mat").resolve()))
-    raven_mat_model = load_matlab_model(str((data_directory / "raven.mat").resolve()))
-    mini_output_file = tmp_path.joinpath("mini.mat")
-    raven_output_file = tmp_path.joinpath("raven.mat")
-    # scipy.io.savemat() doesn't support anything other than
-    # str or file-stream object, hence the str conversion
-    save_matlab_model(mini_mat_model, str(mini_output_file))
-    save_matlab_model(raven_mat_model, str(raven_output_file))
-    mini_mat_model_reload = load_matlab_model(str(mini_output_file))
-    raven_mat_model_reload = load_matlab_model(str(raven_output_file))
-    assert compare_models(mini_mat_model, mini_mat_model_reload) is None
-    assert compare_models(raven_mat_model, raven_mat_model_reload) is None
+    current_model = load_matlab_model(request.getfixturevalue(fix_directory) / filename)
+    output_file = tmp_path.joinpath(filename)
+    save_matlab_model(current_model, output_file)
+    mat_model_reload = load_matlab_model(output_file)
+    assert compare_models(current_model, mat_model_reload) is None
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
 @pytest.mark.parametrize(
-    "xml_file", ["e_coli_core.xml", "salmonella.xml", "mini_cobra.xml", "mini_fbc2.xml"]
+    "dirname, xml_file",
+    [
+        ("data_directory", "e_coli_core.xml"),
+        ("cobra_data_directory", "salmonella.xml.gz"),
+        ("cobra_data_directory", "mini_cobra.xml"),
+        ("data_directory", "mini_fbc2.xml"),
+    ],
 )
 # When using a better comparison function, can run test on
 # "annotation.xml", "example_notes.xml", "fbc_ex1.xml", "fbc_ex2.xml", "validation.xml"
@@ -147,9 +179,10 @@ def test_read_rewrite_matlab_model(
 # be thrown out by matlab
 def test_compare_xml_to_written_matlab_model(
     compare_models: Callable,
-    data_directory: Path,
     tmp_path: Path,
+    dirname: str,
     xml_file: str,
+    request: pytest.FixtureRequest,
 ) -> None:
     """Verify that xml rewritten as mat file is written and read correctly.
 
@@ -157,20 +190,16 @@ def test_compare_xml_to_written_matlab_model(
     ----------
     compare_models : Callable
         A callable to compare models.
-    data_directory : pathlib.Path
-        The path to the test data directory.
     tmp_path : pathlib.Path
         The path to the temporary test assets store.
     xml_file : str
         The name of the XML file to compare against.
 
     """
-    xml_model = read_sbml_model(str((data_directory / xml_file).resolve()))
+    xml_model = read_sbml_model(request.getfixturevalue(dirname) / xml_file)
     mat_output_file = tmp_path / xml_file.replace(".xml", ".mat")
-    save_matlab_model(
-        xml_model, str(mat_output_file.resolve())
-    )  # lac__D_e_boundary confuses the reading of matlab
-    mat_model = load_matlab_model(str(mat_output_file.resolve()))
+    save_matlab_model(xml_model, mat_output_file)
+    mat_model = load_matlab_model(mat_output_file)
     assert compare_models(xml_model, mat_model) is None
 
 
@@ -186,10 +215,10 @@ def test_fail_on_problematic_compartments(data_directory: Path) -> None:
     """
     with pytest.raises(IOError):
         # AntCore does not have defined compartments
-        load_matlab_model(str((data_directory / "AntCore.mat").resolve()))
+        load_matlab_model(data_directory / "AntCore.mat")
     with pytest.raises(IOError):
         # Ec_iAF1260_flux1 has underscore in compartment names which is not allowed
-        load_matlab_model(str((data_directory / "Ec_iAF1260_flux1.mat").resolve()))
+        load_matlab_model(data_directory / "Ec_iAF1260_flux1.mat")
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
@@ -208,9 +237,7 @@ def test_mat_model_with_long_compartment_ids(
         The path to the temporary test assets store.
 
     """
-    model_compartments = load_matlab_model(
-        str((data_directory / "compartments.mat").resolve())
-    )
+    model_compartments = load_matlab_model(data_directory / "compartments.mat")
     assert model_compartments.compartments == {
         "csf": "csf",
         "bcK": "bcK",
@@ -231,8 +258,8 @@ def test_mat_model_with_long_compartment_ids(
             "pubchem.substance": ["3333"],
         }
     output_file = tmp_path / "compartments.mat"
-    save_matlab_model(model_compartments, str(output_file.resolve()))
-    model_compartments_reloaded = load_matlab_model(str(output_file.resolve()))
+    save_matlab_model(model_compartments, output_file.resolve())
+    model_compartments_reloaded = load_matlab_model(output_file.resolve())
     assert compare_models(model_compartments, model_compartments_reloaded) is None
 
 
@@ -253,17 +280,19 @@ def test_mat_model_with_no_genes(
 
     """
     model_no_genes = load_matlab_model(
-        str((data_directory / "cardiac_mit_glcuptake_atpmax.mat").resolve())
+        data_directory / "cardiac_mit_glcuptake_atpmax.mat"
     )
     assert not len(model_no_genes.genes)
     output_file = tmp_path / "cardiac_mit_glcuptake_atpmax.mat"
-    save_matlab_model(model_no_genes, str(output_file.resolve()))
-    model_no_genes_reloaded = load_matlab_model(str(output_file.resolve()))
+    save_matlab_model(model_no_genes, output_file.resolve())
+    model_no_genes_reloaded = load_matlab_model(output_file.resolve())
     assert compare_models(model_no_genes, model_no_genes_reloaded) is None
 
 
 @pytest.mark.skipif(scipy is None, reason="scipy unavailable")
-def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) -> None:
+def test_mat_model_wrong_caps(
+    compare_models: Callable, data_directory: Path, cobra_data_directory: Path
+) -> None:
     """Check that wrong capitalization in matlab field names is processed correctly.
 
     See https://gist.github.com/akaviaLab/3dcb0eed6563a9d3d1e07198337300ac to create it
@@ -277,9 +306,9 @@ def test_mat_model_wrong_caps(compare_models: Callable, data_directory: Path) ->
         The path to the test data directory.
 
     """
-    mat_model = load_matlab_model(str(Path(data_directory / "mini.mat").resolve()))
+    mat_model = load_matlab_model((cobra_data_directory / "mini.mat").resolve())
     mat_wrong_caps_model = load_matlab_model(
-        str(Path(data_directory, "mini_wrong_key_caps.mat").resolve())
+        (data_directory / "mini_wrong_key_caps.mat").resolve()
     )
     assert compare_models(mat_model, mat_wrong_caps_model) is None
     assert mat_wrong_caps_model.reactions.get_by_id("LDH_D").annotation == {

@@ -4,7 +4,7 @@
 import multiprocessing
 import os
 import pickle
-from os.path import isfile
+from pathlib import Path
 from platform import system
 from tempfile import mkstemp
 from types import TracebackType
@@ -104,5 +104,5 @@ class ProcessPool:
 
     def _clean_up(self) -> None:
         """Remove the dump file if it exists."""
-        if self._filename is not None and isfile(self._filename):
-            os.remove(self._filename)
+        if self._filename is not None and Path(self._filename).exists():
+            Path(self._filename).unlink()

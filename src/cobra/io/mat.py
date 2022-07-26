@@ -3,7 +3,8 @@
 import logging
 import re
 from collections import OrderedDict
-from typing import Dict, Iterable, List, Optional, Pattern
+from pathlib import Path
+from typing import IO, Dict, Iterable, List, Optional, Pattern, Union
 
 import numpy as np
 
@@ -284,13 +285,15 @@ def _cell_to_float_list(
 
 
 def load_matlab_model(
-    infile_path: str, variable_name: Optional[str] = None, inf: float = np.inf
+    infile_path: Union[str, Path, IO],
+    variable_name: Optional[str] = None,
+    inf: float = np.inf,
 ) -> Model:
     """Load a cobra model stored as a .mat file.
 
     Parameters
     ----------
-    infile_path : str
+    infile_path : str or Path or filehandle
         File path or descriptor of the .mat file describing the cobra model.
     variable_name : str, optional
         The variable name of the model in the .mat file. If None, then the
@@ -317,7 +320,12 @@ def load_matlab_model(
     if not scipy_io:
         raise ImportError("load_matlab_model() requires scipy.")
 
-    data = scipy_io.loadmat(infile_path)
+    if isinstance(infile_path, str):
+        data = scipy_io.loadmat(infile_path)
+    elif isinstance(infile_path, Path):
+        data = scipy_io.loadmat(infile_path.open("rb"))  # noqa W9018
+    else:
+        data = scipy_io.loadmat(infile_path)  # noqa W9018
     possible_names = []
     if variable_name is None:
         # skip meta variables
@@ -339,7 +347,7 @@ def load_matlab_model(
 
 
 def save_matlab_model(
-    model: Model, file_name: str, varname: Optional[str] = None
+    model: Model, file_name: Union[str, Path, IO], varname: Optional[str] = None
 ) -> None:
     """Save the cobra model as a .mat file.
 
@@ -349,7 +357,7 @@ def save_matlab_model(
     ----------
     model : cobra.Model
         The cobra model to represent.
-    file_name : str or file-like
+    file_name : str or file-like or Path
         File path or descriptor that the MATLAB representation should be
         written to.
     varname : str, optional

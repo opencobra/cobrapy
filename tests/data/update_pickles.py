@@ -14,6 +14,8 @@ from collections import OrderedDict
 from json import dump as json_dump
 from pickle import dump, load
 
+import importlib_resources
+
 import cobra
 from cobra.io import (
     load_matlab_model,
@@ -32,19 +34,19 @@ config.solver = "glpk"
 
 if __name__ == "__main__":
     # ecoli
-    ecoli_model = read_sbml_model("iJO1366.xml.gz")
+    ecoli_model = load_model("iJO1366", cache=False)
     with open("iJO1366.pickle", "wb") as outfile:
         dump(ecoli_model, outfile, protocol=2)
 
     # salmonella
-    salmonella = load_model("salmonella")
+    salmonella = load_model("salmonella", cache=False)
     with open("salmonella.media", "rb") as infile:
         salmonella.media_compositions = load(infile)
     with open("salmonella.pickle", "wb") as outfile:
         dump(salmonella, outfile, protocol=2)
 
     # create mini model from textbook
-    textbook = read_sbml_model("textbook.xml.gz")
+    textbook = load_model("textbook", cache=False)
     mini = cobra.Model("mini_textbook")
     mini.compartments = textbook.compartments
 
@@ -98,13 +100,17 @@ if __name__ == "__main__":
     # output to various formats
     with open("mini.pickle", "wb") as outfile:
         dump(mini, outfile, protocol=2)
-    save_matlab_model(mini, "mini.mat")
-    save_json_model(mini, "mini.json", pretty=True)
-    save_yaml_model(mini, "mini.yml")
+    save_matlab_model(mini, importlib_resources.files(cobra.data).joinpath("mini.mat"))
+    save_json_model(
+        mini, importlib_resources.files(cobra.data).joinpath("mini.json"), pretty=True
+    )
+    save_yaml_model(mini, importlib_resources.files(cobra.data).joinpath("mini.yml"))
     write_sbml_model(mini, "mini_fbc2.xml")
     write_sbml_model(mini, "mini_fbc2.xml.bz2")
     write_sbml_model(mini, "mini_fbc2.xml.gz")
-    write_sbml_model(mini, "mini_cobra.xml")
+    write_sbml_model(
+        mini, importlib_resources.files(cobra.data).joinpath("mini_cobra.xml")
+    )
     raven = load_matlab_model("raven.mat")
     with open("raven.pickle", "wb") as outfile:
         dump(raven, outfile, protocol=2)

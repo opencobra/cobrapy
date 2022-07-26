@@ -29,12 +29,12 @@ Some SBML related issues are still open, please refer to the respective issue:
 
 import datetime
 import logging
-import os
 import re
 from ast import And, BoolOp, Module, Name, Or
 from collections import defaultdict, namedtuple
 from copy import deepcopy
 from io import StringIO
+from pathlib import Path
 from sys import platform
 from typing import IO, Match, Optional, Pattern, Tuple, Type, Union
 
@@ -394,7 +394,7 @@ F_REPLACE: dict = {
 # -----------------------------------------------------------------------------
 # noinspection PyDefaultArgument
 def read_sbml_model(
-    filename: Union[str, IO],
+    filename: Union[str, IO, Path],
     number: Type = float,
     f_replace: dict = F_REPLACE,
     **kwargs,
@@ -472,7 +472,7 @@ def read_sbml_model(
         raise cobra_error from original_error
 
 
-def _get_doc_from_filename(filename: Union[str, IO]) -> "libsbml.SBMLDocument":
+def _get_doc_from_filename(filename: Union[str, IO, Path]) -> "libsbml.SBMLDocument":
     """Get SBMLDocument from given filename.
 
     Parameters
@@ -488,35 +488,27 @@ def _get_doc_from_filename(filename: Union[str, IO]) -> "libsbml.SBMLDocument":
     IOError if file not readable or does not contain SBML.
     CobraSBMLError if input type is not valid.
     """
-    if isinstance(filename, str):
-        if ("win" in platform) and (len(filename) < 260) and os.path.exists(filename):
-            # path (win)
-            doc = libsbml.readSBMLFromFile(
-                filename
-            )  # noqa: E501 type: libsbml.SBMLDocument
-        elif ("win" not in platform) and os.path.exists(filename):
-            # path other
-            doc = libsbml.readSBMLFromFile(
-                filename
-            )  # noqa: E501 type: libsbml.SBMLDocument
+    if isinstance(filename, Path) and {".bz2", ".gz"}.isdisjoint(filename.suffixes):
+        doc: libsbml.SBMLDocument = libsbml.readSBMLFromString(filename.read_text())
+    elif isinstance(filename, Path) and {".bz2", ".gz"}.intersection(filename.suffixes):
+        doc: libsbml.SBMLDocument = libsbml.readSBMLFromFile(str(filename))
+    elif isinstance(filename, str):
+        if "<sbml" in filename:
+            doc: libsbml.SBMLDocument = libsbml.readSBMLFromString(filename)
+        elif (
+            ("win" in platform) and (len(filename) < 260) or "win" not in platform
+        ) and Path(filename).exists():
+            doc: libsbml.SBMLDocument = libsbml.readSBMLFromFile(filename)
         else:
             # string representation
-            if "<sbml" not in filename:
-                raise IOError(
-                    f"The file with '{filename}' does not exist, "
-                    f"or is not an SBML string. Provide the path to "
-                    f"an existing SBML file or a valid SBML string representation:\n"
-                )
-
-            doc = libsbml.readSBMLFromString(
-                filename
-            )  # noqa: E501 type: libsbml.SBMLDocument
-
+            raise IOError(
+                f"The file with '{filename}' does not exist, "
+                f"or is not an SBML string. Provide the path to "
+                f"an existing SBML file or a valid SBML string representation:\n"
+            )
     elif hasattr(filename, "read"):
         # file handle
-        doc = libsbml.readSBMLFromString(
-            filename.read()
-        )  # noqa: E501 type: libsbml.SBMLDocument
+        doc: libsbml.SBMLDocument = libsbml.readSBMLFromString(filename.read())
     else:
         raise CobraSBMLError(
             f"Input type '{type(filename)}' for '{filename}' is not supported."
@@ -1143,7 +1135,10 @@ def _sbml_to_model(
 # -----------------------------------------------------------------------------
 # noinspection PyDefaultArgument
 def write_sbml_model(
-    cobra_model: Model, filename: Union[str, IO], f_replace: dict = F_REPLACE, **kwargs
+    cobra_model: Model,
+    filename: Union[str, IO, Path],
+    f_replace: dict = F_REPLACE,
+    **kwargs,
 ) -> None:
     """Write cobra model to filename.
 
@@ -1179,7 +1174,8 @@ def write_sbml_model(
     if isinstance(filename, str):
         # write to path
         libsbml.writeSBMLToFile(doc, filename)
-
+    elif isinstance(filename, Path):
+        libsbml.writeSBMLToFile(doc, str(filename))
     elif hasattr(filename, "write"):
         # write to file handle
         sbml_str = libsbml.writeSBMLToString(doc)
@@ -1925,7 +1921,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: dict) -> None:
 # Validation
 # -----------------------------------------------------------------------------
 def validate_sbml_model(
-    filename: Union[str, IO],
+    filename: Union[str, IO, Path],
     check_model: bool = True,
     internal_consistency: bool = True,
     check_units_consistency: bool = False,
