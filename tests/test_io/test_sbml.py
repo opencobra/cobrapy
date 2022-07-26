@@ -53,7 +53,7 @@ trials: List[IOTrial] = [
         "mini_fbc2.xml.gz",
         read_sbml_model,
         write_sbml_model,
-        None,
+        None,  # If None is replaced with validate_sbml_model, it seems to work
     ),
     IOTrial(
         "fbc2Bz2",

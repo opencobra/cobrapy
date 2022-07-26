@@ -104,8 +104,10 @@ def test_annotation() -> None:
             CVTerm(
                 qualifier="bqb_is",
                 ex_res=ExternalResources(
-                    resources=["https://identifiers.org/chebi/CHEBI:43215",
-                               "https://identifiers.org/chebi/CHEBI:11881"]
+                    resources=[
+                        "https://identifiers.org/chebi/CHEBI:43215",
+                        "https://identifiers.org/chebi/CHEBI:11881",
+                    ]
                 ),
             ),
         ]
@@ -153,7 +155,7 @@ def test_annotation() -> None:
         "https://identifiers.org/chebi/CHEBI:43215",
         "https://identifiers.org/chebi/CHEBI:11881",
     }
-    s.annotation.__delitem__('sbo')
+    s.annotation.__delitem__("sbo")
 
     # checking old (fixed) annotation format
     assert s.annotation == {"chebi": sorted(["CHEBI:43215", "CHEBI:11881"])}
@@ -167,7 +169,8 @@ def test_old_style_annotation() -> None:
     )
     with pytest.raises(TypeError):
         s.annotation.standardized.add_simple_annotations(
-            {"chebi": [["CHEBI:123", "CHEBI:1234"]]})
+            {"chebi": [["CHEBI:123", "CHEBI:1234"]]}
+        )
     assert len(s.annotation.standardized.resources) == 3
     s.annotation["eco"] = "123"
     assert len(s.annotation.standardized.resources) == 4
@@ -175,7 +178,7 @@ def test_old_style_annotation() -> None:
         "chebi": ["CHEBI:17234", "CHBEI:1723456", "CHEBI:172345"],
         "eco": ["123"],
     }
-    s.annotation.standardized.delete_annotation('CHEBI:172345')
+    s.annotation.standardized.delete_annotation("CHEBI:172345")
     assert len(s.annotation.standardized.resources) == 3
     assert s.annotation == {
         "chebi": ["CHEBI:17234", "CHBEI:1723456"],
@@ -201,8 +204,11 @@ def test_old_style_annotation() -> None:
     assert len(s.annotation.keys()) == 0
     s.annotation = {"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"]}
     assert len(s.annotation.standardized.resources) == 3
-    s.annotation = {"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"],
-                    "sbo": ["SBO:0000123"]}
+    s.annotation = {
+        "chebi": ["CHEBI:123", "CHEBI:1234"],
+        "eco": ["123"],
+        "sbo": ["SBO:0000123"],
+    }
     assert len(s.annotation.standardized.resources) == 3
 
 
@@ -291,7 +297,12 @@ def test_cvterms_from_ecoli_xml(annotation_model: Model) -> None:
     assert qualifier_set == model_cvterms_qualifier_set
     assert xml_model_cvterms == ecoli_model_cvterm
     assert (
-        len(annotation_model.annotation.standardized.query("bqm_isDescribedBy", "qualifier")) == 2
+        len(
+            annotation_model.annotation.standardized.query(
+                "bqm_isDescribedBy", "qualifier"
+            )
+        )
+        == 2
     )
     nested_data = annotation_model.annotation.standardized.query("bqm_is", "qualifier")[
         0
@@ -307,7 +318,7 @@ def test_cvterms_from_ecoli_xml(annotation_model: Model) -> None:
         "pubmed": ["1111111"],
         "taxonomy": ["511145"],
     }
-    annotation_model.annotation.standardized.delete_annotation('coli')
+    annotation_model.annotation.standardized.delete_annotation("coli")
     assert annotation_model.annotation.annotations == {
         "doi": ["10.1128/ecosalplus.10.2.1"],
         "eco": ["ECO:0000004"],
@@ -319,9 +330,12 @@ def test_cvterms_from_ecoli_xml(annotation_model: Model) -> None:
 
 def test_writing_xml(annotation_model: Model, tmp_path):
     assert (
-        write_sbml_model(annotation_model, str(tmp_path.joinpath("e_coli_core_writing.xml")))
+        write_sbml_model(
+            annotation_model, str(tmp_path.joinpath("e_coli_core_writing.xml"))
+        )
         is None
     )
+
 
 def test_read_write_json(annotation_model: Model, tmp_path: Path):
     json_path = tmp_path / "e_coli_core_json_writing.json"
@@ -341,12 +355,12 @@ def test_read_write_json(annotation_model: Model, tmp_path: Path):
     assert model.annotation.standardized == CVTermList.from_data(ecoli_model_annotation)
     assert model.annotation.standardized == ecoli_model_annotation
 
-    for met_id in model.metabolites.list_attr('id'):
+    for met_id in model.metabolites.list_attr("id"):
         original_met_annot = annotation_model.metabolites.get_by_id(met_id).annotation
         new_met_annot = model.metabolites.get_by_id(met_id).annotation
         assert original_met_annot == new_met_annot
 
-    for rxn_id in model.reactions.list_attr('id'):
+    for rxn_id in model.reactions.list_attr("id"):
         original_rxn_annot = annotation_model.reactions.get_by_id(rxn_id).annotation
         new_rxn_annot = model.reactions.get_by_id(rxn_id).annotation
         assert original_rxn_annot == new_rxn_annot
@@ -370,17 +384,17 @@ def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
     assert model.annotation.standardized == CVTermList.from_data(ecoli_model_annotation)
     assert model.annotation.standardized == ecoli_model_annotation
 
-    for met_id in model.metabolites.list_attr('id'):
+    for met_id in model.metabolites.list_attr("id"):
         original_met_annot = annotation_model.metabolites.get_by_id(met_id).annotation
         new_met_annot = model.metabolites.get_by_id(met_id).annotation
         assert original_met_annot == new_met_annot
 
-    for rxn_id in model.reactions.list_attr('id'):
-        original_rxn_annot = annotation_model.metabolites.get_by_id(rxn_id).annotation
-        new_rxn_annot = model.metabolites.get_by_id(rxn_id).annotation
+    for rxn_id in model.reactions.list_attr("id"):
+        original_rxn_annot = annotation_model.reactions.get_by_id(rxn_id).annotation
+        new_rxn_annot = model.reactions.get_by_id(rxn_id).annotation
         assert original_rxn_annot == new_rxn_annot
 
-# TODO - ask cobratoolbox mailing list about these annotations in MATLAB format
+
 def test_read_old_json_model(data_directory):
     model = load_json_model(Path(data_directory) / "mini.json")
     meta = model.metabolites[0]
@@ -452,7 +466,7 @@ def test_cvtermlist_query():
         len(
             cvtermlist.query(
                 search_function=lambda x: list(Qualifier.__members__).index(x.value)
-                                          > 18,
+                > 18,
                 attribute="qualifier",
             )
         )
@@ -468,11 +482,7 @@ def test_cvtermlist_query():
         == 1
     )
     assert (
-        len(
-            cvtermlist.query(
-                search_function="chebi", attribute="external_resources"
-            )
-        )
+        len(cvtermlist.query(search_function="chebi", attribute="external_resources"))
         == 7
     )
 

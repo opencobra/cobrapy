@@ -1916,7 +1916,8 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
 
     # set standardized
     [
-        _check(sbase.addCVTerm(cv), f"Setting cvterm: {cv}")
+        # Question for @matthiaskoenig - should I be using createCVTerms?
+        _check(sbase.addCVTerm(cv, newBag=True), f"Setting cvterm: {cv}")
         for cv in _cvterms_to_sbml(annotation.standardized)
     ]
 
@@ -2068,10 +2069,10 @@ def validate_sbml_model(
         model = _sbml_to_model(doc, **kwargs)
     except CobraSBMLError as e:
         errors["COBRA_ERROR"].append(str(e))
-        return None, errors
+        model = None # If we return, we won't get to the errors["COBRA_ERROR"]
     except Exception as e:
         errors["COBRA_FATAL"].append(str(e))
-        return None, errors
+        model = None
 
     cobra_errors = log_stream.getvalue().split("\n")
     for cobra_error in cobra_errors:
