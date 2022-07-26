@@ -885,8 +885,9 @@ class Model(Object):
                 False if the group already exists, True if it doesn't.
             """
             if new_group.id in self.groups:
-                logger.warning(f"Ignoring group '{new_group.id}'"
-                               f" since it already exists.")
+                logger.warning(
+                    f"Ignoring group '{new_group.id}'" f" since it already exists."
+                )
                 return False
             return True
 
