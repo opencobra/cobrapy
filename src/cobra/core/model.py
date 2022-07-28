@@ -49,12 +49,10 @@ class Model(Object):
 
     Parameters
     ----------
-    id_or_model str, Model
+    id_or_model: str or Model
         String to use as model id, or actual model to base new model one.
         If string, it is used as id. If model, a new model object is
-        instantiated with the same properties as the original model (id is None).
-        Default None.
-
+        instantiated with the same properties as the original model (default None).
     name: str, optional
         Human readable string to be model description (default None).
 
@@ -390,7 +388,7 @@ class Model(Object):
                 rxn, min(0.0, -rxn.lower_bound if is_export else rxn.upper_bound)
             )
 
-    def copy(self: "Model") -> "Model":
+    def copy(self) -> "Model":
         """Provide a partial 'deepcopy' of the Model.
 
         All the Metabolite, Gene, and Reaction objects are created anew but
@@ -558,7 +556,7 @@ class Model(Object):
             A list of `cobra.core.Metabolite` objects. If it isn't an iterable
             container, the metabolite will be placed into a list.
 
-        destructive : bool
+        destructive : bool, optional
             If False then the metabolite is removed from all
             associated reactions.  If True then all associated
             reactions are removed from the Model (default False).
@@ -630,7 +628,7 @@ class Model(Object):
         metabolite : cobra.Metabolite
             Any given metabolite. The compartment is not checked but you are
             encouraged to stick to the definition of exchanges and sinks.
-        type : str, {"exchange", "demand", "sink"}
+        type : {"exchange", "demand", "sink"}
             Using one of the pre-defined reaction types is easiest. If you
             want to create your own kind of boundary reaction choose
             any other string, e.g., 'my-boundary' (default "exchange").
@@ -638,7 +636,7 @@ class Model(Object):
             The ID of the resulting reaction. This takes precedence over the
             auto-generated identifiers but beware that it might make boundary
             reactions harder to identify afterwards when using `model.boundary`
-            or specifically `model.exchanges` etc (default None).
+            or specifically `model.exchanges` etc. (default None).
         lb : float, optional
             The lower bound of the resulting reaction (default None).
         ub : float, optional
@@ -704,7 +702,7 @@ class Model(Object):
         self.add_reactions([rxn])
         return rxn
 
-    def add_reactions(self, reaction_list: Iterable) -> None:
+    def add_reactions(self, reaction_list: Iterable[Reaction]) -> None:
         """Add reactions to the model.
 
         Reactions with identifiers identical to a reaction already in the
@@ -784,10 +782,11 @@ class Model(Object):
 
         Parameters
         ----------
-        reactions : list
+        reactions : list or reaction or str
             A list with reactions (`cobra.Reaction`), or their id's, to remove.
-
-        remove_orphans : bool
+            Reaction will be placed in a list. Str will be placed in a list and used to
+            find the reaction in the model.
+        remove_orphans : bool, optional
             Remove orphaned genes and metabolites from the model as
             well (default False).
         """
@@ -876,12 +875,12 @@ class Model(Object):
 
             Parameters
             ----------
-            _group: cobra.Group
+            new_group: cobra.Group
                 Group to check.
 
             Returns
             -------
-            bool:
+            bool
                 False if the group already exists, True if it doesn't.
             """
             if new_group.id in self.groups:
@@ -959,8 +958,8 @@ class Model(Object):
         return [g for g in self.groups if element in g.members]
 
     def add_cons_vars(
-        self, what: Union[List["CONS_VARS"], Tuple[Union["CONS_VARS"]]], **kwargs
-    ):
+        self, what: Union[List["CONS_VARS"], Tuple["CONS_VARS"]], **kwargs
+    ) -> None:
         """Add constraints and variables to the model's mathematical problem.
 
         Useful for variables and constraints that can not be expressed with
@@ -981,7 +980,7 @@ class Model(Object):
         add_cons_vars_to_problem(self, what, **kwargs)
 
     def remove_cons_vars(
-        self, what: Union[List["CONS_VARS"], Tuple[Union["CONS_VARS"]]]
+        self, what: Union[List["CONS_VARS"], Tuple["CONS_VARS"]]
     ) -> None:
         """Remove variables and constraints from problem.
 
@@ -1133,10 +1132,10 @@ class Model(Object):
         Parameters
         ----------
         reaction_list: list
-            A list of cobra Reactions to add to the solver. This list will be
+            A list of cobra.Reaction to add to the solver. This list will be
             constrained.
         metabolite_list: list, optional
-            A list of cobra Metabolites to add to the solver. This list will be
+            A list of cobra.Metabolite  to add to the solver. This list will be
             constrained (default None).
         """
         constraint_terms = AutoVivification()
@@ -1291,7 +1290,7 @@ class Model(Object):
     def objective(self) -> Union[optlang.Objective]:
         """Get the solver objective.
 
-        With optlang, the objective is not limited a simple linear summation of
+        With optlang, the objective is not limited to a simple linear summation of
         individual reaction fluxes, making the return value ambiguous.
 
         Henceforth, use `cobra.util.solver.linear_reaction_coefficients` to
@@ -1317,7 +1316,8 @@ class Model(Object):
 
         Parameters
         ----------
-        value: dict, str, int, Reaction, optlang.interface.Container, Reaction, Basic
+        value: dict or str or int or Reaction or  optlang.interface.Container, Reaction
+        or Basic
             The set value can be dictionary (reactions as keys, linear coefficients as
             values), string (reaction identifier), int (reaction index), Reaction or
             problem.Objective or sympy expression directly interpreted as objectives.
@@ -1355,13 +1355,13 @@ class Model(Object):
 
         Parameters
         ----------
-        value: {"max", "min}
-            Str of "max" or "min" for direction.
+        value: {"max", "min"}
+            String of "max" or "min" for direction.
 
         Raises
         ------
         ValueError
-            If given direction that isn't max or min.
+            If given direction isn't max or min.
         """
         value = value.lower()
         if value.startswith("max"):
@@ -1374,7 +1374,7 @@ class Model(Object):
     def summary(
         self,
         solution: Optional["Solution"] = None,
-        fva: Optional[Union["pd.DataFrame", float]] = None,
+        fva: Optional["pd.DataFrame", float] = None,
     ) -> "ModelSummary":
         """
         Create a summary of the exchange fluxes of the model.
@@ -1413,7 +1413,7 @@ class Model(Object):
 
         Returns
         -------
-        self: cobra.Model
+        cobra.Model
             Returns the model with context added.
         """
         try:
@@ -1423,7 +1423,7 @@ class Model(Object):
 
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type, value, traceback) -> None:
         """Pop the top context manager and trigger the undo functions."""
         context = self._contexts.pop()
         context.reset()
@@ -1445,7 +1445,7 @@ class Model(Object):
         ----------
         right : cobra.Model
             The model to add reactions from
-        prefix_existing : string, optional
+        prefix_existing : string or optional
             Prefix the reaction identifier in the right that already exist
             in the left model with this string (default None).
         inplace : bool
@@ -1453,10 +1453,10 @@ class Model(Object):
             Otherwise, create a new model leaving the left model untouched.
             When done within the model as context, changes to the models are
             reverted upon exit (default True).
-        objective : {'left', 'right', sum'}
-            One of 'left', 'right' or 'sum' for setting the objective of the
+        objective : {"left", "right", "sum"}
+            One of "left", "right" or "sum" for setting the objective of the
             resulting model to that of the corresponding model or the sum of
-            both (default 'left').
+            both (default "left").
 
         Returns
         -------
