@@ -1374,7 +1374,7 @@ class Model(Object):
     def summary(
         self,
         solution: Optional["Solution"] = None,
-        fva: Optional["pd.DataFrame", float] = None,
+        fva: Union["pd.DataFrame", float, None] = None,
     ) -> "ModelSummary":
         """
         Create a summary of the exchange fluxes of the model.
