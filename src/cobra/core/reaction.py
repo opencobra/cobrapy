@@ -1232,7 +1232,7 @@ class Reaction(Object):
             # Make sure metabolites being added belong to the same model, or
             # else copy them.
             if isinstance(metabolite, Metabolite):
-                if (metabolite.model is not None) and (
+                if (metabolite.model is not None) and self.model and (
                     metabolite.model is not self._model
                 ):
                     metabolite = metabolite.copy()

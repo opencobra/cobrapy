@@ -4,6 +4,7 @@ import os
 import warnings
 from copy import copy, deepcopy
 from math import isnan
+from pathlib import Path
 from typing import List, Tuple
 
 import numpy as np
@@ -14,6 +15,7 @@ from optlang.symbolics import Expr, Zero
 from cobra import Solution
 from cobra.core import Group, Metabolite, Model, Reaction
 from cobra.exceptions import OptimizationError
+from cobra.io import read_sbml_model
 from cobra.manipulation.delete import remove_genes
 from cobra.util import solver as su
 from cobra.util.solver import SolverNotFound, set_objective, solvers
@@ -980,6 +982,62 @@ def test_add_reactions(model: Model) -> None:
     assert coefficients_dict[biomass_r.reverse_variable] == -1.0
     assert coefficients_dict[model.reactions.r2.forward_variable] == 3.0
     assert coefficients_dict[model.reactions.r2.reverse_variable] == -3.0
+
+
+def test_add_reactions_with_context(model: Model) -> None:
+    """Test add_reactions() function to add reactions to model in a context.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
+    r1 = Reaction("r1")
+    r1.add_metabolites({Metabolite("A"): -1, Metabolite("B"): 1})
+    r1.lower_bound, r1.upper_bound = -999999.0, 999999.0
+    r2 = Reaction("r2")
+    r2.add_metabolites({Metabolite("A"): -1, Metabolite("C"): 1, Metabolite("D"): 1})
+    r2.lower_bound, r2.upper_bound = 0.0, 999999.0
+    with model:
+        model.add_reactions([r1, r2])
+        r2.objective_coefficient = 3.0
+        assert r2.objective_coefficient == 3.0
+        assert model.reactions[-2] == r1
+        assert model.reactions[-1] == r2
+        assert isinstance(model.reactions[-2].reverse_variable, model.problem.Variable)
+        coefficients_dict = model.objective.expression.as_coefficients_dict()
+        biomass_r = model.reactions.get_by_id("Biomass_Ecoli_core")
+        assert coefficients_dict[biomass_r.forward_variable] == 1.0
+        assert coefficients_dict[biomass_r.reverse_variable] == -1.0
+        assert coefficients_dict[model.reactions.r2.forward_variable] == 3.0
+        assert coefficients_dict[model.reactions.r2.reverse_variable] == -3.0
+    assert model.reactions[-2] != r1
+    assert model.reactions[-1] != r2
+    assert isinstance(model.reactions[-2].reverse_variable, model.problem.Variable)
+    coefficients_dict = model.objective.expression.as_coefficients_dict()
+    biomass_r = model.reactions.get_by_id("Biomass_Ecoli_core")
+    assert coefficients_dict[biomass_r.forward_variable] == 1.0
+    assert coefficients_dict[biomass_r.reverse_variable] == -1.0
+    assert r2.forward_variable not in coefficients_dict
+    assert r2.reverse_variable not in coefficients_dict
+
+
+def test_add_reactions_from_another_model(model: Model, data_directory: Path) -> None:
+    """Test adding reaction from an existing model.
+
+    This will test that adding a reaction with an existing model does not add
+    reactions of the metabolites, and does not remove the reaction from the existing
+    model.
+
+    Parameters
+    ----------
+    model: corbra.Model
+    data_directory: Path
+        Directory where mini_cobra.xml is found.
+    """
+    mini = read_sbml_model(data_directory / 'mini_cobra.xml')
+    mini.add_reactions([model.reactions.get_by_id('ACALD')])
+    assert len(mini.metabolites.get_by_id('acald_c').reactions) == 1
+
 
 
 def test_add_reactions_single_existing(model: Model) -> None:

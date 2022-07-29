@@ -2,13 +2,14 @@
 
 
 from copy import deepcopy
+from functools import partial
 from typing import TYPE_CHECKING, FrozenSet, Optional
 
 from ..core.object import Object
-
+from ..util import HistoryManager
 
 if TYPE_CHECKING:
-    from .. import Model
+    from .. import Model, Reaction
 
 
 class Species(Object):
@@ -55,6 +56,10 @@ class Species(Object):
         FrozenSet
             A frozenset that includes the reactions of the species.
         """
+        if self.model and self.__class__.__name__ == "Gene":
+            return self.model.reactions.query(lambda x: self in x, 'genes')
+        elif self.model and self.__class__.__name__ == "Metabolite":
+            return self.model.reactions.query(lambda x: self in x, 'metabolites')
         return frozenset(self._reaction)
 
     def __getstate__(self) -> dict:

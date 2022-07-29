@@ -500,6 +500,9 @@ class Model(Object):
 
         # First check whether the metabolites exist in the model
         metabolite_list = [x for x in metabolite_list if x.id not in self.metabolites]
+        metabolite_list = [
+            x.copy() if x.model and x.model != self else x for x in metabolite_list
+        ]
 
         bad_ids = [
             m for m in metabolite_list if not isinstance(m.id, str) or len(m.id) < 1
@@ -718,8 +721,39 @@ class Model(Object):
                 return False
             return True
 
-        # First check whether the reactions exist in the model.
-        pruned = DictList(filter(existing_filter, reaction_list))
+        # First check whether the reactions exist in the model. Copy reactions that
+        # belong to another model, in order not to remove them (see
+        # https://github.com/opencobra/cobrapy/issues/673#issuecomment-371361476).
+        exist_but_different_stoich = set()
+        other_model = ""
+        for reaction in filter(lambda x: not existing_filter(x), reaction_list):
+            met_id_dict = {
+                met.id: stoich for met, stoich in reaction.metabolites.items()
+            }
+            existing_met_id_dict = {
+                met.id: stoich
+                for met, stoich in self.reactions.get_by_id(
+                    reaction.id
+                ).metabolites.items()
+            }
+            if met_id_dict != existing_met_id_dict:
+                exist_but_different_stoich.add(reaction.id)
+                other_model = reaction.model
+        if len(exist_but_different_stoich):
+            logger.warning(
+                f"The reactions {', '.join(exist_but_different_stoich)} exist"
+                f" in both {self} and {other_model}, but have different "
+                f"stoichiometries in the two mdoels. Please check to see "
+                f"which stoichiometry you'd like to add."
+            )
+        pruned = DictList(
+            [
+                reaction
+                if not reaction._model or reaction._model == self
+                else reaction.copy()
+                for reaction in filter(existing_filter, reaction_list)
+            ]
+        )
 
         context = get_context(self)
 
