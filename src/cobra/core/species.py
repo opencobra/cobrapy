@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, FrozenSet, Optional
 from ..core.object import Object
 from ..util import HistoryManager
 
+
 if TYPE_CHECKING:
     from .. import Model, Reaction
 
@@ -57,12 +58,14 @@ class Species(Object):
             A frozenset that includes the reactions of the species.
         """
         if self.model and self.__class__.__name__ == "Gene":
-            return self.model.reactions.query(lambda x: self in x, 'genes')
+            return self.model.reactions.query(lambda x: self in x, "genes")
         elif self.model and self.__class__.__name__ == "Metabolite":
-            return self.model.reactions.query(lambda x: self in x, 'metabolites')
+            return self.model.reactions.query(lambda x: self in x, "metabolites")
         return frozenset(self._reaction)
 
-    def reaction_add(self, reaction: Reaction, context: Optional[HistoryManager] = None) -> None:
+    def reaction_add(
+        self, reaction: Reaction, context: Optional[HistoryManager] = None
+    ) -> None:
         """Add reaction to .reaction field, with context.
 
         If this is called with a context, will be reversed when exiting the context.
@@ -77,7 +80,9 @@ class Species(Object):
         if context:
             context(partial(self._reaction.remove, reaction))
 
-    def reaction_remove(self, reaction: Reaction, context: Optional[HistoryManager] = None) -> None:
+    def reaction_remove(
+        self, reaction: Reaction, context: Optional[HistoryManager] = None
+    ) -> None:
         """Remove reaction from .reaction field, with context.
 
         If this is called with a context, will be reversed when exiting the context.

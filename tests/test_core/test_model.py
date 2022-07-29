@@ -1034,10 +1034,9 @@ def test_add_reactions_from_another_model(model: Model, data_directory: Path) ->
     data_directory: Path
         Directory where mini_cobra.xml is found.
     """
-    mini = read_sbml_model(data_directory / 'mini_cobra.xml')
-    mini.add_reactions([model.reactions.get_by_id('ACALD')])
-    assert len(mini.metabolites.get_by_id('acald_c').reactions) == 1
-
+    mini = read_sbml_model(data_directory / "mini_cobra.xml")
+    mini.add_reactions([model.reactions.get_by_id("ACALD")])
+    assert len(mini.metabolites.get_by_id("acald_c").reactions) == 1
 
 
 def test_add_reactions_single_existing(model: Model) -> None:

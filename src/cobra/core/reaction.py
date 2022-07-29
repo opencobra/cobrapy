@@ -581,7 +581,7 @@ class Reaction(Object):
 
     @metabolites.setter
     @resettable
-    def metabolites(self, value:  Dict[Metabolite, float]) -> None:
+    def metabolites(self, value: Dict[Metabolite, float]) -> None:
         """Set metabolites to a dictionary of metabolites and coefficients.
 
         Parameters
@@ -1248,8 +1248,10 @@ class Reaction(Object):
             # Make sure metabolites being added belong to the same model, or
             # else copy them.
             if isinstance(metabolite, Metabolite):
-                if (metabolite.model is not None) and self.model and (
-                    metabolite.model is not self._model
+                if (
+                    (metabolite.model is not None)
+                    and self.model
+                    and (metabolite.model is not self._model)
                 ):
                     metabolite = metabolite.copy()
 
