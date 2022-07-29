@@ -428,10 +428,11 @@ class Model(Object):
             new_reaction._model = new
             new.reactions.append(new_reaction)
             # update awareness
-            for metabolite, stoic in reaction._metabolites.items():
-                new_met = new.metabolites.get_by_id(metabolite.id)
-                new_reaction._metabolites[new_met] = stoic
-                new_met._reaction.add(new_reaction)
+            new_metabolites = {
+                new.metabolites.get_by_id(metabolite.id): stoic
+                for metabolite, stoic in reaction.metabolites.items()
+            }
+            new_reaction.metabolites = new_metabolites
             new_reaction.update_genes_from_gpr()
 
         new.groups = DictList()
@@ -561,12 +562,12 @@ class Model(Object):
                 group.remove_members(x)
 
             if not destructive:
-                for the_reaction in list(x._reaction):  # noqa W0212
+                for the_reaction in x.reactions:
                     the_coefficient = the_reaction._metabolites[x]  # noqa W0212
                     the_reaction.subtract_metabolites({x: the_coefficient})
 
             else:
-                for x2 in list(x._reaction):  # noqa W0212
+                for x2 in x.reactions:
                     x2.remove_from_model()
 
         self.metabolites -= metabolite_list
@@ -762,23 +763,22 @@ class Model(Object):
             reaction._model = self
             if context:
                 context(partial(setattr, reaction, "_model", None))
-            # Build a `list()` because the dict will be modified in the loop.
-            for metabolite in list(reaction.metabolites):
-                # TODO: Maybe this can happen with
-                #  Reaction.add_metabolites(combine=False)
-                # TODO: Should we add a copy of the metabolite instead?
-                if metabolite not in self.metabolites:
-                    self.add_metabolites(metabolite)
-                # A copy of the metabolite exists in the model, the reaction
-                # needs to point to the metabolite in the model.
-                else:
-                    # FIXME: Modifying 'private' attributes is horrible.
-                    stoichiometry = reaction._metabolites.pop(metabolite)
-                    model_metabolite = self.metabolites.get_by_id(metabolite.id)
-                    reaction._metabolites[model_metabolite] = stoichiometry
-                    model_metabolite._reaction.add(reaction)
-                    if context:
-                        context(partial(model_metabolite._reaction.remove, reaction))
+            met_id_dict = {
+                met.id: stoich for met, stoich in reaction.metabolites.items()
+            }
+            met_dict = {met.id: met for met in reaction.metabolites.keys()}
+            mets_to_add = [
+                met_dict[met_id]
+                for met_id in set(met_id_dict.keys()).difference(
+                    self.metabolites.list_attr("id")
+                )
+            ]
+            self.add_metabolites(mets_to_add)
+            new_stoich = {
+                self.metabolites.get_by_id(met_id): stoich
+                for met_id, stoich in met_id_dict.items()
+            }
+            reaction.metabolites = new_stoich
             reaction.update_genes_from_gpr()
 
         self.reactions += pruned
@@ -846,21 +846,17 @@ class Model(Object):
                 self.reactions.remove(reaction)
                 reaction._model = None
 
-                for met in reaction._metabolites:
-                    if reaction in met._reaction:
-                        met._reaction.remove(reaction)
-                        if context:
-                            context(partial(met._reaction.add, reaction))
-                        if remove_orphans and len(met._reaction) == 0:
+                for met in reaction.metabolites:
+                    if reaction in met.reactions:
+                        met.reaction_remove(reaction, context)
+                        if remove_orphans and len(met.reactions) == 0:
                             self.remove_metabolites(met)
 
-                for gene in reaction._genes:
-                    if reaction in gene._reaction:
-                        gene._reaction.remove(reaction)
-                        if context:
-                            context(partial(gene._reaction.add, reaction))
+                for gene in reaction.genes:
+                    if reaction in gene.reactions:
+                        gene.reaction_remove(reaction, context)
 
-                        if remove_orphans and len(gene._reaction) == 0:
+                        if remove_orphans and len(gene.reactions) == 0:
                             self.genes.remove(gene)
                             if context:
                                 context(partial(self.genes.add, gene))
@@ -1291,13 +1287,13 @@ class Model(Object):
             self.groups._generate_index()
         if rebuild_relationships:
             for met in self.metabolites:
-                met._reaction.clear()
+                met.reaction_clear()
             for gene in self.genes:
-                gene._reaction.clear()
+                gene.reaction_clear()
             for rxn in self.reactions:
                 rxn.update_genes_from_gpr()
-                for met in rxn._metabolites:
-                    met._reaction.add(rxn)
+                for met in rxn.metabolites:
+                    met.reaction_add(rxn)
 
         # point _model to self
         for dict_list in (self.reactions, self.genes, self.metabolites, self.groups):

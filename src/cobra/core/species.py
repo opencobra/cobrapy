@@ -62,6 +62,40 @@ class Species(Object):
             return self.model.reactions.query(lambda x: self in x, 'metabolites')
         return frozenset(self._reaction)
 
+    def reaction_add(self, reaction: Reaction, context: Optional[HistoryManager] = None) -> None:
+        """Add reaction to .reaction field, with context.
+
+        If this is called with a context, will be reversed when exiting the context.
+
+        Parmeters
+        ---------
+        reaction: cobra.Reaction
+        context: HistoryManager, optional
+            context this action is in, optional (defualt None).
+        """
+        self._reaction.add(reaction)
+        if context:
+            context(partial(self._reaction.remove, reaction))
+
+    def reaction_remove(self, reaction: Reaction, context: Optional[HistoryManager] = None) -> None:
+        """Remove reaction from .reaction field, with context.
+
+        If this is called with a context, will be reversed when exiting the context.
+
+        Parmeters
+        ---------
+        reaction: cobra.Reaction
+        context: HistoryManager, optional
+            context this action is in, optional (defualt None).
+        """
+        self._reaction.remove(reaction)
+        if context:
+            context(partial(self._reaction.add, reaction))
+
+    def reaction_clear(self) -> None:
+        """Clear the reaction field."""
+        self._reaction.clear()
+
     def __getstate__(self) -> dict:
         """Return the state of the species.
 

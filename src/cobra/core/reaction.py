@@ -579,6 +579,23 @@ class Reaction(Object):
         """
         return self._metabolites.copy()
 
+    @metabolites.setter
+    @resettable
+    def metabolites(self, value:  Dict[Metabolite, float]) -> None:
+        """Set metabolites to a dictionary of metabolites and coefficients.
+
+        Parameters
+        -------
+        metabolites: Dict[Metabolite, float]
+            A dictionary of cobra.Metabolite for keys and floats for coeffecieints.
+            Positive coefficient means the reaction produces this metabolite, while
+            negative coefficient means the reaction consumes this metabolite.
+        """
+        self._metabolites = value
+        context = get_context(self)
+        for met in value.keys():
+            met.reaction_add(self, context)
+
     @property
     def genes(self) -> FrozenSet:
         """Return the genes of the reaction.
@@ -837,11 +854,13 @@ class Reaction(Object):
         Make sure all metabolites and genes that are associated with
         this reaction are aware of it.
 
+        .. deprecated:: 0.26
+            This function is deprecated and shouldn't be used.
         """
         for x in self._metabolites:
-            x._reaction.add(self)
+            x.reaction_add(self)
         for x in self._genes:
-            x._reaction.add(self)
+            x.reaction_add(self)
 
     def remove_from_model(self, remove_orphans: bool = False) -> None:
         """Remove the reaction from a model.
@@ -930,12 +949,9 @@ class Reaction(Object):
             state["_gpr"] = GPR.from_string(state["_gpr"])
 
         self.__dict__.update(state)
-        for x in state["_metabolites"]:
+        for x in set(state["_metabolites"]).union(state["_genes"]):
             x._model = self._model
-            x._reaction.add(self)
-        for x in state["_genes"]:
-            x._model = self._model
-            x._reaction.add(self)
+            x.reaction_add(self)
 
     def copy(self) -> "Reaction":
         """Copy a reaction.
@@ -1268,7 +1284,7 @@ class Reaction(Object):
                 self._metabolites[metabolite] = coefficient
                 # make the metabolite aware that it is involved in this
                 # reaction
-                metabolite._reaction.add(self)
+                metabolite.reaction_add(self)
 
         # from cameo ...
         model = self.model
@@ -1287,7 +1303,7 @@ class Reaction(Object):
             if the_coefficient == 0:
                 # make the metabolite aware that it no longer participates
                 # in this reaction
-                metabolite._reaction.remove(self)
+                metabolite.reaction_remove(self)
                 self._metabolites.pop(metabolite)
 
         context = get_context(self)
@@ -1487,7 +1503,7 @@ class Reaction(Object):
 
         """
         self._genes.add(cobra_gene)
-        cobra_gene._reaction.add(self)
+        cobra_gene.reaction_add(self)
         cobra_gene._model = self._model
 
     def _dissociate_gene(self, cobra_gene: Gene) -> None:
@@ -1499,7 +1515,7 @@ class Reaction(Object):
 
         """
         self._genes.discard(cobra_gene)
-        cobra_gene._reaction.discard(self)
+        cobra_gene.reaction_remove(self)
 
     def knock_out(self) -> None:
         """Knockout reaction by setting its bounds to zero."""
