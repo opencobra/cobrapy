@@ -1031,3 +1031,9 @@ def test_compartment_changes(model: Model) -> None:
     assert rxn.reactants[0].compartment in rxn.compartments
     rxn.reactants[0].compartment = "blub"
     assert rxn.reactants[0].compartment in rxn.compartments
+
+
+def test_gpr_serialization(model: Model) -> None:
+    """Verify that reactions GPRs are serialized compactly as str."""
+    state = model.reactions[0].__getstate__()
+    assert type(state["_gpr"]) == str

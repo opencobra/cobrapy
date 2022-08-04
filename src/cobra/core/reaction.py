@@ -882,8 +882,24 @@ class Reaction(Object):
         )
         self.remove_from_model(remove_orphans=remove_orphans)
 
+    def __getstate__(self) -> Dict:
+        """Get state for reaction.
+
+        This serializes the reaction object. The GPR will be converted to a string
+        to avoid unneccessary copies due to interdependencies of used objects.
+
+        Returns
+        -------
+        dict
+            The state/attributes of the reaction in serilized form.
+
+        """
+        state = self.__dict__.copy()
+        state["_gpr"] = str(self._gpr)
+        return state
+
     def __setstate__(self, state: Dict) -> None:
-        """Set state fo reaction.
+        """Set state for reaction.
 
         Probably not necessary to set _model as the cobra.Model that
         contains self sets the _model attribute for all metabolites and genes
@@ -908,6 +924,10 @@ class Reaction(Object):
             state["_lower_bound"] = state.pop("lower_bound")
         if "upper_bound" in state:
             state["_upper_bound"] = state.pop("upper_bound")
+
+        # Used for efficient storage in newer cobrapy versions
+        if type(state["_gpr"]) is str:
+            state["_gpr"] = GPR.from_string(state["_gpr"])
 
         self.__dict__.update(state)
         for x in state["_metabolites"]:
