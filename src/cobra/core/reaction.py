@@ -585,8 +585,8 @@ class Reaction(Object):
         """Set metabolites to a dictionary of metabolites and coefficients.
 
         Parameters
-        -------
-        metabolites: Dict[Metabolite, float]
+        ----------
+        value: Dict[Metabolite, float]
             A dictionary of cobra.Metabolite for keys and floats for coeffecieints.
             Positive coefficient means the reaction produces this metabolite, while
             negative coefficient means the reaction consumes this metabolite.
@@ -1034,7 +1034,7 @@ class Reaction(Object):
         rule2 = other.gene_reaction_rule.strip()
         if rule1 != "" and rule2 != "":
             self.gene_reaction_rule = (
-                f"({self.gene_reaction_rule}) and " f"({other.gene_reaction_rule})"
+                f"({self.gene_reaction_rule}) and ({other.gene_reaction_rule})"
             )
         elif rule1 != "" and rule2 == "":
             self.gene_reaction_rule = rule1
@@ -1247,13 +1247,12 @@ class Reaction(Object):
 
             # Make sure metabolites being added belong to the same model, or
             # else copy them.
-            if isinstance(metabolite, Metabolite):
-                if (
-                    (metabolite.model is not None)
-                    and self.model
-                    and (metabolite.model is not self._model)
-                ):
-                    metabolite = metabolite.copy()
+            if isinstance(metabolite, Metabolite) and (
+                (metabolite.model is not None)
+                and self.model
+                and (metabolite.model is not self._model)
+            ):
+                metabolite = metabolite.copy()
 
             met_id = str(metabolite)
             # If a metabolite already exists in the reaction then
