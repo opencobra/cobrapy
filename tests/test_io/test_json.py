@@ -35,13 +35,10 @@ def test_load_json_model(
     compare_models: Callable, cobra_data_directory: Path, mini_model: Model
 ) -> None:
     """Test the reading of JSON model."""
-    # Path
     json_model = cio.load_json_model(cobra_data_directory / "mini.json")
     assert compare_models(mini_model, json_model) is None
-    # str
     json_model = cio.load_json_model(str(cobra_data_directory / "mini.json"))
     assert compare_models(mini_model, json_model) is None
-    # FileHandle
     with open(cobra_data_directory / "mini.json", "r") as json_handle:
         json_model = cio.load_json_model(json_handle)
         assert compare_models(mini_model, json_model) is None
@@ -61,14 +58,12 @@ def test_save_json_model(
         loaded = json.load(infile)
     assert jsonschema.validate(loaded, json_schema_v1) is None
     output_file.unlink()
-    # Test writing with str
     cio.save_json_model(mini_model, str(output_file), pretty=True)
     # validate against JSONSchema
     with open(output_file, "r") as infile:
         loaded = json.load(infile)
     assert jsonschema.validate(loaded, json_schema_v1) is None
     output_file.unlink()
-    # Filehandle
     with output_file.open("w+") as json_outfile:
         cio.save_json_model(mini_model, json_outfile, pretty=True)
         # validate against JSONSchema

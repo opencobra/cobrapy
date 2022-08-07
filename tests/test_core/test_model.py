@@ -480,7 +480,7 @@ def test_add_existing_boundary(
             model.add_boundary(metabolite, reaction_type)
 
 
-@pytest.mark.parametrize("solver", stable_optlang)
+@pytest.mark.parametrize("solver", optlang_solvers)
 def test_copy_benchmark(model: Model, solver: str, benchmark: BenchmarkFixture) -> None:
     """Test copying a model with benchmark.
 
@@ -488,7 +488,8 @@ def test_copy_benchmark(model: Model, solver: str, benchmark: BenchmarkFixture) 
     ----------
     model: cobra.Model
     solver: str
-        It is a string representing which solver to use.
+        It is a string representing which solver to use. Parametized using
+        'optlang_solvers' defined above.
     benchmark: BenchmarkFixture
 
     """
@@ -499,14 +500,13 @@ def test_copy_benchmark(model: Model, solver: str, benchmark: BenchmarkFixture) 
         If the model has no solver, it creates the problem using the solver given as
         parameter to the external function.
         """
+        model.solver = solver
         model.copy()
-        if not getattr(model, "solver", None):
-            solver_dict[solver].create_problem(model)
 
     benchmark(_)
 
 
-@pytest.mark.parametrize("solver", stable_optlang)
+@pytest.mark.parametrize("solver", optlang_solvers)
 def test_copy_benchmark_large_model(
     large_model: Model,
     solver: str,
@@ -518,7 +518,8 @@ def test_copy_benchmark_large_model(
     ----------
     large_model: cobra.Model
     solver: str
-        It is a string representing which solver to use.
+        It is a string representing which solver to use. Parametized using
+        'optlang_solvers' defined above.
     benchmark: BenchmarkFixture
     """
 
@@ -528,9 +529,8 @@ def test_copy_benchmark_large_model(
         If the model has no solver, it creates the problem using the solver given as
         parameter to the external function.
         """
+        large_model.solver = solver
         large_model.copy()
-        if not getattr(large_model, "solver", None):
-            solver_dict[solver].create_problem(large_model)
 
     benchmark(_)
 
@@ -695,7 +695,7 @@ def test_merge_models(model: Model, tiny_toy_model: Model) -> None:
         assert "tiny_EX_glc__D_e" not in model.reactions
 
 
-@pytest.mark.parametrize("solver", stable_optlang)
+@pytest.mark.parametrize("solver", optlang_solvers)
 def test_change_objective_benchmark(
     model: Model, benchmark: BenchmarkFixture, solver: str
 ) -> None:
@@ -706,14 +706,13 @@ def test_change_objective_benchmark(
     model: cobra.Model
     benchmark: BenchmarkFixture
     solver: str
-        Solver to use. Parametized using stable_optlang defined above.
+        Solver to use. Parametized using 'optlang_solvers' defined above.
     """
     atpm = model.reactions.get_by_id("ATPM")
 
     def benchmark_change_objective():
         model.objective = atpm.id
-        if not getattr(model, "solver", None):
-            solver_dict[solver].create_problem(model)
+        model.solver = solver
 
     benchmark(benchmark_change_objective)
 

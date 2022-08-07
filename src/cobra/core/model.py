@@ -49,7 +49,7 @@ class Model(Object):
 
     Parameters
     ----------
-    id_or_model: str or Model
+    id_or_model: str or Model, optional
         String to use as model id, or actual model to base new model one.
         If string, it is used as id. If model, a new model object is
         instantiated with the same properties as the original model (default None).
@@ -73,7 +73,7 @@ class Model(Object):
     """
 
     def __init__(
-        self, id_or_model: Union[str, "Model"] = None, name: Optional[str] = None
+        self, id_or_model: Union[str, "Model", None] = None, name: Optional[str] = None
     ) -> None:
         """Initialize the Model."""
         if isinstance(id_or_model, Model):
