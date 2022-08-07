@@ -10,6 +10,7 @@
 of SBO:0000633 (see https://sourceforge.net/p/sbo/term-request/113/)
 * Correct reading and writing of subsystem in mat.
 * General cleanup of code in mat.py
+* Fixed issue 673 (problem when copying reaction from a different model)
 
 ## Other
 

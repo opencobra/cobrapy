@@ -847,13 +847,13 @@ class Model(Object):
                 reaction._model = None
 
                 for met in reaction.metabolites:
-                    if reaction in met.reactions:
+                    if reaction in met._reaction:
                         met.reaction_remove(reaction, context)
                         if remove_orphans and len(met.reactions) == 0:
                             self.remove_metabolites(met)
 
                 for gene in reaction.genes:
-                    if reaction in gene.reactions:
+                    if reaction in gene._reaction:
                         gene.reaction_remove(reaction, context)
 
                         if remove_orphans and len(gene.reactions) == 0:
