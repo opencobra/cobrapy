@@ -222,22 +222,6 @@ class Model(Object):
 
         self._tolerance = value
 
-    def get_metabolite_compartments(self) -> set:
-        """Return all metabolites' compartments.
-
-        Returns
-        -------
-        set
-            A set of metabolite compartments.
-
-        .. deprecated ::
-            Use model.compartments() in the future.
-        """
-        warn("use Model.compartments instead", DeprecationWarning)
-        return {
-            met.compartment for met in self.metabolites if met.compartment is not None
-        }
-
     @property
     def compartments(self) -> Dict:
         """Return all metabolites' compartments.
