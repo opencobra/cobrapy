@@ -58,7 +58,7 @@ def test_find_boundary_types_exchange(model: Model) -> None:
 def test_find_boundary_types_demand(model: Model) -> None:
     """Test boundary type identification for demands."""
     dm = Reaction("demand")
-    model.add_reaction(dm)
+    model.add_reactions([dm])
     dm.build_reaction_from_string("atp_c ->")
     dm = model.demands
     assert len(dm) == 1
@@ -68,7 +68,7 @@ def test_find_boundary_types_demand(model: Model) -> None:
 def test_find_boundary_types_sink(model: Model) -> None:
     """Test boundary type identification for sinks."""
     sn = Reaction("sink")
-    model.add_reaction(sn)
+    model.add_reactions([sn])
     sn.build_reaction_from_string("atp_c <->")
     sn.bounds = -1000, 1000
     sn = model.sinks

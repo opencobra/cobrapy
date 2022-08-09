@@ -159,7 +159,7 @@ def test_gene_knock_out(model: Model) -> None:
     rxn.add_metabolites({Metabolite("A"): -1, Metabolite("B"): 1})
     rxn.gene_reaction_rule = "A2B1 or A2B2 and A2B3"
     assert hasattr(list(rxn.genes)[0], "knock_out")
-    model.add_reaction(rxn)
+    model.add_reactions([rxn])
     with model:
         model.genes.A2B1.knock_out()
         assert not model.genes.A2B1.functional
@@ -715,7 +715,7 @@ def test_make_lhs_irreversible_reversible(model: Model) -> None:
     rxn = Reaction("test")
     rxn.add_metabolites({model.metabolites[0]: -1.0, model.metabolites[1]: 1.0})
     rxn.bounds = (-1000.0, -100)
-    model.add_reaction(rxn)
+    model.add_reactions([rxn])
     assert rxn.lower_bound == -1000.0
     assert rxn.upper_bound == -100.0
     assert rxn.forward_variable.lb == 0.0

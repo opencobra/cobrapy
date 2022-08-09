@@ -1,24 +1,31 @@
-# -*- coding: utf-8 -*-
-
-"""Test functions of model.py"""
-
-from __future__ import absolute_import
+"""Test functions of model.py."""
 
 import os
 import warnings
 from copy import copy, deepcopy
 from math import isnan
+from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
 import pytest
 from optlang.symbolics import Zero
 
+from cobra import Solution
 from cobra.core import Group, Metabolite, Model, Reaction
 from cobra.exceptions import OptimizationError
 from cobra.manipulation.delete import remove_genes
 from cobra.util import solver as su
 from cobra.util.solver import SolverNotFound, set_objective, solvers
+
+
+try:
+    import pytest_benchmark
+except ImportError:
+    pytest_benchmark = None
+
+if pytest_benchmark:
+    from pytest_benchmark.fixture import BenchmarkFixture
 
 
 stable_optlang = ["glpk", "cplex", "gurobi"]
@@ -30,32 +37,13 @@ def same_ex(ex1, ex2):
     return ex1.simplify() == ex2.simplify()
 
 
-@pytest.mark.parametrize("solver", stable_optlang)
-def test_add_remove_reaction_benchmark(model, benchmark, solver):
-    metabolite_foo = Metabolite("test_foo")
-    metabolite_bar = Metabolite("test_bar")
-    metabolite_baz = Metabolite("test_baz")
-    actual_metabolite = model.metabolites[0]
-    dummy_reaction = Reaction("test_foo_reaction")
-    dummy_reaction.add_metabolites(
-        {
-            metabolite_foo: -1,
-            metabolite_bar: 1,
-            metabolite_baz: -2,
-            actual_metabolite: 1,
-        }
-    )
+def test_add_metabolite(model: Model) -> None:
+    """Tests adding a metabolite to a model, including with context.
 
-    def benchmark_add_reaction():
-        model.add_reaction(dummy_reaction)
-        if not getattr(model, "solver", None):
-            solver_dict[solver].create_problem(model)
-        model.remove_reactions([dummy_reaction])
-
-    benchmark(benchmark_add_reaction)
-
-
-def test_add_metabolite(model):
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     new_metabolite = Metabolite("test_met")
     assert new_metabolite not in model.metabolites
     with model:
@@ -69,7 +57,15 @@ def test_add_metabolite(model):
     assert new_metabolite.id not in model.solver.constraints
 
 
-def test_remove_metabolite_subtractive(model):
+def test_remove_metabolite_subtractive(model: Model) -> None:
+    """Remove metabolite from model in a subtractive (not destructive) way.
+
+    Checks that the changes to model are reversed when using context.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     test_metabolite = model.metabolites[4]
     test_reactions = test_metabolite.reactions
     with model:
@@ -85,7 +81,15 @@ def test_remove_metabolite_subtractive(model):
     assert test_metabolite.id in model.solver.constraints
 
 
-def test_remove_metabolite_destructive(model):
+def test_remove_metabolite_destructive(model: Model) -> None:
+    """Remove metabolite from a model in a destructive way.
+
+    Checks that the changes to model are reversed when using context.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     test_metabolite = model.metabolites[4]
     test_reactions = test_metabolite.reactions
     with model:
@@ -103,7 +107,13 @@ def test_remove_metabolite_destructive(model):
         assert reaction in model.reactions
 
 
-def test_compartments(model):
+def test_compartments(model: Model) -> None:
+    """Test setting and modifying model compartments.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     assert set(model.compartments) == {"c", "e"}
     model = Model("test", "test")
     met_c = Metabolite("a_c", compartment="c")
@@ -116,102 +126,14 @@ def test_compartments(model):
     assert model.compartments == {"c": "cytosol", "e": ""}
 
 
-def test_add_reaction(model):
-    old_reaction_count = len(model.reactions)
-    old_metabolite_count = len(model.metabolites)
-    dummy_metabolite_1 = Metabolite("test_foo_1")
-    dummy_metabolite_2 = Metabolite("test_foo_2")
-    actual_metabolite = model.metabolites[0]
-    copy_metabolite = model.metabolites[1].copy()
-    dummy_reaction = Reaction("test_foo_reaction")
-    dummy_reaction.add_metabolites(
-        {
-            dummy_metabolite_1: -1,
-            dummy_metabolite_2: 1,
-            copy_metabolite: -2,
-            actual_metabolite: 1,
-        }
-    )
+def test_model_remove_reaction(model: Model):
+    """Test remove_reactions() to remove reaction(s).
 
-    model.add_reaction(dummy_reaction)
-    assert model.reactions.get_by_id(dummy_reaction.id) == dummy_reaction
-    for x in [dummy_metabolite_1, dummy_metabolite_2]:
-        assert model.metabolites.get_by_id(x.id) == x
-    # Should add 1 reaction and 2 metabolites
-    assert len(model.reactions) == old_reaction_count + 1
-    assert len(model.metabolites) == old_metabolite_count + 2
-    # Test the added reaction
-    reaction_in_model = model.reactions.get_by_id(dummy_reaction.id)
-    assert type(reaction_in_model) is Reaction
-    assert reaction_in_model is dummy_reaction
-    assert len(reaction_in_model._metabolites) == 4
-    for i in reaction_in_model._metabolites:
-        assert type(i) == Metabolite
-    # Test the added metabolites
-    met1_in_model = model.metabolites.get_by_id(dummy_metabolite_1.id)
-    assert met1_in_model is dummy_metabolite_1
-    copy_in_model = model.metabolites.get_by_id(copy_metabolite.id)
-    assert copy_metabolite is not copy_in_model
-    assert type(copy_in_model) is Metabolite
-    assert dummy_reaction in actual_metabolite._reaction
-    # Test addition of a different metabolite with the same name as an
-    # existing one uses the metabolite in the model
-    r2 = Reaction("test_foo_reaction2")
-    model.add_reaction(r2)
-    r2.add_metabolites({Metabolite(model.metabolites[0].id): 1})
-    assert model.metabolites[0] is list(r2._metabolites)[0]
+    Parameters
+    ----------
+    model: cobra.Model
 
-
-def test_add_reaction_context(model):
-    old_reaction_count = len(model.reactions)
-    old_metabolite_count = len(model.metabolites)
-    dummy_metabolite_1 = Metabolite("test_foo_1")
-    dummy_metabolite_2 = Metabolite("test_foo_2")
-    actual_metabolite = model.metabolites[0]
-    copy_metabolite = model.metabolites[1].copy()
-    dummy_reaction = Reaction("test_foo_reaction")
-    dummy_reaction.add_metabolites(
-        {
-            dummy_metabolite_1: -1,
-            dummy_metabolite_2: 1,
-            copy_metabolite: -2,
-            actual_metabolite: 1,
-        }
-    )
-    dummy_reaction.gene_reaction_rule = "dummy_gene"
-
-    with model:
-        model.add_reaction(dummy_reaction)
-        assert model.reactions.get_by_id(dummy_reaction.id) == dummy_reaction
-        assert len(model.reactions) == old_reaction_count + 1
-        assert len(model.metabolites) == old_metabolite_count + 2
-        assert dummy_metabolite_1._model == model
-        assert "dummy_gene" in model.genes
-
-    assert len(model.reactions) == old_reaction_count
-    assert len(model.metabolites) == old_metabolite_count
-    with pytest.raises(KeyError):
-        model.reactions.get_by_id(dummy_reaction.id)
-    assert dummy_metabolite_1._model is None
-    assert "dummy_gene" not in model.genes
-
-
-def test_add_reaction_from_other_model(model):
-    other = model.copy()
-    for i in other.reactions:
-        i.id += "_other"
-    other.repair()
-    model.add_reactions(other.reactions)
-
-    # Check if the other reaction has an error in its GPR
-    m1 = model.copy()
-    m2 = model.copy()
-    m1.reactions.PGI.remove_from_model()
-    m2.genes.b4025._reaction.clear()
-    m1.add_reaction(m2.reactions.PGI)
-
-
-def test_model_remove_reaction(model):
+    """
     old_reaction_count = len(model.reactions)
 
     with model:
@@ -244,7 +166,17 @@ def test_model_remove_reaction(model):
     assert np.isclose(model.slim_optimize(), biomass_before)
 
 
-def test_reaction_remove(model):
+def test_reaction_remove(model: Model):
+    """Test remove orphans in Reaction().remove_from_model.
+
+    This function test that remove_orphans=True removes related metabolites when
+    supposed to and doesn't remove when not supposed to (when this metabolite is in
+    reactions not removed).
+
+    Parameters
+    ----------
+    model: cobra.Model to use
+    """
     old_reaction_count = len(model.reactions)
     tmp_metabolite = Metabolite("testing")
 
@@ -286,7 +218,15 @@ def test_reaction_remove(model):
     assert len(model.reactions) == old_reaction_count - 3
 
 
-def test_reaction_delete(model):
+def test_reaction_delete(model: Model) -> None:
+    """Test reaction removal using the Reaction.delete() function.
+
+    This function calls Reaction().remove_from_model, since it is deprecated.
+
+    Parameters
+    ----------
+    model: cobra.Model to use
+    """
     old_reaction_count = len(model.reactions)
     tmp_metabolite = Metabolite("testing")
 
@@ -319,7 +259,13 @@ def test_reaction_delete(model):
     assert len(model.reactions) == old_reaction_count - 3
 
 
-def test_remove_gene(model):
+def test_remove_gene(model: Model) -> None:
+    """Test remove_gene from model.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     target_gene = model.genes[0]
     gene_reactions = list(target_gene.reactions)
     with warnings.catch_warnings():
@@ -335,7 +281,16 @@ def test_remove_gene(model):
         assert target_gene not in reaction.genes
 
 
-def test_group_model_reaction_association(model):
+def test_group_model_reaction_association(model: Model) -> None:
+    """Test associating reactions with group in a model.
+
+    This function will also remove the group from the model and check that
+    reactions are no longer associated with the group
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     num_members = 5
     reactions_for_group = model.reactions[0:num_members]
     group = Group("arbitrary_group1")
@@ -351,8 +306,7 @@ def test_group_model_reaction_association(model):
     for reaction in reactions_for_group:
         assert group in model.get_associated_groups(reaction)
 
-    # remove the group from the model and check that reactions are no
-    # longer associated with the group
+    # remove the group from the model
     model.remove_groups([group])
     assert group not in model.groups
     assert group._model is not model
@@ -360,7 +314,17 @@ def test_group_model_reaction_association(model):
         assert group not in model.get_associated_groups(reaction)
 
 
-def test_group_members_add_to_model(model):
+def test_group_members_add_to_model(model: Model) -> None:
+    """Test adding a group with reactions to a model.
+
+    This function will remove some reactions from a model, add them to a group, and
+    test that the reactions aren't in the model. Later, the test will add the group
+    to the model, and check the reactions were added to the model.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     # remove a few reactions from the model and add them to a new group
     num_members = 5
     reactions_for_group = model.reactions[0:num_members]
@@ -379,9 +343,16 @@ def test_group_members_add_to_model(model):
         assert reaction in model.reactions
 
 
-def test_group_loss_of_elements(model):
-    # when a metabolite, reaction, or gene is removed from a model, it
-    # should no longer be a member of any groups
+def test_group_loss_of_elements(model: Model) -> None:
+    """Test removal from model removes elements from group.
+
+    This function will test that when a metabolite, reaction or gene is removed from
+    a model, it no longer is a member of any groups.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     num_members_each = 5
     elements_for_group = model.reactions[0:num_members_each]
     elements_for_group.extend(model.metabolites[0:num_members_each])
@@ -402,10 +373,16 @@ def test_group_loss_of_elements(model):
     assert remove_gene not in group.members
 
 
-def test_exchange_reactions(model):
-    assert set(model.exchanges) == set(
-        [rxn for rxn in model.reactions if rxn.id.startswith("EX")]
-    )
+def test_exchange_reactions(model: Model) -> None:
+    """Test model.exchanges works as intended.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
+    assert set(model.exchanges) == {
+        rxn for rxn in model.reactions if rxn.id.startswith("EX")
+    }
 
 
 @pytest.mark.parametrize(
@@ -417,7 +394,21 @@ def test_exchange_reactions(model):
     ],
     indirect=["metabolites"],
 )
-def test_add_boundary(model, metabolites, reaction_type, prefix):
+def test_add_boundary(
+    model: Model, metabolites: List[Metabolite], reaction_type: str, prefix: str
+) -> None:
+    """Test add_boundary() function for model.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    metabolites: List[Metabolites]
+        This list is generated by the pytest.fixture metabolites(), see conftest.py
+        in the root test directory.
+    reaction_type: {"exchange", "demand", "sink"}
+        The allowed types for boundary, see add_boundary() for types.
+    prefix: str
+    """
     for metabolite in metabolites:
         reaction = model.add_boundary(metabolite, reaction_type)
         assert model.reactions.get_by_id(reaction.id) == reaction
@@ -436,7 +427,21 @@ def test_add_boundary(model, metabolites, reaction_type, prefix):
     ],
     indirect=["metabolites"],
 )
-def test_add_boundary_context(model, metabolites, reaction_type, prefix):
+def test_add_boundary_context(
+    model: Model, metabolites: List[Metabolite], reaction_type: str, prefix: str
+) -> None:
+    """Test add_boundary() function for model with context.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    metabolites: List[Metabolites]
+        This list is generated by the pytest.fixture metabolites(), see conftest.py
+        in the root test directory.
+    reaction_type: {"exchange", "demand", "sink"}
+        The allowed types for boundary, see add_boundary() for types.
+    prefix: str
+    """
     with model:
         for metabolite in metabolites:
             reaction = model.add_boundary(metabolite, reaction_type)
@@ -455,43 +460,103 @@ def test_add_boundary_context(model, metabolites, reaction_type, prefix):
     [("exchange", "exchange"), ("demand", "demand"), ("sink", "sink")],
     indirect=["metabolites"],
 )
-def test_add_existing_boundary(model, metabolites, reaction_type):
+def test_add_existing_boundary(
+    model: Model, metabolites: List[Metabolite], reaction_type: str
+) -> None:
+    """Test add_boundary() function for model with existing boundary/metabolite.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    metabolites: List[Metabolites]
+        This list is generated by the pytest.fixture metabolites(), see conftest.py
+        in the root test directory.
+    reaction_type: {"exchange", "demand", "sink"}
+        The allowed types for boundary, see add_boundary() for types.
+    """
     for metabolite in metabolites:
         model.add_boundary(metabolite, reaction_type)
         with pytest.raises(ValueError):
             model.add_boundary(metabolite, reaction_type)
 
 
-@pytest.mark.parametrize("solver", stable_optlang)
-def test_copy_benchmark(model, solver, benchmark):
-    def _():
+@pytest.mark.parametrize("solver", optlang_solvers)
+def test_copy_benchmark(model: Model, solver: str, benchmark: BenchmarkFixture) -> None:
+    """Test copying a model with benchmark.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    solver: str
+        It is a string representing which solver to use. Parametized using
+        'optlang_solvers' defined above.
+    benchmark: BenchmarkFixture
+
+    """
+
+    def _() -> None:
+        """Copy a model.
+
+        If the model has no solver, it creates the problem using the solver given as
+        parameter to the external function.
+        """
+        model.solver = solver
         model.copy()
-        if not getattr(model, "solver", None):
-            solver_dict[solver].create_problem(model)
 
     benchmark(_)
 
 
-@pytest.mark.parametrize("solver", stable_optlang)
-def test_copy_benchmark_large_model(large_model, solver, benchmark):
-    def _():
+@pytest.mark.parametrize("solver", optlang_solvers)
+def test_copy_benchmark_large_model(
+    large_model: Model,
+    solver: str,
+    benchmark: BenchmarkFixture,
+) -> None:
+    """Test copying a large model with benchmark.
+
+    Parameters
+    ----------
+    large_model: cobra.Model
+    solver: str
+        It is a string representing which solver to use. Parametized using
+        'optlang_solvers' defined above.
+    benchmark: BenchmarkFixture
+    """
+
+    def _() -> None:
+        """Copy a large model.
+
+        If the model has no solver, it creates the problem using the solver given as
+        parameter to the external function.
+        """
+        large_model.solver = solver
         large_model.copy()
-        if not getattr(large_model, "solver", None):
-            solver_dict[solver].create_problem(large_model)
 
     benchmark(_)
 
 
-def test_copy(model):
-    # Modifying copy should not modify the original
-    # Test that deleting reactions in the copy does not change the
-    # number of reactions in the original model
+def test_copy(model: Model) -> None:
+    """Test copying a model and modifying the copy.
+
+    This function tests that modifying the copy should not modifying the original, by
+    deleting reactions in the copy (# of reactions in the original should not change).
+    This function also tests that GPRs are copied by content, not by reference, and
+    that the model copy does not copy the context.
+
+    Parameters
+    ----------
+    model: cobra.Model
+
+    """
+    # Deleting reactions in copy does not change number of reactions in the original
     model_copy = model.copy()
     old_reaction_count = len(model.reactions)
     assert model_copy.notes is not model.notes
     assert model_copy.annotation is not model.annotation
     assert len(model.reactions) == len(model_copy.reactions)
     assert len(model.metabolites) == len(model_copy.metabolites)
+    assert len(model.groups) == len(model_copy.groups)
+    assert len(model.genes) == len(model_copy.genes)
     # test if GPRs are copied by content but not by reference
     assert model.reactions[0].gpr == model_copy.reactions[0].gpr
     assert id(model.reactions[0].gpr.body) != id(model_copy.reactions[0].gpr.body)
@@ -506,21 +571,41 @@ def test_copy(model):
     assert "ACALD" not in cp_model.reactions
 
 
-def test_copy_with_groups(model):
+def test_copy_with_groups(model: Model) -> None:
+    """Copy model with groups and check that groups are copied correctly.
+
+    Parameters
+    ----------
+    model: cobra.Model
+
+    """
     sub = Group("pathway", members=[model.reactions.PFK, model.reactions.FBA])
     model.add_groups([sub])
-    copy = model.copy()
-    assert len(copy.groups) == len(model.groups)
-    assert len(copy.groups.get_by_id("pathway")) == len(
+    model_copy = model.copy()
+    assert len(model_copy.groups) == len(model.groups)
+    assert len(model_copy.groups.get_by_id("pathway")) == len(
         model.groups.get_by_id("pathway")
     )
 
 
-def test_deepcopy_benchmark(model, benchmark):
+def test_deepcopy_benchmark(model: Model, benchmark: BenchmarkFixture) -> None:
+    """Benchmark deepcopying a model.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    benchmark: BenchmarkFixture
+    """
     benchmark(deepcopy, model)
 
 
-def test_deepcopy(model):
+def test_deepcopy(model: Model) -> None:
+    """Test deepcopying works, and maintains reference structures.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     # Reference structures are maintained when deepcopying
     model_copy = deepcopy(model)
     for gene, gene_copy in zip(model.genes, model_copy.genes):
@@ -535,10 +620,16 @@ def test_deepcopy(model):
         assert metabolites == metabolites_copy
 
 
-def test_add_reaction_orphans(model):
-    # Test reaction addition
-    # Need to verify that no orphan genes or metabolites are
-    # contained in reactions after adding them to the model.
+def test_add_reaction_orphans(model: Model) -> None:
+    """Test orphan behavior when adding reactions.
+
+    Need to verify that no orphan genes or metabolites are contained in reactions
+    after adding them to the model.
+
+    Parameters
+    ---------
+    model: cobra.Model
+    """
     model = model.__class__("test")
     model.add_reactions((x.copy() for x in model.reactions))
     genes = []
@@ -554,7 +645,14 @@ def test_add_reaction_orphans(model):
     assert len(orphan_metabolites) == 0
 
 
-def test_merge_models(model, tiny_toy_model):
+def test_merge_models(model: Model, tiny_toy_model: Model) -> None:
+    """Test merging models.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    tiny_toy_model: cobra.Model
+    """
     with model, tiny_toy_model:
         # Add some cons/vars to tiny_toy_model for testing merging
         tiny_toy_model.add_reactions([Reaction("EX_glc__D_e")])
@@ -564,7 +662,6 @@ def test_merge_models(model, tiny_toy_model):
         )
         tiny_toy_model.add_cons_vars([variable, constraint])
 
-        # Test merging to new model
         merged = model.merge(
             tiny_toy_model, inplace=False, objective="sum", prefix_existing="tiny_"
         )
@@ -597,34 +694,48 @@ def test_merge_models(model, tiny_toy_model):
         assert "foo" not in model.variables
         assert "tiny_EX_glc__D_e" not in model.reactions
 
-    # Test the deprecated operator overloading
-    with model:
-        merged = model + tiny_toy_model
-        assert "ex1" in merged.reactions
-    with model:
-        model += tiny_toy_model
-        assert "ex1" in model.reactions
 
+@pytest.mark.parametrize("solver", optlang_solvers)
+def test_change_objective_benchmark(
+    model: Model, benchmark: BenchmarkFixture, solver: str
+) -> None:
+    """Benchmark changing objective in model.
 
-@pytest.mark.parametrize("solver", stable_optlang)
-def test_change_objective_benchmark(model, benchmark, solver):
+    Parameters
+    ----------
+    model: cobra.Model
+    benchmark: BenchmarkFixture
+    solver: str
+        Solver to use. Parametized using 'optlang_solvers' defined above.
+    """
     atpm = model.reactions.get_by_id("ATPM")
 
     def benchmark_change_objective():
         model.objective = atpm.id
-        if not getattr(model, "solver", None):
-            solver_dict[solver].create_problem(model)
+        model.solver = solver
 
     benchmark(benchmark_change_objective)
 
 
-def test_get_objective_direction(model):
+def test_get_objective_direction(model: Model) -> None:
+    """Test getting objective.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     assert model.objective_direction == "max"
     value = model.slim_optimize()
     assert np.isclose(value, 0.874, 1e-3)
 
 
-def test_set_objective_direction(model):
+def test_set_objective_direction(model: Model) -> None:
+    """Test setting objective.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     with model:
         model.objective_direction = "min"
         assert model.objective_direction == "min"
@@ -633,7 +744,14 @@ def test_set_objective_direction(model):
     assert model.objective_direction == "max"
 
 
-def test_slim_optimize(model):
+def test_slim_optimize(model: Model) -> None:
+    """Test slim_optimize with context.
+
+    Parameters
+    ----------
+    model: cobra.Model
+
+    """
     with model:
         assert model.slim_optimize() > 0.872
         model.reactions.Biomass_Ecoli_core.lower_bound = 10
@@ -643,7 +761,15 @@ def test_slim_optimize(model):
 
 
 @pytest.mark.parametrize("solver", optlang_solvers)
-def test_optimize(model, solver):
+def test_optimize(model: Model, solver: str) -> None:
+    """Test optimizing a model.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    solver: str
+        Solver to use. Parametized using 'optlang_solvers' defined above.
+    """
     model.solver = solver
     with model:
         assert model.optimize().objective_value > 0.872
@@ -654,7 +780,13 @@ def test_optimize(model, solver):
             model.optimize(raise_error=True)
 
 
-def test_change_objective(model):
+def test_change_objective(model: Model) -> None:
+    """Test changing objective.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     # Test for correct optimization behavior
     model.optimize()
     assert model.reactions.Biomass_Ecoli_core.x > 0.5
@@ -692,7 +824,13 @@ def test_change_objective(model):
     assert su.linear_reaction_coefficients(model) == {atpm: 1.0, biomass: 1.0}
 
 
-def test_problem_properties(model):
+def test_problem_properties(model: Model) -> None:
+    """Test model problem properties.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     new_variable = model.problem.Variable("test_variable")
     new_constraint = model.problem.Constraint(Zero, name="test_constraint", lb=0)
     model.add_cons_vars([new_variable, new_constraint])
@@ -703,14 +841,28 @@ def test_problem_properties(model):
     assert "test_constraint" not in model.variables
 
 
-def test_solution_data_frame(model):
+def test_solution_data_frame(model: Model) -> None:
+    """Test that solution is transformed correctly to a Pandas data frame.
+
+    Parameters
+    ----------
+    model: cobra. Model
+
+    """
     solution = model.optimize().to_frame()
     assert isinstance(solution, pd.DataFrame)
     assert "fluxes" in solution
     assert "reduced_costs" in solution
 
 
-def test_context_manager(model):
+def test_context_manager(model: Model) -> None:
+    """Test that the context manager works.
+
+    Parameters
+    ----------
+    model: cobra.Model
+
+    """
     bounds0 = model.reactions[0].bounds
     bounds1 = (1, 2)
     bounds2 = (3, 4)
@@ -727,7 +879,13 @@ def test_context_manager(model):
     assert model.reactions[0].bounds == bounds0
 
 
-def test_objective_coefficient_reflects_changed_objective(model):
+def test_objective_coefficient_reflects_changed_objective(model: Model) -> None:
+    """Test that changing objectives is reflected in the objectives changing.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     biomass_r = model.reactions.get_by_id("Biomass_Ecoli_core")
     assert biomass_r.objective_coefficient == 1
     model.objective = "PGI"
@@ -735,7 +893,13 @@ def test_objective_coefficient_reflects_changed_objective(model):
     assert model.reactions.PGI.objective_coefficient == 1
 
 
-def test_change_objective_through_objective_coefficient(model):
+def test_change_objective_through_objective_coefficient(model: Model) -> None:
+    """Test that changing the objective coefficients will change the objective.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     biomass_r = model.reactions.get_by_id("Biomass_Ecoli_core")
     pgi = model.reactions.PGI
     pgi.objective_coefficient = 2
@@ -748,24 +912,42 @@ def test_change_objective_through_objective_coefficient(model):
     assert coef_dict[biomass_r.reverse_variable] == -1.0
 
 
-def test_transfer_objective(model):
+def test_transfer_objective(model: Model) -> None:
+    """Test assigning objective from a different mdoel objective.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     new_mod = Model("new model")
     new_mod.add_reactions(model.reactions)
     new_mod.objective = model.objective
-    assert set(str(x) for x in model.objective.expression.args) == set(
+    assert {str(x) for x in model.objective.expression.args} == {
         str(x) for x in new_mod.objective.expression.args
-    )
+    }
     new_mod.slim_optimize()
     assert abs(new_mod.objective.value - 0.874) < 0.001
 
 
-def test_model_from_other_model(model):
+def test_model_from_other_model(model: Model) -> None:
+    """Test creating model from other model.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     model = Model(id_or_model=model)
     for reaction in model.reactions:
         assert reaction == model.reactions.get_by_id(reaction.id)
 
 
-def test_add_reactions(model):
+def test_add_reactions(model: Model) -> None:
+    """Test add_reactions() function to add reactions to model.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     r1 = Reaction("r1")
     r1.add_metabolites({Metabolite("A"): -1, Metabolite("B"): 1})
     r1.lower_bound, r1.upper_bound = -999999.0, 999999.0
@@ -786,7 +968,13 @@ def test_add_reactions(model):
     assert coefficients_dict[model.reactions.r2.reverse_variable] == -3.0
 
 
-def test_add_reactions_single_existing(model):
+def test_add_reactions_single_existing(model: Model) -> None:
+    """Test adding a reaction already present to a model.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     rxn = model.reactions[0]
     r1 = Reaction(rxn.id)
     r1.add_metabolites({Metabolite("A"): -1, Metabolite("B"): 1})
@@ -796,7 +984,13 @@ def test_add_reactions_single_existing(model):
     assert r1 is not model.reactions.get_by_id(rxn.id)
 
 
-def test_add_reactions_duplicate(model):
+def test_add_reactions_duplicate(model: Model) -> None:
+    """Test adding duplicate reactions to a model.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     rxn = model.reactions[0]
     r1 = Reaction("r1")
     r1.add_metabolites({Metabolite("A"): -1, Metabolite("B"): 1})
@@ -809,13 +1003,16 @@ def test_add_reactions_duplicate(model):
     assert r2 is not model.reactions.get_by_id(rxn.id)
 
 
-def test_add_cobra_reaction(model):
-    r = Reaction(id="c1")
-    model.add_reaction(r)
-    assert isinstance(model.reactions.c1, Reaction)
+def test_all_objects_point_to_all_other_correct_objects(model: Model) -> None:
+    """Test that objects point to needed other objects.
 
+    This will test that the reaction.genes, reaction.metabolites point to the correct
+    genes and metabolites in the model.
 
-def test_all_objects_point_to_all_other_correct_objects(model):
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     for reaction in model.reactions:
         assert reaction.model == model
         for gene in reaction.genes:
@@ -833,7 +1030,13 @@ def test_all_objects_point_to_all_other_correct_objects(model):
                 assert reaction2 == model.reactions.get_by_id(reaction2.id)
 
 
-def test_objects_point_to_correct_other_after_copy(model):
+def test_objects_point_to_correct_other_after_copy(model: Model) -> None:
+    """Test that objects point to correct other objects after copying a model.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     for reaction in model.reactions:
         assert reaction.model == model
         for gene in reaction.genes:
@@ -851,7 +1054,13 @@ def test_objects_point_to_correct_other_after_copy(model):
                 assert reaction2 == model.reactions.get_by_id(reaction2.id)
 
 
-def test_remove_reactions(model):
+def test_remove_reactions(model: Model) -> None:
+    """Test remove_reactions() from Model.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     reactions_to_remove = model.reactions[10:30]
     assert all([reaction.model is model for reaction in reactions_to_remove])
     assert all(
@@ -871,7 +1080,13 @@ def test_remove_reactions(model):
         assert reaction in model.reactions
 
 
-def test_objective(model):
+def test_objective(model: Model) -> None:
+    """Test that objective contains the correct coefficients.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     obj = model.objective
     assert obj.get_linear_coefficients(obj.variables) == {
         model.variables["Biomass_Ecoli_core_reverse_2cdba"]: -1,
@@ -880,7 +1095,13 @@ def test_objective(model):
     assert obj.direction == "max"
 
 
-def test_change_objective(model):
+def test_change_objective_with_context(model: Model) -> None:
+    """Test changing objective is reversed with context.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     expression = 1.0 * model.variables["ENO"] + 1.0 * model.variables["PFK"]
     model.objective = model.problem.Objective(expression)
     assert same_ex(model.objective.expression, expression)
@@ -923,7 +1144,13 @@ def test_change_objective(model):
     assert same_ex(model.objective.expression, expression)
 
 
-def test_set_reaction_objective(model):
+def test_set_reaction_objective(model: Model) -> None:
+    """Test setting reaction objective.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     model.objective = model.reactions.ACALD
     assert same_ex(
         model.objective.expression,
@@ -932,7 +1159,13 @@ def test_set_reaction_objective(model):
     )
 
 
-def test_set_reaction_objective_str(model):
+def test_set_reaction_objective_str(model: Model) -> None:
+    """Test setting reaction objective using string.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     model.objective = model.reactions.ACALD.id
     assert same_ex(
         model.objective.expression,
@@ -941,15 +1174,29 @@ def test_set_reaction_objective_str(model):
     )
 
 
-def test_invalid_objective_raises(model):
+def test_invalid_objective_raises(model: Model) -> None:
+    """Test that an invalid objective will raise appropriate errors.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     with pytest.raises(ValueError):
-        setattr(model, "objective", "This is not a valid objective!")
+        model.objective = "This is not a valid objective!"
     with pytest.raises(TypeError):
-        setattr(model, "objective", 3.0)
+        model.objective = 3.0
 
 
 @pytest.mark.skipif("cplex" not in solvers, reason="need cplex")
-def test_solver_change(model):
+def test_solver_change(model: Model) -> None:
+    """Test changing the solver to cplex.
+
+    This test will be skipped if cplex is not installed and available to python.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     model.solver = "glpk"
     solver_id = id(model.solver)
     problem_id = id(model.solver.problem)
@@ -961,7 +1208,13 @@ def test_solver_change(model):
     assert np.allclose(solution, new_solution, rtol=0, atol=1e-06)
 
 
-def test_no_change_for_same_solver(model):
+def test_no_change_for_same_solver(model: Model) -> None:
+    """Test no change in variables if changing to the same solver as before.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     model.solver = "glpk"
     solver_id = id(model.solver)
     problem_id = id(model.solver.problem)
@@ -970,17 +1223,31 @@ def test_no_change_for_same_solver(model):
     assert id(model.solver.problem) == problem_id
 
 
-def test_invalid_solver_change_raises(model):
+def test_invalid_solver_change_raises(model: Model) -> None:
+    """Test changing to an invalid solver will raise SovlerNotFound.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     with pytest.raises(SolverNotFound):
-        setattr(model, "solver", [1, 2, 3])
+        model.solver = [1, 2, 3]
     with pytest.raises(SolverNotFound):
-        setattr(model, "solver", "ThisIsDefinitelyNotAvalidSolver")
+        model.solver = "ThisIsDefinitelyNotAvalidSolver"
     with pytest.raises(SolverNotFound):
-        setattr(model, "solver", os)
+        model.solver = os
 
 
 @pytest.mark.skipif("cplex" not in solvers, reason="no cplex")
-def test_change_solver_to_cplex_and_check_copy_works(model):
+def test_change_solver_to_cplex_and_check_copy_works(model: Model) -> None:
+    """Test changing solver and copying model work.
+
+    This test will be skipped if cplex is not installed and available for python.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     assert (model.slim_optimize() - 0.8739215069684306) == pytest.approx(0.0)
     model_copy = model.copy()
     assert (model_copy.slim_optimize() - 0.8739215069684306) == pytest.approx(0.0)
@@ -991,7 +1258,16 @@ def test_change_solver_to_cplex_and_check_copy_works(model):
     assert (model_copy.slim_optimize() - 0.8739215069684306) == pytest.approx(0.0)
 
 
-def test_copy_preserves_existing_solution(solved_model):
+def test_copy_preserves_existing_solution(solved_model: Tuple[Solution, Model]) -> None:
+    """Test copy keeps the existing solution.
+
+    Primal values are the same when copying a solved model.
+
+    Parameters
+    ----------
+    solved_model: Tuple
+        A Tuple that contains a Solution and a Model
+    """
     solution, model = solved_model
     model_cp = copy(model)
     primals_original = [variable.primal for variable in model.variables]
@@ -1000,5 +1276,11 @@ def test_copy_preserves_existing_solution(solved_model):
     assert not any(abs_diff > 1e-6)
 
 
-def test_repr_html_(model):
+def test_repr_html_(model: Model) -> None:
+    """Test HTML representation of model.
+
+    Parameters
+    ----------
+    model: cobra.Model
+    """
     assert "<table>" in model._repr_html_()
