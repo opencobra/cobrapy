@@ -9,7 +9,7 @@ from typing import List, Tuple
 import numpy as np
 import pandas as pd
 import pytest
-from optlang.symbolics import Zero
+from optlang.symbolics import Expr, Zero
 
 from cobra import Solution
 from cobra.core import Group, Metabolite, Model, Reaction
@@ -32,8 +32,22 @@ stable_optlang = ["glpk", "cplex", "gurobi"]
 optlang_solvers = ["optlang-" + s for s in stable_optlang if s in su.solvers]
 
 
-def same_ex(ex1, ex2):
-    """Compare to expressions for mathematical equality."""
+def same_ex(ex1: Expr, ex2: Expr) -> bool:
+    """Compare two sympy-expressions for mathematical equality.
+
+    Parameters
+    ----------
+    ex1 : optlang.symbolics.Expr
+        The first sympy-expression.
+    ex2 : optlang.symbolics.Expr
+        The second sympy-expression.
+
+    Returns
+    -------
+    bool
+        Whether the two expression are mathematically equal.
+
+    """
     return ex1.simplify() == ex2.simplify()
 
 
@@ -126,7 +140,7 @@ def test_compartments(model: Model) -> None:
     assert model.compartments == {"c": "cytosol", "e": ""}
 
 
-def test_model_remove_reaction(model: Model):
+def test_model_remove_reaction(model: Model) -> None:
     """Test remove_reactions() to remove reaction(s).
 
     Parameters
@@ -166,7 +180,7 @@ def test_model_remove_reaction(model: Model):
     assert np.isclose(model.slim_optimize(), biomass_before)
 
 
-def test_reaction_remove(model: Model):
+def test_reaction_remove(model: Model) -> None:
     """Test remove orphans in Reaction().remove_from_model.
 
     This function test that remove_orphans=True removes related metabolites when

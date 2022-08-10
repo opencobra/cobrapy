@@ -22,3 +22,5 @@ of SBO:0000633 (see https://sourceforge.net/p/sbo/term-request/113/)
 * Removed `model.add_reaction()` and replaced remaining usages of it with `model.add_reactions()`
 * Removed the following tests: test_add_remove_reaction_benchmark, test_add_reaction, test_add_reaction_context, test_add_reaction_from_other_model, test_add_cobra_reaction
 * Removed `model.__add__` and `model.__iadd__` - use `model.merge` to replace them.
+* Remove `Model().description()`.
+* Remove `Model().get_metabolite_compartments()`.
