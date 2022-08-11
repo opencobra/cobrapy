@@ -1,6 +1,7 @@
 """Define the Reaction class."""
 
 import hashlib
+import math
 import re
 from collections import defaultdict
 from copy import copy, deepcopy
@@ -594,7 +595,7 @@ class Reaction(Object):
         self._metabolites = value
         context = get_context(self)
         for met in value.keys():
-            met.reaction_add(self, context)
+            met.add_reaction(self)
 
     @property
     def genes(self) -> FrozenSet:
@@ -858,9 +859,9 @@ class Reaction(Object):
             This function is deprecated and shouldn't be used.
         """
         for x in self._metabolites:
-            x.reaction_add(self)
+            x.add_reaction(self)
         for x in self._genes:
-            x.reaction_add(self)
+            x.add_reaction(self)
 
     def remove_from_model(self, remove_orphans: bool = False) -> None:
         """Remove the reaction from a model.
@@ -951,7 +952,7 @@ class Reaction(Object):
         self.__dict__.update(state)
         for x in set(state["_metabolites"]).union(state["_genes"]):
             x._model = self._model
-            x.reaction_add(self)
+            x.add_reaction(self)
 
     def copy(self) -> "Reaction":
         """Copy a reaction.
@@ -1001,7 +1002,7 @@ class Reaction(Object):
 
         """
         new_reaction = self.copy()
-        if other == 0:
+        if isinstance(other, int) and other == 0:
             return new_reaction
         else:
             new_reaction += other
@@ -1285,7 +1286,7 @@ class Reaction(Object):
                 self._metabolites[metabolite] = coefficient
                 # make the metabolite aware that it is involved in this
                 # reaction
-                metabolite.reaction_add(self)
+                metabolite.add_reaction(self)
 
         # from cameo ...
         model = self.model
@@ -1304,7 +1305,7 @@ class Reaction(Object):
             if the_coefficient == 0:
                 # make the metabolite aware that it no longer participates
                 # in this reaction
-                metabolite.reaction_remove(self)
+                metabolite.remove_reaction(self)
                 self._metabolites.pop(metabolite)
 
         context = get_context(self)
@@ -1504,7 +1505,7 @@ class Reaction(Object):
 
         """
         self._genes.add(cobra_gene)
-        cobra_gene.reaction_add(self)
+        cobra_gene.add_reaction(self)
         cobra_gene._model = self._model
 
     def _dissociate_gene(self, cobra_gene: Gene) -> None:
@@ -1516,7 +1517,7 @@ class Reaction(Object):
 
         """
         self._genes.discard(cobra_gene)
-        cobra_gene.reaction_remove(self)
+        cobra_gene.remove_reaction(self)
 
     def knock_out(self) -> None:
         """Knockout reaction by setting its bounds to zero."""
@@ -1672,6 +1673,51 @@ class Reaction(Object):
             solution=solution,
             fva=fva,
         )
+
+    def __eq__(self, other) -> bool:
+        self_state = self.__getstate__()
+        self_state["_metabolites"] = {
+            met.id: stoic for met, stoic in self.metabolites.items()
+        }
+        self_state["_genes"] = {gene.id for gene in self.genes}
+        self_state.pop("_model")
+        other_state = other.__getstate__()
+        other_state["_metabolites"] = {
+            met.id: stoic for met, stoic in other.metabolites.items()
+        }
+        other_state["_genes"] = {gene.id for gene in other.genes}
+        other_state.pop("_model")
+
+        self_state.pop("_lower_bound")
+        self_state.pop("_upper_bound")
+        other_state.pop("_lower_bound")
+        other_state.pop("_upper_bound")
+
+        _tolerance = 1e-7
+        if self.model:
+            _tolerance = self.model.tolerance
+        elif other.model:
+            _tolerance = other.model.tolerance
+        elif self.model and other.model:
+            _tolerance = min(self.model.tolerance, other.model.tolerance)
+        if not math.isclose(self.lower_bound, other.lower_bound, abs_tol=_tolerance):
+            return False
+        elif not math.isclose(self.upper_bound, other.upper_bound, abs_tol=_tolerance):
+            return False
+        else:
+            return self_state == other_state
+
+    def __hash__(self) -> int:
+        """Define __hash__ explicitly to allow usage of reaction in sets.
+
+        Python objects that define __eq__ MUST define __hash__ explicitly, or they
+        are unhashable. __hash__ is set to the __hash__ function of cobra.Object.
+
+        Returns
+        -------
+        int
+        """
+        return Object.__hash__(self)
 
     def __str__(self) -> str:
         """Return reaction id and reaction as str.

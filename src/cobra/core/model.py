@@ -723,34 +723,24 @@ class Model(Object):
             return True
 
         # First check whether the reactions exist in the model. Copy reactions that
-        # belong to another model, in order not to remove them (see
-        # https://github.com/opencobra/cobrapy/issues/673#issuecomment-371361476).
-        exist_but_different_stoich = set()
+        # belong to another model, in order not to remove them from the original model.
+        exist_but_different = set()
         other_model = ""
         for reaction in filter(lambda x: not existing_filter(x), reaction_list):
-            met_id_dict = {
-                met.id: stoich for met, stoich in reaction.metabolites.items()
-            }
-            existing_met_id_dict = {
-                met.id: stoich
-                for met, stoich in self.reactions.get_by_id(
-                    reaction.id
-                ).metabolites.items()
-            }
-            if met_id_dict != existing_met_id_dict:
-                exist_but_different_stoich.add(reaction.id)
-                other_model = reaction.model
-        if len(exist_but_different_stoich):
+            if reaction != self.reactions.get_by_id(reaction.id):
+                exist_but_different.add(reaction.id)
+                other_model = other_model or reaction.model
+        if len(exist_but_different):
             logger.warning(
-                f"The reactions {', '.join(exist_but_different_stoich)} exist"
+                f"The reactions {', '.join(exist_but_different)} exist"
                 f" in both {self} and {other_model}, but have different "
-                f"stoichiometries in the two mdoels. Please check to see "
-                f"which stoichiometry you'd like to add."
+                f"properties in the two mdoels. Please check to see "
+                f"which properties are the correct ones you'd like to add."
             )
         pruned = DictList(
             [
                 reaction
-                if not reaction._model or reaction._model == self
+                if not reaction.model or reaction.model == self
                 else reaction.copy()
                 for reaction in filter(existing_filter, reaction_list)
             ]
@@ -763,20 +753,15 @@ class Model(Object):
             reaction._model = self
             if context:
                 context(partial(setattr, reaction, "_model", None))
-            met_id_dict = {
-                met.id: stoich for met, stoich in reaction.metabolites.items()
-            }
-            met_dict = {met.id: met for met in reaction.metabolites.keys()}
             mets_to_add = [
-                met_dict[met_id]
-                for met_id in set(met_id_dict.keys()).difference(
-                    self.metabolites.list_attr("id")
-                )
+                met
+                for met in reaction.metabolites
+                if met.id not in self.metabolites.list_attr("id")
             ]
             self.add_metabolites(mets_to_add)
             new_stoich = {
-                self.metabolites.get_by_id(met_id): stoich
-                for met_id, stoich in met_id_dict.items()
+                self.metabolites.get_by_id(met.id): stoich
+                for met, stoich in reaction.metabolites.items()
             }
             reaction.metabolites = new_stoich
             reaction.update_genes_from_gpr()
@@ -846,15 +831,15 @@ class Model(Object):
                 self.reactions.remove(reaction)
                 reaction._model = None
 
-                for met in reaction.metabolites:
+                for met in reaction._metabolites:
                     if reaction in met._reaction:
-                        met.reaction_remove(reaction, context)
+                        met.remove_reaction(reaction)
                         if remove_orphans and len(met.reactions) == 0:
                             self.remove_metabolites(met)
 
-                for gene in reaction.genes:
+                for gene in reaction._genes:
                     if reaction in gene._reaction:
-                        gene.reaction_remove(reaction, context)
+                        gene.remove_reaction(reaction)
 
                         if remove_orphans and len(gene.reactions) == 0:
                             self.genes.remove(gene)
@@ -1287,13 +1272,13 @@ class Model(Object):
             self.groups._generate_index()
         if rebuild_relationships:
             for met in self.metabolites:
-                met.reaction_clear()
+                met.clear_reaction()
             for gene in self.genes:
-                gene.reaction_clear()
+                gene.clear_reaction()
             for rxn in self.reactions:
                 rxn.update_genes_from_gpr()
                 for met in rxn.metabolites:
-                    met.reaction_add(rxn)
+                    met.add_reaction(rxn)
 
         # point _model to self
         for dict_list in (self.reactions, self.genes, self.metabolites, self.groups):

@@ -1,7 +1,7 @@
 """Define the Metabolite class."""
 
 import re
-from typing import TYPE_CHECKING, Dict, Optional, Union
+from typing import TYPE_CHECKING, Dict, FrozenSet, Optional, Union
 from warnings import warn
 
 from ..exceptions import OptimizationError
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from optlang.interface import Container
     from pandas import DataFrame
 
-    from cobra.core import Solution
+    from cobra.core import Reaction, Solution
     from cobra.summary.metabolite_summary import MetaboliteSummary
 
 # Numbers are not required because of the |(?=[A-Z])? block. See the
@@ -275,6 +275,26 @@ class Metabolite(Species):
             reactions are removed from the Model.
         """
         self._model.remove_metabolites(self, destructive)
+
+    @property
+    def reactions(self) -> FrozenSet["Reaction"]:
+        """Return a frozenset of reactions.
+
+        If the metabolite is present in a model, calculates this set by querying
+        the model reactions for this metabolite.
+        If not, returns the _reaction field, see cobra.Species.
+
+        Returns
+        -------
+        FrozenSet
+            A frozenset that includes the reactions of the metabolite.
+        """
+        if self.model:
+            return frozenset(
+                self.model.reactions.query(lambda x: self in x, "metabolites")
+            )
+        else:
+            return frozenset(self._reaction)
 
     def summary(
         self,

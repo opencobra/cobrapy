@@ -2,11 +2,9 @@
 
 
 from copy import deepcopy
-from functools import partial
 from typing import TYPE_CHECKING, FrozenSet, Optional
 
 from ..core.object import Object
-from ..util import HistoryManager
 
 
 if TYPE_CHECKING:
@@ -57,49 +55,31 @@ class Species(Object):
         FrozenSet
             A frozenset that includes the reactions of the species.
         """
-        if self.model and self.__class__.__name__ == "Gene":
-            return frozenset(self.model.reactions.query(lambda x: self in x, "genes"))
-        elif self.model and self.__class__.__name__ == "Metabolite":
-            return frozenset(
-                self.model.reactions.query(lambda x: self in x, "metabolites")
-            )
         return frozenset(self._reaction)
 
-    def reaction_add(
-        self, reaction: "Reaction", context: Optional[HistoryManager] = None
-    ) -> None:
+    def add_reaction(self, reaction: "Reaction") -> None:
         """Add reaction to .reaction field, with context.
 
-        If this is called with a context, will be reversed when exiting the context.
+        If this is called within a context, will be reversed when exiting the context.
 
         Parmeters
         ---------
         reaction: cobra.Reaction
-        context: HistoryManager, optional
-            context this action is in, optional (defualt None).
         """
         self._reaction.add(reaction)
-        if context:
-            context(partial(self._reaction.remove, reaction))
 
-    def reaction_remove(
-        self, reaction: "Reaction", context: Optional[HistoryManager] = None
-    ) -> None:
+    def remove_reaction(self, reaction: "Reaction") -> None:
         """Remove reaction from .reaction field, with context.
 
-        If this is called with a context, will be reversed when exiting the context.
+        If this is called within a context, will be reversed when exiting the context.
 
         Parmeters
         ---------
         reaction: cobra.Reaction
-        context: HistoryManager, optional
-            context this action is in, optional (defualt None).
         """
         self._reaction.remove(reaction)
-        if context:
-            context(partial(self._reaction.add, reaction))
 
-    def reaction_clear(self) -> None:
+    def clear_reaction(self) -> None:
         """Clear the reaction field."""
         self._reaction.clear()
 
