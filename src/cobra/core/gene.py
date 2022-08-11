@@ -18,7 +18,7 @@ from ast import (
 from ast import parse as ast_parse
 from copy import deepcopy
 from keyword import kwlist
-from typing import FrozenSet, Iterable, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, FrozenSet, Iterable, Optional, Set, Tuple, Union
 from warnings import warn
 
 import sympy.logic.boolalg as spl
@@ -28,6 +28,10 @@ from cobra.core.dictlist import DictList
 from cobra.core.species import Species
 from cobra.util import resettable
 from cobra.util.util import format_long_string
+
+
+if TYPE_CHECKING:
+    from cobra.core import Reaction
 
 
 # TODO - When https://github.com/symengine/symengine.py/issues/334 is resolved,
@@ -246,9 +250,27 @@ class Gene(Species):
         context.
         """
         self.functional = False
-        for reaction in self.reactions:
+        for reaction in self.reactions:  # type: ignore
             if not reaction.functional:
                 reaction.bounds = (0, 0)
+
+    @property
+    def reactions(self) -> FrozenSet["Reaction"]:
+        """Return a frozenset of reactions.
+
+        If the gene is present in a model, calculates this set by querying
+        the model reactions for this gene.
+        If not, returns the _reaction field, see cobra.Species.
+
+        Returns
+        -------
+        FrozenSet
+            A frozenset that includes the reactions of the gene.
+        """
+        if self.model:
+            return frozenset(self.model.reactions.query(lambda x: self in x, "genes"))
+        else:
+            return frozenset(self._reaction)
 
     def _repr_html_(self):
         return f"""

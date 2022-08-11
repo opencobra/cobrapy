@@ -428,10 +428,11 @@ class Model(Object):
             new_reaction._model = new
             new.reactions.append(new_reaction)
             # update awareness
-            for metabolite, stoic in reaction._metabolites.items():
-                new_met = new.metabolites.get_by_id(metabolite.id)
-                new_reaction._metabolites[new_met] = stoic
-                new_met._reaction.add(new_reaction)
+            new_metabolites = {
+                new.metabolites.get_by_id(metabolite.id): stoic
+                for metabolite, stoic in reaction.metabolites.items()
+            }
+            new_reaction.metabolites = new_metabolites
             new_reaction.update_genes_from_gpr()
 
         new.groups = DictList()
@@ -500,6 +501,9 @@ class Model(Object):
 
         # First check whether the metabolites exist in the model
         metabolite_list = [x for x in metabolite_list if x.id not in self.metabolites]
+        metabolite_list = [
+            x.copy() if x.model and x.model != self else x for x in metabolite_list
+        ]
 
         bad_ids = [
             m for m in metabolite_list if not isinstance(m.id, str) or len(m.id) < 1
@@ -558,12 +562,12 @@ class Model(Object):
                 group.remove_members(x)
 
             if not destructive:
-                for the_reaction in list(x._reaction):  # noqa W0212
+                for the_reaction in x.reactions:
                     the_coefficient = the_reaction._metabolites[x]  # noqa W0212
                     the_reaction.subtract_metabolites({x: the_coefficient})
 
             else:
-                for x2 in list(x._reaction):  # noqa W0212
+                for x2 in x.reactions:
                     x2.remove_from_model()
 
         self.metabolites -= metabolite_list
@@ -718,8 +722,29 @@ class Model(Object):
                 return False
             return True
 
-        # First check whether the reactions exist in the model.
-        pruned = DictList(filter(existing_filter, reaction_list))
+        # First check whether the reactions exist in the model. Copy reactions that
+        # belong to another model, in order not to remove them from the original model.
+        exist_but_different = set()
+        other_model = ""
+        for reaction in filter(lambda x: not existing_filter(x), reaction_list):
+            if reaction != self.reactions.get_by_id(reaction.id):
+                exist_but_different.add(reaction.id)
+                other_model = other_model or reaction.model
+        if len(exist_but_different):
+            logger.warning(
+                f"The reactions {', '.join(exist_but_different)} exist"
+                f" in both {self} and {other_model}, but have different "
+                f"properties in the two mdoels. Please check to see "
+                f"which properties are the correct ones you'd like to add."
+            )
+        pruned = DictList(
+            [
+                reaction
+                if not reaction.model or reaction.model == self
+                else reaction.copy()
+                for reaction in filter(existing_filter, reaction_list)
+            ]
+        )
 
         context = get_context(self)
 
@@ -728,23 +753,17 @@ class Model(Object):
             reaction._model = self
             if context:
                 context(partial(setattr, reaction, "_model", None))
-            # Build a `list()` because the dict will be modified in the loop.
-            for metabolite in list(reaction.metabolites):
-                # TODO: Maybe this can happen with
-                #  Reaction.add_metabolites(combine=False)
-                # TODO: Should we add a copy of the metabolite instead?
-                if metabolite not in self.metabolites:
-                    self.add_metabolites(metabolite)
-                # A copy of the metabolite exists in the model, the reaction
-                # needs to point to the metabolite in the model.
-                else:
-                    # FIXME: Modifying 'private' attributes is horrible.
-                    stoichiometry = reaction._metabolites.pop(metabolite)
-                    model_metabolite = self.metabolites.get_by_id(metabolite.id)
-                    reaction._metabolites[model_metabolite] = stoichiometry
-                    model_metabolite._reaction.add(reaction)
-                    if context:
-                        context(partial(model_metabolite._reaction.remove, reaction))
+            mets_to_add = [
+                met
+                for met in reaction.metabolites
+                if met.id not in self.metabolites.list_attr("id")
+            ]
+            self.add_metabolites(mets_to_add)
+            new_stoich = {
+                self.metabolites.get_by_id(met.id): stoich
+                for met, stoich in reaction.metabolites.items()
+            }
+            reaction.metabolites = new_stoich
             reaction.update_genes_from_gpr()
 
         self.reactions += pruned
@@ -814,19 +833,15 @@ class Model(Object):
 
                 for met in reaction._metabolites:
                     if reaction in met._reaction:
-                        met._reaction.remove(reaction)
-                        if context:
-                            context(partial(met._reaction.add, reaction))
-                        if remove_orphans and len(met._reaction) == 0:
+                        met.remove_reaction(reaction)
+                        if remove_orphans and len(met.reactions) == 0:
                             self.remove_metabolites(met)
 
                 for gene in reaction._genes:
                     if reaction in gene._reaction:
-                        gene._reaction.remove(reaction)
-                        if context:
-                            context(partial(gene._reaction.add, reaction))
+                        gene.remove_reaction(reaction)
 
-                        if remove_orphans and len(gene._reaction) == 0:
+                        if remove_orphans and len(gene.reactions) == 0:
                             self.genes.remove(gene)
                             if context:
                                 context(partial(self.genes.add, gene))
@@ -869,7 +884,7 @@ class Model(Object):
             """
             if new_group.id in self.groups:
                 logger.warning(
-                    f"Ignoring group '{new_group.id}'" f" since it already exists."
+                    f"Ignoring group '{new_group.id}' since it already exists."
                 )
                 return False
             return True
@@ -1257,13 +1272,13 @@ class Model(Object):
             self.groups._generate_index()
         if rebuild_relationships:
             for met in self.metabolites:
-                met._reaction.clear()
+                met.clear_reaction()
             for gene in self.genes:
-                gene._reaction.clear()
+                gene.clear_reaction()
             for rxn in self.reactions:
                 rxn.update_genes_from_gpr()
-                for met in rxn._metabolites:
-                    met._reaction.add(rxn)
+                for met in rxn.metabolites:
+                    met.add_reaction(rxn)
 
         # point _model to self
         for dict_list in (self.reactions, self.genes, self.metabolites, self.groups):

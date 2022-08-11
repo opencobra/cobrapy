@@ -8,7 +8,7 @@ from ..core.object import Object
 
 
 if TYPE_CHECKING:
-    from .. import Model
+    from .. import Model, Reaction
 
 
 class Species(Object):
@@ -56,6 +56,32 @@ class Species(Object):
             A frozenset that includes the reactions of the species.
         """
         return frozenset(self._reaction)
+
+    def add_reaction(self, reaction: "Reaction") -> None:
+        """Add reaction to .reaction field, with context.
+
+        If this is called within a context, will be reversed when exiting the context.
+
+        Parmeters
+        ---------
+        reaction: cobra.Reaction
+        """
+        self._reaction.add(reaction)
+
+    def remove_reaction(self, reaction: "Reaction") -> None:
+        """Remove reaction from .reaction field, with context.
+
+        If this is called within a context, will be reversed when exiting the context.
+
+        Parmeters
+        ---------
+        reaction: cobra.Reaction
+        """
+        self._reaction.remove(reaction)
+
+    def clear_reaction(self) -> None:
+        """Clear the reaction field."""
+        self._reaction.clear()
 
     def __getstate__(self) -> dict:
         """Return the state of the species.
