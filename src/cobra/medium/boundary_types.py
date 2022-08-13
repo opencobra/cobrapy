@@ -57,7 +57,7 @@ def find_external_compartment(model: "Model") -> str:
     else:
         most = None
     like_external = compartment_shortlist["e"] + ["e"]
-    matches = pd.Series(
+    matches = pd.Series(dtype=str,
         [co in like_external for co in model.compartments], index=model.compartments
     )
 
