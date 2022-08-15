@@ -74,7 +74,7 @@ def test_model_medium(model: Model) -> None:
     bad_import = Reaction("bad_import")
     bad_import.add_metabolites({model.metabolites.pyr_c: 1})
     bad_import.bounds = (0, 42)
-    model.add_reaction(bad_import)
+    model.add_reactions([bad_import])
 
     # Test basic setting and getting methods
     medium = model.medium
