@@ -15,9 +15,9 @@ from typing import (
     Union,
 )
 
-from numpy import bool_
+import numpy as np
 
-from cobra.core.object import Object
+from .object import Object
 
 
 class DictList(list):
@@ -457,7 +457,7 @@ class DictList(list):
             selection._extend_nocheck(list.__getitem__(self, i))
             return selection
         elif hasattr(i, "__len__"):
-            if len(i) == len(self) and isinstance(i[0], (bool, bool_)):
+            if len(i) == len(self) and isinstance(i[0], (bool, np.bool)):
                 selection = self.__class__()
                 result = (o for j, o in enumerate(self) if i[j])
                 selection._extend_nocheck(result)
