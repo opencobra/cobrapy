@@ -39,7 +39,6 @@ jobs:
     - name: black
       run:
         tox -e black
-# We ignore flake8 for the time being because there are tons of things to fix.
-#    - name: flake8
-#      run:
-#        tox -e flake8
+    - name: flake8
+      run:
+        tox -e flake8
