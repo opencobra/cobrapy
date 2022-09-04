@@ -1,4 +1,4 @@
-"""Creates the class DictList, used in many parts of cobrapy."""
+"""Define the DictList class."""
 
 import re
 from itertools import islice
@@ -21,7 +21,8 @@ from cobra.core.object import Object
 
 
 class DictList(list):
-    """A combined dict and list.
+    """
+    Define a combined dict and list.
 
     This object behaves like a list, but has the O(1) speed
     benefits of a dict when looking up elements by their id.
