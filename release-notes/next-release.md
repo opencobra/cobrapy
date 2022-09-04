@@ -15,6 +15,7 @@ of SBO:0000633 (see https://sourceforge.net/p/sbo/term-request/113/)
 
 * Resolve `flake8` issues and add missing type annotations and docstrings in `src/cobra/io` and `tests/test_io` (#1212).
 * Updated model.py and test_model.py to Python 3.6+, including type annotations and docstrings.
+* Resolve remaining `flake8` issues and enable the check in GitHub Actions Lint workflow (#1272).
 
 ## Deprecated features
 
