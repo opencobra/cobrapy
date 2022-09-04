@@ -11,10 +11,10 @@ from typing import Optional, Tuple, Union
 
 import appdirs
 
-from cobra.core.singleton import Singleton
-from cobra.exceptions import SolverNotFound
-from cobra.util.solver import interface_to_str
-from cobra.util.solver import solvers as SOLVERS
+from ..exceptions import SolverNotFound
+from ..util.solver import interface_to_str
+from ..util.solver import solvers as SOLVERS
+from .singleton import Singleton
 
 
 __all__ = ("Configuration",)
