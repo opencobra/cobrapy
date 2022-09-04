@@ -912,7 +912,9 @@ def from_mat_struct(
         rxn_group_names = set(rxn_subsystems).difference({None})
         new_groups = []
         for g_name in sorted(rxn_group_names):
-            group_members = model.reactions.query(lambda x: x.subsystem == g_name)
+            group_members = model.reactions.query(
+                lambda x, group_name: x.subsystem == group_name
+            )
             new_group = Group(
                 id=g_name, name=g_name, members=group_members, kind="partonomy"
             )
