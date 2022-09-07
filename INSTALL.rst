@@ -28,12 +28,11 @@ Microsoft Windows
 -----------------
 
 If you heed our recommendation to use Anaconda, you can open an Anaconda shell
-and install COBRApy from the ``bioconda`` channel. Soon it should also be
-available from the ``conda-forge`` channel.
+and install COBRApy from the ``conda-forge`` channel.
 
 .. code-block:: console
 
-    conda install -c bioconda cobra
+    conda install -c conda-forge cobra
 
 Installation for development
 ============================
