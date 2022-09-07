@@ -8,10 +8,31 @@
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/intro/help/</loc>
   </url><url>
-    <loc>https://opencobra.github.io/cobrapy/releases/0.25.0/</loc>
-    <lastmod>2022-04-30T00:00:00+00:00</lastmod>
+    <loc>https://opencobra.github.io/cobrapy/tags/cell-factories/</loc>
+    <lastmod>2022-05-31T12:00:00+00:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/</loc>
+    <lastmod>2022-05-31T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/minimal-cut-sets/</loc>
+    <lastmod>2022-05-31T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/packages/</loc>
+    <lastmod>2022-05-31T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/strain-design/</loc>
+    <lastmod>2022-05-31T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/packages/straindesign/</loc>
+    <lastmod>2022-05-31T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/</loc>
+    <lastmod>2022-05-31T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/visualization/</loc>
+    <lastmod>2022-05-31T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/releases/0.25.0/</loc>
     <lastmod>2022-04-30T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/releases/</loc>
@@ -321,12 +342,6 @@
     <lastmod>2019-08-07T13:03:00+00:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/tags/dynamic-flux-balance-analysis/</loc>
-    <lastmod>2019-08-07T13:03:00+00:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/packages/</loc>
-    <lastmod>2019-08-07T13:03:00+00:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/</loc>
     <lastmod>2019-08-07T13:03:00+00:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/pubs/pm31341636/</loc>
@@ -695,9 +710,6 @@
     <loc>https://opencobra.github.io/cobrapy/packages/escher/</loc>
     <lastmod>2017-03-27T12:13:48-06:00</lastmod>
   </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/visualization/</loc>
-    <lastmod>2017-03-27T12:13:48-06:00</lastmod>
-  </url><url>
     <loc>https://opencobra.github.io/cobrapy/packages/micom/</loc>
     <lastmod>2017-03-27T11:52:51-06:00</lastmod>
   </url><url>
@@ -716,13 +728,7 @@
     <loc>https://opencobra.github.io/cobrapy/packages/minspan/</loc>
     <lastmod>2017-03-27T11:52:42-06:00</lastmod>
   </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/cell-factories/</loc>
-    <lastmod>2017-03-27T11:52:33-06:00</lastmod>
-  </url><url>
     <loc>https://opencobra.github.io/cobrapy/packages/dd-decaf/</loc>
-    <lastmod>2017-03-27T11:52:33-06:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/strain-design/</loc>
     <lastmod>2017-03-27T11:52:33-06:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/pubs/pm28163785/</loc>

@@ -6,7 +6,16 @@
     <description>Recent content in cell factories on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 27 Mar 2017 11:52:33 -0600</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/tags/cell-factories/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 31 May 2022 12:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/tags/cell-factories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>StrainDesign</title>
+      <link>https://opencobra.github.io/cobrapy/packages/straindesign/</link>
+      <pubDate>Tue, 31 May 2022 12:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/straindesign/</guid>
+      <description>StrainDesign, a comprehensive Python package that integrates the most popular deterministic metabolic design algorithms, including nested strain optimization methods such as RobustKnock, OptCouple and OptKnock, as well as the more general minimal cut sets approach. The optimization approaches are embedded in individual modules, which can also be combined for setting up more elaborate strain design problems. Advanced features, such as the efficient integration of GPR-rules, the consideration of gene and reaction additions and of regulatory interventions are available for all modules.</description>
+    </item>
+    
     <item>
       <title>dd-decaf</title>
       <link>https://opencobra.github.io/cobrapy/packages/dd-decaf/</link>
