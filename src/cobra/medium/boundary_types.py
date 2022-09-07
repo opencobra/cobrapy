@@ -58,7 +58,9 @@ def find_external_compartment(model: "Model") -> str:
         most = None
     like_external = compartment_shortlist["e"] + ["e"]
     matches = pd.Series(
-        [co in like_external for co in model.compartments], index=model.compartments
+        [co in like_external for co in model.compartments],
+        dtype=bool,
+        index=model.compartments,
     )
 
     if matches.sum() == 1:
@@ -85,7 +87,6 @@ def find_external_compartment(model: "Model") -> str:
         )
 
     if most is not None:
-        return most[0]
         logger.warning(
             "Could not identify an external compartment by name and "
             "choosing one with the most boundary reactions. That "
@@ -93,6 +94,8 @@ def find_external_compartment(model: "Model") -> str:
             "Consider renaming your compartments using "
             "`Model.compartments` to fix this."
         )
+        return most[0]
+
     # No info in the model, so give up
     raise RuntimeError(
         "The heuristic for discovering an external compartment "
