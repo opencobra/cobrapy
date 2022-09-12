@@ -80,7 +80,7 @@ and reaction annotations.&lt;/li&gt;
       <pubDate>Sat, 06 Feb 2021 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.21.0/</guid>
-      <description>Release notes for cobrapy 0.21.0 Other  Update libSBML dependency to python-libsbml==5.19.0. Docstring and style changes.  </description>
+      <description>Release notes for cobrapy 0.21.0 Other Update libSBML dependency to python-libsbml==5.19.0. Docstring and style changes. </description>
     </item>
     
     <item>
@@ -121,7 +121,7 @@ You can also contact them individually at:&lt;/p&gt;
       <pubDate>Sat, 26 Oct 2019 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.17.1/</guid>
-      <description>Release notes for cobrapy 0.17.1 Fixes  Prevent an error with infeasible solutions in (loopless) FVA. Correct a sampling problem with Gurobi as the solver. Adjust sampling documentation.  </description>
+      <description>Release notes for cobrapy 0.17.1 Fixes Prevent an error with infeasible solutions in (loopless) FVA. Correct a sampling problem with Gurobi as the solver. Adjust sampling documentation. </description>
     </item>
     
     <item>
@@ -130,7 +130,7 @@ You can also contact them individually at:&lt;/p&gt;
       <pubDate>Fri, 18 Oct 2019 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.17.0/</guid>
-      <description>Release notes for cobrapy 0.17.0 Fixes  Improve handling of and problems with SBML notes. Log SBML messages to a module logger rather than the root logger. Repair documentation building.  </description>
+      <description>Release notes for cobrapy 0.17.0 Fixes Improve handling of and problems with SBML notes. Log SBML messages to a module logger rather than the root logger. Repair documentation building. </description>
     </item>
     
     <item>
@@ -172,7 +172,7 @@ anyone in a harmful way.&lt;/li&gt;
       <pubDate>Fri, 26 Apr 2019 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.15.3/</guid>
-      <description>Release notes for cobrapy 0.15.3 Fixes  Correct multiple issues with the new SBML parser (#822, #839, #840, #843, #844). Function validate_sbml_model properly captures errors and warnings.  </description>
+      <description>Release notes for cobrapy 0.15.3 Fixes Correct multiple issues with the new SBML parser (#822, #839, #840, #843, #844). Function validate_sbml_model properly captures errors and warnings. </description>
     </item>
     
     <item>
@@ -198,7 +198,7 @@ set a threshold that is lower than the model tolerance now raises an error.&lt;/
       <pubDate>Sun, 24 Mar 2019 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.15.1/</guid>
-      <description>Release notes for cobrapy 0.15.1 Fixes  Fix copying of models with groups.  </description>
+      <description>Release notes for cobrapy 0.15.1 Fixes Fix copying of models with groups. </description>
     </item>
     
     <item>
@@ -207,7 +207,7 @@ set a threshold that is lower than the model tolerance now raises an error.&lt;/
       <pubDate>Mon, 28 Jan 2019 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.14.2/</guid>
-      <description>Release notes for cobrapy 0.14.2 Fixes  Better identification of the external compartment. Fix the installation of all optional dependencies, i.e., pip install cobra[all].  </description>
+      <description>Release notes for cobrapy 0.14.2 Fixes Better identification of the external compartment. Fix the installation of all optional dependencies, i.e., pip install cobra[all]. </description>
     </item>
     
     <item>
@@ -233,7 +233,7 @@ FBA.&lt;/li&gt;
       <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.14.1/</guid>
-      <description>Release notes for cobrapy 0.14.1 Fixes  Always create an XML declaration when reading SBML from a byte stream.  </description>
+      <description>Release notes for cobrapy 0.14.1 Fixes Always create an XML declaration when reading SBML from a byte stream. </description>
     </item>
     
     <item>
@@ -242,7 +242,7 @@ FBA.&lt;/li&gt;
       <pubDate>Sun, 26 Aug 2018 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.13.4/</guid>
-      <description>Release notes for cobrapy 0.13.4 Fixes  Internal re-organization of the test suite. Upgrade the ruamel.yaml version making it compatible with Python 3.7. Fix a bug with a regular expression in the Matlab interface.  </description>
+      <description>Release notes for cobrapy 0.13.4 Fixes Internal re-organization of the test suite. Upgrade the ruamel.yaml version making it compatible with Python 3.7. Fix a bug with a regular expression in the Matlab interface. </description>
     </item>
     
     <item>
@@ -251,7 +251,7 @@ FBA.&lt;/li&gt;
       <pubDate>Mon, 23 Jul 2018 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.13.3/</guid>
-      <description>Release notes for cobrapy 0.13.3  Make a clean release for PyPI, website, and GitHub.  </description>
+      <description>Release notes for cobrapy 0.13.3 Make a clean release for PyPI, website, and GitHub. </description>
     </item>
     
     <item>
@@ -327,7 +327,7 @@ ROOM.&lt;/li&gt;
       <pubDate>Wed, 07 Feb 2018 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.11.2/</guid>
-      <description>Release notes for cobrapy 0.11.2 Fixes  Correctly set the constraint for a previous minimization objective in FVA.  </description>
+      <description>Release notes for cobrapy 0.11.2 Fixes Correctly set the constraint for a previous minimization objective in FVA. </description>
     </item>
     
     <item>
@@ -336,7 +336,7 @@ ROOM.&lt;/li&gt;
       <pubDate>Tue, 06 Feb 2018 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.11.1/</guid>
-      <description>Release notes for cobrapy 0.11.1 Fixes  Catch all optlang errors and re-raise them as OptimizationError with corresponding message.  </description>
+      <description>Release notes for cobrapy 0.11.1 Fixes Catch all optlang errors and re-raise them as OptimizationError with corresponding message. </description>
     </item>
     
     <item>
@@ -380,7 +380,7 @@ optimization functions.&lt;/li&gt;
       <pubDate>Mon, 18 Dec 2017 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.10.1/</guid>
-      <description>Release notes for cobrapy 0.10.1 Fixes  pandas has dropped support for Python 3.4 and we are doing the same for our automated tests. If you are running Python 3.4 and have a working installation of numpy and pandas, adding cobrapy on top of that is no problem. Updated some URLs in the links.  </description>
+      <description>Release notes for cobrapy 0.10.1 Fixes pandas has dropped support for Python 3.4 and we are doing the same for our automated tests. If you are running Python 3.4 and have a working installation of numpy and pandas, adding cobrapy on top of that is no problem. Updated some URLs in the links. </description>
     </item>
     
     <item>
@@ -441,7 +441,7 @@ object. &lt;a href=&#34;https://github.com/opencobra/cobrapy/pull/566&#34;&gt;#5
       <pubDate>Wed, 26 Jul 2017 12:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.8.1/</guid>
-      <description>Fixes  Fix bug related to inhomogeneous sampling #558. During flux sampling, store the nullspace rather than the entire projection (N * N.T) which reduces the memory footprint since it uses memory in the order of 2 * n_reaction * n_metabolites instead of 4 * n_reactions^2 (no change in speed). PR #556.  </description>
+      <description>Fixes Fix bug related to inhomogeneous sampling #558. During flux sampling, store the nullspace rather than the entire projection (N * N.T) which reduces the memory footprint since it uses memory in the order of 2 * n_reaction * n_metabolites instead of 4 * n_reactions^2 (no change in speed). PR #556. </description>
     </item>
     
     <item>
@@ -493,7 +493,7 @@ unit tests).&lt;/li&gt;
       <pubDate>Sun, 07 May 2017 12:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/releases/0.6.1/</guid>
-      <description>Fixes  Debug metabolite.add_metabolites with combine=False (#503) Fix broken printing of metabolites (#502), by removing unnecessary Frozendict  </description>
+      <description>Fixes Debug metabolite.add_metabolites with combine=False (#503) Fix broken printing of metabolites (#502), by removing unnecessary Frozendict </description>
     </item>
     
     <item>

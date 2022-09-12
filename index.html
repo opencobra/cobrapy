@@ -5,7 +5,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="description" content="Constraint-based Metabolic Modeling in Python.">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-	<meta name="generator" content="Hugo 0.81.0" />
+	<meta name="generator" content="Hugo 0.102.3" />
 	<title>cobrapy - constraint-based metabolic modeling in Python</title>
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
@@ -57,22 +57,22 @@
 <a href="https://github.com/opencobra/cobrapy/graphs/contributors"><img src="https://img.shields.io/github/contributors/opencobra/cobrapy.svg" alt="GitHub contributors"></a>
 <a href="./releases"><img src="https://img.shields.io/github/release/opencobra/cobrapy.svg" alt="GitHub release"></a></p>
 <p><strong>cobrapy</strong> is a python package that provides a simple interface to metabolic constraint-based reconstruction and analysis.</p>
-<div class="highlight"><pre style="background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#666">&gt;&gt;&gt;</span> <span style="color:#007020;font-weight:bold">import</span> <span style="color:#0e84b5;font-weight:bold">cobra</span>
-<span style="color:#666">&gt;&gt;&gt;</span> model <span style="color:#666">=</span> cobra<span style="color:#666">.</span>io<span style="color:#666">.</span>read_sbml_model(<span style="color:#4070a0">&#39;Ec_core_flux1.xml&#39;</span>)
-<span style="color:#666">&gt;&gt;&gt;</span> model<span style="color:#666">.</span>metabolites[:<span style="color:#40a070">3</span>]
-[<span style="color:#666">&lt;</span>Metabolite <span style="color:#40a070">13</span>dpg_c at <span style="color:#40a070">0x112b2d160</span><span style="color:#666">&gt;</span>,
- <span style="color:#666">&lt;</span>Metabolite <span style="color:#40a070">2</span>pg_c at <span style="color:#40a070">0x1024eb048</span><span style="color:#666">&gt;</span>,
- <span style="color:#666">&lt;</span>Metabolite <span style="color:#40a070">3</span>pg_c at <span style="color:#40a070">0x112b2d748</span><span style="color:#666">&gt;</span>]
-</code></pre></div><p>The package includes simple, object-oriented interfaces for model construction (including reading to/from sbml, matlab, and json formats) and implements commonly used COBRA methods such as flux balance analysis, flux variability analysis, and gene deletion analyses.</p>
-<div class="highlight"><pre style="background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#666">&gt;&gt;&gt;</span> model<span style="color:#666">.</span>optimize()
-<span style="color:#666">&lt;</span>Solution <span style="color:#40a070">0.86</span> at <span style="color:#40a070">0x11272c2b0</span><span style="color:#666">&gt;</span>
-<span style="color:#666">&gt;&gt;&gt;</span> model<span style="color:#666">.</span>summary()
-IN FLUXES       OUT FLUXES    OBJECTIVES
-<span style="color:#666">--------------</span>  <span style="color:#666">------------</span>  <span style="color:#666">----------------------</span>
-o2_e     <span style="color:#40a070">22.3</span>   h2o_e  <span style="color:#40a070">24.9</span>   Biomass_Ecol<span style="color:#666">...</span>  <span style="color:#40a070">0.861</span>
-glc_D_e  <span style="color:#40a070">10</span>     co2_e  <span style="color:#40a070">23.3</span>
-pi_e      <span style="color:#40a070">3.17</span>  h_e     <span style="color:#40a070">9.11</span>
-</code></pre></div><p><strong>cobrapy</strong> is a community-supported effort under active development and is licensed under
+<div class="highlight"><pre tabindex="0" style="background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#666">&gt;&gt;&gt;</span> <span style="color:#007020;font-weight:bold">import</span> <span style="color:#0e84b5;font-weight:bold">cobra</span>
+</span></span><span style="display:flex;"><span><span style="color:#666">&gt;&gt;&gt;</span> model <span style="color:#666">=</span> cobra<span style="color:#666">.</span>io<span style="color:#666">.</span>read_sbml_model(<span style="color:#4070a0">&#39;Ec_core_flux1.xml&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#666">&gt;&gt;&gt;</span> model<span style="color:#666">.</span>metabolites[:<span style="color:#40a070">3</span>]
+</span></span><span style="display:flex;"><span>[<span style="color:#666">&lt;</span>Metabolite <span style="color:#40a070">13</span>dpg_c at <span style="color:#40a070">0x112b2d160</span><span style="color:#666">&gt;</span>,
+</span></span><span style="display:flex;"><span> <span style="color:#666">&lt;</span>Metabolite <span style="color:#40a070">2</span>pg_c at <span style="color:#40a070">0x1024eb048</span><span style="color:#666">&gt;</span>,
+</span></span><span style="display:flex;"><span> <span style="color:#666">&lt;</span>Metabolite <span style="color:#40a070">3</span>pg_c at <span style="color:#40a070">0x112b2d748</span><span style="color:#666">&gt;</span>]
+</span></span></code></pre></div><p>The package includes simple, object-oriented interfaces for model construction (including reading to/from sbml, matlab, and json formats) and implements commonly used COBRA methods such as flux balance analysis, flux variability analysis, and gene deletion analyses.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#666">&gt;&gt;&gt;</span> model<span style="color:#666">.</span>optimize()
+</span></span><span style="display:flex;"><span><span style="color:#666">&lt;</span>Solution <span style="color:#40a070">0.86</span> at <span style="color:#40a070">0x11272c2b0</span><span style="color:#666">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#666">&gt;&gt;&gt;</span> model<span style="color:#666">.</span>summary()
+</span></span><span style="display:flex;"><span>IN FLUXES       OUT FLUXES    OBJECTIVES
+</span></span><span style="display:flex;"><span><span style="color:#666">--------------</span>  <span style="color:#666">------------</span>  <span style="color:#666">----------------------</span>
+</span></span><span style="display:flex;"><span>o2_e     <span style="color:#40a070">22.3</span>   h2o_e  <span style="color:#40a070">24.9</span>   Biomass_Ecol<span style="color:#666">...</span>  <span style="color:#40a070">0.861</span>
+</span></span><span style="display:flex;"><span>glc_D_e  <span style="color:#40a070">10</span>     co2_e  <span style="color:#40a070">23.3</span>
+</span></span><span style="display:flex;"><span>pi_e      <span style="color:#40a070">3.17</span>  h_e     <span style="color:#40a070">9.11</span>
+</span></span></code></pre></div><p><strong>cobrapy</strong> is a community-supported effort under active development and is licensed under
 the GPL.</p>
 
     </div>
@@ -85,10 +85,10 @@ the GPL.</p>
         <h3>Installation</h3>
         <p>You can install cobrapy on linux, Mac OSX and Windows with pip.</p>
 <p>On Linux and Mac a simple:</p>
-<pre><code>$ pip install cobra
+<pre tabindex="0"><code>$ pip install cobra
 </code></pre><p>will be enough. On Windows substitute pip with pip.exe.</p>
 <p>Or install cobrapy with conda from conda-forge:</p>
-<pre><code>$ conda install -c conda-forge cobra
+<pre tabindex="0"><code>$ conda install -c conda-forge cobra
 </code></pre><p>For futher help refer to the <a href="https://github.com/opencobra/cobrapy/blob/devel/INSTALL.rst">detailed installation instructions</a>.</p>
 
     </div>

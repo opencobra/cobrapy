@@ -14,7 +14,7 @@
       
       <guid>https://opencobra.github.io/cobrapy/packages/memote/</guid>
       <description>Our goal in promoting this tool is to achieve two major shifts in the metabolic model building community:
- Models should be version-controlled such that changes can be tracked and if necessary reverted. Ideally, they should be available through a public repository such as GitHub that will allow other researchers to inspect, share, and contribute to the model. Models should, for the benefit of the community and for research gain, live up to certain standards and minimal functionality.</description>
+Models should be version-controlled such that changes can be tracked and if necessary reverted. Ideally, they should be available through a public repository such as GitHub that will allow other researchers to inspect, share, and contribute to the model. Models should, for the benefit of the community and for research gain, live up to certain standards and minimal functionality.</description>
     </item>
     
   </channel>
