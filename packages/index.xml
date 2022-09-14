@@ -6,7 +6,16 @@
     <description>Recent content in Packages on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 31 May 2022 12:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/packages/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 14 Sep 2022 12:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/packages/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>CNApy</title>
+      <link>https://opencobra.github.io/cobrapy/packages/cnapy/</link>
+      <pubDate>Wed, 14 Sep 2022 12:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/packages/cnapy/</guid>
+      <description>CNApy is a graphical integrated environment for metabolic network analysis. With CNApy, it is possible to load, edit and create metabolic models together with interactive network maps. Many standard and advanced COBRA techniques (including, e.g., Flux Balance Analysis, Flux Variability Analysis and Minimal Cut Sets) are supported and all main results of these techniques can be directly visualized in the network maps. Furthermore, CNApy also provides a GUI for all major functions of the StrainDesign package.</description>
+    </item>
+    
     <item>
       <title>StrainDesign</title>
       <link>https://opencobra.github.io/cobrapy/packages/straindesign/</link>

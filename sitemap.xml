@@ -8,8 +8,38 @@
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/intro/help/</loc>
   </url><url>
+    <loc>https://opencobra.github.io/cobrapy/packages/cnapy/</loc>
+    <lastmod>2022-09-14T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/cobra/</loc>
+    <lastmod>2022-09-14T12:00:00+00:00</lastmod>
+  </url><url>
     <loc>https://opencobra.github.io/cobrapy/</loc>
-    <lastmod>2022-08-29T00:00:00+00:00</lastmod>
+    <lastmod>2022-09-14T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/general-modeling/</loc>
+    <lastmod>2022-09-14T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/metabolic-model/</loc>
+    <lastmod>2022-09-14T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/minimal-cut-sets/</loc>
+    <lastmod>2022-09-14T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/models/</loc>
+    <lastmod>2022-09-14T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/packages/</loc>
+    <lastmod>2022-09-14T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/strain-design/</loc>
+    <lastmod>2022-09-14T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/</loc>
+    <lastmod>2022-09-14T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/visualization/</loc>
+    <lastmod>2022-09-14T12:00:00+00:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/pubs/</loc>
     <lastmod>2022-08-29T00:00:00+00:00</lastmod>
@@ -74,22 +104,7 @@
     <loc>https://opencobra.github.io/cobrapy/tags/cell-factories/</loc>
     <lastmod>2022-05-31T12:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/minimal-cut-sets/</loc>
-    <lastmod>2022-05-31T12:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/packages/</loc>
-    <lastmod>2022-05-31T12:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/strain-design/</loc>
-    <lastmod>2022-05-31T12:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://opencobra.github.io/cobrapy/packages/straindesign/</loc>
-    <lastmod>2022-05-31T12:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/</loc>
-    <lastmod>2022-05-31T12:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/visualization/</loc>
     <lastmod>2022-05-31T12:00:00+00:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/pubs/pm35639688/</loc>
@@ -1094,9 +1109,6 @@
     <loc>https://opencobra.github.io/cobrapy/tags/gapfilling/</loc>
     <lastmod>2017-01-13T11:00:01-06:00</lastmod>
   </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/general-modeling/</loc>
-    <lastmod>2017-01-13T11:00:01-06:00</lastmod>
-  </url><url>
     <loc>https://opencobra.github.io/cobrapy/packages/mackinac/</loc>
     <lastmod>2017-01-13T11:00:01-06:00</lastmod>
   </url><url>
@@ -1104,9 +1116,6 @@
     <lastmod>2017-01-13T11:00:01-06:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/tags/me-models/</loc>
-    <lastmod>2017-01-13T11:00:01-06:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/models/</loc>
     <lastmod>2017-01-13T11:00:01-06:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/tags/modelseed/</loc>
@@ -1118,13 +1127,7 @@
     <loc>https://opencobra.github.io/cobrapy/tags/synthetic-biology/</loc>
     <lastmod>2017-01-13T11:00:01-06:00</lastmod>
   </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/cobra/</loc>
-    <lastmod>2017-01-06T11:00:01-06:00</lastmod>
-  </url><url>
     <loc>https://opencobra.github.io/cobrapy/packages/memote/</loc>
-    <lastmod>2017-01-06T11:00:01-06:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/metabolic-model/</loc>
     <lastmod>2017-01-06T11:00:01-06:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/tags/metabolic-reconstruction/</loc>

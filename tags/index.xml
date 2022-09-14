@@ -6,29 +6,56 @@
     <description>Recent content in Tags on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 31 May 2022 12:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 14 Sep 2022 12:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>cell factories</title>
-      <link>https://opencobra.github.io/cobrapy/tags/cell-factories/</link>
-      <pubDate>Tue, 31 May 2022 12:00:00 +0000</pubDate>
+      <title>cobra</title>
+      <link>https://opencobra.github.io/cobrapy/tags/cobra/</link>
+      <pubDate>Wed, 14 Sep 2022 12:00:00 +0000</pubDate>
       
-      <guid>https://opencobra.github.io/cobrapy/tags/cell-factories/</guid>
+      <guid>https://opencobra.github.io/cobrapy/tags/cobra/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>minimal cut sets</title>
+      <title>general modeling</title>
+      <link>https://opencobra.github.io/cobrapy/tags/general-modeling/</link>
+      <pubDate>Wed, 14 Sep 2022 12:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/tags/general-modeling/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>metabolic-model</title>
+      <link>https://opencobra.github.io/cobrapy/tags/metabolic-model/</link>
+      <pubDate>Wed, 14 Sep 2022 12:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/tags/metabolic-model/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>minimal-cut-sets</title>
       <link>https://opencobra.github.io/cobrapy/tags/minimal-cut-sets/</link>
-      <pubDate>Tue, 31 May 2022 12:00:00 +0000</pubDate>
+      <pubDate>Wed, 14 Sep 2022 12:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/tags/minimal-cut-sets/</guid>
       <description></description>
     </item>
     
     <item>
+      <title>models</title>
+      <link>https://opencobra.github.io/cobrapy/tags/models/</link>
+      <pubDate>Wed, 14 Sep 2022 12:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/tags/models/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>strain design</title>
       <link>https://opencobra.github.io/cobrapy/tags/strain-design/</link>
-      <pubDate>Tue, 31 May 2022 12:00:00 +0000</pubDate>
+      <pubDate>Wed, 14 Sep 2022 12:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/tags/strain-design/</guid>
       <description></description>
@@ -37,9 +64,18 @@
     <item>
       <title>visualization</title>
       <link>https://opencobra.github.io/cobrapy/tags/visualization/</link>
-      <pubDate>Tue, 31 May 2022 12:00:00 +0000</pubDate>
+      <pubDate>Wed, 14 Sep 2022 12:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/tags/visualization/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>cell factories</title>
+      <link>https://opencobra.github.io/cobrapy/tags/cell-factories/</link>
+      <pubDate>Tue, 31 May 2022 12:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/tags/cell-factories/</guid>
       <description></description>
     </item>
     
@@ -152,15 +188,6 @@
     </item>
     
     <item>
-      <title>general modeling</title>
-      <link>https://opencobra.github.io/cobrapy/tags/general-modeling/</link>
-      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/tags/general-modeling/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>mathematical modeling</title>
       <link>https://opencobra.github.io/cobrapy/tags/mathematical-modeling/</link>
       <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
@@ -179,15 +206,6 @@
     </item>
     
     <item>
-      <title>models</title>
-      <link>https://opencobra.github.io/cobrapy/tags/models/</link>
-      <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/tags/models/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>ModelSEED</title>
       <link>https://opencobra.github.io/cobrapy/tags/modelseed/</link>
       <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
@@ -202,24 +220,6 @@
       <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/tags/synthetic-biology/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>cobra</title>
-      <link>https://opencobra.github.io/cobrapy/tags/cobra/</link>
-      <pubDate>Fri, 06 Jan 2017 11:00:01 -0600</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/tags/cobra/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>metabolic model</title>
-      <link>https://opencobra.github.io/cobrapy/tags/metabolic-model/</link>
-      <pubDate>Fri, 06 Jan 2017 11:00:01 -0600</pubDate>
-      
-      <guid>https://opencobra.github.io/cobrapy/tags/metabolic-model/</guid>
       <description></description>
     </item>
     
