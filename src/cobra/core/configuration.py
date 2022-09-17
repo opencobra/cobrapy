@@ -11,10 +11,10 @@ from typing import Optional, Tuple, Union
 
 import appdirs
 
-from cobra.core.singleton import Singleton
-from cobra.exceptions import SolverNotFound
-from cobra.util.solver import interface_to_str
-from cobra.util.solver import solvers as SOLVERS
+from ..exceptions import SolverNotFound
+from ..util.solver import interface_to_str
+from ..util.solver import solvers as SOLVERS
+from .singleton import Singleton
 
 
 __all__ = ("Configuration",)
@@ -35,7 +35,7 @@ class Configuration(metaclass=Singleton):
     solver : {"glpk", "cplex", "gurobi", "glpk_exact"}
         The default solver for new models. The solver choices are the ones
         provided by `optlang` and depend on solvers installed in your environment.
-    tolerance: float
+    tolerance : float, optional
         The default tolerance for the solver being used (default 1E-07).
     lower_bound : float, optional
         The standard lower bound for reversible reactions (default -1000).
@@ -44,7 +44,7 @@ class Configuration(metaclass=Singleton):
     bounds : tuple of floats
         The default reaction bounds for newly created reactions. The bounds
         are in the form of lower_bound, upper_bound (default -1000.0, 1000.0).
-    processes : int
+    processes : int > 0
         A default number of processes to use where multiprocessing is
         possible. The default number corresponds to the number of available
         cores (hyperthreads) minus one.
@@ -125,12 +125,26 @@ class Configuration(metaclass=Singleton):
 
     @property
     def bounds(self) -> Tuple[Optional[Number], Optional[Number]]:
-        """Return the lower, upper reaction bound pair."""
+        """Return the lower, upper reaction bound pair.
+
+        Returns
+        -------
+        tuple of number and number or None and None
+            The lower and upper bounds for new reactions.
+
+        """
         return self.lower_bound, self.upper_bound
 
     @bounds.setter
     def bounds(self, bounds: Tuple[Optional[Number], Optional[Number]]) -> None:
-        """Set the lower, upper reaction bound pair."""
+        """Set the lower, upper reaction bound pair.
+
+        Parameters
+        ----------
+        bounds : tuple of number and number or None and None
+            The lower and upper bounds for new reactions.
+
+        """
         if None not in bounds:
             assert bounds[0] <= bounds[1]
         self.lower_bound = bounds[0]
@@ -142,11 +156,17 @@ class Configuration(metaclass=Singleton):
         return self._cache_directory
 
     @cache_directory.setter
-    def cache_directory(self, path: Union[pathlib.Path, str]):
+    def cache_directory(self, path: Union[pathlib.Path, str]) -> None:
         """
         Set the model cache directory.
 
         The directory path is created if it doesn't exist yet.
+
+        Parameters
+        ----------
+        path : pathlib.Path or str
+            The path to the cache directory.
+
         """
         self._cache_directory = pathlib.Path(path)
         if not self._cache_directory.is_dir():

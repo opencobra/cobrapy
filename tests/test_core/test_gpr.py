@@ -1,17 +1,21 @@
 """Test functions of cobra.core.gene.GPR ."""
+
 import itertools
 from ast import parse as ast_parse
-from typing import Iterable, Iterator, Tuple, Union
+from typing import Dict, Iterable, Iterator, List, Set, Tuple, Union
 
 import pytest
+from sympy.core.expr import Expr
 from sympy.core.symbol import Symbol
 from sympy.logic import And, Or
 from sympy.logic.boolalg import BooleanFunction
 
 from cobra.core.gene import GPR, ast2str, eval_gpr, parse_gpr
+from cobra.core.model import Model
 
 
 def test_gpr() -> None:
+    """Test GPR instance creation and basic usage."""
     gpr1 = GPR()
     assert len(gpr1.genes) == 0
     gpr1.update_genes()
@@ -25,6 +29,7 @@ def test_gpr() -> None:
 
 @pytest.mark.parametrize("test_input", ["", "", None])
 def test_empty_gpr(test_input) -> None:
+    """Test empty GPR."""
     gpr1 = GPR(test_input)
     assert not gpr1.body
     assert len(gpr1.genes) == 0
@@ -36,6 +41,7 @@ def test_empty_gpr(test_input) -> None:
 
 
 def test_one_gene_gpr() -> None:
+    """Test single gene GPR."""
     gpr1 = GPR.from_string("a")
     assert len(gpr1.genes) == 1
     gpr1.update_genes()
@@ -72,6 +78,7 @@ def powerset_ne(iterable: Iterable[str]) -> Iterator[Tuple[str, ...]]:
     ],
 )
 def test_and_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string) -> None:
+    """Test 'and' GPR."""
     gpr1 = GPR.from_string(gpr_input)
     assert len(gpr1.genes) == num_genes
     gpr1.update_genes()
@@ -110,7 +117,10 @@ def all_except_one(iterable: Iterable[str]) -> Iterator[Tuple[str, ...]]:
         ("a or b or c", 3, {"a", "b", "c"}, "a or b or c"),
     ],
 )
-def test_or_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string) -> None:
+def test_or_gpr(
+    gpr_input: str, num_genes: int, gpr_genes: Set, gpr_output_string: str
+) -> None:
+    """Test 'or' GPR."""
     gpr1 = GPR.from_string(gpr_input)
     assert len(gpr1.genes) == num_genes
     gpr1.update_genes()
@@ -134,6 +144,7 @@ def test_or_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string) -> None:
     ],
 )
 def test_complicated_gpr(gpr_input: str) -> None:
+    """Test complicated GPR."""
     gpr1 = GPR.from_string(gpr_input)
     assert len(gpr1.genes) == 3
     gpr1.update_genes()
@@ -162,6 +173,7 @@ def test_complicated_gpr(gpr_input: str) -> None:
 def test_gpr_from_ast_or(
     string_to_ast: str, num_genes: int, gpr_genes: set, gpr_output_string: str
 ) -> None:
+    """Test GPR from AST 'or'."""
     ast_tree = ast_parse(string_to_ast, "<string>", "eval")
     gpr1 = GPR(ast_tree)
     assert len(gpr1.genes) == num_genes
@@ -187,6 +199,7 @@ def test_gpr_from_ast_or(
 def test_gpr_from_ast_and(
     string_to_ast: str, num_genes: int, gpr_genes: set, gpr_output_string: str
 ) -> None:
+    """Test GPR from AST 'and'."""
     ast_tree = ast_parse(string_to_ast, "<string>", "eval")
     gpr1 = GPR(ast_tree)
     assert len(gpr1.genes) == num_genes
@@ -202,6 +215,7 @@ def test_gpr_from_ast_and(
 
 @pytest.mark.parametrize("test_input", [["a", "b"], {"a", "b"}])
 def test_wrong_input_gpr_error(test_input: Union[list, set]) -> None:
+    """Test error for incorrect GPR input."""
     with pytest.raises(TypeError):
         GPR.from_string(test_input)
     with pytest.raises(TypeError):
@@ -210,6 +224,7 @@ def test_wrong_input_gpr_error(test_input: Union[list, set]) -> None:
 
 @pytest.mark.parametrize("test_input", ["a |", "a &", "a and ()", "a or ()"])
 def test_wrong_input_gpr_warning(test_input: str) -> None:
+    """Test warning for incorrect GPR input."""
     with pytest.warns(SyntaxWarning):
         gpr1 = GPR.from_string(test_input)
         assert gpr1.body is None
@@ -217,6 +232,7 @@ def test_wrong_input_gpr_warning(test_input: str) -> None:
 
 
 def test_gpr_that_needs_two_replacements() -> None:
+    """Test GPR with multi replacements."""
     gpr1 = GPR.from_string(
         "(591001.3.peg.1891 AND 591001.3.peg.1892 AND 591001.3.peg.1893)"
     )
@@ -227,6 +243,7 @@ def test_gpr_that_needs_two_replacements() -> None:
 
 
 def test_deprecated_gpr() -> None:
+    """Test deprecated GPR."""
     gpr1 = GPR.from_string("(a | b) & c")
     with pytest.deprecated_call():
         assert ast2str(gpr1) == "(a or b) and c"
@@ -254,6 +271,7 @@ def test_deprecated_gpr() -> None:
 
 
 def test_gpr_as_symbolic() -> None:
+    """Test GPR as symbolic expression."""
     gpr1 = GPR()
     assert gpr1.as_symbolic() == Symbol("")
     gpr1 = GPR.from_string("")
@@ -281,7 +299,8 @@ def test_gpr_as_symbolic() -> None:
         ("(a OR b) AND c", And(Symbol("c"), Or(Symbol("a"), Symbol("b")))),
     ],
 )
-def test_gpr_as_symbolic_boolean(gpr_input, symbolic_gpr) -> None:
+def test_gpr_as_symbolic_boolean(gpr_input: str, symbolic_gpr: Expr) -> None:
+    """Test GPR as symbolic boolean expression."""
     gpr1 = GPR().from_string(gpr_input)
     assert isinstance(gpr1.as_symbolic(), BooleanFunction)
     assert gpr1.as_symbolic() == symbolic_gpr
@@ -293,6 +312,7 @@ def test_gpr_as_symbolic_boolean(gpr_input, symbolic_gpr) -> None:
 
 
 def test_gpr_equality() -> None:
+    """Test GPR equality."""
     assert GPR() == GPR()
     assert GPR() == GPR.from_string("")
     assert GPR() != GPR.from_string("a")
@@ -348,19 +368,22 @@ gpr_str_lists = {
 
 
 @pytest.fixture(params=list(gpr_str_lists.keys()))
-def gpr_list(request):
+def gpr_list(request: pytest.FixtureRequest) -> List[str]:
+    """Provide fixture for GPR list."""
     gpr_str_list = gpr_str_lists[request.param]
     return gpr_str_list
 
 
-def test_gpr_equality_with_bolean_logic(gpr_list) -> None:
+def test_gpr_equality_with_bolean_logic(gpr_list: List[str]) -> None:
+    """Test GPR equality with boolean logic."""
     for i in range(len(gpr_list)):
         for j in range(i + 1, len(gpr_list)):
             assert GPR().from_string(gpr_list[i]) == GPR.from_string(gpr_list[j])
 
 
 @pytest.fixture(params=list(itertools.combinations(gpr_str_lists.keys(), 2)))
-def gpr_lists(request):
+def gpr_lists(request: pytest.FixtureRequest) -> Dict[str, List[str]]:
+    """Provide fixture for GPR dictionary."""
     gpr_dict = dict()
     gpr_dict["gpr1"] = gpr_str_lists[request.param[0]]
     gpr_dict["gpr2"] = gpr_str_lists[request.param[1]]
@@ -368,6 +391,7 @@ def gpr_lists(request):
 
 
 def test_gpr_inequality_boolean(gpr_lists) -> None:
+    """Test GPR inequality for boolean expression."""
     gpr_list1 = gpr_lists["gpr1"]
     gpr_list2 = gpr_lists["gpr2"]
     for i in range(len(gpr_list1)):
@@ -375,7 +399,7 @@ def test_gpr_inequality_boolean(gpr_lists) -> None:
             assert GPR.from_string(gpr_list1[i]) != GPR.from_string(gpr_list2[j])
 
 
-def test_gpr_symbolism_benchmark(large_model, benchmark):
+def test_gpr_symbolism_benchmark(large_model: Model, benchmark) -> None:
     """Benchmark as symbolic time."""
     model = large_model.copy()
 
@@ -388,7 +412,7 @@ def test_gpr_symbolism_benchmark(large_model, benchmark):
     benchmark(gpr_symbolic)
 
 
-def test_gpr_equality_benchmark(model, benchmark):
+def test_gpr_equality_benchmark(model: Model, benchmark) -> None:
     """Benchmark equality of GPR using the mini model."""
     model2 = model.copy()
 
@@ -418,7 +442,8 @@ def test_gpr_equality_benchmark(model, benchmark):
         ("(a OR b) AND c", And(Symbol("c"), Or(Symbol("a"), Symbol("b")))),
     ],
 )
-def test_gpr_from_symbolic(gpr_input, symbolic_gpr) -> None:
+def test_gpr_from_symbolic(gpr_input: str, symbolic_gpr: Expr) -> None:
+    """Test GPR creation from symbolic and from string is equal."""
     gpr1 = GPR().from_symbolic(symbolic_gpr)
     gpr2 = GPR().from_string(gpr_input)
     assert gpr1 == gpr2

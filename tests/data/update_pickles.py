@@ -20,7 +20,6 @@ import cobra
 from cobra.io import (
     load_matlab_model,
     load_model,
-    read_sbml_model,
     save_json_model,
     save_matlab_model,
     save_yaml_model,

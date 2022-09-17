@@ -1,4 +1,4 @@
-"""Creates the class DictList, used in many parts of cobrapy."""
+"""Define the DictList class."""
 
 import re
 from itertools import islice
@@ -15,13 +15,14 @@ from typing import (
     Union,
 )
 
-from numpy import bool_
+import numpy as np
 
-from cobra.core.object import Object
+from .object import Object
 
 
 class DictList(list):
-    """A combined dict and list.
+    """
+    Define a combined dict and list.
 
     This object behaves like a list, but has the O(1) speed
     benefits of a dict when looking up elements by their id.
@@ -456,7 +457,7 @@ class DictList(list):
             selection._extend_nocheck(list.__getitem__(self, i))
             return selection
         elif hasattr(i, "__len__"):
-            if len(i) == len(self) and isinstance(i[0], (bool, bool_)):
+            if len(i) == len(self) and isinstance(i[0], (bool, np.bool)):
                 selection = self.__class__()
                 result = (o for j, o in enumerate(self) if i[j])
                 selection._extend_nocheck(result)

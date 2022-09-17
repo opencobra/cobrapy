@@ -24,10 +24,10 @@ from warnings import warn
 import sympy.logic.boolalg as spl
 from sympy import Symbol
 
-from cobra.core.dictlist import DictList
-from cobra.core.species import Species
-from cobra.util import resettable
-from cobra.util.util import format_long_string
+from ..util import resettable
+from ..util.util import format_long_string
+from .dictlist import DictList
+from .species import Species
 
 
 # TODO - When https://github.com/symengine/symengine.py/issues/334 is resolved,
