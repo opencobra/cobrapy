@@ -1501,6 +1501,9 @@ class Model(Object):
                 <td><strong>Number of reactions</strong></td>
                 <td>{len(self.reactions)}</td>
             </tr><tr>
+                <td><strong>Number of genes</strong></td>
+                <td>{len(self.genes)}</td>
+            </tr><tr>
                 <td><strong>Number of groups</strong></td>
                 <td>{len(self.groups)}</td>
             </tr><tr>
