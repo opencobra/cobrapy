@@ -22,6 +22,8 @@ class Formula(Object):
         A legal formula string contains only letters and numbers.
     """
 
+    _DF_ATTRS = ["formula"]
+
     def __init__(self, formula: Optional[str] = None, **kwargs) -> None:
         """Initialize a formula.
 

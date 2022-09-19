@@ -16,6 +16,7 @@ from typing import (
 )
 
 import numpy as np
+import pandas as pd
 
 from .object import Object
 
@@ -542,3 +543,29 @@ class DictList(list):
         attributes.append("_dict")
         attributes.extend(self._dict.keys())
         return attributes
+
+    def to_dataframe(self):
+        """Convert to a pandas dataframe."""
+        
+        item = None
+        columns = []
+
+        if self:
+            item = self[0]
+            columns = [col for col in item._DF_ATTRS if col != "id"]
+
+        data = []
+        ids = []
+
+        for item in self:
+            ids.append(item.id)
+            data.append([getattr(item, attr) for attr in columns])
+
+        df = pd.DataFrame(columns = columns, data = data, index = ids)
+
+        return df
+
+    def _repr_html_(self):
+        """Display as HTML."""
+        df = self.to_dataframe()
+        return df._repr_html_() 

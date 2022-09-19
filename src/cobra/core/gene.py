@@ -204,6 +204,8 @@ class Gene(Species):
         used.
     """
 
+    _DF_ATTRS = Species._DF_ATTRS + ["gene_reaction_rule"]
+
     # noinspection PyShadowingBuiltins
     def __init__(self, id: str = None, name: str = "", functional: bool = True) -> None:
         """Initialize a gene.

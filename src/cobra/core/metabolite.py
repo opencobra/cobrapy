@@ -44,6 +44,8 @@ class Metabolite(Species):
        Compartment of the metabolite.
     """
 
+    _DF_ATTRS = Species._DF_ATTRS + ["formula", "compartment", "charge"]
+
     # noinspection PyShadowingBuiltins
     def __init__(
         self,
