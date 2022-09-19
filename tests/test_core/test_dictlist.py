@@ -5,8 +5,8 @@ from copy import copy, deepcopy
 from pickle import HIGHEST_PROTOCOL, dumps, loads
 from typing import Tuple
 
-import pytest
 import pandas as pd
+import pytest
 
 from cobra.core import DictList, Object
 
