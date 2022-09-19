@@ -544,9 +544,8 @@ class DictList(list):
         attributes.extend(self._dict.keys())
         return attributes
 
-    def to_dataframe(self):
+    def to_df(self):
         """Convert to a pandas dataframe."""
-        
         item = None
         columns = []
 
@@ -561,11 +560,11 @@ class DictList(list):
             ids.append(item.id)
             data.append([getattr(item, attr) for attr in columns])
 
-        df = pd.DataFrame(columns = columns, data = data, index = ids)
+        df = pd.DataFrame(columns=columns, data=data, index=ids)
 
         return df
 
     def _repr_html_(self):
         """Display as HTML."""
-        df = self.to_dataframe()
-        return df._repr_html_() 
+        df = self.to_df()
+        return df._repr_html_()
