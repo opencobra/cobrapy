@@ -2,6 +2,8 @@
 
 ## New features
 
+* View number of genes in model notebook representation.
+
 ## Fixes
 
 * serializes GPRs to strings to avoid massive storage usage
