@@ -13,12 +13,13 @@ from .abstract_model_repository import AbstractModelRepository
 def _decode_model_path(model_path):
     """Decode the model path to EMBL GEMs."""
     tokens = model_path.split("_")
-    genus  = tokens[0]
+    genus = tokens[0]
 
     directory = genus.lower()
-    alphabet  = directory[0]
+    alphabet = directory[0]
 
     return f"{alphabet}/{directory}/{model_path}"
+
 
 class EMBLGems(AbstractModelRepository):
     """
@@ -46,7 +47,10 @@ class EMBLGems(AbstractModelRepository):
             Passed to the parent constructor in order to enable multiple inheritance.
 
         """
-        super().__init__(url="https://github.com/cdanielmachado/embl_gems/blob/master/models/", **kwargs)
+        super().__init__(
+            url="https://github.com/cdanielmachado/embl_gems/blob/master/models/",
+            **kwargs,
+        )
 
     def get_sbml(self, model_id: str) -> bytes:
         """
@@ -76,9 +80,10 @@ class EMBLGems(AbstractModelRepository):
         filename = f"{model_id}.xml.gz"
         print(self._url.join(decoded_path).join(filename))
         with self._progress, httpx.stream(
-            method="GET", url=self._url.join(decoded_path).join(filename),
+            method="GET",
+            url=self._url.join(decoded_path).join(filename),
             params={"raw": "true"},
-            follow_redirects=True
+            follow_redirects=True,
         ) as response:
             response.raise_for_status()
             task_id = self._progress.add_task(
