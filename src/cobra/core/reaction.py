@@ -85,9 +85,7 @@ class Reaction(Object):
         Further keyword arguments are passed on to the parent class.
     """
 
-    _DF_ATTRS = [
-        "id",
-        "name",
+    _DF_ATTRS = Object._DF_ATTRS + [
         "subsystem",
         "gene_reaction_rule",
         "lower_bound",

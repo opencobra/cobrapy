@@ -5,6 +5,7 @@ from typing import Optional
 
 class Object:
     """Defines common behavior of object in cobra.core."""
+    _DF_ATTRS = ["id", "name", "notes", "annotation"]
 
     def __init__(self, id: Optional[str] = None, name: str = "") -> None:
         """Initialize a simple object with an identifier.
