@@ -30,6 +30,7 @@ DEFAULT_REPOSITORIES = (
     Cobrapy(),
     BiGGModels(),
     BioModels(),
+    EMBLGems()
 )
 
 
