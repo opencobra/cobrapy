@@ -17,6 +17,9 @@ from .helpers import normalize_cutoff
 from .loopless import loopless_fva_iter
 from .parsimonious import add_pfba
 
+# from tqdm.auto import tqdm
+from rich.progress import track
+
 
 if TYPE_CHECKING:
     from cobra import Gene, Model, Reaction
@@ -236,18 +239,28 @@ def flux_variability_analysis(
                 # objective direction for all reactions. This creates a
                 # slight overhead but seems the most clean.
                 chunk_size = len(reaction_ids) // processes
+                description = "Performing FVA for %s fluxes" % what
                 with ProcessPool(
                     processes,
                     initializer=_init_worker,
                     initargs=(model, loopless, what[:3]),
                 ) as pool:
-                    for rxn_id, value in pool.imap_unordered(
-                        _fva_step, reaction_ids, chunksize=chunk_size
+                    for rxn_id, value in track(
+                        pool.imap_unordered(
+                            _fva_step, reaction_ids, chunksize=chunk_size
+                        ),
+                        total=num_reactions,
+                        description=description
                     ):
                         fva_result.at[rxn_id, what] = value
             else:
                 _init_worker(model, loopless, what[:3])
-                for rxn_id, value in map(_fva_step, reaction_ids):
+                for rxn_id, value in track(
+                    map(_fva_step, reaction_ids),
+                    total=num_reactions,
+                    description=description
+                ):
+                    fva_result.at[rxn_id, what] = value
                     fva_result.at[rxn_id, what] = value
 
     return fva_result[["minimum", "maximum"]]
