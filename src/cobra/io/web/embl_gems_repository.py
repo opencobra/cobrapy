@@ -1,4 +1,6 @@
-"""Provide a concrete implementation of the BiGG repository interface."""
+"""
+Provide a concrete implementation of the carveme repository interface.
+"""
 
 
 from io import BytesIO
@@ -8,25 +10,36 @@ import httpx
 from .abstract_model_repository import AbstractModelRepository
 
 
-class BiGGModels(AbstractModelRepository):
+def _decode_model_path(model_path):
+    """Decode the model path to EMBL GEMs."""
+    tokens = model_path.split("_")
+    genus = tokens[0]
+
+    directory = genus.lower()
+    alphabet = directory[0]
+
+    return f"{alphabet}/{directory}/{model_path}"
+
+
+class EMBLGems(AbstractModelRepository):
     """
-    Define a concrete implementation of the BiGG Models repository.
+    Define a concrete implementation of the EMBL GEMs repository.
 
     Attributes
     ----------
     name : str
-        The name of the BiGG Models repository.
+        The name of the EMBL GEMs repository.
 
     """
 
-    name: str = "BiGG Models"
+    name: str = "EMBL GEMs"
 
     def __init__(
         self,
         **kwargs,
     ) -> None:
         """
-        Initialize a BiGG Models repository interface.
+        Initialize a EMBL GEMs repository interface.
 
         Other Parameters
         ----------------
@@ -34,7 +47,10 @@ class BiGGModels(AbstractModelRepository):
             Passed to the parent constructor in order to enable multiple inheritance.
 
         """
-        super().__init__(url="http://bigg.ucsd.edu/static/models/", **kwargs)
+        super().__init__(
+            url="https://github.com/cdanielmachado/embl_gems/blob/master/models/",
+            **kwargs,
+        )
 
     def get_sbml(self, model_id: str) -> bytes:
         """
@@ -58,9 +74,16 @@ class BiGGModels(AbstractModelRepository):
 
         """
         compressed = BytesIO()
+
+        decoded_path = _decode_model_path(model_id)
+
         filename = f"{model_id}.xml.gz"
+        print(self._url.join(decoded_path).join(filename))
         with self._progress, httpx.stream(
-            method="GET", url=self._url.join(filename)
+            method="GET",
+            url=self._url.join(decoded_path).join(filename),
+            params={"raw": "true"},
+            follow_redirects=True,
         ) as response:
             response.raise_for_status()
             task_id = self._progress.add_task(

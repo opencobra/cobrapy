@@ -8,7 +8,7 @@ from unittest.mock import Mock
 import pytest
 
 from cobra import Configuration
-from cobra.io import BiGGModels, BioModels, load_model
+from cobra.io import BiGGModels, BioModels, EMLBGems, load_model
 
 
 if TYPE_CHECKING:
@@ -39,6 +39,12 @@ def biomodels(mini_sbml: bytes, mocker: "MockerFixture") -> Mock:
     result.get_sbml.return_value = mini_sbml
     return result
 
+@pytest.fixture
+def embl_gems(mini_sbml: bytes, mocker: "MockerFixture") -> Mock:
+    """Provide a mocked EMBL Gems repository interface."""
+    result = mocker.Mock(spec_set=EMLBGems)
+    result.get_sbml.return_value = mini_sbml
+    return result
 
 def test_bigg_access(bigg_models: Mock) -> None:
     """Test that SBML would be retrieved from the BiGG Models repository.
@@ -66,6 +72,30 @@ def test_biomodels_access(biomodels: Mock) -> None:
     biomodels.get_sbml.assert_called_once_with(model_id="BIOMD0000000633")
 
 
+def test_biomodels_access(biomodels: Mock) -> None:
+    """Test that SBML would be retrieved from the BioModels repository.
+
+    Parameters
+    ----------
+    biomodels : unittest.mock.Mock
+        The mocked object for BioModels model respository.
+
+    """
+    load_model("BIOMD0000000633", cache=False, repositories=[biomodels])
+    biomodels.get_sbml.assert_called_once_with(model_id="BIOMD0000000633")
+
+def test_biomodels_access(embl_gems: Mock) -> None:
+    """Test that SBML would be retrieved from the EMBL Gems repository.
+
+    Parameters
+    ----------
+    embl_gems : unittest.mock.Mock
+        The mocked object for BioModels model respository.
+
+    """
+    load_model("Abiotrophia_defectiva_ATCC_49176", cache=False, repositories=[embl_gems])
+    biomodels.get_sbml.assert_called_once_with(model_id="Abiotrophia_defectiva_ATCC_49176")
+
 def test_unknown_model() -> None:
     """Expect that a not found error is raised (e2e)."""
     with pytest.raises(RuntimeError):
@@ -75,6 +105,7 @@ def test_unknown_model() -> None:
 @pytest.mark.parametrize(
     "model_id, num_metabolites, num_reactions",
     [("e_coli_core", 72, 95), ("BIOMD0000000633", 50, 35)],
+    [("Abiotrophia_defectiva_ATCC_49176", 1070, 826)]
 )
 def test_remote_load(model_id: str, num_metabolites: int, num_reactions: int) -> None:
     """Test that sample models can be loaded from remote repositories (e2e).

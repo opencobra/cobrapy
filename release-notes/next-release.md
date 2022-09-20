@@ -3,6 +3,7 @@
 ## New features
 
 * View number of genes in model notebook representation.
+* Add EMBL GEMs (https://github.com/cdanielmachado/embl_gems) to the list of repositories.
 
 ## Fixes
 
