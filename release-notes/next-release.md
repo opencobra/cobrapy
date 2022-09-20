@@ -3,6 +3,7 @@
 ## New features
 
 * View number of genes in model notebook representation.
+* Add progress bar to `flux_variability_analysis`. 
 
 ## Fixes
 
