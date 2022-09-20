@@ -19,7 +19,7 @@ def _decode_model_path(model_path):
 
     return f"{alphabet}/{directory}/{model_path}"
 
-class EMBLGemsRepository(AbstractModelRepository):
+class EMBLGems(AbstractModelRepository):
     """
     Define a concrete implementation of the EMBL GEMs repository.
 

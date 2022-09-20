@@ -1,4 +1,4 @@
-"""Provide a concrete implementation of the BioModels repository interface."""
+"""Provide a concrete implementation of the BiGG repository interface."""
 
 
 from io import BytesIO

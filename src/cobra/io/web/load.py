@@ -15,6 +15,7 @@ from .abstract_model_repository import AbstractModelRepository
 from .bigg_models_repository import BiGGModels
 from .biomodels_repository import BioModels
 from .cobrapy_repository import Cobrapy
+from .embl_gems_repository import EMBLGems
 
 
 if TYPE_CHECKING:
