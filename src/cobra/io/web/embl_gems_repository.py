@@ -9,6 +9,7 @@ import httpx
 
 from .abstract_model_repository import AbstractModelRepository
 
+
 def _decode_model_path(model_path):
     """Decode the model path to EMBL GEMs."""
     tokens = model_path.split("_")
