@@ -1,6 +1,5 @@
 """Provide variability based methods such as flux variability or gene essentiality."""
 
-
 import logging
 from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
 from warnings import warn
@@ -8,6 +7,7 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 from optlang.symbolics import Zero
+from rich.progress import Progress
 
 from ..core import Configuration, get_solution
 from ..util import ProcessPool
@@ -24,6 +24,29 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 configuration = Configuration()
+
+
+class _FakeProgress:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        pass
+
+    def add_task(self, *args, **kwargs):
+        return object()
+
+    def update(*args, **kwargs):
+        pass
+
+
+def _update_progress_bar(
+    progress_bar,
+    task,
+    advance: int,
+) -> None:
+    """Update progress bar."""
+    progress_bar.update(task, advance=advance)
 
 
 def _init_worker(model: "Model", loopless: bool, sense: str) -> None:
@@ -230,25 +253,43 @@ def flux_variability_analysis(
             model.add_cons_vars([flux_sum, flux_sum_constraint])
 
         model.objective = Zero  # This will trigger the reset as well
-        for what in ("minimum", "maximum"):
-            if processes > 1:
-                # We create and destroy a new pool here in order to set the
-                # objective direction for all reactions. This creates a
-                # slight overhead but seems the most clean.
-                chunk_size = len(reaction_ids) // processes
-                with ProcessPool(
-                    processes,
-                    initializer=_init_worker,
-                    initargs=(model, loopless, what[:3]),
-                ) as pool:
-                    for rxn_id, value in pool.imap_unordered(
-                        _fva_step, reaction_ids, chunksize=chunk_size
-                    ):
+
+        _Progress = Progress
+        if logger.level != logging.INFO:
+            _Progress = _FakeProgress
+
+        with _Progress() as progress:
+            progress_task = progress.add_task(
+                "[cyan]Performing FVA...", total=num_reactions
+            )
+
+            for what in ("minimum", "maximum"):
+                if processes > 1:
+                    # We create and destroy a new pool here in order to set the
+                    # objective direction for all reactions. This creates a
+                    # slight overhead but seems the most clean.
+                    chunk_size = len(reaction_ids) // processes
+                    with ProcessPool(
+                        processes,
+                        initializer=_init_worker,
+                        initargs=(model, loopless, what[:3]),
+                    ) as pool:
+                        for i, (rxn_id, value) in enumerate(
+                            pool.imap_unordered(
+                                _fva_step, reaction_ids, chunksize=chunk_size
+                            )
+                        ):
+                            fva_result.at[rxn_id, what] = value
+                            _update_progress_bar(
+                                progress, progress_task, (i + 1) / num_reactions
+                            )
+                else:
+                    _init_worker(model, loopless, what[:3])
+                    for i, (rxn_id, value) in enumerate(map(_fva_step, reaction_ids)):
                         fva_result.at[rxn_id, what] = value
-            else:
-                _init_worker(model, loopless, what[:3])
-                for rxn_id, value in map(_fva_step, reaction_ids):
-                    fva_result.at[rxn_id, what] = value
+                        _update_progress_bar(
+                            progress, progress_task, (i + 1) / num_reactions
+                        )
 
     return fva_result[["minimum", "maximum"]]
 
