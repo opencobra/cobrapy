@@ -24,7 +24,8 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 configuration = Configuration()
-    
+
+
 class _FakeProgress:
     def __enter__(self):
         return self
@@ -38,14 +39,15 @@ class _FakeProgress:
     def update(*args, **kwargs):
         pass
 
+
 def _update_progress_bar(
     progress_bar,
     task,
     advance: int,
 ) -> None:
-    """Update progress bar.
-    """
+    """Update progress bar."""
     progress_bar.update(task, advance=advance)
+
 
 def _init_worker(model: "Model", loopless: bool, sense: str) -> None:
     """Initialize a global model object for multiprocessing.
@@ -108,6 +110,7 @@ def _fva_step(reaction_id: str) -> Tuple[str, float]:
         {rxn.forward_variable: 0, rxn.reverse_variable: 0}
     )
     return reaction_id, value
+
 
 def flux_variability_analysis(
     model: "Model",
@@ -256,8 +259,10 @@ def flux_variability_analysis(
             _Progress = _FakeProgress
 
         with _Progress() as progress:
-            progress_task = progress.add_task("[cyan]Performing FVA...", total=num_reactions)
-            
+            progress_task = progress.add_task(
+                "[cyan]Performing FVA...", total=num_reactions
+            )
+
             for what in ("minimum", "maximum"):
                 if processes > 1:
                     # We create and destroy a new pool here in order to set the
@@ -269,16 +274,22 @@ def flux_variability_analysis(
                         initializer=_init_worker,
                         initargs=(model, loopless, what[:3]),
                     ) as pool:
-                        for i, (rxn_id, value) in enumerate(pool.imap_unordered(
-                            _fva_step, reaction_ids, chunksize=chunk_size
-                        )):
+                        for i, (rxn_id, value) in enumerate(
+                            pool.imap_unordered(
+                                _fva_step, reaction_ids, chunksize=chunk_size
+                            )
+                        ):
                             fva_result.at[rxn_id, what] = value
-                            _update_progress_bar(progress, progress_task, (i+1)/num_reactions)
+                            _update_progress_bar(
+                                progress, progress_task, (i + 1) / num_reactions
+                            )
                 else:
                     _init_worker(model, loopless, what[:3])
                     for i, (rxn_id, value) in enumerate(map(_fva_step, reaction_ids)):
                         fva_result.at[rxn_id, what] = value
-                        _update_progress_bar(progress, progress_task, (i+1)/num_reactions)
+                        _update_progress_bar(
+                            progress, progress_task, (i + 1) / num_reactions
+                        )
 
     return fva_result[["minimum", "maximum"]]
 
