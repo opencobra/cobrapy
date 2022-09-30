@@ -10,6 +10,7 @@ import pytest
 from cobra import Model
 from cobra.exceptions import Infeasible
 from cobra.flux_analysis.variability import (
+    faster_fva,
     find_blocked_reactions,
     find_essential_genes,
     find_essential_reactions,
@@ -123,6 +124,99 @@ def test_flux_variability_loopless(model: Model, all_solvers: List[str]) -> None
     assert np.allclose(fva_loopless["maximum"], fva_loopless["minimum"])
 
 
+# Faster FVA (fFVA)
+def test_faster_fva_benchmark(
+    large_model: Model, benchmark: Callable, all_solvers: List[str]
+) -> None:
+    """Benchmark fFVA."""
+    large_model.solver = all_solvers
+    benchmark(
+        faster_fva,
+        large_model,
+        reaction_list=large_model.reactions[1::3],
+    )
+
+
+def test_pfba_faster_fva(
+    model: Model,
+    pfba_fva_results: pd.DataFrame,
+    fva_results: pd.DataFrame,
+    all_solvers: List[str],
+) -> None:
+    """Test fFVA using pFBA."""
+    model.solver = all_solvers
+    with pytest.warns(UserWarning):
+        faster_fva(
+            model,
+            pfba_factor=0.1,
+            reaction_list=model.reactions[1::3],
+        )
+    fva_out = faster_fva(
+        model,
+        pfba_factor=1.1,
+        reaction_list=model.reactions,
+    )
+    fva_out.sort_index(inplace=True)
+    assert np.allclose(fva_out, pfba_fva_results)
+    abs_fva_out = fva_out.dropna().abs()
+    abs_fva_results = fva_results.dropna().abs()
+    comparison = np.isclose(abs_fva_out, abs_fva_results) | (
+        abs_fva_out < abs_fva_results
+    )
+    assert comparison["minimum"].all()
+    assert comparison["maximum"].all()
+
+
+def test_loopless_pfba_faster_fva(model: Model) -> None:
+    """Test loopless fFVA using pFBA."""
+    loop_reactions = [model.reactions.get_by_id(rid) for rid in ("FRD7", "SUCDi")]
+    fva_loopless = faster_fva(
+        model,
+        pfba_factor=1.1,
+        reaction_list=loop_reactions,
+        loopless=True,
+    )
+    assert np.allclose(fva_loopless["maximum"], fva_loopless["minimum"])
+
+
+def test_faster_fva(
+    model: Model, fva_results: pd.DataFrame, all_solvers: List[str]
+) -> None:
+    """Test fFVA."""
+    model.solver = all_solvers
+    fva_out = faster_fva(
+        model,
+        reaction_list=model.reactions,
+    )
+    fva_out.sort_index(inplace=True)
+    assert np.allclose(fva_out, fva_results)
+
+
+# Loopless fFVA
+def test_faster_fva_loopless_benchmark(
+    model: Model, benchmark: Callable, all_solvers: List[str]
+) -> None:
+    """Benchmark loopless FVA."""
+    model.solver = all_solvers
+    benchmark(
+        faster_fva,
+        model,
+        loopless=True,
+        reaction_list=model.reactions[1::3],
+    )
+
+
+def test_faster_fva_loopless(model: Model, all_solvers: List[str]) -> None:
+    """Test loopless fFVA."""
+    model.solver = all_solvers
+    loop_reactions = [model.reactions.get_by_id(rid) for rid in ("FRD7", "SUCDi")]
+    fva_normal = faster_fva(model, reaction_list=loop_reactions)
+    fva_loopless = faster_fva(model, reaction_list=loop_reactions, loopless=True)
+
+    assert not np.allclose(fva_normal["maximum"], fva_normal["minimum"])
+    assert np.allclose(fva_loopless["maximum"], fva_loopless["minimum"])
+
+
 # Internals (essentiality, blocked reactions)
 def test_fva_data_frame(model: Model) -> None:
     """Test DataFrame obtained from FVA."""
@@ -144,6 +238,30 @@ def test_fva_minimization(model: Model) -> None:
     model.objective = model.reactions.EX_glc__D_e
     model.objective_direction = "min"
     solution = flux_variability_analysis(model, fraction_of_optimum=0.95)
+    assert solution.at["EX_glc__D_e", "minimum"] == -10.0
+    assert solution.at["EX_glc__D_e", "maximum"] == -9.5
+
+
+def test_faster_fva_data_frame(model: Model) -> None:
+    """Test DataFrame obtained from fFVA."""
+    df = faster_fva(model)
+    assert np.all([df.columns.values == ["minimum", "maximum"]])
+
+
+def test_faster_fva_infeasible(model: Model) -> None:
+    """Test fFVA infeasibility."""
+    infeasible_model = model.copy()
+    infeasible_model.reactions.get_by_id("EX_glc__D_e").lower_bound = 0
+    # ensure that an infeasible model does not run FVA
+    with pytest.raises(Infeasible):
+        faster_fva(infeasible_model)
+
+
+def test_faster_fva_minimization(model: Model) -> None:
+    """Test minimization using fFVA."""
+    model.objective = model.reactions.EX_glc__D_e
+    model.objective_direction = "min"
+    solution = faster_fva(model, fraction_of_optimum=0.95)
     assert solution.at["EX_glc__D_e", "minimum"] == -10.0
     assert solution.at["EX_glc__D_e", "maximum"] == -9.5
 
