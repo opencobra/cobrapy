@@ -13,6 +13,7 @@ from .loopless import loopless_solution, add_loopless
 from .moma import add_moma, moma
 from .parsimonious import pfba
 from .variability import (
+    faster_fva,
     find_blocked_reactions,
     find_essential_genes,
     find_essential_reactions,

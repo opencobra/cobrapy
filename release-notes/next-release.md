@@ -3,6 +3,7 @@
 ## New features
 
 * View number of genes in model notebook representation.
+* Implemented `faster_fva` that runs less LPs than the traditional method `flux_variability_analysis`.
 
 ## Fixes
 
