@@ -469,10 +469,10 @@ def faster_fva(
 
     References
     ----------
-    .. [1] Title.
+    .. [1] An Improved Algorithm for Flux Variability Analysis
        Kenefake D, Armingol E, Lewis NE, Pistikopoulos EN.
-       Journal.
-       doi: , PMID:
+       Research Square (Pre-Print)
+       doi: https://doi.org/10.21203/rs.3.rs-2109496/v1
 
     .. [2] CycleFreeFlux: efficient removal of thermodynamically infeasible
        loops from flux distributions.
