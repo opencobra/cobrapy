@@ -15,6 +15,7 @@
 * Correct reading and writing of subsystem in mat.
 * General cleanup of code in mat.py
 * fix the pandas deprecation warning in `find_external_compartment`
+* fix an issue where creating a Formula object would give a recursion error
 
 ## Other
 
