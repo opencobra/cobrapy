@@ -1,8 +1,8 @@
 """Test functions of formula.py ."""
 
+import pytest
 
 from cobra.core.formula import Formula
-import pytest
 
 
 def test_formula_init() -> None:
@@ -14,12 +14,11 @@ def test_formula_init() -> None:
 
 
 @pytest.mark.parametrize(
-    ["formula", "weight"],
-    [["H2O", 18.01528], ["C6H12O6", 180.15588], ["NO3", 62.0049]]
+    ["formula", "weight"], [["H2O", 18.01528], ["C6H12O6", 180.15588], ["NO3", 62.0049]]
 )
 def test_formula_weight(formula, weight) -> None:
     """Test molecular weight calculation."""
-    assert Formula(formula).weight == pytest.approx(weight)\
+    assert Formula(formula).weight == pytest.approx(weight)
 
 
 def test_formula_wrong() -> None:
