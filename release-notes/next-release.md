@@ -3,6 +3,7 @@
 ## New features
 
 * View number of genes in model notebook representation.
+* added support for Python 3.11
 
 ## Fixes
 
@@ -22,6 +23,8 @@
 * Resolve remaining `flake8` issues and enable the check in GitHub Actions Lint workflow (#1272).
 
 ## Deprecated features
+
+* dropped support for Python 3.6
 
 ## Backwards incompatible changes
 * Removed `model.add_reaction()` and replaced remaining usages of it with `model.add_reactions()`
