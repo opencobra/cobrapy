@@ -30,7 +30,7 @@ class Formula(Object):
         formula: str, optional
             An string that will be parsed as a formula.
         """
-        super().__init__(self, formula, **kwargs)
+        super().__init__(id=formula, **kwargs)
         self.formula = formula
         self.elements = {}
         if self.formula is not None:
