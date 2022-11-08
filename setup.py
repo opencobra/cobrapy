@@ -19,4 +19,4 @@ if version_info[:2] < (3, 6):
 
 # All other arguments are defined in `setup.cfg`.
 if __name__ == "__main__":
-    setup(version="0.25.0")
+    setup(version="0.26.0")
