@@ -37,6 +37,7 @@ extensions = [
 ]
 # Document Python Code
 autoapi_dirs = [join(SRC_PATH, "cobra")]
+autoapi_add_toctree_entry = False
 
 # Enable typehints
 autodoc_typehints = "signature"
