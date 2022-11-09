@@ -29,7 +29,7 @@ be viewed at `nbviewer
     dfba
     pymatbridge
     faq
-    autoapi/cobra
+    /autoapi/cobra/index.rst
 
 
 Indices and tables
