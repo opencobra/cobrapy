@@ -29,7 +29,6 @@ be viewed at `nbviewer
     dfba
     pymatbridge
     faq
-    _autogen/modules
 
 
 Indices and tables
