@@ -9,7 +9,7 @@ be viewed at `nbviewer
 <http://nbviewer.ipython.org/github/opencobra/cobrapy/tree/stable/documentation_builder/>`_.
 
 .. toctree::
-    :numbered: 2
+    :numbered: 3
     :maxdepth: 2
 
     getting_started
@@ -29,7 +29,7 @@ be viewed at `nbviewer
     dfba
     pymatbridge
     faq
-    /autoapi/cobra/index.rst
+    API </autoapi/cobra/index.rst>
 
 
 Indices and tables
