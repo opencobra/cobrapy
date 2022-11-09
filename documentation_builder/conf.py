@@ -39,7 +39,7 @@ extensions = [
 autoapi_dirs = [join(SRC_PATH, "cobra")]
 
 # Enable typehints
-autodoc_typehints = 'description'
+autodoc_typehints = "signature"
 
 # Napoleon settings
 napoleon_numpy_docstring = True
