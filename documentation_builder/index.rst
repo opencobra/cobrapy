@@ -2,7 +2,7 @@ Documentation for COBRApy
 =========================
 
 For installation instructions, please see `INSTALL.rst
-<https://github.com/opencobra/cobrapy/blob/stable/INSTALL.rst>`_.
+<https://github.com/opencobra/cobrapy/blob/devel/INSTALL.rst>`_.
 
 Many of the examples below are viewable as IPython notebooks, which can
 be viewed at `nbviewer
