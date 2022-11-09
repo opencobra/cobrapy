@@ -49,7 +49,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "cobra"
-copyright = "2016-2019, The cobrapy core team"
+copyright = "2016-2022, The cobrapy core team"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

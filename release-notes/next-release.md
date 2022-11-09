@@ -4,6 +4,8 @@
 
 ## Fixes
 
+Fix automatic building of the documentation.
+
 ## Other
 
 ## Deprecated features
