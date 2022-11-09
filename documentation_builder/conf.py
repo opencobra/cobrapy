@@ -36,7 +36,10 @@ extensions = [
     "nbsphinx",
 ]
 # Document Python Code
-autoapi_dirs = [SRC_PATH]
+autoapi_dirs = [join(SRC_PATH, "cobra")]
+
+# Enable typehints
+autodoc_typehints = 'description'
 
 # Napoleon settings
 napoleon_numpy_docstring = True
