@@ -6,9 +6,9 @@ For installation help, please use the `Google Group
 <http://groups.google.com/group/cobra-pie>`_. For usage instructions, please see
 the `documentation <https://cobrapy.readthedocs.org/en/latest/>`_.
 
-We only test against Python 3.7+, however, Python 3.4 or higher and even 2.7
-should work mostly. For Windows users and possibly also Mac OS users, we
-recommend using the `Anaconda Python <https://www.anaconda.com/>`_ distribution.
+We only test against Python 3.7+, however, Python 3.4 or higher work mostly. 
+For Windows users and possibly also Mac OS users, we recommend using the 
+`Anaconda Python <https://www.anaconda.com/>`_ distribution.
 
 Stable version installation
 ===========================
