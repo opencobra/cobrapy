@@ -606,7 +606,7 @@ def _sbml_to_model(
         history: "libsbml.ModelHistory" = model.getModelHistory()
 
         if history.isSetCreatedDate():
-            created = history.getCreatedDate()
+            created = history.getCreatedDate().getDateAsString()
 
         c: "libsbml.ModelCreator"
         for c in history.getListCreators():
