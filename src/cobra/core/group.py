@@ -38,6 +38,8 @@ class Group(Object):
         or member is involved in a disease phenotype).
     """
 
+    _DF_ATTRS = ["id", "name", "kind"]
+
     KIND_TYPES = ("collection", "classification", "partonomy")
 
     def __init__(

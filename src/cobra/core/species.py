@@ -25,6 +25,8 @@ class Species(Object):
        A human readable name.
     """
 
+    _DF_ATTRS = ["id", "name"]
+
     # noinspection PyShadowingBuiltins
     def __init__(
         self, id: Optional[str] = None, name: Optional[str] = None, **kwargs

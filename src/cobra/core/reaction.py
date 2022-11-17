@@ -85,6 +85,15 @@ class Reaction(Object):
         Further keyword arguments are passed on to the parent class.
     """
 
+    _DF_ATTRS = [
+        "id",
+        "name",
+        "subsystem",
+        "gene_reaction_rule",
+        "lower_bound",
+        "upper_bound",
+    ]
+
     # noinspection PyShadowingBuiltins
     def __init__(
         self,

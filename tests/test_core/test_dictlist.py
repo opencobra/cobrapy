@@ -5,6 +5,7 @@ from copy import copy, deepcopy
 from pickle import HIGHEST_PROTOCOL, dumps, loads
 from typing import Tuple
 
+import pandas as pd
 import pytest
 
 from cobra.core import DictList, Object
@@ -468,3 +469,38 @@ def test_union(dict_list: Tuple[Object, DictList]) -> None:
     # Add only 1 element
     assert len(test_list) == 2
     assert test_list.index("test2") == 1
+
+def test_to_df(dict_list: Tuple[Object, DictList]) -> None:
+    """Test to_df for dictlist.
+    
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
+    _, test_list = dict_list
+    test_list.name = "foo"
+    df = test_list.to_df()
+    assert isinstance(df, pd.DataFrame)
+    assert len(df) == 1
+    assert "id" in df.columns
+    assert "test1" in df["id"].values
+    assert "name" in df.columns
+    assert "foo" in df["name"].values
+
+def test__repr_html(dict_list: Tuple[Object, DictList]) -> None:
+    """Test _repr_html_ for dictlist.
+    
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
+    _, test_list = dict_list
+    test_list.name = "foo"
+    html = test_list._repr_html_()
+    assert isinstance(html, str)
+    assert "test1" in html
+    assert "foo" in html
