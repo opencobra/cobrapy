@@ -8,6 +8,7 @@ import pytest
 from optlang.interface import OPTIMAL
 
 from cobra import Model
+from cobra.io import read_sbml_model
 
 
 @pytest.fixture(scope="module")

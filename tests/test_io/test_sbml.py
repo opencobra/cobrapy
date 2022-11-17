@@ -704,3 +704,13 @@ def test_stable_gprs(data_directory: Path, tmp_path: Path) -> None:
     assert (
         fixed_model.reactions.GLCpts.gene_reaction_rule == "(b2415 and b2417) or b2416"
     )
+
+
+def test_history(data_directory: Path) -> None:
+    """Test that the history is read from the model."""
+    mini = read_sbml_model(join(data_directory, "mini_history.xml"))
+    assert "creators" in mini._sbml
+    assert "organisation" in mini._sbml["creators"][0]
+    assert "created" in mini._sbml
+    assert isinstance(mini._sbml["created"], str)
+    assert "2022" in mini._sbml["created"]
