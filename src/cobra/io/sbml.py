@@ -606,7 +606,7 @@ def _sbml_to_model(
         history: "libsbml.ModelHistory" = model.getModelHistory()
 
         if history.isSetCreatedDate():
-            created = history.getCreatedDate()
+            created = history.getCreatedDate().getDateAsString()
 
         c: "libsbml.ModelCreator"
         for c in history.getListCreators():
@@ -1237,7 +1237,7 @@ def _model_to_sbml(
 
         history: "libsbml.ModelHistory" = libsbml.ModelHistory()
         if "created" in meta and meta["created"]:
-            history.setCreatedDate(meta["created"])
+            history.setCreatedDate(libsbml.Date(meta["created"]))
         else:
             time = datetime.datetime.now()
             timestr = time.strftime("%Y-%m-%dT%H:%M:%S")
