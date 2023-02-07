@@ -1228,7 +1228,6 @@ class Reaction(Object):
         _id_to_metabolites = dict([(x.id, x) for x in self._metabolites])
 
         for metabolite, coefficient in metabolites_to_add.items():
-
             # Make sure metabolites being added belong to the same model, or
             # else copy them.
             if isinstance(metabolite, Metabolite):
