@@ -511,6 +511,47 @@ def test_boundary_conditions(data_directory: Path) -> None:
     assert sol1.objective_value == sol2.objective_value
 
 
+def test_bounds_on_write(data_directory: Path, tmp_path: Path) -> None:
+    """Test infinity bound example.
+
+    Parameters
+    ----------
+    data_directory: Path
+        Directory where the data is.
+    """
+    sbml_path1 = data_directory / "fbc_ex1.xml"
+    model1 = read_sbml_model(sbml_path1)
+
+    r_x = model1.reactions.get_by_id("EX_X")
+    r_y = model1.reactions.get_by_id("EX_Ac")
+
+    r_x.bounds = (config.lower_bound - 1000, config.upper_bound + 1000)
+    assert r_x.lower_bound == config.lower_bound - 1000
+    assert r_x.upper_bound == config.upper_bound + 1000
+
+    # Global min/max bounds for other reactions should not change before & after write!
+    r_y.bounds = (config.lower_bound, config.upper_bound)
+    assert r_y.lower_bound == config.lower_bound
+    assert r_y.upper_bound == config.upper_bound
+
+    from cobra.io import save_json_model, load_json_model
+
+    sbml_path = tmp_path / "test.json"
+    with open(sbml_path, "w") as f_out:
+        save_json_model(model1, f_out)
+
+    with open(sbml_path, "r") as f_in:
+        model2 = load_json_model(f_in)
+
+    r2_x = model2.reactions.get_by_id("EX_X")
+    r2_y = model2.reactions.get_by_id("EX_Ac")
+
+    assert r2_x.lower_bound == config.lower_bound - 1000
+    assert r2_x.upper_bound == config.upper_bound + 1000
+    assert r2_y.lower_bound == config.lower_bound  # before fix #1300, this would fail
+    assert r2_y.upper_bound == config.upper_bound  # before fix #1300, this would fail
+
+
 def test_gprs(large_model: Model, tmp_path: Path) -> None:
     """Test that GPRs are written and read correctly.
 
