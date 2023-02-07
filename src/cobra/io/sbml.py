@@ -1277,13 +1277,8 @@ def _model_to_sbml(
             unit.setScale(u.scale)
             unit.setMultiplier(u.multiplier)
 
-    # minimum and maximum value from model
-    if len(cobra_model.reactions) > 0:
-        min_value = min(cobra_model.reactions.list_attr("lower_bound"))
-        max_value = max(cobra_model.reactions.list_attr("upper_bound"))
-    else:
-        min_value = config.lower_bound
-        max_value = config.upper_bound
+    min_value = config.lower_bound
+    max_value = config.upper_bound
 
     _create_parameter(
         model, pid=LOWER_BOUND_ID, value=min_value, sbo=SBO_DEFAULT_FLUX_BOUND
