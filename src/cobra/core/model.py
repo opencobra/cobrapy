@@ -32,6 +32,7 @@ from .solution import get_solution
 
 
 if TYPE_CHECKING:
+
     import pandas as pd
     from optlang.container import Container
 
@@ -780,6 +781,7 @@ class Model(Object):
         context = get_context(self)
 
         for reaction in reactions:
+
             # Make sure the reaction is in the model
             try:
                 reaction = self.reactions[self.reactions.index(reaction)]
@@ -791,6 +793,7 @@ class Model(Object):
                 reverse = reaction.reverse_variable
 
                 if context:
+
                     obj_coef = reaction.objective_coefficient
 
                     if obj_coef != 0:

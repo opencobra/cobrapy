@@ -1038,6 +1038,7 @@ def _sbml_to_model(
             model.getListOfReactions(),
             model_groups.getListOfGroups(),
         ]:
+
             sbase: "libsbml.SBase"
             for sbase in obj_list:
                 if sbase.isSetId():
@@ -1869,6 +1870,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: dict) -> None:
 
     # rdf_items = []
     for provider, data in annotation_data.items():
+
         # set SBOTerm
         if provider in ["SBO", "sbo"]:
             if provider == "SBO":

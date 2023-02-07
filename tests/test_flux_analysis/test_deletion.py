@@ -428,7 +428,7 @@ def test_double_reaction_deletion(model: Model) -> None:
     solution_one_process = double_reaction_deletion(
         model, reaction_list1=reactions, processes=1
     )
-    for rxn_a, sub in growth_dict.items():
+    for (rxn_a, sub) in growth_dict.items():
         for rxn_b, growth in sub.items():
             sol = solution.knockout[{rxn_a, rxn_b}]
             sol_one = solution_one_process.knockout[{rxn_a, rxn_b}]
