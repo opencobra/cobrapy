@@ -63,7 +63,7 @@ class Formula(Object):
             return
         composition = {}
         parsed = element_re.findall(tmp_formula)
-        for (element, count) in parsed:
+        for element, count in parsed:
             if count == "":
                 count = 1
             else:
