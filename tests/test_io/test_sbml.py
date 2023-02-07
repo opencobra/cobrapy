@@ -544,10 +544,10 @@ def test_bounds_on_write(data_directory: Path, tmp_path: Path) -> None:
     r2_x = model2.reactions.get_by_id("EX_X")
     r2_y = model2.reactions.get_by_id("EX_Ac")
 
-    assert r2_x.lower_bound == config.lower_bound - 1000
-    assert r2_x.upper_bound == config.upper_bound + 1000
-    assert r2_y.lower_bound == config.lower_bound  # before fix #1300, this would fail
-    assert r2_y.upper_bound == config.upper_bound  # before fix #1300, this would fail
+    assert r2_x.lower_bound == r_x.lower_bound
+    assert r2_x.upper_bound == r_x.upper_bound
+    assert r2_y.lower_bound == r_y.lower_bound  # before fix #1300, this would fail
+    assert r2_y.upper_bound == r_y.upper_bound  # before fix #1300, this would fail
 
 
 def test_gprs(large_model: Model, tmp_path: Path) -> None:
