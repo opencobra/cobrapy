@@ -534,14 +534,12 @@ def test_bounds_on_write(data_directory: Path, tmp_path: Path) -> None:
     assert r_y.lower_bound == config.lower_bound
     assert r_y.upper_bound == config.upper_bound
 
-    from cobra.io import save_json_model, load_json_model
-
-    sbml_path = tmp_path / "test.json"
+    sbml_path = tmp_path / "test.xml"
     with open(sbml_path, "w") as f_out:
-        save_json_model(model1, f_out)
+        write_sbml_model(model1, f_out)
 
     with open(sbml_path, "r") as f_in:
-        model2 = load_json_model(f_in)
+        model2 = read_sbml_model(f_in)
 
     r2_x = model2.reactions.get_by_id("EX_X")
     r2_y = model2.reactions.get_by_id("EX_Ac")
