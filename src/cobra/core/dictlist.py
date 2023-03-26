@@ -457,7 +457,7 @@ class DictList(list):
             selection._extend_nocheck(list.__getitem__(self, i))
             return selection
         elif hasattr(i, "__len__"):
-            if len(i) == len(self) and isinstance(i[0], (bool, np.bool)):
+            if len(i) == len(self) and isinstance(i[0], (bool, bool)):
                 selection = self.__class__()
                 result = (o for j, o in enumerate(self) if i[j])
                 selection._extend_nocheck(result)
