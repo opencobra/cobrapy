@@ -68,13 +68,13 @@ _OPTIONAL_MODEL_ATTRIBUTES = {
 
 
 def _fix_type(
-    value: Union[str, np.float, np.bool, Set, Dict]
+    value: Union[str, float, bool, Set, Dict]
 ) -> Union[str, float, bool, List, OrderedDict]:
     """Convert possible types to correct Python types.
 
     Parameters
     ----------
-    value : str, np.float, np.bool, set, dict
+    value : str, float, bool, set, dict
         The value to fix type for.
 
     Returns
@@ -86,9 +86,9 @@ def _fix_type(
     # Because numpy floats can not be pickled to json
     if isinstance(value, str):
         return str(value)
-    if isinstance(value, np.float):
+    if isinstance(value, float):
         return float(value)
-    if isinstance(value, np.bool):
+    if isinstance(value, bool):
         return bool(value)
     if isinstance(value, set):
         return list(value)
