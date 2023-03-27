@@ -15,8 +15,6 @@ from typing import (
     Union,
 )
 
-import numpy as np
-
 from .object import Object
 
 
