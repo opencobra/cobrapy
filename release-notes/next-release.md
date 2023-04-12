@@ -11,6 +11,8 @@ Fix an issue where [`runfrog`](https://github.com/matthiaskoenig/fbc_curation/is
 not work via github actions or local installation by removing the use of obsolete numpy
 aliases for `float` and `bool`.
 
+Fix a bug where installing httpx>=0.24 would break cobrapy IO.
+
 ## Other
 
 ## Deprecated features
