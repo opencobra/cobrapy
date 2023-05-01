@@ -920,6 +920,8 @@ class Reaction(Object):
             state.pop("reaction")
         if "gene_reaction_rule" in state:
             state["_gene_reaction_rule"] = state.pop("gene_reaction_rule")
+            if "_gpr" not in state:
+                state["_gpr"] = state["_gene_reaction_rule"]
         if "lower_bound" in state:
             state["_lower_bound"] = state.pop("lower_bound")
         if "upper_bound" in state:
