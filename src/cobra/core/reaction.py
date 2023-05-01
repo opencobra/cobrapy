@@ -920,14 +920,14 @@ class Reaction(Object):
             state.pop("reaction")
         if "gene_reaction_rule" in state:
             state["_gene_reaction_rule"] = state.pop("gene_reaction_rule")
-            if "_gpr" not in state:
-                state["_gpr"] = state["_gene_reaction_rule"]
         if "lower_bound" in state:
             state["_lower_bound"] = state.pop("lower_bound")
         if "upper_bound" in state:
             state["_upper_bound"] = state.pop("upper_bound")
 
         # Used for efficient storage in newer cobrapy versions
+        if "_gpr" not in state:
+            state["_gpr"] = state["_gene_reaction_rule"]
         if type(state["_gpr"]) is str:
             state["_gpr"] = GPR.from_string(state["_gpr"])
 
