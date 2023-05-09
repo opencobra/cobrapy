@@ -926,6 +926,8 @@ class Reaction(Object):
             state["_upper_bound"] = state.pop("upper_bound")
 
         # Used for efficient storage in newer cobrapy versions
+        if "_gpr" not in state:
+            state["_gpr"] = state["_gene_reaction_rule"]
         if type(state["_gpr"]) is str:
             state["_gpr"] = GPR.from_string(state["_gpr"])
 

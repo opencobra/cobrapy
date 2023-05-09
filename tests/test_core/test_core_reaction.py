@@ -1037,3 +1037,14 @@ def test_gpr_serialization(model: Model) -> None:
     """Verify that reactions GPRs are serialized compactly as str."""
     state = model.reactions[0].__getstate__()
     assert type(state["_gpr"]) == str
+
+
+def test_gpr_serialization_backwards_compatibility(model: Model) -> None:
+    """Verify that GPR serialization is backwards compatible."""
+    state = model.reactions[0].__getstate__()
+    print(state)
+    state["gene_reaction_rule"] = state["_gpr"]  # old format
+    del state["_gpr"]
+    rxn = Reaction("test")
+    rxn.__setstate__(state)
+    assert isinstance(rxn.gpr, GPR)
