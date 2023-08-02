@@ -4,6 +4,8 @@
 
 ## Fixes
 
+COBRApy is now compatible with pydantic version 2.
+
 COBRApy is now compatible with the latest numpy versions and pin to a lower version
 has been removed.
 
