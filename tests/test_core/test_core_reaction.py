@@ -1036,7 +1036,7 @@ def test_compartment_changes(model: Model) -> None:
 def test_gpr_serialization(model: Model) -> None:
     """Verify that reactions GPRs are serialized compactly as str."""
     state = model.reactions[0].__getstate__()
-    assert type(state["_gpr"]) == str
+    assert isinstance(state["_gpr"],  str)
 
 
 def test_gpr_serialization_backwards_compatibility(model: Model) -> None:
