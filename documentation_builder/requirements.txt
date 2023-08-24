@@ -3,4 +3,4 @@ sphinxcontrib-napoleon
 sphinx-autoapi
 nbsphinx>=0.2.4
 ipykernel
-matplotlib
+matplotlib>=3.6
