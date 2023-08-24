@@ -162,8 +162,8 @@ def loopless_solution(
     - All fluxes have the same sign (flow in the same direction) as the
       previous solution.
 
-    When providing fluxes to the method also note that those have to come the model
-    provided, meaning that no bounds or coefficients have been changed and the
+    When providing fluxes to the method, please note that those have to come from the exact same model
+    that you provided, meaning that no bounds or coefficients have been changed, and the
     optimum has remained the same.
 
     References
