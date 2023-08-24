@@ -156,7 +156,7 @@ def loopless_solution(
     - It contains the minimal number of loops possible and no loops at all
       if all flux bounds include zero and the objective is not in a cycle.
     - It has the same objective value as the original flux solution and assumes
-      the that the objective does not participate in a cycle
+      that the objective does not participate in a cycle
       (which is usually true since it consumes metabolites).
     - It has the same exact exchange fluxes as the previous solution.
     - All fluxes have the same sign (flow in the same direction) as the
