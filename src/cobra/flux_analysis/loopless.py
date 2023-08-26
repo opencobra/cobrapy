@@ -154,13 +154,17 @@ def loopless_solution(
     The returned flux solution has the following properties:
 
     - It contains the minimal number of loops possible and no loops at all
-      if all flux bounds include zero.
-    - It has an objective value close to the original one and the same
-      objective value id the objective expression can not form a cycle
+      if all flux bounds include zero and the objective is not in a cycle.
+    - It has the same objective value as the original flux solution and assumes
+      that the objective does not participate in a cycle
       (which is usually true since it consumes metabolites).
     - It has the same exact exchange fluxes as the previous solution.
     - All fluxes have the same sign (flow in the same direction) as the
       previous solution.
+
+    When providing fluxes to the method, please note that those have to come from the
+    exact same model that you provided, meaning that no bounds or coefficients have
+    been changed, and the optimum has remained the same.
 
     References
     ----------
@@ -176,13 +180,16 @@ def loopless_solution(
     if fluxes is None:
         sol = model.optimize(objective_sense=None)
         fluxes = sol.fluxes
+        opt = sol.objective_value
+    else:
+        opt = model.slim_optimize()
 
     with model:
         prob = model.problem
-        # Needs one fixed bound for cplex...
+        # Fix the objective
         loopless_obj_constraint = prob.Constraint(
             model.objective.expression,
-            lb=-1e32,
+            lb=opt,
             name="loopless_obj_constraint",
         )
         model.add_cons_vars([loopless_obj_constraint])

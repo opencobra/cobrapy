@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from matplotlib.pyplot import figure, xlim, ylim, gca, arrow, text, scatter
-from mpl_toolkits.axes_grid.axislines import SubplotZero
+from mpl_toolkits.axisartist.axislines import SubplotZero
 from numpy import linspace, arange, sqrt, pi, sin, cos, sign
 from IPython.display import set_matplotlib_formats
 
