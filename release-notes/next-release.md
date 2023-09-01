@@ -1,4 +1,4 @@
-# Release notes for cobrapy x.y.z
+# Release notes for cobrapy 0.27.0
 
 ## New features
 
@@ -11,6 +11,8 @@ has been removed.
 
 `loopless_solution` now fixes the objective to its optimum as in the
 originally published method and returns the objective value in the solution object.
+
+Repair a broken test for `fix_objective_as_constraint`.
 
 ## Other
 
