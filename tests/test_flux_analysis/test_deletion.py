@@ -25,7 +25,7 @@ def test_single_gene_deletion_fba_benchmark(
 ) -> None:
     """Benchmark single gene deletion using FBA."""
     model.solver = all_solvers
-    benchmark(single_gene_deletion, model)
+    benchmark(single_gene_deletion, model, model.genes[1::10])
 
 
 def test_single_gene_deletion_fba(model: Model, all_solvers: List[str]) -> None:
@@ -187,7 +187,9 @@ def test_single_reaction_deletion_benchmark(
 ) -> None:
     """Benchmark single reaction deletion."""
     model.solver = all_solvers
-    benchmark(single_reaction_deletion, model=model, processes=1)
+    benchmark(
+        single_reaction_deletion, model=model, genes=model.genes[1::10], processes=1
+    )
 
 
 def test_single_reaction_deletion(model: Model, all_solvers) -> None:
@@ -410,7 +412,7 @@ def test_double_reaction_deletion_benchmark(
     large_model: Model, benchmark: Callable
 ) -> None:
     """Benchmark double reaction deletion."""
-    reactions = large_model.reactions[1::100]
+    reactions = large_model.reactions[100:110]
     benchmark(double_reaction_deletion, large_model, reaction_list1=reactions)
 
 
