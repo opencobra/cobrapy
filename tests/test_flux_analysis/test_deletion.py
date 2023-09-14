@@ -412,7 +412,7 @@ def test_double_reaction_deletion_benchmark(
     large_model: Model, benchmark: Callable
 ) -> None:
     """Benchmark double reaction deletion."""
-    reactions = large_model.reactions[100:110]
+    reactions = large_model.reactions[100:105]
     benchmark(double_reaction_deletion, large_model, reaction_list1=reactions)
 
 
