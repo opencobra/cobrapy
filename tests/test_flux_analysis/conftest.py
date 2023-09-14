@@ -15,7 +15,7 @@ from cobra.util import solver as sutil
 # solutions.
 @pytest.fixture(
     scope="session",
-    params=[s for s in ["glpk", "cplex", "gurobi"] if s in sutil.solvers],
+    params=[s for s in ["glpk", "cplex", "gurobi", "hybrid"] if s in sutil.solvers],
 )
 def all_solvers(request) -> List[str]:
     """Return the avaialble solvers."""
@@ -24,7 +24,7 @@ def all_solvers(request) -> List[str]:
 
 @pytest.fixture(
     scope="session",
-    params=[s for s in ["cplex", "gurobi", "osqp"] if s in sutil.solvers],
+    params=[s for s in ["cplex", "gurobi", "hybrid"] if s in sutil.solvers],
 )
 def qp_solvers(request) -> List[str]:
     """Return the available QP solvers."""

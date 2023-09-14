@@ -54,7 +54,7 @@ solvers = {
 }
 
 # Defines all the QP solvers implemented in optlang.
-qp_solvers = ["cplex", "gurobi", "osqp"]
+qp_solvers = ["cplex", "gurobi", "hybrid", "osqp"]
 
 # optlang solution statuses which still allow retrieving primal values
 has_primals = [NUMERIC, FEASIBLE, INFEASIBLE, SUBOPTIMAL, ITERATION_LIMIT, TIME_LIMIT]
@@ -252,9 +252,9 @@ def get_solver_name(mip: bool = False, qp: bool = False) -> str:
     if len(solvers) == 0:
         raise SolverNotFound("No solvers found.")
     # Those lists need to be updated as optlang implements more solvers
-    mip_order = ["gurobi", "cplex", "glpk"]
-    lp_order = ["glpk", "cplex", "gurobi"]
-    qp_order = ["gurobi", "cplex", "osqp"]
+    mip_order = ["gurobi", "cplex", "hybrid", "glpk"]
+    lp_order = ["glpk", "hybrid", "cplex", "gurobi"]
+    qp_order = ["cplex", "gurobi", "hybrid", "osqp"]
 
     if mip is False and qp is False:
         for solver_name in lp_order:

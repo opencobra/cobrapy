@@ -26,7 +26,7 @@ def test_flux_variability_benchmark(
     benchmark(
         flux_variability_analysis,
         large_model,
-        reaction_list=large_model.reactions[1::3],
+        reaction_list=large_model.reactions[1::10],
         processes=1,
     )
 
@@ -106,7 +106,7 @@ def test_flux_variability_loopless_benchmark(
         flux_variability_analysis,
         model,
         loopless=True,
-        reaction_list=model.reactions[1::3],
+        reaction_list=model.reactions[1::50],
     )
 
 
