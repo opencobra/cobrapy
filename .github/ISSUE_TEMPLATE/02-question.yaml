@@ -1,0 +1,26 @@
+name: Question
+description: Ask a question
+title: "[Question] "
+labels: [question]
+body:
+    - type: checkboxes
+      attributes:
+          label: Checklist
+          description: >
+              To help keep this issue tracker clean and focused, please make sure that you have
+               tried *all* of the following resources before submitting your question.
+          options:
+              - label: I searched the [documentation](https://cobra.readthedocs.io).
+                required: true
+              - label: I looked through existing [discussion topics](https://github.com/opencobra/cobrapy/discussions).
+                required: true
+              - label: I looked for [similar issues](https://github.com/opencobra/cobrapy/issues).
+                required: true
+              - label: I looked up my question/problem in a search engine.
+                required: true
+    - type: textarea
+      attributes:
+          label: Question
+          description: Please ask your question
+      validations:
+          required: true
