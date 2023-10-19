@@ -3,15 +3,15 @@ name: Lint
 on:
   push:
     branches:
-    - stable
-    - devel
+      - stable
+      - devel
     tags:
-    - '[0-9]+.[0-9]+.[0-9]+'
-    - '[0-9]+.[0-9]+.[0-9]+a[0-9]+'
+      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+a[0-9]+"
   pull_request:
     branches:
-    - stable
-    - devel
+      - stable
+      - devel
 
 jobs:
   lint:
@@ -20,25 +20,27 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.10']
+        python-version: ["3.11"]
     timeout-minutes: 60
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip setuptools wheel
-        python -m pip install tox tox-gh-actions
-    - name: isort
-      run:
-        tox -e isort
-    - name: black
-      run:
-        tox -e black
-    - name: flake8
-      run:
-        tox -e flake8
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install tox tox-gh-actions
+
+      - name: isort
+        run: tox -e isort
+
+      - name: black
+        run: tox -e black
+
+      - name: flake8
+        run: tox -e flake8
