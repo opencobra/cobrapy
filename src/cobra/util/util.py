@@ -3,7 +3,7 @@
 import textwrap
 from typing import Any
 
-from depinfo import print_dependencies
+from depinfo.application import DisplayApplication
 
 
 def format_long_string(string: str, max_length: int = 50) -> str:
@@ -59,4 +59,4 @@ class AutoVivification(dict):
 
 def show_versions() -> None:
     """Print dependency information."""
-    print_dependencies("cobra")
+    DisplayApplication.run("cobra")
