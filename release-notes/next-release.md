@@ -6,8 +6,6 @@
 
 ## Other
 
-* Updated the package `depinfo` to version >2.
-
 ## Deprecated features
 
 ## Backwards incompatible changes
