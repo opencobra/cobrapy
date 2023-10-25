@@ -1,5 +1,5 @@
 __author__ = "The cobrapy core development team."
-__version__ = "0.27.0"
+__version__ = "0.28.0"
 
 
 from cobra.core import (
