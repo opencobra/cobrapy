@@ -6,7 +6,24 @@
     <description>Recent content in Releases on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 15 Sep 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/releases/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 25 Oct 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/releases/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>0.28.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.28.0/</link>
+      <pubDate>Wed, 25 Oct 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.28.0/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0280&#34;&gt;Release notes for cobrapy 0.28.0&lt;/h1&gt;
+&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Allowed for pandas versions &amp;gt;=1.0 and &amp;lt;3.0 (#1364).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;other&#34;&gt;Other&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Updated the GitHub Actions used (#1364).&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
     <item>
       <title>0.27.0</title>
       <link>https://opencobra.github.io/cobrapy/releases/0.27.0/</link>
