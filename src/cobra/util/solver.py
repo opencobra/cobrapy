@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 solvers = {
     match.split("_interface")[0]: getattr(optlang, match)
     for match in dir(optlang)
-    if "_interface" in match
+    if "_interface" in match and match != "matrix_interface"
 }
 
 # Defines all the QP solvers implemented in optlang.
