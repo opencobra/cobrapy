@@ -4,6 +4,8 @@
 
 ## Fixes
 
+Fixeed a bug with SBML group parsing that affects the Debian package.
+
 ## Other
 
 ## Deprecated features
