@@ -4,8 +4,6 @@
 
 ## Fixes
 
-Repaired the broken Biomodels Web IO.
-
 ## Other
 
 ## Deprecated features
