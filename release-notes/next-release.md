@@ -2,7 +2,7 @@
 
 ## New features
 
-* Adds a new "hybrid" solver that exposes an HIGHS/OSQP combinations for large scale
+* Added a new "hybrid" solver that exposes an HIGHS/OSQP combinations for large scale
   LPs, MILPs, and QPs.
 
 ## Fixes
