@@ -1080,7 +1080,7 @@ def _sbml_to_model(
                     if f_replace and F_REACTION in f_replace:
                         obj_id = f_replace[F_REACTION](obj_id)
                     cobra_member = cobra_model.reactions.get_by_id(obj_id)
-                    cobra_member.subsystem = group.name
+                    cobra_member.subsystem = group.getName()
                 elif typecode == libsbml.SBML_FBC_GENEPRODUCT:
                     if f_replace and F_GENE in f_replace:
                         obj_id = f_replace[F_GENE](obj_id)
