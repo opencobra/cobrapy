@@ -89,6 +89,7 @@ class BioModels(AbstractModelRepository):
             method="GET",
             url=self._url.join(f"download/{model_id}"),
             params={"filename": model.name},
+            follow_redirects=True,
         ) as response:
             response.raise_for_status()
             task_id = self._progress.add_task(
