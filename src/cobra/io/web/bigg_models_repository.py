@@ -1,6 +1,5 @@
 """Provide a concrete implementation of the BioModels repository interface."""
 
-
 from io import BytesIO
 
 import httpx

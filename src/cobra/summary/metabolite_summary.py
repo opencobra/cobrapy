@@ -1,6 +1,5 @@
 """Provide the metabolite summary class."""
 
-
 import logging
 from operator import attrgetter
 from textwrap import shorten

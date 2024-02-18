@@ -1,6 +1,5 @@
 """Unit test the ReactionSummary class."""
 
-
 import pytest
 
 from cobra.flux_analysis import flux_variability_analysis, pfba

@@ -1,6 +1,5 @@
 """Test functions of group via model.py."""
 
-
 import pytest
 
 from cobra import Model

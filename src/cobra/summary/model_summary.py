@@ -1,6 +1,5 @@
 """Provide the model summary class."""
 
-
 import logging
 from operator import attrgetter
 from typing import TYPE_CHECKING, Dict, List, Optional, Union

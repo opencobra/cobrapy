@@ -614,9 +614,9 @@ def _sbml_to_model(
                 {
                     "familyName": c.getFamilyName() if c.isSetFamilyName() else None,
                     "givenName": c.getGivenName() if c.isSetGivenName() else None,
-                    "organisation": c.getOrganisation()
-                    if c.isSetOrganisation()
-                    else None,
+                    "organisation": (
+                        c.getOrganisation() if c.isSetOrganisation() else None
+                    ),
                     "email": c.getEmail() if c.isSetEmail() else None,
                 }
             )
