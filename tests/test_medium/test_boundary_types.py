@@ -1,6 +1,5 @@
 """Test functionalities of boundary type detection functions."""
 
-
 import pytest
 
 from cobra.core import Metabolite, Model, Reaction
