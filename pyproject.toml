@@ -1,15 +1,15 @@
 [build-system]
 requires = [
-  'setuptools>=40.6.0',
-  'wheel'
+  "setuptools>=40.6.0",
+  "wheel"
 ]
 build-backend = "setuptools.build_meta"
 
 [tool.black]
 line-length = 88
-python-version = ['py36']
-include = '\.pyi?$'
-exclude = '''
+target-version = ["py38"]
+include = "\.pyi?$"
+exclude = """
 
 (
   /(
@@ -27,4 +27,4 @@ exclude = '''
     | benchmarks
   )/
 )
-'''
+"""
