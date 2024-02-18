@@ -1,6 +1,5 @@
 """Provide functions for loading metabolic models over the wire."""
 
-
 import gzip
 from io import BytesIO
 from typing import List

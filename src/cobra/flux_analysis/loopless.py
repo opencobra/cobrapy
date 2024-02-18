@@ -1,6 +1,5 @@
 """Provide functions to remove thermodynamically infeasible loops."""
 
-
 from typing import TYPE_CHECKING, Dict, Optional, Union
 
 import numpy as np

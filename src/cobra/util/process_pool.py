@@ -1,6 +1,5 @@
 """Provide a process pool with enhanced performance on Windows."""
 
-
 import multiprocessing
 import os
 import pickle
@@ -30,7 +29,7 @@ class ProcessPool:
         initializer: Optional[Callable] = None,
         initargs: Tuple = (),
         maxtasksperchild: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         """
         Initialize a process pool.

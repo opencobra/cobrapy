@@ -94,7 +94,7 @@ class ACHRSampler(HRSampler):
         thinning: int = 100,
         nproj: Optional[int] = None,
         seed: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         """Initialize a new ACHRSampler."""
         super().__init__(model, thinning, nproj=nproj, seed=seed, **kwargs)

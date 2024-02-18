@@ -1,6 +1,5 @@
 """Define the Species class, used as a base for Gene and Metabolite."""
 
-
 from copy import deepcopy
 from typing import TYPE_CHECKING, FrozenSet, Optional
 

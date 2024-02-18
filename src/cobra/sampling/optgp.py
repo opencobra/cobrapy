@@ -1,6 +1,5 @@
 """Provide the OptGP sampler class and helper functions."""
 
-
 from typing import TYPE_CHECKING, Dict, Optional, Tuple
 
 import numpy as np
@@ -110,7 +109,7 @@ class OptGPSampler(HRSampler):
         processes: Optional[int] = None,
         nproj: Optional[int] = None,
         seed: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         """Initialize a new OptGPSampler."""
         super().__init__(model, thinning, nproj=nproj, seed=seed, *kwargs)
