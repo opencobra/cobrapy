@@ -4,6 +4,8 @@
 
 ## Fixes
 
+* Fixes the incorrect bounds in the CycleFree loop removal.
+
 ## Other
 
 ## Deprecated features
