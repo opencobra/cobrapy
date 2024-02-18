@@ -112,7 +112,7 @@ class OptGPSampler(HRSampler):
         **kwargs,
     ) -> None:
         """Initialize a new OptGPSampler."""
-        super().__init__(model, thinning, nproj=nproj, seed=seed, *kwargs)
+        super().__init__(model, thinning, nproj=nproj, seed=seed, **kwargs)
         self.generate_fva_warmup()
 
         if processes is None:
