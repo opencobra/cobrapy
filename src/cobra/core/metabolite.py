@@ -51,7 +51,7 @@ class Metabolite(Species):
         formula: Optional[str] = None,
         name: Optional[str] = "",
         charge: Optional[float] = None,
-        compartment: Optional[str] = None,
+        compartment: Optional["Compartment"] = None,
     ) -> None:
         """Initialize Metaboblite cobra Species.
 
@@ -71,7 +71,8 @@ class Metabolite(Species):
         super().__init__(id=id, name=name)
         self.formula = formula
         # because in a Model a metabolite may participate in multiple Reactions
-        self.compartment = compartment
+        self._compartment = compartment
+        self.compartment = self._compartment.id
         self.charge = charge
 
         self._bound = 0.0
