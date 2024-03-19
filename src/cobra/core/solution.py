@@ -174,7 +174,15 @@ def get_solution(
     reduced = np.empty(len(reactions))
     var_primals = model.solver.primal_values
     shadow = np.empty(len(metabolites))
-    if model.solver.is_integer:
+
+    try:
+        var_duals = model.solver.reduced_costs
+        constr_duals = model.solver.shadow_prices
+        duals_available = True
+    except Exception:
+        duals_available = False
+
+    if model.solver.is_integer or not duals_available:
         reduced.fill(np.nan)
         shadow.fill(np.nan)
         for i, rxn in enumerate(reactions):
