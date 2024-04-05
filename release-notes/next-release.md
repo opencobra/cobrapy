@@ -5,6 +5,7 @@
 ## Fixes
 
 * Fixes the incorrect bounds in the CycleFree loop removal.
+* Fixes reduced costs and shadow prices not available when using non-convex models.
 
 ## Other
 
