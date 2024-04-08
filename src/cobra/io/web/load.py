@@ -1,6 +1,5 @@
 """Provide a function ``load_model`` to access remote model repositories."""
 
-
 import gzip
 import logging
 from typing import TYPE_CHECKING, Iterable

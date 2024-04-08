@@ -213,19 +213,23 @@ def _cell_to_str_list(
     """
     if str_prefix and pattern_split:
         return [
-            [
-                str_prefix + str_found if str_prefix not in str_found else str_found
-                for str_found in pattern_split.findall(str(each_cell[0][0]))
-            ]
-            if np.size(each_cell[0])
-            else empty_value
+            (
+                [
+                    str_prefix + str_found if str_prefix not in str_found else str_found
+                    for str_found in pattern_split.findall(str(each_cell[0][0]))
+                ]
+                if np.size(each_cell[0])
+                else empty_value
+            )
             for each_cell in m_cell
         ]
     elif pattern_split:
         return [
-            pattern_split.findall(str(each_cell[0][0]))
-            if np.size(each_cell[0])
-            else empty_value
+            (
+                pattern_split.findall(str(each_cell[0][0]))
+                if np.size(each_cell[0])
+                else empty_value
+            )
             for each_cell in m_cell
         ]
     else:
@@ -481,9 +485,11 @@ def mat_parse_notes(
             # things like PMC or OMIM, but those are placed as string in notes.
             _notes = _cell_to_str_list(mat_struct[caseunfold[mat_key]][0, 0])
             notes[name] = [
-                _pubmed_re.sub("", x).strip()
-                if x and len(_pubmed_re.sub("", x).strip())
-                else None
+                (
+                    _pubmed_re.sub("", x).strip()
+                    if x and len(_pubmed_re.sub("", x).strip())
+                    else None
+                )
                 for x in _notes
             ]
         elif mat_key == "rxnConfidenceScores".casefold():

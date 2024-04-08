@@ -1,6 +1,5 @@
 """Provide the base class and utility function for gap filling."""
 
-
 import logging
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 

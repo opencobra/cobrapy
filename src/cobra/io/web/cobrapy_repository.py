@@ -1,6 +1,5 @@
 """Provide functions for loading metabolic models from local package data."""
 
-
 import importlib_resources
 
 import cobra.data

@@ -1,4 +1,5 @@
 """Module for shared exceptions in the Cobra package."""
+
 import optlang.interface
 
 

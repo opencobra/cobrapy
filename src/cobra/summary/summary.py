@@ -1,6 +1,5 @@
 """Provide the abstract base summary class."""
 
-
 import logging
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Optional, Union

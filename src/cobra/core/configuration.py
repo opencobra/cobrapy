@@ -1,6 +1,5 @@
 """Provide a global configuration object."""
 
-
 import logging
 import pathlib
 import types

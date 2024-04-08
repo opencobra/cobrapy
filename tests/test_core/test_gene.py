@@ -1,6 +1,5 @@
 """Test functions of gene.py ."""
 
-
 from cobra.core import Model
 
 

@@ -1,6 +1,5 @@
 """Provide variability based methods such as flux variability or gene essentiality."""
 
-
 import logging
 from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
 from warnings import warn

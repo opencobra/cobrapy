@@ -1,6 +1,5 @@
 """Test functionalities of reaction and gene deletions."""
 
-
 import math
 import os
 from typing import Callable, List

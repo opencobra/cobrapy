@@ -1,4 +1,5 @@
 """Provide functions for I/O in JSON format."""
+
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, Union
 
@@ -72,7 +73,7 @@ def save_json_model(
     filename: Union[str, Path, IO],
     sort: bool = False,
     pretty: bool = False,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> None:
     """Write the cobra model to a file in JSON format.
 
