@@ -1,0 +1,60 @@
+name: CD
+
+on:
+  push:
+    tags:
+    - "[0-9]+.[0-9]+.[0-9]+"
+    - "[0-9]+.[0-9]+.[0-9]+(a|b|rc|post|dev)[0-9]+"
+
+jobs:
+  prerequisites:
+    uses: ./.github/workflows/test.yml
+
+  release:
+    needs: [prerequisites]
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.11"]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      # Write permissions are needed to create OIDC tokens.
+      id-token: write
+      # Write permissions are needed to make GitHub releases.
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        python -m pip install build
+
+    - name: Build package
+      run: python -m build
+
+    # We rely on a trusted publisher configuration being present on PyPI,
+    # see https://docs.pypi.org/trusted-publishers/.
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+
+    - name: GH release
+      uses: softprops/action-gh-release@v2
+      with:
+        body_path: "release-notes/${{ github.ref_name }}.md"
+        draft: false
+        prerelease: false
+
+    - name: Publish to website
+      run: ./scripts/deploy_website.sh
+      shell: bash
+      env:
+        TAG: ${{ github.ref_name }}
+        WORKSPACE: ${{ github.workspace }}
+        WEBSITE_DEPLOY_TOKEN: ${{ secrets.WEBSITE_DEPLOY_TOKEN }}

@@ -1,0 +1,11 @@
+name: Cron Test
+
+on:
+  schedule:
+  # Run every Tuesday at 10:30.
+  - cron: '30 10 * * 2'
+
+jobs:
+  prerequisites:
+    uses: ./.github/workflows/test.yml
+
