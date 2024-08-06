@@ -875,7 +875,7 @@ def from_mat_struct(
         # RECON3.0 mat has an array within an array for subsystems.
         # If we find a model that has multiple subsytems per reaction, this should be
         # modified
-        if np.sctype2char(m["subSystems"][0, 0][0][0]) == "O" and isinstance(
+        if m["subSystems"][0, 0][0][0].dtype.char == "O" and isinstance(
             m["subSystems"][0, 0][0][0][0], np.ndarray
         ):
             rxn_subsystems = [
