@@ -94,7 +94,7 @@ def find_external_compartment(model: "Model") -> str:
             "Consider renaming your compartments using "
             "`Model.compartments` to fix this."
         )
-        return most[0]
+        return most.iloc[0]
 
     # No info in the model, so give up
     raise RuntimeError(
