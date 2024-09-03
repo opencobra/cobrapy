@@ -1,5 +1,6 @@
 """Test functionalities of boundary type detection functions."""
 
+import logging
 import pytest
 
 from cobra.core import Metabolite, Model, Reaction
@@ -8,7 +9,6 @@ from cobra.medium import (
     find_external_compartment,
     is_boundary_type,
 )
-import logging
 
 
 def test_find_external_compartment_single(model: Model) -> None:
