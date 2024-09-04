@@ -43,7 +43,9 @@ def test_find_external_compartment_multi(model: Model) -> None:
 
 
 @pytest.mark.parametrize("compartment", ["C_e", "e0"])
-def test_find_external_popular_reconstructions(model: Model, compartment, caplog) -> None:
+def test_find_external_popular_reconstructions(
+    model: Model, compartment, caplog
+) -> None:
     """Test some additional id formats."""
     for ex in model.exchanges:
         ex.reactants[0].compartment = compartment
