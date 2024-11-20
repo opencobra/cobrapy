@@ -545,9 +545,13 @@ class GPR(Module):
         """
         return self._ast2str(self, names=names)
 
-    def copy(self):
+    def copy(self) -> "GPR":
         """Copy a GPR."""
-        return deepcopy(self)
+        cls = type(self)
+        gpr = cls()
+        gpr._genes = deepcopy(self._genes)
+        gpr.body = deepcopy(self.body)
+        return gpr
 
     def __copy__(self) -> "GPR":
         """Ensure a correct shallow copy."""
