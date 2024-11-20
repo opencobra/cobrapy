@@ -27,6 +27,16 @@ def test_gpr() -> None:
     assert len(gpr1.genes) == 0
 
 
+def test_grp_copy() -> None:
+    """Test that copying a GPR works."""
+    gpr1 = GPR.from_string("(A and B) or C")
+    gpr2 = gpr1.copy()
+    assert gpr1 == gpr2
+    assert id(gpr1.body) is not id(gpr2.body)
+    assert gpr1._genes == gpr2._genes
+    assert id(gpr1._genes) is not id(gpr2._genes)
+
+
 @pytest.mark.parametrize("test_input", ["", "", None])
 def test_empty_gpr(test_input) -> None:
     """Test empty GPR."""
@@ -89,7 +99,6 @@ def test_and_gpr(gpr_input, num_genes, gpr_genes, gpr_output_string) -> None:
     for ko_genes in powerset_ne(gpr_genes):
         assert not gpr1.eval(ko_genes)
     assert gpr1.body
-    gpr1.copy()
 
 
 def all_except_one(iterable: Iterable[str]) -> Iterator[Tuple[str, ...]]:
@@ -132,7 +141,6 @@ def test_or_gpr(
         assert gpr1.eval(ko_genes)
     assert not gpr1.eval(gpr_genes)
     assert gpr1.body
-    gpr1.copy()
 
 
 @pytest.mark.parametrize(
@@ -158,7 +166,6 @@ def test_complicated_gpr(gpr_input: str) -> None:
     assert not gpr1.eval("c")
     assert not gpr1.eval(["a", "b"])
     assert not gpr1.eval(["a", "b", "c"])
-    gpr1.copy()
 
 
 @pytest.mark.parametrize(
@@ -185,7 +192,6 @@ def test_gpr_from_ast_or(
     for ko_genes in all_except_one(gpr_genes):
         assert gpr1.eval(ko_genes)
     assert not gpr1.eval(gpr_genes)
-    gpr1.copy()
 
 
 @pytest.mark.parametrize(
@@ -210,7 +216,6 @@ def test_gpr_from_ast_and(
     assert gpr1.eval()
     for ko_genes in powerset_ne(gpr_genes):
         assert not gpr1.eval(ko_genes)
-    gpr1.copy()
 
 
 @pytest.mark.parametrize("test_input", [["a", "b"], {"a", "b"}])
