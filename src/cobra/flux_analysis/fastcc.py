@@ -2,6 +2,8 @@
 
 from typing import TYPE_CHECKING, List, Optional
 
+from warnings import warn
+
 from optlang.symbolics import Zero
 
 from .helpers import normalize_cutoff
@@ -33,6 +35,12 @@ def _find_sparse_mode(
         The list of reactions to consider as consistent.
 
     """
+    warn("As of 2021, release V... this function contains a known bug "
+         "which allows reactions with zero net flux to be considered active,"
+         " as well as known discrepancies between this function "
+         "(the cobrapy implementation) and its matlab implementation "
+         "present in the cobra toolbox, "
+         "see: https://github.com/opencobra/cobrapy/issues/1154")
     if rxns:
         obj_vars = []
         vars_and_cons = []
