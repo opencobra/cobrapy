@@ -1,7 +1,6 @@
 """Provide an implementation of FASTCC."""
 
 from typing import TYPE_CHECKING, List, Optional
-
 from warnings import warn
 
 from optlang.symbolics import Zero
