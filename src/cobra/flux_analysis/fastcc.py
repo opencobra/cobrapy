@@ -34,7 +34,8 @@ def _find_sparse_mode(
         The list of reactions to consider as consistent.
 
     """
-    warn("This function contains a known bug "
+    warn("Use find_blocked_reactions instead as "
+         "this function contains a known bug "
          "which allows reactions with zero net flux to be considered active,"
          " as well as known discrepancies between this function "
          "and its Matlab implementation "
