@@ -34,13 +34,15 @@ def _find_sparse_mode(
         The list of reactions to consider as consistent.
 
     """
-    warn("Use find_blocked_reactions instead as "
-         "this function contains a known bug "
-         "which allows reactions with zero net flux to be considered active,"
-         " as well as known discrepancies between this function "
-         "and its Matlab implementation "
-         "present in the COBRA toolbox. "
-         "Please, see https://github.com/opencobra/cobrapy/issues/1154 for more information.")
+    warn(
+        "Use find_blocked_reactions instead as "
+        "this function contains a known bug "
+        "which allows reactions with zero net flux to be considered active,"
+        " as well as known discrepancies between this function "
+        "and its Matlab implementation "
+        "present in the COBRA toolbox. "
+        "Please, see https://github.com/opencobra/cobrapy/issues/1154 for more information."
+    )
     if rxns:
         obj_vars = []
         vars_and_cons = []
