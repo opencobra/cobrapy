@@ -68,7 +68,7 @@ _OPTIONAL_MODEL_ATTRIBUTES = {
 
 
 def _fix_type(
-    value: Union[str, float, bool, Set, Dict]
+    value: Union[str, float, bool, Set, Dict],
 ) -> Union[str, float, bool, List, OrderedDict]:
     """Convert possible types to correct Python types.
 

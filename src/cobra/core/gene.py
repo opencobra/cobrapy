@@ -680,7 +680,7 @@ class GPR(Module):
         """
 
         def _sympy_to_ast(
-            sympy_expr: Union[spl.BooleanFunction, Symbol]
+            sympy_expr: Union[spl.BooleanFunction, Symbol],
         ) -> Union[BoolOp, Name]:
             if sympy_expr.func is spl.Or:
                 return BoolOp(

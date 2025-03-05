@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 def test_solution_contains_only_reaction_specific_values(
-    solved_model: Tuple[Solution, "Model"]
+    solved_model: Tuple[Solution, "Model"],
 ) -> None:
     """Test solution contains specific reaction values."""
     solution, model = solved_model
