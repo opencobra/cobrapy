@@ -105,6 +105,15 @@ Ready to contribute? Here's how to set up cobrapy for local development.
 
        tox --parallel
 
+   We also provide some `git pre-commit hooks <https://pre-commit.com/>`_ for
+   your convenience. They run our linting steps and will ensure that your
+   contributions pass linting with every commit that you make.  When you want to
+   use them, run the following commands.
+
+   .. code-block:: console
+
+       pip install pre-commit
+       pre-commit install
 
 7. Push your branch to GitHub.
 
