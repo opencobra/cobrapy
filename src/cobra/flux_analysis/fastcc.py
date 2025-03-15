@@ -1,7 +1,7 @@
 """Provide an implementation of FASTCC."""
 
 from logging import getLogger
-from typing import TYPE_CHECKING, List, Set, Optional
+from typing import TYPE_CHECKING, List, Optional, Set
 
 from optlang.symbolics import Zero
 
