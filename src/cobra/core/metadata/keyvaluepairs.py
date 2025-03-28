@@ -1,9 +1,11 @@
 """Class to deal with Key-Value pairs.
 
-Key-Value pairs are described in SBML FBC3. For the FBC3 standard, see
-https://github.com/bgoli/sbml-fbc-spec/blob/main/sf_svn/spec/main.pdf
+Key-Value pairs are described in the SBML FBC3 proposal. For the latest
+version of the FBC3 proposal, see Release Candidate 1:
+https://github.com/sbmlteam/sbml-specifications/blob/develop/sbml-level-3/version-1/fbc/spec/sbml-fbc-version-3-release-1.pdf
 """
 
+# TODO: Update docstring with final release, when available.
 import uuid
 from collections import UserDict
 from dataclasses import asdict, dataclass

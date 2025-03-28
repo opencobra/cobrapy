@@ -329,8 +329,7 @@ def test_document_history(tmp_path: Path) -> None:
     history = {
         "creators": [
             {
-                "family_name": "Mustermann",
-                "given_name": "Max",
+                "name": "Max Mustermann",
                 "organisation": "Muster University",
                 "email": "muster@university.com",
             }
@@ -346,13 +345,21 @@ def test_document_history(tmp_path: Path) -> None:
         write_sbml_model(model, f_out)
 
     with open(sbml_path, "r") as f_in:
+        lines = f_in.readlines()
+        print("".join(lines))
+
+    with open(sbml_path, "r") as f_in:
         model2 = read_sbml_model(f_in)
+
+    print(model2._sbml)
+    print(model2._sbml["annotation"])
+    print(model2._sbml["annotation"].history)
+    print(model2._sbml["annotation"].history.creators)
 
     assert "annotation" in model2._sbml
     assert len(model2._sbml["annotation"].history.creators) == 1
     c = model2._sbml["annotation"].history.creators[0]
-    assert c.family_name == "Mustermann"
-    assert c.given_name == "Max"
+    assert c.name == "Max Mustermann"
     assert c.organisation == "Muster University"
     assert c.email == "muster@university.com"
 
@@ -379,8 +386,7 @@ def test_model_history(tmp_path: Path) -> None:
     history = {
         "creators": [
             {
-                "family_name": "Mustermann",
-                "given_name": "Max",
+                "name": "Max Mustermann",
                 "organisation": "Muster University",
                 "email": "muster@university.com",
             }
@@ -396,12 +402,15 @@ def test_model_history(tmp_path: Path) -> None:
         write_sbml_model(model, f_out)
 
     with open(sbml_path, "r") as f_in:
+        lines = f_in.readlines()
+        print("".join(lines))
+
+    with open(sbml_path, "r") as f_in:
         model2 = read_sbml_model(f_in)
 
     assert len(model2.annotation.history.creators) == 1
     c = model2.annotation.history.creators[0]
-    assert c.family_name == "Mustermann"
-    assert c.given_name == "Max"
+    assert c.name == "Max Mustermann"
     assert c.organisation == "Muster University"
     assert c.email == "muster@university.com"
 

@@ -623,16 +623,22 @@ def _sbml_to_model(
 
         c: "libsbml.ModelCreator"
         for c in history.getListCreators():
-            creators.append(
-                {
-                    "familyName": c.getFamilyName() if c.isSetFamilyName() else None,
-                    "givenName": c.getGivenName() if c.isSetGivenName() else None,
-                    "organisation": (
-                        c.getOrganisation() if c.isSetOrganisation() else None
-                    ),
-                    "email": c.getEmail() if c.isSetEmail() else None,
-                }
-            )
+            creator_data = {
+                "organisation": (
+                    c.getOrganisation() if c.isSetOrganisation() else None
+                ),
+                "email": c.getEmail() if c.isSetEmail() else None,
+            }
+            if c.isSetName():
+                creator_data["name"] = c.getName()
+            else:
+                creator_data["family_name"] = (
+                    c.getFamilyName() if c.isSetFamilyName() else None
+                )
+                creator_data["given_name"] = (
+                    c.getGivenName() if c.isSetGivenName() else None
+                )
+            creators.append(creator_data)
 
     meta["creators"] = creators
     meta["created"] = created
@@ -1125,7 +1131,7 @@ def write_sbml_model(
 ) -> None:
     """Write cobra model to filename.
 
-    The created model is SBML level 3 version 1 (L1V3) with
+    The created model is SBML level 3 version 2 (L2V3) with
     fbc package v2 (fbc-v2).
 
     If the given filename ends with the suffix ".gz" (for example,
@@ -1186,7 +1192,7 @@ def _model_to_sbml(
     if f_replace is None:
         f_replace = {}
 
-    sbml_ns = libsbml.SBMLNamespaces(3, 1)  # SBML L3V1
+    sbml_ns = libsbml.SBMLNamespaces(3, 2)  # SBML L3V2
     sbml_ns.addPackageNamespace("fbc", 2)  # fbc-v2
 
     doc: "libsbml.SBMLDocument" = libsbml.SBMLDocument(sbml_ns)
@@ -1234,10 +1240,8 @@ def _model_to_sbml(
                 "creators"
             ]:  # noqa: E501 type: libsbml.ModelCreator
                 creator = libsbml.ModelCreator()
-                if cobra_creator.get("familyName", None):
-                    creator.setFamilyName(cobra_creator["familyName"])
-                if cobra_creator.get("givenName", None):
-                    creator.setGivenName(cobra_creator["givenName"])
+                if cobra_creator.get("name", None):
+                    creator.setName(cobra_creator["name"])
                 if cobra_creator.get("organisation", None):
                     creator.setOrganisation(cobra_creator["organisation"])
                 if cobra_creator.get("email", None):
@@ -1818,13 +1822,20 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
     # history of the component
     if sbase.isSetModelHistory():
         model_history: "libsbml.ModelHistory" = sbase.getModelHistory()
-
         annotation.history.creators = [
-            Creator(
-                creator.getGivenName() or None,
-                creator.getFamilyName() or None,
-                creator.getEmail() or None,
-                creator.getOrganisation() or None,
+            (
+                Creator(
+                    name=creator.getName() or None,
+                    email=creator.getEmail() or None,
+                    organisation=creator.getOrganisation() or None,
+                )
+                if creator.isSetName()
+                else Creator(
+                    given_name=creator.getGivenName() or None,
+                    family_name=creator.getFamilyName() or None,
+                    email=creator.getEmail() or None,
+                    organisation=creator.getOrganisation() or None,
+                )
             )
             for creator in model_history.getListCreators()
         ]
@@ -1972,8 +1983,8 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
 
         for creator in annotation.history.creators:
             comp_creator = libsbml.ModelCreator()
-            comp_creator.setGivenName(creator.given_name)
-            comp_creator.setFamilyName(creator.family_name)
+            if creator.name:
+                comp_creator.setName(creator.name)
             if creator.email:
                 comp_creator.setEmail(creator.email)
             if creator.organisation:

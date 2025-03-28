@@ -32,8 +32,7 @@ def test_create_history():
                 email=TEST_COM,
             ),
             Creator(
-                given_name="Andreas",
-                family_name="Draeger",
+                name="Andreas Draeger",
                 organisation="University of Tübingen",
                 email="test2@test2.com",
             ),
@@ -47,6 +46,8 @@ def test_create_history():
     assert len(history.creators) == 2
     assert history.created_date.isoformat() == JUNE_26TH_530
     assert history.created_date == History.parse_datetime(JUNE_26TH_530)
+    assert history.creators[0].name == "Matthias Koenig"
+    assert history.creators[1].name == "Andreas Draeger"
     assert len(history.modified_dates) == 2
 
 
@@ -84,6 +85,8 @@ def test_history_from_ecoli_xml(data_directory):
             "2019-03-06T14:41:55Z",
         ],
     )
+    print(history)
+    print(model.annotation.history)
     assert model.annotation.history == history
     model.annotation.history.created_date = None
     assert model.annotation.history == History(
@@ -121,13 +124,21 @@ def test_history_from_ecoli_xml(data_directory):
 def test_create_creator():
     """Test creating a Creator metadata object and verify its contents."""
     creator = Creator(
+        name="Matthias König",
+        organisation="HU",
+        email=TEST_COM,
+    )
+    assert creator.name == "Matthias König"
+    assert creator.organisation == "HU"
+    assert creator.email == TEST_COM
+
+    creator = Creator(
         given_name="Matthias",
         family_name="König",
         organisation="HU",
         email=TEST_COM,
     )
-    assert creator.given_name == "Matthias"
-    assert creator.family_name == "König"
+    assert creator.name == "Matthias König"
     assert creator.organisation == "HU"
     assert creator.email == TEST_COM
 
@@ -136,8 +147,7 @@ def test_create_creator():
         organisation="HU",
         email=TEST_COM,
     )
-    assert creator.given_name == "Matthias"
-    assert creator.family_name is None
+    assert creator.name == "Matthias"
     assert creator.organisation == "HU"
     assert creator.email == TEST_COM
 
@@ -150,8 +160,7 @@ def test_create_creator():
         }
     )
 
-    assert creator.given_name == "Matthias"
-    assert creator.family_name == "König"
+    assert creator.name == "Matthias König"
     assert creator.organisation == "HU"
     assert creator.email == TEST_COM
 
@@ -163,8 +172,7 @@ def test_create_creator():
         }
     )
 
-    assert creator.given_name == "Matthias"
-    assert creator.family_name is None
+    assert creator.name == "Matthias"
     assert creator.organisation == "HU"
     assert creator.email == TEST_COM
 
@@ -177,8 +185,7 @@ def test_create_creator():
         }
     )
 
-    assert creator.given_name == "Matthias"
-    assert creator.family_name == "König"
+    assert creator.name == "Matthias König"
     assert creator.organisation == "HU"
     assert creator.email == TEST_COM
 
@@ -190,10 +197,14 @@ def test_create_creator():
         }
     )
 
-    assert creator.given_name == "Matthias"
-    assert creator.family_name is None
+    assert creator.name == "Matthias"
     assert creator.organisation == "HU"
     assert creator.email == TEST_COM
+
+    with pytest.raises(ValueError):
+        creator = Creator(
+            name="Pascal A. Pieters", given_name="Pascal", family_name="Pieters"
+        )
 
 
 def test_historydatetime():

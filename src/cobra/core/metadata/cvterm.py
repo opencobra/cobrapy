@@ -21,8 +21,8 @@ from .helper import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
 class Qualifier(Enum):
     """The possible qualifiers inside a CVTerm.
 
-    The qualifiers and their detailed description are present in
-    https://co.mbine.org/standards/qualifiers.
+    The qualifiers and their detailed description are present in:
+    https://co.mbine.org/author/biomodels.net-qualifiers/
 
     Qualifiers are divided into two groups
     bqb     These kinds of qualifiers define the relationship between a biological
@@ -57,7 +57,7 @@ class CVTerm:
     """CVTerm class, representing controlled vocabulary.
 
     Controlled Vocabulary (CVTerm) can be defined as a curated and controlled
-    relationship, described by Qualifier (see above) - the relationship between an
+    relationship, described by a Qualifier (see above) - the relationship between an
     object and annotation must be part of the Qualifier class. These relationships
     are based in biochemical or biological relationships. The qualifiers/relationships
     are divided into bqbiol/bqb (biological qualification) and bqmodel/bqm (model
@@ -68,9 +68,10 @@ class CVTerm:
     "bqm_is" The modeling object encoded by the SBML component is the subject of
     the referenced resource. This might be used, e.g., to link the model
     to an entry in a model database.
-    See https://co.mbine.org/standards/qualifiers
-    For a definition of all qualifiers, see SBML Level 3, Version 2 Core, p 104
-    (http://co.mbine.org/specifications/sbml.level-3.version-2.core.release-2.pdf)
+    See `Biomodels Qualifiers
+    <https://co.mbine.org/author/biomodels.net-qualifiers/>`_
+    For a definition of all qualifiers, see `SBML Level 3, Version 2 Core, p 104
+    <https://identifiers.org/combine.specifications:sbml.level-3.version-2.core.release-2>`_
 
     The annotation will have one or more URI, which are encapsulated in
     ExternalResources class (see below).

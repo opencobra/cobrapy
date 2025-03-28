@@ -7,7 +7,7 @@ objects in a model with respective time stamps.
 
 import re
 from datetime import datetime
-from typing import Dict, Iterable, List, NamedTuple, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 
 STRTIME_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
@@ -316,14 +316,12 @@ class History:
         )
 
 
-class Creator(NamedTuple):
+class Creator:
     """Metadata for person who created an object.
 
     Parameters
     ----------
-    given_name: str
-        Optional. Default None.
-    family_name: str
+    name: str
         Optional. Default None.
     email: str
         Optional. Default None.
@@ -331,10 +329,131 @@ class Creator(NamedTuple):
         Optional. Default None.
     """
 
-    given_name: Optional[str] = None
-    family_name: Optional[str] = None
-    email: Optional[str] = None
-    organisation: Optional[str] = None
+    def __init__(
+        self,
+        name: Optional[str] = None,
+        email: Optional[str] = None,
+        organisation: Optional[str] = None,
+        given_name: Optional[str] = None,
+        family_name: Optional[str] = None,
+    ):
+        """Create an Creator metadata object.
+
+        The creator has optional name, email and organisation properties.
+        Separate given and family name values will be combined to a single
+        value for name. (This prevents confusion due to different cultural
+        conventions, see for example:
+        https://uxmovement.com/forms/why-your-form-only-needs-one-name-field/)
+
+        Parameters
+        ----------
+        name: str
+            Full name of the creator. Optional, default None.
+        email: str
+            Email address of the creator. Optional, default None.
+        organisation: str
+            Name of the organisation of the creator, or the organisation that
+            created the model. Optional, default None.
+
+        """
+        self._name: Optional[str] = None
+        self._email: Optional[str] = None
+        self._organisation: Optional[str] = None
+
+        self.name = Creator._fix_name(
+            name=name, given_name=given_name, family_name=family_name
+        )
+        self.email = email
+        self.organisation = organisation
+
+    @staticmethod
+    def _fix_name(
+        name: Optional[str] = None,
+        given_name: Optional[str] = None,
+        family_name: Optional[str] = None,
+    ):
+        if name is not None and name != family_name:
+            if given_name is not None or family_name is not None:
+                raise ValueError(
+                    """Too many name values were provided. Either a name or a
+                    given and/or family name should be provided."""
+                )
+            return name
+        if given_name is not None and family_name is not None:
+            # This probably does not convert all names correctly.
+            # Names should however preferentially be represented as a single value.
+            return f"{given_name} {family_name}"
+        elif given_name is not None:
+            return given_name
+        else:
+            # This also covers the case wher all values are None
+            return family_name
+
+    @property
+    def name(self) -> Optional[str]:
+        """Get the model creator name.
+
+        Returns
+        -------
+        str
+            Creator name.
+        """
+        return self._name
+
+    @name.setter
+    def name(self, value: Optional[str]) -> None:
+        """Set the name of the model creator.
+
+        Parameters
+        ----------
+        value: str
+            Name of the creator.
+        """
+        self._name = value
+
+    @property
+    def email(self) -> Optional[str]:
+        """Get the email address of the model creator.
+
+        Returns
+        -------
+        str
+            Email address.
+        """
+        return self._email
+
+    @email.setter
+    def email(self, value: Optional[str]) -> None:
+        """Set the email of the model creator.
+
+        Parameters
+        ----------
+        value: str
+            Email address of the creator.
+        """
+        self._email = value
+
+    @property
+    def organisation(self) -> Optional[str]:
+        """Get the organisation of the model creator.
+
+        Returns
+        -------
+        str
+            Organisation.
+        """
+        return self._organisation
+
+    @organisation.setter
+    def organisation(self, value: Optional[str]) -> None:
+        """Set the organisation of the model creator.
+
+        Parameters
+        ----------
+        value: str
+            Organisation of the model creator.
+        """
+        self._organisation = value
 
     @staticmethod
     def from_data(data: Union[Dict, "Creator"]) -> "Creator":
@@ -358,6 +477,16 @@ class Creator(NamedTuple):
         else:
             raise TypeError(f"Invalid format for Creator: {data}")
 
+    def _asdict(self) -> Dict:
+        d = {}
+        if self.name is not None:
+            d["name"] = self.name
+        if self.email is not None:
+            d["email"] = self.email
+        if self.organisation is not None:
+            d["organisation"] = self.organisation
+        return d
+
     def to_dict(self) -> Dict:
         """Convert Creator to dictionary.
 
@@ -365,8 +494,7 @@ class Creator(NamedTuple):
         -------
         dict in this format
         {
-            "given_name": str,
-            "family_name": str,
+            "name": str,
             "email": str,
             "organisation": str,
         }
@@ -392,6 +520,24 @@ class Creator(NamedTuple):
         """
         return (
             f"{self.__class__.__module__}.{self.__class__.__qualname__}"
-            f"('{self.given_name}', '{self.family_name}', '{self.email}', "
+            f"('{self.name}', '{self.email}', "
             f"'{self.organisation}')"
         )
+
+    def __eq__(self, other: Any) -> bool:
+        """Determine whether the Creator is equal to another Creator object.
+
+        Parameters
+        ----------
+        other: Creator
+            Creator object to compare to.
+        """
+        if not isinstance(other, __class__):
+            return False
+        if self.name != other.name:
+            return False
+        if self.email != other.email:
+            return False
+        if self.organisation != other.organisation:
+            return False
+        return True

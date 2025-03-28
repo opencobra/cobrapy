@@ -47,8 +47,7 @@
             "creators": [
                 {
                     "email": "koenigmx@hu-berlin.de",
-                    "given_name": "Matthias",
-                    "family_name": "Koenig",
+                    "name": "Matthias Koenig",
                     "organisation": "Humboldt-University Berlin, Institute for Theoretical Biology"
                 }
             ],

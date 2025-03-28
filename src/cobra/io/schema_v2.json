@@ -40,10 +40,7 @@
                   "email": {
                     "type": "string"
                   },
-                  "given_name": {
-                    "type": "string"
-                  },
-                  "family_name": {
+                  "name": {
                     "type": "string"
                   },
                   "organisation": {
@@ -51,8 +48,7 @@
                   }
                 },
                 "required": [
-                  "given_name",
-                  "family_name"
+                  "name",
                 ],
                 "additionalProperties": false
               }
