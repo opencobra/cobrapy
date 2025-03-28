@@ -1,6 +1,5 @@
 """Provide the reaction summary class."""
 
-
 import logging
 from textwrap import dedent, shorten
 from typing import TYPE_CHECKING, Optional, Union

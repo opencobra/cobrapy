@@ -1,6 +1,5 @@
 """Provide functions for loading and saving metabolic models."""
 
-
 from cobra.io.dict import model_from_dict, model_to_dict
 from cobra.io.json import (
     from_json,

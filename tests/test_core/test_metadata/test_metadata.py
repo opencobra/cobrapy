@@ -10,6 +10,7 @@ from cobra.core.metadata import CVTerm, CVTermList, ExternalResources, Qualifier
 from cobra.core.species import Species
 from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
 
+
 PUBMED_EXAMPLE = "https://identifiers.org/pubmed/1111111"
 ECO_EXAMPLE = "https://identifiers.org/eco/ECO:0000004"
 RESOURCE_LIST = [
@@ -28,7 +29,7 @@ RESOURCE_LIST = [
     "http://identifiers.org/unipathway.compound/UPC00236",
 ]
 
-ecoli_model_annotation = [
+ECOLI_MODEL_ANNOTATIONS = [
     {
         "qualifier": "bqb_hasTaxon",
         "external_resources": {"resources": ["http://identifiers.org/taxonomy/511145"]},
@@ -83,7 +84,7 @@ def test_annotation() -> None:
     assert s.annotation == {}  # nothing set for annotation, so empty dict
     assert s.annotation.standardized == CVTermList()
     assert not s.annotation.keys()
-    assert s.annotation.keyvaluepairs == {}
+    assert s.annotation.custompairs == {}
     assert s.annotation.history.creators == []
     assert s.annotation.history.modified_dates == []
 
@@ -162,6 +163,7 @@ def test_annotation() -> None:
 
 
 def test_old_style_annotation() -> None:
+    """Test creating old style annotations using add_simple_annotations."""
     s = Species()
     s.annotation.standardized.add_simple_annotations({"chebi": "CHEBI:17234"})
     s.annotation.standardized.add_simple_annotations(
@@ -278,6 +280,7 @@ def test_nested_annotation(data_directory: Path) -> None:
 
 
 def test_cvterms_from_ecoli_xml(annotation_model: Model) -> None:
+    """Test the new and old style annotations of an ecoli model."""
     qualifier_set = {
         Qualifier(qual) for qual in ["bqb_hasTaxon", "bqm_is", "bqm_isDescribedBy"]
     }
@@ -291,7 +294,7 @@ def test_cvterms_from_ecoli_xml(annotation_model: Model) -> None:
             "external_resources": {"resources": [ECO_EXAMPLE]},
         },
     ]
-    ecoli_model_cvterm = CVTermList.from_data(ecoli_model_annotation)
+    ecoli_model_cvterm = CVTermList.from_data(ECOLI_MODEL_ANNOTATIONS)
     xml_model_cvterms = annotation_model.annotation.standardized
     model_cvterms_qualifier_set = xml_model_cvterms.qualifiers
     assert qualifier_set == model_cvterms_qualifier_set
@@ -329,21 +332,25 @@ def test_cvterms_from_ecoli_xml(annotation_model: Model) -> None:
 
 
 def test_writing_xml(annotation_model: Model, tmp_path):
+    """Test writing a model with annotations to xml (SBML)."""
     assert (
         write_sbml_model(
             annotation_model, str(tmp_path.joinpath("e_coli_core_writing.xml"))
         )
         is None
     )
+    # TODO: Add more tests here.
 
 
 def test_read_write_json(annotation_model: Model, tmp_path: Path):
+    """Test writing a model with annotations to JSON."""
     json_path = tmp_path / "e_coli_core_json_writing.json"
     assert save_json_model(annotation_model, json_path, sort=False, pretty=True) is None
 
     model = load_json_model(json_path)
-    # Because of changes to eq, to compare using the old format, we need annotation.annotations
-    # TODO - get comments from cdiener
+    # Because of changes to eq, to compare using the old format,
+    # we need annotation.annotations.
+    # TODO: get comments from cdiener
     assert model.annotation.annotations == {
         "bigg.model": ["e_coli_core"],
         "doi": ["10.1128/ecosalplus.10.2.1"],
@@ -352,8 +359,10 @@ def test_read_write_json(annotation_model: Model, tmp_path: Path):
         "pubmed": ["1111111"],
         "taxonomy": ["511145"],
     }
-    assert model.annotation.standardized == CVTermList.from_data(ecoli_model_annotation)
-    assert model.annotation.standardized == ecoli_model_annotation
+    assert model.annotation.standardized == CVTermList.from_data(
+        ECOLI_MODEL_ANNOTATIONS
+    )
+    assert model.annotation.standardized == ECOLI_MODEL_ANNOTATIONS
 
     for met_id in model.metabolites.list_attr("id"):
         original_met_annot = annotation_model.metabolites.get_by_id(met_id).annotation
@@ -367,12 +376,14 @@ def test_read_write_json(annotation_model: Model, tmp_path: Path):
 
 
 def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
+    """Test annotation consistency when writing and reading an SBML file."""
     out_path = tmp_path / "e_coli_core_json_writing.sbml"
     assert write_sbml_model(annotation_model, str(out_path)) is None
 
     model = read_sbml_model(str(out_path))
-    # Because of changes to eq, to compare using the old format, we need annotation.annotations
-    # TODO - get comments from cdiener
+    # Because of changes to eq, to compare using the old format,
+    # we need annotation.annotations
+    # TODO: get comments from cdiener
     assert model.annotation.annotations == {
         "bigg.model": ["e_coli_core"],
         "doi": ["10.1128/ecosalplus.10.2.1"],
@@ -381,8 +392,10 @@ def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
         "pubmed": ["1111111"],
         "taxonomy": ["511145"],
     }
-    assert model.annotation.standardized == CVTermList.from_data(ecoli_model_annotation)
-    assert model.annotation.standardized == ecoli_model_annotation
+    assert model.annotation.standardized == CVTermList.from_data(
+        ECOLI_MODEL_ANNOTATIONS
+    )
+    assert model.annotation.standardized == ECOLI_MODEL_ANNOTATIONS
 
     for met_id in model.metabolites.list_attr("id"):
         original_met_annot = annotation_model.metabolites.get_by_id(met_id).annotation
@@ -396,6 +409,7 @@ def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
 
 
 def test_read_old_json_model(data_directory):
+    """Test reading the annotations of an old format JSON model."""
     model = load_json_model(Path(data_directory) / "mini.json")
     meta = model.metabolites[0]
     assert meta.annotation == {
@@ -427,6 +441,7 @@ def test_read_old_json_model(data_directory):
 
 
 def test_cvtermlist_query():
+    """Test the query functionality of CVTermList."""
     resources = RESOURCE_LIST
     resources.extend(
         [
@@ -441,7 +456,7 @@ def test_cvtermlist_query():
     cvtermlist = CVTermList()
     for i, res in enumerate(resources):
         cvtermlist.extend(
-            [CVTerm(qualifier=list(Qualifier.__members__)[i], ex_res=resources[i])]
+            [CVTerm(qualifier=list(Qualifier.__members__)[i], ex_res=res)]
         )
 
     cvtermlist.append(

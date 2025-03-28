@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
-
-"""Test functions of configuration.py"""
-
-from __future__ import absolute_import
+"""Test functions of configuration.py ."""
 
 from cobra.core import Configuration, Model
 from cobra.util.solver import interface_to_str

@@ -1,7 +1,10 @@
-from cobra.core.metadata.custompairs import KeyValueEntry, KeyValuePairs
+"""Test functions of keyvaluepairs.py."""
+
+from cobra.core.metadata.keyvaluepairs import KeyValueEntry, KeyValuePairs
 
 
 def test_keyvalueentry():
+    """Test creating a single KeyValueEntry."""
     keyvaluedict = KeyValueEntry.from_data(
         {
             "id": "KV_id",
@@ -20,6 +23,7 @@ def test_keyvalueentry():
 
 
 def test_keyvaluepairs():
+    """Test creating a KeyValuePairs object."""
     entry1 = {
         "id": "id1",
         "name": "abc_xyz",

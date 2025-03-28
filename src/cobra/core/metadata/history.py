@@ -4,6 +4,7 @@ The history allows to encode provenance meta-data about
 model objects. The history allows to encode who created or modified
 objects in a model with respective time stamps.
 """
+
 import re
 from datetime import datetime
 from typing import Dict, Iterable, List, NamedTuple, Optional, Union
@@ -43,13 +44,10 @@ class History:
             Dates when this annotation was modified. List of datetime dates or strings.
             Optional, default None.
         """
-        if modified_dates is None:
-            modified_dates = []
-        if creators is None:
-            creators = []
-        self._creators = []
-        self._created_date = None
-        self._modified_dates = []
+
+        self._creators: List[Creator] = []
+        self._created_date: Optional[datetime] = None
+        self._modified_dates: List[datetime] = []
 
         # use properties to set fields
         self.creators = creators
@@ -68,7 +66,7 @@ class History:
         return self._creators
 
     @creators.setter
-    def creators(self, values: Iterable[Union[Dict, "Creator"]]) -> None:
+    def creators(self, values: Optional[Iterable[Union[Dict, "Creator"]]]) -> None:
         """Set creators for History.
 
         Parameters
@@ -76,7 +74,10 @@ class History:
         values: iterable
             An iterable of dictionaries and/or Creator objects.
         """
-        self._creators = [Creator.from_data(v) for v in values]
+        if values is None:
+            self._creators = []
+        else:
+            self._creators = [Creator.from_data(v) for v in values]
 
     @staticmethod
     def parse_datetime(value: Optional[Union[str, datetime]]) -> Optional[datetime]:
@@ -155,7 +156,7 @@ class History:
         return self._created_date
 
     @created_date.setter
-    def created_date(self, date: Union[str, "datetime"]) -> None:
+    def created_date(self, date: Optional[Union[str, "datetime"]]) -> None:
         """Set created date for History.
 
         Parameters
@@ -177,7 +178,7 @@ class History:
         return self._modified_dates
 
     @modified_dates.setter
-    def modified_dates(self, dates: Iterable[Union[str, datetime]]) -> None:
+    def modified_dates(self, dates: Optional[Iterable[Union[str, datetime]]]) -> None:
         """Set modified dates.
 
         Parameters
@@ -185,10 +186,14 @@ class History:
         list
             List of datetimes or strings when this annotation was modified.
         """
-        self._modified_dates = [self.parse_datetime(d) for d in dates]
+        if dates is None:
+            self._modified_dates = []
+        else:
+            mds = [self.parse_datetime(d) for d in dates]
+            self._modified_dates = [md for md in mds if md is not None]
 
     @staticmethod
-    def from_data(data: Union[Dict, "History"]) -> "History":
+    def from_data(data: Optional[Union[Dict, "History"]]) -> "History":
         """Parse history from data.
 
         Parameters

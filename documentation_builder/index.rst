@@ -2,14 +2,14 @@ Documentation for COBRApy
 =========================
 
 For installation instructions, please see `INSTALL.rst
-<https://github.com/opencobra/cobrapy/blob/stable/INSTALL.rst>`_.
+<https://github.com/opencobra/cobrapy/blob/devel/INSTALL.rst>`_.
 
 Many of the examples below are viewable as IPython notebooks, which can
 be viewed at `nbviewer
 <http://nbviewer.ipython.org/github/opencobra/cobrapy/tree/stable/documentation_builder/>`_.
 
 .. toctree::
-    :numbered:
+    :numbered: 3
     :maxdepth: 2
 
     getting_started
@@ -29,7 +29,7 @@ be viewed at `nbviewer
     dfba
     pymatbridge
     faq
-    _autogen/modules
+    API </autoapi/cobra/index.rst>
 
 
 Indices and tables

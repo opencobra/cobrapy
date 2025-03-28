@@ -12,6 +12,14 @@ from cobra.core import DictList, Object
 
 @pytest.fixture(scope="function")
 def dict_list() -> Tuple[Object, DictList]:
+    """Provide function-level fixture for a filled dictlist.
+
+    Returns
+    -------
+    tuple of Object and DictList
+        The tuple with an Object and a filled DictList.
+
+    """
     obj = Object("test1")
     test_list = DictList()
     test_list.append(obj)
@@ -19,6 +27,14 @@ def dict_list() -> Tuple[Object, DictList]:
 
 
 def test_contains(dict_list: Tuple[Object, DictList]) -> None:
+    """Test containment check for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     assert obj in test_list
     assert obj.id in test_list
@@ -27,6 +43,14 @@ def test_contains(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_index(dict_list: Tuple[Object, DictList]) -> None:
+    """Test indexing for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     assert test_list.index("test1") == 0
     assert test_list.index(obj) == 0
@@ -41,6 +65,7 @@ def test_index(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_independent() -> None:
+    """Test proper instance creation for dictlist."""
     a = DictList([Object("o1"), Object("o2")])
     b = DictList()
     assert "o1" in a
@@ -51,6 +76,14 @@ def test_independent() -> None:
 
 
 def test_get_by_any(dict_list: Tuple[Object, DictList]) -> None:
+    """Test get_by_any() for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     assert test_list.get_by_any(0) == [obj]
     assert test_list.get_by_any("test1") == [obj]
@@ -62,6 +95,14 @@ def test_get_by_any(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_append(dict_list: Tuple[Object, DictList]) -> None:
+    """Test append() for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     obj2 = Object("test2")
     test_list.append(obj2)
@@ -74,6 +115,14 @@ def test_append(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_insert(dict_list: Tuple[Object, DictList]) -> None:
+    """Test insert() for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     obj2 = Object("a")
     test_list.insert(0, obj2)
@@ -86,6 +135,14 @@ def test_insert(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_extend(dict_list: Tuple[Object, DictList]) -> None:
+    """Test extend() for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     obj_list = [Object(f"test{i:d}") for i in range(2, 10)]
     test_list.extend(obj_list)
@@ -102,6 +159,14 @@ def test_extend(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_iadd(dict_list: Tuple[Object, DictList]) -> None:
+    """Test in-place addition for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     obj_list = [Object(f"test{i:d}") for i in range(2, 10)]
     test_list += obj_list
@@ -112,6 +177,14 @@ def test_iadd(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_add(dict_list: Tuple[Object, DictList]) -> None:
+    """Test addition for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     obj_list = [Object(f"test{i:d}") for i in range(2, 10)]
     sum_ = test_list + obj_list
@@ -127,6 +200,14 @@ def test_add(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_sub(dict_list: Tuple[Object, DictList]) -> None:
+    """Test subtraction for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     obj_list = [Object("test%d" % i) for i in range(2, 10)]
     sum_ = test_list + obj_list
@@ -138,6 +219,14 @@ def test_sub(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_isub(dict_list: Tuple[Object, DictList]) -> None:
+    """Test in-place subtraction for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     obj_list = [Object("test%d" % i) for i in range(2, 10)]
     sum_ = test_list + obj_list
@@ -148,6 +237,14 @@ def test_isub(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_init_copy(dict_list: Tuple[Object, DictList]) -> None:
+    """Test instance comparison for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     test_list.append(Object("test2"))
     copied = DictList(test_list)
@@ -162,6 +259,14 @@ def test_init_copy(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_slice(dict_list: Tuple[Object, DictList]) -> None:
+    """Test slicing for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     test_list.append(Object("test2"))
     test_list.append(Object("test3"))
@@ -177,6 +282,14 @@ def test_slice(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_copy(dict_list: Tuple[Object, DictList]) -> None:
+    """Test soft-copy for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     test_list.append(Object("test2"))
     copied = copy(test_list)
@@ -191,6 +304,14 @@ def test_copy(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_deepcopy(dict_list: Tuple[Object, DictList]) -> None:
+    """Test deep-copy for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     test_list.append(Object("test2"))
     copied = deepcopy(test_list)
@@ -205,6 +326,14 @@ def test_deepcopy(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_pickle(dict_list: Tuple[Object, DictList]) -> None:
+    """Test pickling for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     test_list.append(Object("test2"))
     for protocol in range(HIGHEST_PROTOCOL):
@@ -221,6 +350,14 @@ def test_pickle(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_query(dict_list: Tuple[Object, DictList]) -> None:
+    """Test query() for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     obj2 = Object("test2")
     obj2.name = "foobar1"
@@ -249,6 +386,7 @@ def test_query(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_removal() -> None:
+    """Test pop() for dictlist."""
     obj_list = DictList(Object(f"test{i:d}") for i in range(2, 10))
     del obj_list[3]
     assert "test5" not in obj_list
@@ -271,6 +409,7 @@ def test_removal() -> None:
 
 
 def test_set() -> None:
+    """Test set item for dictlist."""
     obj_list = DictList(Object(f"test{i:d}") for i in range(10))
     obj_list[4] = Object("testa")
     assert obj_list.index("testa") == 4
@@ -287,6 +426,7 @@ def test_set() -> None:
 
 
 def test_sort_and_reverse() -> None:
+    """Test sort() and reverse() for dictlist."""
     dl = DictList(Object(f"test{i:d}") for i in reversed(range(10)))
     assert dl[0].id == "test9"
     dl.sort()
@@ -299,6 +439,14 @@ def test_sort_and_reverse() -> None:
 
 
 def test_dir(dict_list: Tuple[Object, DictList]) -> None:
+    """Test local scope item listings for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     # Make sure tab completion works
     attrs = dir(test_list)
@@ -307,6 +455,14 @@ def test_dir(dict_list: Tuple[Object, DictList]) -> None:
 
 
 def test_union(dict_list: Tuple[Object, DictList]) -> None:
+    """Test union() for dictlist.
+
+    Parameters
+    ----------
+    dict_list : tuple
+        The fixture for filled dictlist.
+
+    """
     obj, test_list = dict_list
     test_list.union([Object("test1"), Object("test2")])
     # Add only 1 element

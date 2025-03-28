@@ -1,4 +1,5 @@
 """Provide functions for cobrapy objects to generic Python objects and vice-versa."""
+
 import itertools
 import re
 from collections import OrderedDict, defaultdict
@@ -104,13 +105,13 @@ def flatten(list_of_lists: Union[List, Tuple]) -> List:
 
 
 def _fix_type(
-    value: Union[str, np.float, np.bool, Set, Dict]
-) -> Union[str, float, bool, List, OrderedDict, Dict]:
+    value: Union[str, float, bool, Set, Dict],
+) -> Union[str, float, bool, List, OrderedDict]:
     """Convert possible types to correct Python types.
 
     Parameters
     ----------
-    value : str, np.float, np.bool, set, dict
+    value : str, float, bool, set, dict
         The value to fix type for.
 
     Returns
@@ -122,11 +123,9 @@ def _fix_type(
     # Because numpy floats can not be pickled to json
     if isinstance(value, str):
         return str(value)
-    if isinstance(value, np.float) and (np.isnan(value) or np.isinf(value)):
-        return str(value)
-    if isinstance(value, np.float):
+    if isinstance(value, float):
         return float(value)
-    if isinstance(value, np.bool):
+    if isinstance(value, bool):
         return bool(value)
     if isinstance(value, set):
         return list(value)
@@ -387,6 +386,10 @@ def _reaction_to_dict(reaction: Reaction) -> OrderedDict:
     for key in _REQUIRED_REACTION_ATTRIBUTES:
         if key == "id":
             new_reaction[key] = _fix_type(F_REPLACE[F_REACTION_REV](reaction.id))
+        elif (key == "lower_bound" or key == "upper_bound") and not np.isfinite(
+            getattr(reaction, key)
+        ):
+            new_reaction[key] = str(_fix_type(getattr(reaction, key)))
         else:
             new_reaction[key] = _fix_type(getattr(reaction, key))
     if F_REPLACE and F_SPECIE_REV in F_REPLACE:
@@ -459,7 +462,25 @@ def _reaction_from_dict(
     return new_reaction
 
 
-def group_to_dict(group: "Group") -> Dict:
+def _group_to_dict(group: "Group") -> Dict:
+    """Convert a cobra Group object to a dictionary.
+
+    Parameters
+    ----------
+    group : cobra.Group
+        The cobra.Group to convert to a dictionary.
+
+    Returns
+    -------
+    dict
+        A dictionary representing the cobra.Group object.
+
+    See Also
+    --------
+    _group_from_dict : Convert a dictionary to a cobra Group object.
+
+    """
+
     new_group = OrderedDict()
     for key in _REQUIRED_GROUP_ATTRIBUTES:
         if key != "members":
@@ -488,9 +509,29 @@ def group_to_dict(group: "Group") -> Dict:
     return new_group
 
 
-def group_from_dict(
+def _group_from_dict(
     group: Dict, model: Model, f_replace=F_REPLACE  # noqa:    W0102
 ) -> Group:
+    """Convert a dictionary to a cobra Group object.
+
+    Parameters
+    ----------
+    group : dict
+        The dictionary to convert to cobra.Group .
+    model : cobra.Model
+        The model to which the group should associate with.
+
+    Returns
+    -------
+    cobra.Group
+        The converted cobra.Group object.
+
+    See Also
+    --------
+    _group_to_dict : Convert a cobra Group object to a dictionary.
+
+    """
+
     if f_replace is None:
         f_replace = {}
 
@@ -550,7 +591,7 @@ def model_to_dict(
     obj["metabolites"] = list(map(_metabolite_to_dict, model.metabolites))
     obj["reactions"] = list(map(_reaction_to_dict, model.reactions))
     obj["genes"] = list(map(_gene_to_dict, model.genes))
-    obj["groups"] = list(map(group_to_dict, model.groups))
+    obj["groups"] = list(map(_group_to_dict, model.groups))
 
     # sbml meta info
     if hasattr(model, "_sbml"):
@@ -618,7 +659,7 @@ def model_from_dict(obj: Dict) -> Model:
         for rxn in objective_reactions
     }
     if "groups" in obj:
-        model.add_groups([group_from_dict(group, model) for group in obj["groups"]])
+        model.add_groups([_group_from_dict(group, model) for group in obj["groups"]])
     set_objective(model, coefficients)
 
     # sbml meta info

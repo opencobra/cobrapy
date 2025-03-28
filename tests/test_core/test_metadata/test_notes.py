@@ -1,3 +1,5 @@
+"""Test the 'notes' property of components."""
+
 import os
 from pathlib import Path
 
@@ -47,7 +49,7 @@ NEW_VALUE3 = "New Value 3"
 
 
 def test_notes(data_directory, tmp_path):
-    """reading notes from SBML to cobra model"""
+    """Reading notes from SBML to cobra model."""
     model_path = os.path.join(data_directory, "e_coli_core_for_annotation.xml")
     assert os.path.exists(model_path)
     model = read_sbml_model(model_path)
@@ -89,6 +91,7 @@ def test_notes(data_directory, tmp_path):
 
 
 def test_reading_writing_notes(data_directory, tmp_path):
+    """Test consistency when reading and writing notes."""
     # reading model with notes
     model = read_sbml_model(
         os.path.join(data_directory, "e_coli_core_for_annotation.xml")

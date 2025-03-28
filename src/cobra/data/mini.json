@@ -26,16 +26,17 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/ncbiprotein/1208453",
                                 "http://identifiers.org/ncbiprotein/1652654"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "id": "G_b1676",
             "name": "pykF"
@@ -90,15 +91,16 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/ncbiprotein/1653839"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "id": "G_b2779",
             "name": "eno"
@@ -109,15 +111,16 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/ncbiprotein/1653609"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "id": "G_b2926",
             "name": "pgk"
@@ -136,16 +139,17 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/ncbiprotein/1006614",
                                 "http://identifiers.org/ncbiprotein/1651919"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "id": "G_b3916",
             "name": "pfkA"
@@ -156,15 +160,16 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/ncbiprotein/1653253"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "id": "G_b4025",
             "name": "pgi"
@@ -183,17 +188,17 @@
     "metabolites": [
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/13dpg",
                                 "http://identifiers.org/biocyc/DPG",
+                                "http://identifiers.org/chebi/CHEBI:11881",
                                 "http://identifiers.org/chebi/CHEBI:16001",
                                 "http://identifiers.org/chebi/CHEBI:1658",
                                 "http://identifiers.org/chebi/CHEBI:20189",
                                 "http://identifiers.org/chebi/CHEBI:57604",
-                                "http://identifiers.org/chebi/CHEBI:11881",
                                 "http://identifiers.org/hmdb/HMDB01270",
                                 "http://identifiers.org/kegg.compound/C00236",
                                 "http://identifiers.org/pubchem.substance/3535",
@@ -201,9 +206,10 @@
                                 "http://identifiers.org/seed.compound/cpd00203",
                                 "http://identifiers.org/unipathway.compound/UPC00236"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -4,
             "compartment": "c",
@@ -213,31 +219,32 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/2pg",
                                 "http://identifiers.org/biocyc/2-PG",
+                                "http://identifiers.org/chebi/CHEBI:11651",
                                 "http://identifiers.org/chebi/CHEBI:1267",
-                                "http://identifiers.org/chebi/CHEBI:58289",
+                                "http://identifiers.org/chebi/CHEBI:12986",
                                 "http://identifiers.org/chebi/CHEBI:17835",
                                 "http://identifiers.org/chebi/CHEBI:21028",
-                                "http://identifiers.org/chebi/CHEBI:11651",
-                                "http://identifiers.org/chebi/CHEBI:12986",
                                 "http://identifiers.org/chebi/CHEBI:24344",
                                 "http://identifiers.org/chebi/CHEBI:39868",
-                                "http://identifiers.org/hmdb/HMDB03391",
+                                "http://identifiers.org/chebi/CHEBI:58289",
                                 "http://identifiers.org/hmdb/HMDB00362",
+                                "http://identifiers.org/hmdb/HMDB03391",
                                 "http://identifiers.org/kegg.compound/C00631",
                                 "http://identifiers.org/pubchem.substance/3904",
                                 "http://identifiers.org/reactome/REACT_30485",
                                 "http://identifiers.org/seed.compound/cpd00482",
                                 "http://identifiers.org/unipathway.compound/UPC00631"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -3,
             "compartment": "c",
@@ -247,37 +254,38 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/3pg",
                                 "http://identifiers.org/biocyc/G3P",
-                                "http://identifiers.org/chebi/CHEBI:40016",
-                                "http://identifiers.org/chebi/CHEBI:58272",
-                                "http://identifiers.org/chebi/CHEBI:57998",
                                 "http://identifiers.org/chebi/CHEBI:11879",
+                                "http://identifiers.org/chebi/CHEBI:11880",
+                                "http://identifiers.org/chebi/CHEBI:11882",
+                                "http://identifiers.org/chebi/CHEBI:12987",
                                 "http://identifiers.org/chebi/CHEBI:1657",
                                 "http://identifiers.org/chebi/CHEBI:1659",
                                 "http://identifiers.org/chebi/CHEBI:17050",
-                                "http://identifiers.org/chebi/CHEBI:21029",
-                                "http://identifiers.org/chebi/CHEBI:11882",
-                                "http://identifiers.org/chebi/CHEBI:11880",
-                                "http://identifiers.org/chebi/CHEBI:12987",
                                 "http://identifiers.org/chebi/CHEBI:17794",
+                                "http://identifiers.org/chebi/CHEBI:21029",
                                 "http://identifiers.org/chebi/CHEBI:24345",
+                                "http://identifiers.org/chebi/CHEBI:40016",
+                                "http://identifiers.org/chebi/CHEBI:57998",
+                                "http://identifiers.org/chebi/CHEBI:58272",
                                 "http://identifiers.org/hmdb/HMDB00807",
                                 "http://identifiers.org/kegg.compound/C00197",
                                 "http://identifiers.org/kegg.compound/C00597",
                                 "http://identifiers.org/pubchem.substance/3497",
                                 "http://identifiers.org/reactome/REACT_29728",
                                 "http://identifiers.org/seed.compound/cpd00169",
-                                "http://identifiers.org/unipathway.compound/UPC00597",
-                                "http://identifiers.org/unipathway.compound/UPC00197"
+                                "http://identifiers.org/unipathway.compound/UPC00197",
+                                "http://identifiers.org/unipathway.compound/UPC00597"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -3,
             "compartment": "c",
@@ -287,9 +295,9 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/adp",
                                 "http://identifiers.org/biocyc/ADP",
@@ -298,31 +306,32 @@
                                 "http://identifiers.org/cas/58-64-0",
                                 "http://identifiers.org/chebi/CHEBI:13222",
                                 "http://identifiers.org/chebi/CHEBI:16761",
-                                "http://identifiers.org/chebi/CHEBI:2342",
                                 "http://identifiers.org/chebi/CHEBI:22244",
+                                "http://identifiers.org/chebi/CHEBI:2342",
                                 "http://identifiers.org/chebi/CHEBI:40553",
                                 "http://identifiers.org/chebi/CHEBI:456216",
                                 "http://identifiers.org/hmdb/HMDB01341",
                                 "http://identifiers.org/kegg.compound/C00008",
                                 "http://identifiers.org/kegg.glycan/G11113",
                                 "http://identifiers.org/pubchem.substance/3310",
-                                "http://identifiers.org/reactome/REACT_190072",
-                                "http://identifiers.org/reactome/REACT_481002",
-                                "http://identifiers.org/reactome/REACT_211606",
-                                "http://identifiers.org/reactome/REACT_429160",
-                                "http://identifiers.org/reactome/REACT_29370",
-                                "http://identifiers.org/reactome/REACT_196180",
                                 "http://identifiers.org/reactome/REACT_113581",
                                 "http://identifiers.org/reactome/REACT_113582",
                                 "http://identifiers.org/reactome/REACT_114564",
                                 "http://identifiers.org/reactome/REACT_114565",
+                                "http://identifiers.org/reactome/REACT_190072",
+                                "http://identifiers.org/reactome/REACT_196180",
+                                "http://identifiers.org/reactome/REACT_211606",
+                                "http://identifiers.org/reactome/REACT_29370",
                                 "http://identifiers.org/reactome/REACT_429153",
+                                "http://identifiers.org/reactome/REACT_429160",
+                                "http://identifiers.org/reactome/REACT_481002",
                                 "http://identifiers.org/seed.compound/cpd00008",
                                 "http://identifiers.org/unipathway.compound/UPC00008"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -3,
             "compartment": "c",
@@ -332,41 +341,42 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/atp",
                                 "http://identifiers.org/biocyc/ATP",
                                 "http://identifiers.org/cas/56-65-5",
                                 "http://identifiers.org/cas/56-65-5",
-                                "http://identifiers.org/chebi/CHEBI:40938",
-                                "http://identifiers.org/chebi/CHEBI:15422",
-                                "http://identifiers.org/chebi/CHEBI:57299",
-                                "http://identifiers.org/chebi/CHEBI:13236",
                                 "http://identifiers.org/chebi/CHEBI:10789",
-                                "http://identifiers.org/chebi/CHEBI:30616",
-                                "http://identifiers.org/chebi/CHEBI:22249",
                                 "http://identifiers.org/chebi/CHEBI:10841",
+                                "http://identifiers.org/chebi/CHEBI:13236",
+                                "http://identifiers.org/chebi/CHEBI:15422",
+                                "http://identifiers.org/chebi/CHEBI:22249",
                                 "http://identifiers.org/chebi/CHEBI:2359",
+                                "http://identifiers.org/chebi/CHEBI:30616",
+                                "http://identifiers.org/chebi/CHEBI:40938",
+                                "http://identifiers.org/chebi/CHEBI:57299",
                                 "http://identifiers.org/hmdb/HMDB00538",
                                 "http://identifiers.org/kegg.compound/C00002",
                                 "http://identifiers.org/kegg.drug/D08646",
                                 "http://identifiers.org/pubchem.substance/3304",
-                                "http://identifiers.org/reactome/REACT_190078",
                                 "http://identifiers.org/reactome/REACT_113592",
                                 "http://identifiers.org/reactome/REACT_113593",
                                 "http://identifiers.org/reactome/REACT_114570",
+                                "http://identifiers.org/reactome/REACT_139836",
+                                "http://identifiers.org/reactome/REACT_190078",
+                                "http://identifiers.org/reactome/REACT_211579",
                                 "http://identifiers.org/reactome/REACT_29358",
                                 "http://identifiers.org/reactome/REACT_389573",
-                                "http://identifiers.org/reactome/REACT_139836",
-                                "http://identifiers.org/reactome/REACT_211579",
                                 "http://identifiers.org/seed.compound/cpd00002",
                                 "http://identifiers.org/unipathway.compound/UPC00002"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -4,
             "compartment": "c",
@@ -376,34 +386,35 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/dhap",
                                 "http://identifiers.org/biocyc/DIHYDROXY-ACETONE-PHOSPHATE",
                                 "http://identifiers.org/cas/57-04-5",
                                 "http://identifiers.org/cas/57-04-5",
                                 "http://identifiers.org/chebi/CHEBI:14341",
-                                "http://identifiers.org/chebi/CHEBI:57642",
                                 "http://identifiers.org/chebi/CHEBI:14342",
                                 "http://identifiers.org/chebi/CHEBI:16108",
-                                "http://identifiers.org/chebi/CHEBI:5454",
                                 "http://identifiers.org/chebi/CHEBI:24355",
                                 "http://identifiers.org/chebi/CHEBI:39571",
+                                "http://identifiers.org/chebi/CHEBI:5454",
+                                "http://identifiers.org/chebi/CHEBI:57642",
                                 "http://identifiers.org/hmdb/HMDB01473",
                                 "http://identifiers.org/hmdb/HMDB11735",
                                 "http://identifiers.org/kegg.compound/C00111",
                                 "http://identifiers.org/pubchem.substance/3411",
                                 "http://identifiers.org/reactome/REACT_188451",
-                                "http://identifiers.org/reactome/REACT_75970",
                                 "http://identifiers.org/reactome/REACT_390404",
+                                "http://identifiers.org/reactome/REACT_75970",
                                 "http://identifiers.org/seed.compound/cpd00095",
                                 "http://identifiers.org/unipathway.compound/UPC00111"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -2,
             "compartment": "c",
@@ -413,34 +424,35 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/f6p",
                                 "http://identifiers.org/biocyc/FRUCTOSE-6P",
                                 "http://identifiers.org/cas/643-13-0",
                                 "http://identifiers.org/cas/643-13-0",
-                                "http://identifiers.org/chebi/CHEBI:57634",
+                                "http://identifiers.org/chebi/CHEBI:10375",
                                 "http://identifiers.org/chebi/CHEBI:12352",
+                                "http://identifiers.org/chebi/CHEBI:16084",
+                                "http://identifiers.org/chebi/CHEBI:22768",
+                                "http://identifiers.org/chebi/CHEBI:42378",
                                 "http://identifiers.org/chebi/CHEBI:45804",
+                                "http://identifiers.org/chebi/CHEBI:57634",
                                 "http://identifiers.org/chebi/CHEBI:61527",
                                 "http://identifiers.org/chebi/CHEBI:61553",
-                                "http://identifiers.org/chebi/CHEBI:10375",
-                                "http://identifiers.org/chebi/CHEBI:16084",
-                                "http://identifiers.org/chebi/CHEBI:42378",
-                                "http://identifiers.org/chebi/CHEBI:22768",
                                 "http://identifiers.org/hmdb/HMDB03971",
-                                "http://identifiers.org/kegg.compound/C05345",
                                 "http://identifiers.org/kegg.compound/C00085",
+                                "http://identifiers.org/kegg.compound/C05345",
                                 "http://identifiers.org/pubchem.substance/3385",
                                 "http://identifiers.org/seed.compound/cpd00072",
-                                "http://identifiers.org/unipathway.compound/UPC05345",
-                                "http://identifiers.org/unipathway.compound/UPC00085"
+                                "http://identifiers.org/unipathway.compound/UPC00085",
+                                "http://identifiers.org/unipathway.compound/UPC05345"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -2,
             "compartment": "c",
@@ -450,35 +462,36 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/fdp",
                                 "http://identifiers.org/biocyc/FRUCTOSE-16-DIPHOSPHATE",
                                 "http://identifiers.org/cas/488-69-7",
                                 "http://identifiers.org/cas/488-69-7",
-                                "http://identifiers.org/chebi/CHEBI:32968",
-                                "http://identifiers.org/chebi/CHEBI:49299",
-                                "http://identifiers.org/chebi/CHEBI:42553",
-                                "http://identifiers.org/chebi/CHEBI:32966",
-                                "http://identifiers.org/chebi/CHEBI:37736",
-                                "http://identifiers.org/chebi/CHEBI:28013",
-                                "http://identifiers.org/chebi/CHEBI:32967",
-                                "http://identifiers.org/chebi/CHEBI:41014",
-                                "http://identifiers.org/chebi/CHEBI:22767",
                                 "http://identifiers.org/chebi/CHEBI:10374",
-                                "http://identifiers.org/chebi/CHEBI:40595",
+                                "http://identifiers.org/chebi/CHEBI:22767",
+                                "http://identifiers.org/chebi/CHEBI:28013",
+                                "http://identifiers.org/chebi/CHEBI:32966",
+                                "http://identifiers.org/chebi/CHEBI:32967",
+                                "http://identifiers.org/chebi/CHEBI:32968",
+                                "http://identifiers.org/chebi/CHEBI:37736",
                                 "http://identifiers.org/chebi/CHEBI:40591",
-                                "http://identifiers.org/kegg.compound/C05378",
+                                "http://identifiers.org/chebi/CHEBI:40595",
+                                "http://identifiers.org/chebi/CHEBI:41014",
+                                "http://identifiers.org/chebi/CHEBI:42553",
+                                "http://identifiers.org/chebi/CHEBI:49299",
                                 "http://identifiers.org/kegg.compound/C00354",
+                                "http://identifiers.org/kegg.compound/C05378",
                                 "http://identifiers.org/pubchem.substance/3647",
                                 "http://identifiers.org/seed.compound/cpd00290",
                                 "http://identifiers.org/unipathway.compound/UPC00354"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -4,
             "compartment": "c",
@@ -488,28 +501,29 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/g3p",
                                 "http://identifiers.org/cas/142-10-9",
                                 "http://identifiers.org/cas/142-10-9",
-                                "http://identifiers.org/chebi/CHEBI:17138",
                                 "http://identifiers.org/chebi/CHEBI:14333",
+                                "http://identifiers.org/chebi/CHEBI:17138",
                                 "http://identifiers.org/chebi/CHEBI:5446",
                                 "http://identifiers.org/chebi/CHEBI:58027",
                                 "http://identifiers.org/hmdb/HMDB01112",
-                                "http://identifiers.org/kegg.compound/C00661",
                                 "http://identifiers.org/kegg.compound/C00118",
+                                "http://identifiers.org/kegg.compound/C00661",
                                 "http://identifiers.org/pubchem.substance/3930",
                                 "http://identifiers.org/seed.compound/cpd00102",
-                                "http://identifiers.org/unipathway.compound/UPC00661",
-                                "http://identifiers.org/unipathway.compound/UPC00118"
+                                "http://identifiers.org/unipathway.compound/UPC00118",
+                                "http://identifiers.org/unipathway.compound/UPC00661"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -2,
             "compartment": "c",
@@ -519,9 +533,9 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/g6p",
                                 "http://identifiers.org/biocyc/D-glucose-6-phosphate",
@@ -529,17 +543,17 @@
                                 "http://identifiers.org/cas/56-73-5",
                                 "http://identifiers.org/cas/56-73-5",
                                 "http://identifiers.org/chebi/CHEBI:10399",
+                                "http://identifiers.org/chebi/CHEBI:12375",
+                                "http://identifiers.org/chebi/CHEBI:17719",
                                 "http://identifiers.org/chebi/CHEBI:22797",
                                 "http://identifiers.org/chebi/CHEBI:41041",
-                                "http://identifiers.org/chebi/CHEBI:17719",
                                 "http://identifiers.org/chebi/CHEBI:4170",
-                                "http://identifiers.org/chebi/CHEBI:61548",
                                 "http://identifiers.org/chebi/CHEBI:58247",
-                                "http://identifiers.org/chebi/CHEBI:12375",
-                                "http://identifiers.org/hmdb/HMDB03498",
-                                "http://identifiers.org/hmdb/HMDB06793",
+                                "http://identifiers.org/chebi/CHEBI:61548",
                                 "http://identifiers.org/hmdb/HMDB01401",
                                 "http://identifiers.org/hmdb/HMDB01549",
+                                "http://identifiers.org/hmdb/HMDB03498",
+                                "http://identifiers.org/hmdb/HMDB06793",
                                 "http://identifiers.org/kegg.compound/C00092",
                                 "http://identifiers.org/kegg.compound/C01172",
                                 "http://identifiers.org/pubchem.substance/3392",
@@ -547,9 +561,10 @@
                                 "http://identifiers.org/seed.compound/cpd00079",
                                 "http://identifiers.org/unipathway.compound/UPC00092"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -2,
             "compartment": "c",
@@ -559,9 +574,9 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/glc__D",
                                 "http://identifiers.org/cas/50-99-7",
@@ -569,9 +584,10 @@
                                 "http://identifiers.org/kegg.compound/C00031",
                                 "http://identifiers.org/pubchem.substance/3333"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": 0,
             "compartment": "e",
@@ -581,73 +597,74 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/h2o",
-                                "http://identifiers.org/biocyc/WATER",
                                 "http://identifiers.org/biocyc/OH",
                                 "http://identifiers.org/biocyc/OXONIUM",
+                                "http://identifiers.org/biocyc/WATER",
                                 "http://identifiers.org/cas/7732-18-5",
                                 "http://identifiers.org/cas/7732-18-5",
-                                "http://identifiers.org/chebi/CHEBI:15377",
-                                "http://identifiers.org/chebi/CHEBI:13365",
-                                "http://identifiers.org/chebi/CHEBI:41979",
-                                "http://identifiers.org/chebi/CHEBI:16234",
-                                "http://identifiers.org/chebi/CHEBI:36385",
-                                "http://identifiers.org/chebi/CHEBI:42857",
-                                "http://identifiers.org/chebi/CHEBI:27313",
-                                "http://identifiers.org/chebi/CHEBI:44819",
-                                "http://identifiers.org/chebi/CHEBI:29373",
                                 "http://identifiers.org/chebi/CHEBI:10743",
-                                "http://identifiers.org/chebi/CHEBI:5594",
-                                "http://identifiers.org/chebi/CHEBI:29356",
-                                "http://identifiers.org/chebi/CHEBI:53442",
-                                "http://identifiers.org/chebi/CHEBI:29375",
-                                "http://identifiers.org/chebi/CHEBI:29374",
-                                "http://identifiers.org/chebi/CHEBI:13419",
-                                "http://identifiers.org/chebi/CHEBI:43228",
-                                "http://identifiers.org/chebi/CHEBI:44292",
                                 "http://identifiers.org/chebi/CHEBI:13352",
-                                "http://identifiers.org/chebi/CHEBI:41981",
+                                "http://identifiers.org/chebi/CHEBI:13365",
+                                "http://identifiers.org/chebi/CHEBI:13419",
+                                "http://identifiers.org/chebi/CHEBI:15377",
+                                "http://identifiers.org/chebi/CHEBI:16234",
+                                "http://identifiers.org/chebi/CHEBI:27313",
+                                "http://identifiers.org/chebi/CHEBI:29356",
+                                "http://identifiers.org/chebi/CHEBI:29373",
+                                "http://identifiers.org/chebi/CHEBI:29374",
+                                "http://identifiers.org/chebi/CHEBI:29375",
                                 "http://identifiers.org/chebi/CHEBI:29412",
-                                "http://identifiers.org/chebi/CHEBI:42043",
                                 "http://identifiers.org/chebi/CHEBI:33811",
                                 "http://identifiers.org/chebi/CHEBI:33813",
                                 "http://identifiers.org/chebi/CHEBI:35511",
-                                "http://identifiers.org/chebi/CHEBI:5585",
+                                "http://identifiers.org/chebi/CHEBI:36385",
+                                "http://identifiers.org/chebi/CHEBI:41979",
+                                "http://identifiers.org/chebi/CHEBI:41981",
+                                "http://identifiers.org/chebi/CHEBI:42043",
+                                "http://identifiers.org/chebi/CHEBI:42857",
+                                "http://identifiers.org/chebi/CHEBI:43228",
+                                "http://identifiers.org/chebi/CHEBI:44292",
                                 "http://identifiers.org/chebi/CHEBI:44641",
                                 "http://identifiers.org/chebi/CHEBI:44701",
+                                "http://identifiers.org/chebi/CHEBI:44819",
+                                "http://identifiers.org/chebi/CHEBI:53442",
+                                "http://identifiers.org/chebi/CHEBI:5585",
+                                "http://identifiers.org/chebi/CHEBI:5594",
                                 "http://identifiers.org/hmdb/HMDB01039",
                                 "http://identifiers.org/hmdb/HMDB02111",
-                                "http://identifiers.org/kegg.compound/C01328",
                                 "http://identifiers.org/kegg.compound/C00001",
-                                "http://identifiers.org/kegg.compound/C18714",
+                                "http://identifiers.org/kegg.compound/C01328",
                                 "http://identifiers.org/kegg.compound/C18712",
+                                "http://identifiers.org/kegg.compound/C18714",
                                 "http://identifiers.org/kegg.drug/D00001",
-                                "http://identifiers.org/kegg.drug/D06322",
                                 "http://identifiers.org/kegg.drug/D03703",
+                                "http://identifiers.org/kegg.drug/D06322",
                                 "http://identifiers.org/pubchem.substance/3303",
-                                "http://identifiers.org/reactome/REACT_947593",
-                                "http://identifiers.org/reactome/REACT_189422",
-                                "http://identifiers.org/reactome/REACT_141343",
-                                "http://identifiers.org/reactome/REACT_113518",
-                                "http://identifiers.org/reactome/REACT_1605715",
                                 "http://identifiers.org/reactome/REACT_109276",
-                                "http://identifiers.org/reactome/REACT_113521",
+                                "http://identifiers.org/reactome/REACT_113518",
                                 "http://identifiers.org/reactome/REACT_113519",
+                                "http://identifiers.org/reactome/REACT_113521",
+                                "http://identifiers.org/reactome/REACT_141343",
+                                "http://identifiers.org/reactome/REACT_1605715",
+                                "http://identifiers.org/reactome/REACT_189422",
                                 "http://identifiers.org/reactome/REACT_2022884",
-                                "http://identifiers.org/reactome/REACT_351603",
                                 "http://identifiers.org/reactome/REACT_29356",
-                                "http://identifiers.org/seed.compound/cpd15275",
+                                "http://identifiers.org/reactome/REACT_351603",
+                                "http://identifiers.org/reactome/REACT_947593",
                                 "http://identifiers.org/seed.compound/cpd00001",
+                                "http://identifiers.org/seed.compound/cpd15275",
                                 "http://identifiers.org/unipathway.compound/UPC00001",
                                 "http://identifiers.org/unipathway.compound/UPC01328"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": 0,
             "compartment": "c",
@@ -657,73 +674,74 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/h2o",
-                                "http://identifiers.org/biocyc/WATER",
                                 "http://identifiers.org/biocyc/OH",
                                 "http://identifiers.org/biocyc/OXONIUM",
+                                "http://identifiers.org/biocyc/WATER",
                                 "http://identifiers.org/cas/7732-18-5",
                                 "http://identifiers.org/cas/7732-18-5",
-                                "http://identifiers.org/chebi/CHEBI:15377",
-                                "http://identifiers.org/chebi/CHEBI:13365",
-                                "http://identifiers.org/chebi/CHEBI:41979",
-                                "http://identifiers.org/chebi/CHEBI:16234",
-                                "http://identifiers.org/chebi/CHEBI:36385",
-                                "http://identifiers.org/chebi/CHEBI:42857",
-                                "http://identifiers.org/chebi/CHEBI:27313",
-                                "http://identifiers.org/chebi/CHEBI:44819",
-                                "http://identifiers.org/chebi/CHEBI:29373",
                                 "http://identifiers.org/chebi/CHEBI:10743",
-                                "http://identifiers.org/chebi/CHEBI:5594",
-                                "http://identifiers.org/chebi/CHEBI:29356",
-                                "http://identifiers.org/chebi/CHEBI:53442",
-                                "http://identifiers.org/chebi/CHEBI:29375",
-                                "http://identifiers.org/chebi/CHEBI:29374",
-                                "http://identifiers.org/chebi/CHEBI:13419",
-                                "http://identifiers.org/chebi/CHEBI:43228",
-                                "http://identifiers.org/chebi/CHEBI:44292",
                                 "http://identifiers.org/chebi/CHEBI:13352",
-                                "http://identifiers.org/chebi/CHEBI:41981",
+                                "http://identifiers.org/chebi/CHEBI:13365",
+                                "http://identifiers.org/chebi/CHEBI:13419",
+                                "http://identifiers.org/chebi/CHEBI:15377",
+                                "http://identifiers.org/chebi/CHEBI:16234",
+                                "http://identifiers.org/chebi/CHEBI:27313",
+                                "http://identifiers.org/chebi/CHEBI:29356",
+                                "http://identifiers.org/chebi/CHEBI:29373",
+                                "http://identifiers.org/chebi/CHEBI:29374",
+                                "http://identifiers.org/chebi/CHEBI:29375",
                                 "http://identifiers.org/chebi/CHEBI:29412",
-                                "http://identifiers.org/chebi/CHEBI:42043",
                                 "http://identifiers.org/chebi/CHEBI:33811",
                                 "http://identifiers.org/chebi/CHEBI:33813",
                                 "http://identifiers.org/chebi/CHEBI:35511",
-                                "http://identifiers.org/chebi/CHEBI:5585",
+                                "http://identifiers.org/chebi/CHEBI:36385",
+                                "http://identifiers.org/chebi/CHEBI:41979",
+                                "http://identifiers.org/chebi/CHEBI:41981",
+                                "http://identifiers.org/chebi/CHEBI:42043",
+                                "http://identifiers.org/chebi/CHEBI:42857",
+                                "http://identifiers.org/chebi/CHEBI:43228",
+                                "http://identifiers.org/chebi/CHEBI:44292",
                                 "http://identifiers.org/chebi/CHEBI:44641",
                                 "http://identifiers.org/chebi/CHEBI:44701",
+                                "http://identifiers.org/chebi/CHEBI:44819",
+                                "http://identifiers.org/chebi/CHEBI:53442",
+                                "http://identifiers.org/chebi/CHEBI:5585",
+                                "http://identifiers.org/chebi/CHEBI:5594",
                                 "http://identifiers.org/hmdb/HMDB01039",
                                 "http://identifiers.org/hmdb/HMDB02111",
-                                "http://identifiers.org/kegg.compound/C01328",
                                 "http://identifiers.org/kegg.compound/C00001",
-                                "http://identifiers.org/kegg.compound/C18714",
+                                "http://identifiers.org/kegg.compound/C01328",
                                 "http://identifiers.org/kegg.compound/C18712",
+                                "http://identifiers.org/kegg.compound/C18714",
                                 "http://identifiers.org/kegg.drug/D00001",
-                                "http://identifiers.org/kegg.drug/D06322",
                                 "http://identifiers.org/kegg.drug/D03703",
+                                "http://identifiers.org/kegg.drug/D06322",
                                 "http://identifiers.org/pubchem.substance/3303",
-                                "http://identifiers.org/reactome/REACT_947593",
-                                "http://identifiers.org/reactome/REACT_189422",
-                                "http://identifiers.org/reactome/REACT_141343",
-                                "http://identifiers.org/reactome/REACT_113518",
-                                "http://identifiers.org/reactome/REACT_1605715",
                                 "http://identifiers.org/reactome/REACT_109276",
-                                "http://identifiers.org/reactome/REACT_113521",
+                                "http://identifiers.org/reactome/REACT_113518",
                                 "http://identifiers.org/reactome/REACT_113519",
+                                "http://identifiers.org/reactome/REACT_113521",
+                                "http://identifiers.org/reactome/REACT_141343",
+                                "http://identifiers.org/reactome/REACT_1605715",
+                                "http://identifiers.org/reactome/REACT_189422",
                                 "http://identifiers.org/reactome/REACT_2022884",
-                                "http://identifiers.org/reactome/REACT_351603",
                                 "http://identifiers.org/reactome/REACT_29356",
-                                "http://identifiers.org/seed.compound/cpd15275",
+                                "http://identifiers.org/reactome/REACT_351603",
+                                "http://identifiers.org/reactome/REACT_947593",
                                 "http://identifiers.org/seed.compound/cpd00001",
+                                "http://identifiers.org/seed.compound/cpd15275",
                                 "http://identifiers.org/unipathway.compound/UPC00001",
                                 "http://identifiers.org/unipathway.compound/UPC01328"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": 0,
             "compartment": "e",
@@ -733,46 +751,47 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/h",
                                 "http://identifiers.org/biocyc/PROTON",
                                 "http://identifiers.org/cas/12408-02-5",
                                 "http://identifiers.org/cas/12408-02-5",
-                                "http://identifiers.org/chebi/CHEBI:24636",
-                                "http://identifiers.org/chebi/CHEBI:15378",
                                 "http://identifiers.org/chebi/CHEBI:10744",
                                 "http://identifiers.org/chebi/CHEBI:13357",
+                                "http://identifiers.org/chebi/CHEBI:15378",
+                                "http://identifiers.org/chebi/CHEBI:24636",
                                 "http://identifiers.org/chebi/CHEBI:5584",
                                 "http://identifiers.org/kegg.compound/C00080",
                                 "http://identifiers.org/pubchem.substance/3380",
-                                "http://identifiers.org/reactome/REACT_194688",
-                                "http://identifiers.org/reactome/REACT_425978",
-                                "http://identifiers.org/reactome/REACT_193465",
-                                "http://identifiers.org/reactome/REACT_374900",
-                                "http://identifiers.org/reactome/REACT_74722",
-                                "http://identifiers.org/reactome/REACT_425999",
-                                "http://identifiers.org/reactome/REACT_428040",
-                                "http://identifiers.org/reactome/REACT_163953",
-                                "http://identifiers.org/reactome/REACT_372511",
-                                "http://identifiers.org/reactome/REACT_2000349",
-                                "http://identifiers.org/reactome/REACT_70106",
-                                "http://identifiers.org/reactome/REACT_1470067",
                                 "http://identifiers.org/reactome/REACT_113529",
-                                "http://identifiers.org/reactome/REACT_425969",
-                                "http://identifiers.org/reactome/REACT_428548",
+                                "http://identifiers.org/reactome/REACT_1470067",
                                 "http://identifiers.org/reactome/REACT_156540",
                                 "http://identifiers.org/reactome/REACT_1614597",
+                                "http://identifiers.org/reactome/REACT_163953",
+                                "http://identifiers.org/reactome/REACT_193465",
+                                "http://identifiers.org/reactome/REACT_194688",
+                                "http://identifiers.org/reactome/REACT_2000349",
                                 "http://identifiers.org/reactome/REACT_351626",
+                                "http://identifiers.org/reactome/REACT_372511",
+                                "http://identifiers.org/reactome/REACT_374900",
+                                "http://identifiers.org/reactome/REACT_425969",
+                                "http://identifiers.org/reactome/REACT_425978",
+                                "http://identifiers.org/reactome/REACT_425999",
                                 "http://identifiers.org/reactome/REACT_427899",
+                                "http://identifiers.org/reactome/REACT_428040",
+                                "http://identifiers.org/reactome/REACT_428548",
+                                "http://identifiers.org/reactome/REACT_70106",
+                                "http://identifiers.org/reactome/REACT_74722",
                                 "http://identifiers.org/seed.compound/cpd00067",
                                 "http://identifiers.org/unipathway.compound/UPC00080"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": 1,
             "compartment": "c",
@@ -782,46 +801,47 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/h",
                                 "http://identifiers.org/biocyc/PROTON",
                                 "http://identifiers.org/cas/12408-02-5",
                                 "http://identifiers.org/cas/12408-02-5",
-                                "http://identifiers.org/chebi/CHEBI:24636",
-                                "http://identifiers.org/chebi/CHEBI:15378",
                                 "http://identifiers.org/chebi/CHEBI:10744",
                                 "http://identifiers.org/chebi/CHEBI:13357",
+                                "http://identifiers.org/chebi/CHEBI:15378",
+                                "http://identifiers.org/chebi/CHEBI:24636",
                                 "http://identifiers.org/chebi/CHEBI:5584",
                                 "http://identifiers.org/kegg.compound/C00080",
                                 "http://identifiers.org/pubchem.substance/3380",
-                                "http://identifiers.org/reactome/REACT_194688",
-                                "http://identifiers.org/reactome/REACT_425978",
-                                "http://identifiers.org/reactome/REACT_193465",
-                                "http://identifiers.org/reactome/REACT_374900",
-                                "http://identifiers.org/reactome/REACT_74722",
-                                "http://identifiers.org/reactome/REACT_425999",
-                                "http://identifiers.org/reactome/REACT_428040",
-                                "http://identifiers.org/reactome/REACT_163953",
-                                "http://identifiers.org/reactome/REACT_372511",
-                                "http://identifiers.org/reactome/REACT_2000349",
-                                "http://identifiers.org/reactome/REACT_70106",
-                                "http://identifiers.org/reactome/REACT_1470067",
                                 "http://identifiers.org/reactome/REACT_113529",
-                                "http://identifiers.org/reactome/REACT_425969",
-                                "http://identifiers.org/reactome/REACT_428548",
+                                "http://identifiers.org/reactome/REACT_1470067",
                                 "http://identifiers.org/reactome/REACT_156540",
                                 "http://identifiers.org/reactome/REACT_1614597",
+                                "http://identifiers.org/reactome/REACT_163953",
+                                "http://identifiers.org/reactome/REACT_193465",
+                                "http://identifiers.org/reactome/REACT_194688",
+                                "http://identifiers.org/reactome/REACT_2000349",
                                 "http://identifiers.org/reactome/REACT_351626",
+                                "http://identifiers.org/reactome/REACT_372511",
+                                "http://identifiers.org/reactome/REACT_374900",
+                                "http://identifiers.org/reactome/REACT_425969",
+                                "http://identifiers.org/reactome/REACT_425978",
+                                "http://identifiers.org/reactome/REACT_425999",
                                 "http://identifiers.org/reactome/REACT_427899",
+                                "http://identifiers.org/reactome/REACT_428040",
+                                "http://identifiers.org/reactome/REACT_428548",
+                                "http://identifiers.org/reactome/REACT_70106",
+                                "http://identifiers.org/reactome/REACT_74722",
                                 "http://identifiers.org/seed.compound/cpd00067",
                                 "http://identifiers.org/unipathway.compound/UPC00080"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": 1,
             "compartment": "e",
@@ -831,9 +851,9 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/lac__D",
                                 "http://identifiers.org/biocyc/META:D-LACTATE",
@@ -850,9 +870,10 @@
                                 "http://identifiers.org/metanetx.chemical/MNXM285",
                                 "http://identifiers.org/seed.compound/cpd00221"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -1,
             "compartment": "c",
@@ -862,9 +883,9 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/lac__D",
                                 "http://identifiers.org/biocyc/META:D-LACTATE",
@@ -881,9 +902,10 @@
                                 "http://identifiers.org/metanetx.chemical/MNXM285",
                                 "http://identifiers.org/seed.compound/cpd00221"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -1,
             "compartment": "e",
@@ -893,39 +915,40 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/nad",
                                 "http://identifiers.org/biocyc/NAD",
                                 "http://identifiers.org/cas/53-84-9",
                                 "http://identifiers.org/cas/53-84-9",
-                                "http://identifiers.org/chebi/CHEBI:21901",
-                                "http://identifiers.org/chebi/CHEBI:7422",
-                                "http://identifiers.org/chebi/CHEBI:44214",
-                                "http://identifiers.org/chebi/CHEBI:15846",
-                                "http://identifiers.org/chebi/CHEBI:13394",
-                                "http://identifiers.org/chebi/CHEBI:13393",
-                                "http://identifiers.org/chebi/CHEBI:44215",
                                 "http://identifiers.org/chebi/CHEBI:13389",
-                                "http://identifiers.org/chebi/CHEBI:57540",
+                                "http://identifiers.org/chebi/CHEBI:13393",
+                                "http://identifiers.org/chebi/CHEBI:13394",
+                                "http://identifiers.org/chebi/CHEBI:15846",
+                                "http://identifiers.org/chebi/CHEBI:21901",
+                                "http://identifiers.org/chebi/CHEBI:44214",
+                                "http://identifiers.org/chebi/CHEBI:44215",
                                 "http://identifiers.org/chebi/CHEBI:44281",
+                                "http://identifiers.org/chebi/CHEBI:57540",
+                                "http://identifiers.org/chebi/CHEBI:7422",
                                 "http://identifiers.org/hmdb/HMDB00902",
                                 "http://identifiers.org/kegg.compound/C00003",
                                 "http://identifiers.org/kegg.drug/D00002",
                                 "http://identifiers.org/pubchem.substance/3305",
+                                "http://identifiers.org/reactome/REACT_113526",
                                 "http://identifiers.org/reactome/REACT_192307",
+                                "http://identifiers.org/reactome/REACT_194653",
                                 "http://identifiers.org/reactome/REACT_29360",
                                 "http://identifiers.org/reactome/REACT_427523",
-                                "http://identifiers.org/reactome/REACT_194653",
-                                "http://identifiers.org/reactome/REACT_113526",
                                 "http://identifiers.org/seed.compound/cpd00003",
                                 "http://identifiers.org/unipathway.compound/UPC00003"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -1,
             "compartment": "c",
@@ -935,34 +958,35 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/nadh",
                                 "http://identifiers.org/biocyc/NADH",
                                 "http://identifiers.org/cas/58-68-4",
                                 "http://identifiers.org/cas/58-68-4",
                                 "http://identifiers.org/chebi/CHEBI:13395",
-                                "http://identifiers.org/chebi/CHEBI:21902",
+                                "http://identifiers.org/chebi/CHEBI:13396",
                                 "http://identifiers.org/chebi/CHEBI:16908",
-                                "http://identifiers.org/chebi/CHEBI:7423",
+                                "http://identifiers.org/chebi/CHEBI:21902",
                                 "http://identifiers.org/chebi/CHEBI:44216",
                                 "http://identifiers.org/chebi/CHEBI:57945",
-                                "http://identifiers.org/chebi/CHEBI:13396",
+                                "http://identifiers.org/chebi/CHEBI:7423",
                                 "http://identifiers.org/hmdb/HMDB01487",
                                 "http://identifiers.org/kegg.compound/C00004",
                                 "http://identifiers.org/pubchem.substance/3306",
                                 "http://identifiers.org/reactome/REACT_192305",
-                                "http://identifiers.org/reactome/REACT_73473",
                                 "http://identifiers.org/reactome/REACT_194697",
                                 "http://identifiers.org/reactome/REACT_29362",
+                                "http://identifiers.org/reactome/REACT_73473",
                                 "http://identifiers.org/seed.compound/cpd00004",
                                 "http://identifiers.org/unipathway.compound/UPC00004"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -2,
             "compartment": "c",
@@ -972,22 +996,22 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/pep",
                                 "http://identifiers.org/biocyc/PHOSPHO-ENOL-PYRUVATE",
                                 "http://identifiers.org/cas/138-08-9",
                                 "http://identifiers.org/cas/138-08-9",
-                                "http://identifiers.org/chebi/CHEBI:44897",
-                                "http://identifiers.org/chebi/CHEBI:44894",
                                 "http://identifiers.org/chebi/CHEBI:14812",
-                                "http://identifiers.org/chebi/CHEBI:8147",
-                                "http://identifiers.org/chebi/CHEBI:26055",
-                                "http://identifiers.org/chebi/CHEBI:26054",
-                                "http://identifiers.org/chebi/CHEBI:58702",
                                 "http://identifiers.org/chebi/CHEBI:18021",
+                                "http://identifiers.org/chebi/CHEBI:26054",
+                                "http://identifiers.org/chebi/CHEBI:26055",
+                                "http://identifiers.org/chebi/CHEBI:44894",
+                                "http://identifiers.org/chebi/CHEBI:44897",
+                                "http://identifiers.org/chebi/CHEBI:58702",
+                                "http://identifiers.org/chebi/CHEBI:8147",
                                 "http://identifiers.org/hmdb/HMDB00263",
                                 "http://identifiers.org/kegg.compound/C00074",
                                 "http://identifiers.org/pubchem.substance/3374",
@@ -996,9 +1020,10 @@
                                 "http://identifiers.org/seed.compound/cpd00061",
                                 "http://identifiers.org/unipathway.compound/UPC00074"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -3,
             "compartment": "c",
@@ -1008,61 +1033,62 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/pi",
-                                "http://identifiers.org/biocyc/Pi",
-                                "http://identifiers.org/biocyc/PHOSPHATE-GROUP",
                                 "http://identifiers.org/biocyc/CPD0-1421",
+                                "http://identifiers.org/biocyc/PHOSPHATE-GROUP",
+                                "http://identifiers.org/biocyc/Pi",
                                 "http://identifiers.org/cas/14265-44-2",
                                 "http://identifiers.org/cas/14265-44-2",
-                                "http://identifiers.org/chebi/CHEBI:37583",
-                                "http://identifiers.org/chebi/CHEBI:7793",
-                                "http://identifiers.org/chebi/CHEBI:37585",
-                                "http://identifiers.org/chebi/CHEBI:34683",
                                 "http://identifiers.org/chebi/CHEBI:14791",
-                                "http://identifiers.org/chebi/CHEBI:34855",
+                                "http://identifiers.org/chebi/CHEBI:18367",
+                                "http://identifiers.org/chebi/CHEBI:24838",
+                                "http://identifiers.org/chebi/CHEBI:26020",
+                                "http://identifiers.org/chebi/CHEBI:26078",
                                 "http://identifiers.org/chebi/CHEBI:29137",
                                 "http://identifiers.org/chebi/CHEBI:29139",
-                                "http://identifiers.org/chebi/CHEBI:63036",
-                                "http://identifiers.org/chebi/CHEBI:26020",
-                                "http://identifiers.org/chebi/CHEBI:39739",
-                                "http://identifiers.org/chebi/CHEBI:32597",
                                 "http://identifiers.org/chebi/CHEBI:32596",
-                                "http://identifiers.org/chebi/CHEBI:43474",
-                                "http://identifiers.org/chebi/CHEBI:63051",
-                                "http://identifiers.org/chebi/CHEBI:43470",
-                                "http://identifiers.org/chebi/CHEBI:9679",
+                                "http://identifiers.org/chebi/CHEBI:32597",
+                                "http://identifiers.org/chebi/CHEBI:34683",
+                                "http://identifiers.org/chebi/CHEBI:34855",
                                 "http://identifiers.org/chebi/CHEBI:35433",
+                                "http://identifiers.org/chebi/CHEBI:37583",
+                                "http://identifiers.org/chebi/CHEBI:37585",
+                                "http://identifiers.org/chebi/CHEBI:39739",
+                                "http://identifiers.org/chebi/CHEBI:39745",
+                                "http://identifiers.org/chebi/CHEBI:43470",
+                                "http://identifiers.org/chebi/CHEBI:43474",
                                 "http://identifiers.org/chebi/CHEBI:4496",
                                 "http://identifiers.org/chebi/CHEBI:45024",
-                                "http://identifiers.org/chebi/CHEBI:18367",
-                                "http://identifiers.org/chebi/CHEBI:26078",
-                                "http://identifiers.org/chebi/CHEBI:39745",
-                                "http://identifiers.org/chebi/CHEBI:24838",
+                                "http://identifiers.org/chebi/CHEBI:63036",
+                                "http://identifiers.org/chebi/CHEBI:63051",
+                                "http://identifiers.org/chebi/CHEBI:7793",
+                                "http://identifiers.org/chebi/CHEBI:9679",
                                 "http://identifiers.org/hmdb/HMDB02142",
+                                "http://identifiers.org/kegg.compound/C00009",
                                 "http://identifiers.org/kegg.compound/C13556",
                                 "http://identifiers.org/kegg.compound/C13558",
-                                "http://identifiers.org/kegg.compound/C00009",
                                 "http://identifiers.org/kegg.drug/D05467",
                                 "http://identifiers.org/pubchem.substance/3311",
-                                "http://identifiers.org/reactome/REACT_947590",
                                 "http://identifiers.org/reactome/REACT_109277",
                                 "http://identifiers.org/reactome/REACT_113548",
-                                "http://identifiers.org/reactome/REACT_2255331",
-                                "http://identifiers.org/reactome/REACT_29372",
                                 "http://identifiers.org/reactome/REACT_113550",
                                 "http://identifiers.org/reactome/REACT_113551",
-                                "http://identifiers.org/seed.compound/cpd09464",
-                                "http://identifiers.org/seed.compound/cpd09463",
+                                "http://identifiers.org/reactome/REACT_2255331",
+                                "http://identifiers.org/reactome/REACT_29372",
+                                "http://identifiers.org/reactome/REACT_947590",
                                 "http://identifiers.org/seed.compound/cpd00009",
+                                "http://identifiers.org/seed.compound/cpd09463",
+                                "http://identifiers.org/seed.compound/cpd09464",
                                 "http://identifiers.org/unipathway.compound/UPC00009"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -2,
             "compartment": "c",
@@ -1072,61 +1098,62 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/pi",
-                                "http://identifiers.org/biocyc/Pi",
-                                "http://identifiers.org/biocyc/PHOSPHATE-GROUP",
                                 "http://identifiers.org/biocyc/CPD0-1421",
+                                "http://identifiers.org/biocyc/PHOSPHATE-GROUP",
+                                "http://identifiers.org/biocyc/Pi",
                                 "http://identifiers.org/cas/14265-44-2",
                                 "http://identifiers.org/cas/14265-44-2",
-                                "http://identifiers.org/chebi/CHEBI:37583",
-                                "http://identifiers.org/chebi/CHEBI:7793",
-                                "http://identifiers.org/chebi/CHEBI:37585",
-                                "http://identifiers.org/chebi/CHEBI:34683",
                                 "http://identifiers.org/chebi/CHEBI:14791",
-                                "http://identifiers.org/chebi/CHEBI:34855",
+                                "http://identifiers.org/chebi/CHEBI:18367",
+                                "http://identifiers.org/chebi/CHEBI:24838",
+                                "http://identifiers.org/chebi/CHEBI:26020",
+                                "http://identifiers.org/chebi/CHEBI:26078",
                                 "http://identifiers.org/chebi/CHEBI:29137",
                                 "http://identifiers.org/chebi/CHEBI:29139",
-                                "http://identifiers.org/chebi/CHEBI:63036",
-                                "http://identifiers.org/chebi/CHEBI:26020",
-                                "http://identifiers.org/chebi/CHEBI:39739",
-                                "http://identifiers.org/chebi/CHEBI:32597",
                                 "http://identifiers.org/chebi/CHEBI:32596",
-                                "http://identifiers.org/chebi/CHEBI:43474",
-                                "http://identifiers.org/chebi/CHEBI:63051",
-                                "http://identifiers.org/chebi/CHEBI:43470",
-                                "http://identifiers.org/chebi/CHEBI:9679",
+                                "http://identifiers.org/chebi/CHEBI:32597",
+                                "http://identifiers.org/chebi/CHEBI:34683",
+                                "http://identifiers.org/chebi/CHEBI:34855",
                                 "http://identifiers.org/chebi/CHEBI:35433",
+                                "http://identifiers.org/chebi/CHEBI:37583",
+                                "http://identifiers.org/chebi/CHEBI:37585",
+                                "http://identifiers.org/chebi/CHEBI:39739",
+                                "http://identifiers.org/chebi/CHEBI:39745",
+                                "http://identifiers.org/chebi/CHEBI:43470",
+                                "http://identifiers.org/chebi/CHEBI:43474",
                                 "http://identifiers.org/chebi/CHEBI:4496",
                                 "http://identifiers.org/chebi/CHEBI:45024",
-                                "http://identifiers.org/chebi/CHEBI:18367",
-                                "http://identifiers.org/chebi/CHEBI:26078",
-                                "http://identifiers.org/chebi/CHEBI:39745",
-                                "http://identifiers.org/chebi/CHEBI:24838",
+                                "http://identifiers.org/chebi/CHEBI:63036",
+                                "http://identifiers.org/chebi/CHEBI:63051",
+                                "http://identifiers.org/chebi/CHEBI:7793",
+                                "http://identifiers.org/chebi/CHEBI:9679",
                                 "http://identifiers.org/hmdb/HMDB02142",
+                                "http://identifiers.org/kegg.compound/C00009",
                                 "http://identifiers.org/kegg.compound/C13556",
                                 "http://identifiers.org/kegg.compound/C13558",
-                                "http://identifiers.org/kegg.compound/C00009",
                                 "http://identifiers.org/kegg.drug/D05467",
                                 "http://identifiers.org/pubchem.substance/3311",
-                                "http://identifiers.org/reactome/REACT_947590",
                                 "http://identifiers.org/reactome/REACT_109277",
                                 "http://identifiers.org/reactome/REACT_113548",
-                                "http://identifiers.org/reactome/REACT_2255331",
-                                "http://identifiers.org/reactome/REACT_29372",
                                 "http://identifiers.org/reactome/REACT_113550",
                                 "http://identifiers.org/reactome/REACT_113551",
-                                "http://identifiers.org/seed.compound/cpd09464",
-                                "http://identifiers.org/seed.compound/cpd09463",
+                                "http://identifiers.org/reactome/REACT_2255331",
+                                "http://identifiers.org/reactome/REACT_29372",
+                                "http://identifiers.org/reactome/REACT_947590",
                                 "http://identifiers.org/seed.compound/cpd00009",
+                                "http://identifiers.org/seed.compound/cpd09463",
+                                "http://identifiers.org/seed.compound/cpd09464",
                                 "http://identifiers.org/unipathway.compound/UPC00009"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -2,
             "compartment": "e",
@@ -1136,34 +1163,35 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.metabolite/pyr",
                                 "http://identifiers.org/biocyc/PYRUVATE",
                                 "http://identifiers.org/cas/127-17-3",
                                 "http://identifiers.org/cas/127-17-3",
-                                "http://identifiers.org/chebi/CHEBI:15361",
                                 "http://identifiers.org/chebi/CHEBI:14987",
-                                "http://identifiers.org/chebi/CHEBI:8685",
+                                "http://identifiers.org/chebi/CHEBI:15361",
+                                "http://identifiers.org/chebi/CHEBI:26462",
+                                "http://identifiers.org/chebi/CHEBI:26466",
                                 "http://identifiers.org/chebi/CHEBI:32816",
                                 "http://identifiers.org/chebi/CHEBI:45253",
-                                "http://identifiers.org/chebi/CHEBI:26466",
-                                "http://identifiers.org/chebi/CHEBI:26462",
+                                "http://identifiers.org/chebi/CHEBI:8685",
                                 "http://identifiers.org/hmdb/HMDB00243",
                                 "http://identifiers.org/kegg.compound/C00022",
                                 "http://identifiers.org/lipidmaps/LMFA01060077",
                                 "http://identifiers.org/pubchem.substance/3324",
                                 "http://identifiers.org/reactome/REACT_113557",
-                                "http://identifiers.org/reactome/REACT_389680",
                                 "http://identifiers.org/reactome/REACT_29398",
+                                "http://identifiers.org/reactome/REACT_389680",
                                 "http://identifiers.org/seed.compound/cpd00020",
                                 "http://identifiers.org/unipathway.compound/UPC00022"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "charge": -1,
             "compartment": "c",
@@ -1175,15 +1203,16 @@
     "reactions": [
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/ATPM"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "",
             "id": "R_ATPM",
@@ -1209,15 +1238,16 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/ENO"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "b2779",
             "id": "R_ENO",
@@ -1233,15 +1263,16 @@
         {
             "annotation": {
                 "sbo": "SBO:0000627",
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/glc"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "",
             "id": "R_EX_glc__D_e",
@@ -1255,15 +1286,16 @@
         {
             "annotation": {
                 "sbo": "SBO:0000627",
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/h"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "",
             "id": "R_EX_h_e",
@@ -1277,15 +1309,16 @@
         {
             "annotation": {
                 "sbo": "SBO:0000627",
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/lac__D"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "",
             "id": "R_EX_lac__D_e",
@@ -1298,15 +1331,16 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/FBA"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "b1773 or b2097 or b2925",
             "id": "R_FBA",
@@ -1321,15 +1355,16 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/GAPD"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "b1779",
             "id": "R_GAPD",
@@ -1347,15 +1382,16 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/GLCpts"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "(b2415 and b2417 and b1101 and b2416) or (b2415 and b2417 and b1621 and b2416) or (b2415 and b1818 and b1817 and b1819 and b2416)",
             "id": "R_GLCpts",
@@ -1371,15 +1407,16 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/H2Ot"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "b0875 or s0001",
             "id": "R_H2Ot",
@@ -1394,9 +1431,9 @@
         {
             "annotation": {
                 "sbo": "SBO:0000375",
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/LDH_D",
                                 "http://identifiers.org/biocyc/META:DLACTDEHYDROGNAD-RXN",
@@ -1408,9 +1445,10 @@
                                 "http://identifiers.org/rhea/16371",
                                 "http://identifiers.org/rhea/16372"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "b2133 or b1380",
             "id": "R_LDH_D",
@@ -1428,15 +1466,16 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/PFK"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "b3916 or b1723",
             "id": "R_PFK",
@@ -1454,15 +1493,16 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/PGI"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "b4025",
             "id": "R_PGI",
@@ -1476,15 +1516,16 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/PGK"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "b2926",
             "id": "R_PGK",
@@ -1500,15 +1541,16 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/PGM"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "b4395 or b3612 or b0755",
             "id": "R_PGM",
@@ -1522,15 +1564,16 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/PIt2r"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "b2987 or b3493",
             "id": "R_PIt2r",
@@ -1546,15 +1589,16 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/PYK"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "b1854 or b1676",
             "id": "R_PYK",
@@ -1571,15 +1615,16 @@
         },
         {
             "annotation": {
-                "standardized": {
-                    "bqb_is": [
-                        {
+                "standardized": [
+                    {
+                        "external_resources": {
                             "resources": [
                                 "http://identifiers.org/bigg.reaction/TPI"
                             ]
-                        }
-                    ]
-                }
+                        },
+                        "qualifier": "bqb_is"
+                    }
+                ]
             },
             "gene_reaction_rule": "b3919",
             "id": "R_TPI",

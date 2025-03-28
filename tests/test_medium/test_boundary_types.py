@@ -1,5 +1,6 @@
 """Test functionalities of boundary type detection functions."""
 
+import logging
 
 import pytest
 
@@ -41,6 +42,19 @@ def test_find_external_compartment_multi(model: Model) -> None:
         find_external_compartment(model)
 
 
+@pytest.mark.parametrize("compartment", ["C_e", "e0"])
+def test_find_external_popular_reconstructions(
+    model: Model, compartment, caplog
+) -> None:
+    """Test some additional id formats."""
+    for ex in model.exchanges:
+        ex.reactants[0].compartment = compartment
+    with caplog.at_level(logging.WARNING):
+        external = find_external_compartment(model)
+    assert external == compartment
+    assert "complete nonsense" not in caplog.text
+
+
 def test_no_names_or_boundary_reactions(empty_model: Model) -> None:
     """Test absence of name or boundary reactions."""
     with pytest.raises(RuntimeError):
@@ -58,7 +72,7 @@ def test_find_boundary_types_exchange(model: Model) -> None:
 def test_find_boundary_types_demand(model: Model) -> None:
     """Test boundary type identification for demands."""
     dm = Reaction("demand")
-    model.add_reaction(dm)
+    model.add_reactions([dm])
     dm.build_reaction_from_string("atp_c ->")
     dm = model.demands
     assert len(dm) == 1
@@ -68,7 +82,7 @@ def test_find_boundary_types_demand(model: Model) -> None:
 def test_find_boundary_types_sink(model: Model) -> None:
     """Test boundary type identification for sinks."""
     sn = Reaction("sink")
-    model.add_reaction(sn)
+    model.add_reactions([sn])
     sn.build_reaction_from_string("atp_c <->")
     sn.bounds = -1000, 1000
     sn = model.sinks

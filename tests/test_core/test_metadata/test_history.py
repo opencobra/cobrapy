@@ -1,3 +1,5 @@
+"""Test functions of history.py."""
+
 import os
 from datetime import datetime, timedelta, timezone
 
@@ -20,6 +22,7 @@ def _read_ecoli_annotation_model(data_directory):
 
 
 def test_create_history():
+    """Create a history object and verify its contents."""
     history = History(
         creators=[
             Creator(
@@ -48,6 +51,7 @@ def test_create_history():
 
 
 def test_history_from_ecoli_xml(data_directory):
+    """Test loading the history of an e_coli_core SBML file."""
     model = _read_ecoli_annotation_model(data_directory)
     history = History(
         creators=[
@@ -115,6 +119,7 @@ def test_history_from_ecoli_xml(data_directory):
 
 
 def test_create_creator():
+    """Test creating a Creator metadata object and verify its contents."""
     creator = Creator(
         given_name="Matthias",
         family_name="König",
@@ -192,6 +197,7 @@ def test_create_creator():
 
 
 def test_historydatetime():
+    """Test the 'created_date' property of the History object."""
     # valid date
     dt_str1 = JUNE_26TH_530
     datetime_obj = History(created_date=dt_str1)

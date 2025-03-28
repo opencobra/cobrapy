@@ -5,9 +5,9 @@ from collections.abc import MutableMapping
 from datetime import datetime
 from typing import Dict, Iterable, Iterator, List, Optional, Union
 
-from ..metadata.custompairs import KeyValuePairs
 from ..metadata.cvterm import CVTerm, CVTermList
 from ..metadata.history import Creator, History
+from ..metadata.keyvaluepairs import KeyValuePairs
 
 
 class MetaData(MutableMapping):
@@ -40,7 +40,7 @@ class MetaData(MutableMapping):
     sbo: str
         The sbo term to use for the entity. If you want to use more than one SBO term
         (not recommended), use SBO in identifers.org format and put it in standardized.
-    keyvaluepairs : list
+    custompairs : list
         Key-value pairs which are not suitable to be
         represented anywhere else in the model.
         Data is represented as an OrderedDict.
@@ -48,10 +48,10 @@ class MetaData(MutableMapping):
 
     def __init__(
         self,
-        cvterms: Union[Dict, CVTermList] = None,
-        history: Union[Dict, History] = None,
+        cvterms: Optional[Union[Dict, CVTermList]] = None,
+        history: Optional[Union[Dict, History]] = None,
         sbo: str = "",
-        keyvaluepairs: List = None,
+        custompairs: Optional[List] = None,
     ):
         """Initialize the MetaData class.
 
@@ -64,20 +64,14 @@ class MetaData(MutableMapping):
             modificiation date. Default None.
         sbo: str
             SBO term, if relevant. Default "".
-        keyvaluepairs: KeyValuePairs
+        custompairs: KeyValuePairs
             For annotations that don't match the identifiers.org format.
 
         """
-        self._standardized = CVTermList.from_data(cvterms)
-        self._history = History.from_data(history)
-        self._custompairs = KeyValuePairs(keyvaluepairs)
-        self._sbo = sbo
-
-        # use setters
-        self.sbo = sbo
         self.standardized = cvterms
         self.history = history
-        self.custompairs = keyvaluepairs
+        self.custompairs = KeyValuePairs(custompairs)
+        self.sbo = sbo
 
     @property
     def standardized(self) -> "CVTermList":
@@ -90,7 +84,7 @@ class MetaData(MutableMapping):
         return self._standardized
 
     @standardized.setter
-    def standardized(self, cvterms: Union[Dict, CVTermList]) -> None:
+    def standardized(self, cvterms: Optional[Union[Dict, CVTermList]]) -> None:
         """Set standardized field of MetaData with controlled vocabulary (CVTerm).
 
         Parameters
@@ -206,11 +200,25 @@ class MetaData(MutableMapping):
         self._sbo = value
 
     @property
-    def keyvaluepairs(self) -> KeyValuePairs:
+    def custompairs(self) -> KeyValuePairs:
+        """Returns the custom key-value pairs of annotations.
+
+        Returns
+        -------
+        KeyValuePairs: The key-value pairs.
+        """
         return self._custompairs
 
-    @keyvaluepairs.setter
-    def keyvaluepairs(self, keyvaluepairs: Union[Dict, KeyValuePairs]) -> None:
+    @custompairs.setter
+    def custompairs(self, keyvaluepairs: Union[Dict, KeyValuePairs]) -> None:
+        """Set the custom key-value pairs of annotations.
+
+        Parameters
+        ----------
+        keyvaluepairs: Dict or KeyValuePairs
+            A dictionary or KeyValuePair instance that contain all annotation
+            custom key-value pairs.
+        """
         self._custompairs = KeyValuePairs(keyvaluepairs)
 
     def __setitem__(self, key: str, value: Union[List, str]) -> None:
@@ -403,9 +411,9 @@ class MetaData(MutableMapping):
         )
         cvterms = self.standardized
         history = self.history
-        keyValuepairs = self.keyvaluepairs
+        custompairs = self.custompairs
 
-        if cvterms or not history.is_empty() or keyValuepairs:
+        if cvterms or not history.is_empty() or custompairs:
             repr_str += (
                 f"'standardized': {self.standardized.to_list_of_dicts()},"
                 f"'history': {self.history.to_dict()},"
@@ -438,8 +446,8 @@ class MetaData(MutableMapping):
         if self.history and not self.history.is_empty():
             d["history"] = self.history.to_dict()
 
-        if self.keyvaluepairs:
-            d["custompairs"] = self.keyvaluepairs.to_dict()
+        if self.custompairs:
+            d["custompairs"] = self.custompairs.to_dict()
 
         return d
 
@@ -469,10 +477,10 @@ class MetaData(MutableMapping):
         """
         cvterms = data.get("standardized", None)
         history = data.get("history", None)
-        keyValuepairs = data.get("custompairs", None)
+        custompairs = data.get("custompairs", None)
 
-        if cvterms or history or keyValuepairs:
-            annotation = MetaData(cvterms, history, keyValuepairs)
+        if cvterms or history or custompairs:
+            annotation = MetaData(cvterms, history, custompairs)
         else:
             annotation = MetaData()
             annotation.standardized.add_simple_annotations(data)

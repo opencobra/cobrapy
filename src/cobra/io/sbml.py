@@ -9,7 +9,8 @@ SBML import and export using python-libsbml.
 Parsing of fbc models was implemented as efficient as possible, whereas
 (discouraged) fallback solutions are not optimized for efficiency.
 
-#TODO - fix the following paragraph, which is incorrect. Load up keyvalue pairs from notes??
+#TODO - fix the following paragraph, which is incorrect.
+        Load up keyvalue pairs from notes??
 Notes are only supported in a minimal way relevant for constraint-based
 models. I.e., structured information from notes in the form
    <p>key: value</p>
@@ -28,12 +29,12 @@ Some SBML related issues are still open, please refer to the respective issue:
 
 import datetime
 import logging
-import os
 import re
 from ast import And, BoolOp, Module, Name, Or
 from collections import defaultdict, namedtuple
 from copy import deepcopy
 from io import StringIO
+from pathlib import Path
 from sys import platform
 from typing import IO, List, Match, Optional, Pattern, Tuple, Type, Union
 from warnings import warn
@@ -407,7 +408,7 @@ F_REPLACE: dict = {
 # -----------------------------------------------------------------------------
 # noinspection PyDefaultArgument
 def read_sbml_model(
-    filename: Union[str, IO],
+    filename: Union[str, IO, Path],
     number: Type = float,
     f_replace: dict = F_REPLACE,
     **kwargs,
@@ -485,7 +486,7 @@ def read_sbml_model(
         raise cobra_error from original_error
 
 
-def _get_doc_from_filename(filename: Union[str, IO]) -> "libsbml.SBMLDocument":
+def _get_doc_from_filename(filename: Union[str, IO, Path]) -> "libsbml.SBMLDocument":
     """Get SBMLDocument from given filename.
 
     Parameters
@@ -501,35 +502,27 @@ def _get_doc_from_filename(filename: Union[str, IO]) -> "libsbml.SBMLDocument":
     IOError if file not readable or does not contain SBML.
     CobraSBMLError if input type is not valid.
     """
-    if isinstance(filename, str):
-        if ("win" in platform) and (len(filename) < 260) and os.path.exists(filename):
-            # path (win)
-            doc = libsbml.readSBMLFromFile(
-                filename
-            )  # noqa: E501 type: libsbml.SBMLDocument
-        elif ("win" not in platform) and os.path.exists(filename):
-            # path other
-            doc = libsbml.readSBMLFromFile(
-                filename
-            )  # noqa: E501 type: libsbml.SBMLDocument
+    if isinstance(filename, Path) and {".bz2", ".gz"}.isdisjoint(filename.suffixes):
+        doc: libsbml.SBMLDocument = libsbml.readSBMLFromString(filename.read_text())
+    elif isinstance(filename, Path) and {".bz2", ".gz"}.intersection(filename.suffixes):
+        doc: libsbml.SBMLDocument = libsbml.readSBMLFromFile(str(filename))
+    elif isinstance(filename, str):
+        if "<sbml" in filename:
+            doc: libsbml.SBMLDocument = libsbml.readSBMLFromString(filename)
+        elif (
+            ("win" in platform) and (len(filename) < 260) or "win" not in platform
+        ) and Path(filename).exists():
+            doc: libsbml.SBMLDocument = libsbml.readSBMLFromFile(filename)
         else:
             # string representation
-            if "<sbml" not in filename:
-                raise IOError(
-                    f"The file with '{filename}' does not exist, "
-                    f"or is not an SBML string. Provide the path to "
-                    f"an existing SBML file or a valid SBML string representation:\n"
-                )
-
-            doc = libsbml.readSBMLFromString(
-                filename
-            )  # noqa: E501 type: libsbml.SBMLDocument
-
+            raise IOError(
+                f"The file with '{filename}' does not exist, "
+                f"or is not an SBML string. Provide the path to "
+                f"an existing SBML file or a valid SBML string representation:\n"
+            )
     elif hasattr(filename, "read"):
         # file handle
-        doc = libsbml.readSBMLFromString(
-            filename.read()
-        )  # noqa: E501 type: libsbml.SBMLDocument
+        doc: libsbml.SBMLDocument = libsbml.readSBMLFromString(filename.read())
     else:
         raise CobraSBMLError(
             f"Input type '{type(filename)}' for '{filename}' is not supported."
@@ -613,6 +606,39 @@ def _sbml_to_model(
     cobra_model = Model(model_id)
     cobra_model.name = model.getName() or None
 
+    # meta information
+    meta = {
+        "model.id": model_id,
+        "level": model.getLevel(),
+        "version": model.getVersion(),
+    }
+    # History
+    creators = []
+    created = None
+    if model.isSetModelHistory():
+        history: "libsbml.ModelHistory" = model.getModelHistory()
+
+        if history.isSetCreatedDate():
+            created = history.getCreatedDate().getDateAsString()
+
+        c: "libsbml.ModelCreator"
+        for c in history.getListCreators():
+            creators.append(
+                {
+                    "familyName": c.getFamilyName() if c.isSetFamilyName() else None,
+                    "givenName": c.getGivenName() if c.isSetGivenName() else None,
+                    "organisation": (
+                        c.getOrganisation() if c.isSetOrganisation() else None
+                    ),
+                    "email": c.getEmail() if c.isSetEmail() else None,
+                }
+            )
+
+    meta["creators"] = creators
+    meta["created"] = created
+    meta["notes"] = _parse_notes_dict(doc)
+    meta["annotation"] = _parse_annotations(doc)
+
     info = f"<{model_id}> SBML L{model.getLevel()}V{model.getVersion()}"
     packages = {}
     for k in range(doc.getNumPlugins()):
@@ -626,16 +652,9 @@ def _sbml_to_model(
                 f"information is not parsed"
             )
 
-    # meta information
-    meta = {
-        "model.id": model_id,
-        "level": model.getLevel(),
-        "version": model.getVersion(),
-        "packages": packages,
-        "notes": _parse_notes_dict(doc),
-        "annotation": _parse_annotations(doc),
-        "info": info,
-    }
+    meta["packages"] = packages
+    meta["info"] = info
+
     cobra_model._sbml = meta
 
     # notes and annotations
@@ -1003,7 +1022,6 @@ def _sbml_to_model(
             model.getListOfReactions(),
             model_groups.getListOfGroups(),
         ]:
-
             sbase: "libsbml.SBase"
             for sbase in obj_list:
                 if sbase.isSetId():
@@ -1046,7 +1064,7 @@ def _sbml_to_model(
                     if f_replace and F_REACTION in f_replace:
                         obj_id = f_replace[F_REACTION](obj_id)
                     cobra_member = cobra_model.reactions.get_by_id(obj_id)
-                    cobra_member.subsystem = group.name
+                    cobra_member.subsystem = group.getName()
                 elif typecode == libsbml.SBML_FBC_GENEPRODUCT:
                     if f_replace and F_GENE in f_replace:
                         obj_id = f_replace[F_GENE](obj_id)
@@ -1100,7 +1118,10 @@ def _sbml_to_model(
 # -----------------------------------------------------------------------------
 # noinspection PyDefaultArgument
 def write_sbml_model(
-    cobra_model: Model, filename: Union[str, IO], f_replace: dict = F_REPLACE, **kwargs
+    cobra_model: Model,
+    filename: Union[str, IO, Path],
+    f_replace: dict = F_REPLACE,
+    **kwargs,
 ) -> None:
     """Write cobra model to filename.
 
@@ -1136,7 +1157,8 @@ def write_sbml_model(
     if isinstance(filename, str):
         # write to path
         libsbml.writeSBMLToFile(doc, filename)
-
+    elif isinstance(filename, Path):
+        libsbml.writeSBMLToFile(doc, str(filename))
     elif hasattr(filename, "write"):
         # write to file handle
         sbml_str = libsbml.writeSBMLToString(doc)
@@ -1197,6 +1219,36 @@ def _model_to_sbml(
         if "notes" in meta:
             _sbase_notes_dict(doc, meta["notes"])
 
+        history: "libsbml.ModelHistory" = libsbml.ModelHistory()
+        if "created" in meta and meta["created"]:
+            history.setCreatedDate(libsbml.Date(meta["created"]))
+        else:
+            time = datetime.datetime.now()
+            timestr = time.strftime("%Y-%m-%dT%H:%M:%S")
+            date = libsbml.Date(timestr)
+            _check(history.setCreatedDate(date), "set creation date")
+            _check(history.setModifiedDate(date), "set modified date")
+
+        if "creators" in meta:
+            for cobra_creator in meta[
+                "creators"
+            ]:  # noqa: E501 type: libsbml.ModelCreator
+                creator = libsbml.ModelCreator()
+                if cobra_creator.get("familyName", None):
+                    creator.setFamilyName(cobra_creator["familyName"])
+                if cobra_creator.get("givenName", None):
+                    creator.setGivenName(cobra_creator["givenName"])
+                if cobra_creator.get("organisation", None):
+                    creator.setOrganisation(cobra_creator["organisation"])
+                if cobra_creator.get("email", None):
+                    creator.setEmail(cobra_creator["email"])
+
+                _check(history.addCreator(creator), "adding creator to ModelHistory.")
+
+        # TODO: Will be implemented as part of
+        #  https://github.com/opencobra/cobrapy/issues/810
+        # _check(model.setModelHistory(history), 'set model history')
+
     # Units
     flux_udef = None
     if units:
@@ -1209,13 +1261,8 @@ def _model_to_sbml(
             unit.setScale(u.scale)
             unit.setMultiplier(u.multiplier)
 
-    # minimum and maximum value from model
-    if len(cobra_model.reactions) > 0:
-        min_value = min(cobra_model.reactions.list_attr("lower_bound"))
-        max_value = max(cobra_model.reactions.list_attr("upper_bound"))
-    else:
-        min_value = config.lower_bound
-        max_value = config.upper_bound
+    min_value = config.lower_bound
+    max_value = config.upper_bound
 
     _create_parameter(
         model, pid=LOWER_BOUND_ID, value=min_value, sbo=SBO_DEFAULT_FLUX_BOUND
@@ -1915,11 +1962,9 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
     sbase.setMetaId(meta_id)
 
     # set standardized
-    [
-        # Question for @matthiaskoenig - should I be using createCVTerms?
+    # Question for @matthiaskoenig - should I be using createCVTerms?
+    for cv in _cvterms_to_sbml(annotation.standardized):
         _check(sbase.addCVTerm(cv, newBag=True), f"Setting cvterm: {cv}")
-        for cv in _cvterms_to_sbml(annotation.standardized)
-    ]
 
     # set history
     if not annotation.history.is_empty():
@@ -1929,8 +1974,10 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
             comp_creator = libsbml.ModelCreator()
             comp_creator.setGivenName(creator.given_name)
             comp_creator.setFamilyName(creator.family_name)
-            creator.email and comp_creator.setEmail(creator.email)
-            creator.organisation and comp_creator.setOrganisation(creator.organisation)
+            if creator.email:
+                comp_creator.setEmail(creator.email)
+            if creator.organisation:
+                comp_creator.setOrganisation(creator.organisation)
             _check(
                 comp_history.addCreator(comp_creator),
                 f"adding creator to {sbase.getId}.",
@@ -1967,7 +2014,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
 # Validation
 # -----------------------------------------------------------------------------
 def validate_sbml_model(
-    filename: Union[str, IO],
+    filename: Union[str, IO, Path],
     check_model: bool = True,
     internal_consistency: bool = True,
     check_units_consistency: bool = False,
@@ -2069,7 +2116,7 @@ def validate_sbml_model(
         model = _sbml_to_model(doc, **kwargs)
     except CobraSBMLError as e:
         errors["COBRA_ERROR"].append(str(e))
-        model = None # If we return, we won't get to the errors["COBRA_ERROR"]
+        model = None  # If we return, we won't get to the errors["COBRA_ERROR"]
     except Exception as e:
         errors["COBRA_FATAL"].append(str(e))
         model = None

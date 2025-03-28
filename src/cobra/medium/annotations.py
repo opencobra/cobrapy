@@ -55,6 +55,8 @@ compartment_shortlist = {
         "intracellular",
         "intracellular region",
         "intracellular space",
+        "c0",  # GAPSEQ
+        "C_c",  # CARVEME
     ],
     "er": ["endoplasmic reticulum"],
     "erm": ["endoplasmic reticulum membrane"],
@@ -68,6 +70,8 @@ compartment_shortlist = {
         "extra-organism",
         "external",
         "external medium",
+        "e0",  # GAPSEQ
+        "C_e",  # CARVEME
     ],
     "f": ["flagellum", "bacterial-type flagellum"],
     "g": ["golgi", "golgi apparatus"],
@@ -78,7 +82,7 @@ compartment_shortlist = {
     "mm": ["mitochondrial membrane"],
     "m": ["mitochondrion", "mitochondria"],
     "n": ["nucleus"],
-    "p": ["periplasm", "periplasmic space"],
+    "p": ["periplasm", "periplasmic space", "p0", "C_p"],  # GAPSEQ  # CARVEME
     "x": ["peroxisome", "glyoxysome"],
     "u": ["thylakoid"],
     "vm": ["vacuolar membrane"],

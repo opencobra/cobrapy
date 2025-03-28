@@ -39,6 +39,7 @@ def test_get_context(model: "Model") -> None:
 
 def test_resettable() -> None:
     """Test if resettable decorator is functional."""
+
     # decorate a dummy function
     @resettable
     def change_my_name(old_name, new_name):

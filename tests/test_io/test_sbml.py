@@ -72,19 +72,19 @@ trial_names: list = [node.name for node in trials]
 
 
 @pytest.mark.parametrize("trial", trials)
-def test_validate(trial: IOTrial, data_directory: str) -> None:
+def test_validate(trial: IOTrial, data_directory: Path) -> None:
     """Test validation function.
 
     Parameters
     ----------
     trial: IOTrial
         Which model trial to check.
-    data_directory: str
+    data_directory: Path
         Directory where the data is.
     """
     if trial.validation_function is None:
         pytest.skip("not implemented")
-    test_file = join(data_directory, trial.test_file)
+    test_file = data_directory / trial.test_file
     trial.validation_function(test_file)
 
 
@@ -238,14 +238,14 @@ class TestCobraIO:
 
 @pytest.fixture(scope="module", params=trials, ids=trial_names)
 def io_trial(
-    request: SubRequest, data_directory: str
+    request: SubRequest, data_directory: Path
 ) -> Tuple[str, Model, Model, Model]:
     """Read reference model, test model, write test model and reread it.
 
     Parameters
     ----------
     request: IOTrail
-    data_directory: str
+    data_directory: Path
         Directory where the data is.
 
     This function will read the reference model, the test model. It will then write
@@ -263,11 +263,11 @@ def io_trial(
     """
     reference_model = None
     if request.param.reference_file:
-        with open(join(data_directory, request.param.reference_file), "rb") as infile:
+        with open(
+            data_directory.joinpath(request.param.reference_file), "rb"
+        ) as infile:
             reference_model = load(infile)
-    test_model = request.param.read_function(
-        join(data_directory, request.param.test_file)
-    )
+    test_model = request.param.read_function(data_directory / request.param.test_file)
     test_output_filename = join(gettempdir(), split(request.param.test_file)[-1])
     # test writing the model within a context with a non-empty stack
     with test_model:
@@ -278,42 +278,40 @@ def io_trial(
     return request.param.name, reference_model, test_model, reread_model
 
 
-def test_filehandle(data_directory: str, tmp_path: Path) -> None:
+def test_filehandle(data_directory: Path, tmp_path: Path) -> None:
     """Test reading and writing to file handle.
 
     Parameters
     ----------
-    data_directory: str
+    data_directory: Path
         Directory where the data is.
     tmp_path: Path
         Directory to use for temporary data.
     """
-    with open(join(data_directory, "mini_fbc2.xml"), "r") as f_in:
+    with data_directory.joinpath("mini_fbc2.xml").open("r") as f_in:
         model1 = read_sbml_model(f_in)
         assert model1 is not None
 
-    sbml_path = join(str(tmp_path), "test.xml")
-    with open(sbml_path, "w") as f_out:
+    sbml_path = tmp_path / "test.xml"
+    with sbml_path.open("w") as f_out:
         write_sbml_model(model1, f_out)
 
-    with open(sbml_path, "r") as f_in:
+    with sbml_path.open("r") as f_in:
         model2 = read_sbml_model(f_in)
 
     TestCobraIO.compare_models(name="filehandle", model1=model1, model2=model2)
 
 
-def test_from_sbml_string(data_directory: str) -> None:
+def test_from_sbml_string(data_directory: Path) -> None:
     """Test reading from SBML string.
 
     Parameters
     ----------
-    data_directory: str
+    data_directory: Path
         Directory where the data is.
     """
-    sbml_path = join(data_directory, "mini_fbc2.xml")
-    with open(sbml_path, "r") as f_in:
-        sbml_str = f_in.read()
-        model1 = read_sbml_model(sbml_str)
+    sbml_path = data_directory / "mini_fbc2.xml"
+    model1 = read_sbml_model(sbml_path.read_text())
 
     model2 = read_sbml_model(sbml_path)
     TestCobraIO.compare_models(name="read from string", model1=model1, model2=model2)
@@ -391,8 +389,9 @@ def test_model_history(tmp_path: Path) -> None:
         "modified_dates": ["2019-10-20T12:35:32Z"],
     }
     model.annotation = MetaData(history=history)
+    assert len(model.annotation.history.creators) == 1
 
-    sbml_path = join(str(tmp_path), "test.xml")
+    sbml_path = tmp_path / "test.xml"
     with open(sbml_path, "w") as f_out:
         write_sbml_model(model, f_out)
 
@@ -417,24 +416,24 @@ def test_model_history(tmp_path: Path) -> None:
     )
 
 
-def test_groups(data_directory: str, tmp_path: Path) -> None:
+def test_groups(data_directory: Path, tmp_path: Path) -> None:
     """Testing reading and writing of groups.
 
     Parameters
     ----------
-    data_directory: str
+    data_directory: Path
         Directory where the data is.
     tmp_path: Path
         Directory to use for temporary data.
     """
-    sbml_path = join(data_directory, "e_coli_core.xml")
+    sbml_path = data_directory / "e_coli_core.xml"
     model = read_sbml_model(sbml_path)
     assert model.groups is not None
     assert len(model.groups) == 10
     g1 = model.groups[0]
     assert len(g1.members) == 6
 
-    temp_path = join(str(tmp_path), "test.xml")
+    temp_path = tmp_path / "test.xml"
     with open(temp_path, "w") as f_out:
         write_sbml_model(model, f_out)
 
@@ -447,15 +446,15 @@ def test_groups(data_directory: str, tmp_path: Path) -> None:
         assert len(g1.members) == 6
 
 
-def test_missing_flux_bounds1(data_directory: str) -> None:
+def test_missing_flux_bounds1(data_directory: Path) -> None:
     """Test missing flux bounds in an incorrect model.
 
     Parameters
     ----------
-    data_directory: str
+    data_directory: Path
         Directory where the data is.
     """
-    sbml_path = join(data_directory, "annotation.xml")
+    sbml_path = data_directory / "annotation.xml"
     with open(sbml_path, "r") as f_in:
         # missing flux bounds are set to cobra.configuration.bounds
         # noinspection PyTupleAssignmentBalance
@@ -465,15 +464,15 @@ def test_missing_flux_bounds1(data_directory: str) -> None:
         assert r1.upper_bound == config.upper_bound
 
 
-def test_missing_flux_bounds2(data_directory: str) -> None:
+def test_missing_flux_bounds2(data_directory: Path) -> None:
     """Test missing flux bounds set to [-INF, INF].
 
     Parameters
     ----------
-    data_directory: str
+    data_directory: Path
         Directory where the data is.
     """
-    sbml_path = join(data_directory, "annotation.xml")
+    sbml_path = data_directory / "annotation.xml"
     with open(sbml_path, "r") as f_in:
         # missing flux bounds are set to [-INF, INF]
         # noinspection PyTupleAssignmentBalance
@@ -483,15 +482,15 @@ def test_missing_flux_bounds2(data_directory: str) -> None:
         assert r1.upper_bound == config.upper_bound
 
 
-def test_validate2(data_directory: str) -> None:
+def test_validate2(data_directory: Path) -> None:
     """Test the validation code.
 
     Parameters
     ----------
-    data_directory: str
+    data_directory: Path
         Directory where the data is.
     """
-    sbml_path = join(data_directory, "mini_fbc2.xml")
+    sbml_path = data_directory / "mini_fbc2.xml"
     with open(sbml_path, "r") as f_in:
         # noinspection PyTupleAssignmentBalance
         model1, errors = validate_sbml_model(f_in, check_modeling_practice=True)
@@ -500,15 +499,15 @@ def test_validate2(data_directory: str) -> None:
         assert len(errors["SBML_WARNING"]) == 0
 
 
-def test_validation_warnings(data_directory: str) -> None:
+def test_validation_warnings(data_directory: Path) -> None:
     """Test the validation warnings.
 
     Parameters
     ----------
-    data_directory: str
+    data_directory: Path
         Directory where the data is.
     """
-    sbml_path = join(data_directory, "validation.xml")
+    sbml_path = data_directory / "validation.xml"
     with open(sbml_path, "r") as f_in:
         # noinspection PyTupleAssignmentBalance
         model1, errors = validate_sbml_model(f_in, check_modeling_practice=True)
@@ -518,17 +517,17 @@ def test_validation_warnings(data_directory: str) -> None:
         assert "No objective in listOfObjectives" in errors["COBRA_WARNING"]
 
 
-def test_infinity_bounds(data_directory: str, tmp_path: Path) -> None:
+def test_infinity_bounds(data_directory: Path, tmp_path: Path) -> None:
     """Test infinity bound example.
 
     Parameters
     ----------
-    data_directory: str
+    data_directory: Path
         Directory where the data is.
     tmp_path: Path
         Directory to use for temporary data.
     """
-    sbml_path = join(data_directory, "fbc_ex1.xml")
+    sbml_path = data_directory / "fbc_ex1.xml"
     model = read_sbml_model(sbml_path)
 
     # check that simulation works
@@ -540,7 +539,7 @@ def test_infinity_bounds(data_directory: str, tmp_path: Path) -> None:
     assert r.lower_bound == -float("Inf")
     assert r.upper_bound == float("Inf")
 
-    temp_path = join(str(tmp_path), "test.xml")
+    temp_path = tmp_path / "test.xml"
     with open(temp_path, "w") as f_out:
         write_sbml_model(model, f_out)
 
@@ -551,20 +550,20 @@ def test_infinity_bounds(data_directory: str, tmp_path: Path) -> None:
         assert r.upper_bound == float("Inf")
 
 
-def test_boundary_conditions(data_directory: str) -> None:
+def test_boundary_conditions(data_directory: Path) -> None:
     """Test infinity bound example.
 
     Parameters
     ----------
-    data_directory: str
+    data_directory: Path
         Directory where the data is.
     """
-    sbml_path1 = join(data_directory, "fbc_ex1.xml")
+    sbml_path1 = data_directory / "fbc_ex1.xml"
     model1 = read_sbml_model(sbml_path1)
     sol1 = model1.optimize()
 
     # model with species boundaryCondition==True
-    sbml_path2 = join(data_directory, "fbc_ex2.xml")
+    sbml_path2 = data_directory / "fbc_ex2.xml"
     model2 = read_sbml_model(sbml_path2)
     sol2 = model2.optimize()
 
@@ -575,19 +574,57 @@ def test_boundary_conditions(data_directory: str) -> None:
     assert sol1.objective_value == sol2.objective_value
 
 
-def test_gprs(data_directory: str, tmp_path: Path) -> None:
+def test_bounds_on_write(data_directory: Path, tmp_path: Path) -> None:
+    """Test infinity bound example.
+
+    Parameters
+    ----------
+    data_directory: Path
+        Directory where the data is.
+    """
+    sbml_path1 = data_directory / "fbc_ex1.xml"
+    model1 = read_sbml_model(sbml_path1)
+
+    r_x = model1.reactions.get_by_id("EX_X")
+    r_y = model1.reactions.get_by_id("EX_Ac")
+
+    r_x.bounds = (config.lower_bound - 1000, config.upper_bound + 1000)
+    assert r_x.lower_bound == config.lower_bound - 1000
+    assert r_x.upper_bound == config.upper_bound + 1000
+
+    # Global min/max bounds for other reactions should not change before & after write!
+    r_y.bounds = (config.lower_bound, config.upper_bound)
+    assert r_y.lower_bound == config.lower_bound
+    assert r_y.upper_bound == config.upper_bound
+
+    sbml_path = tmp_path / "test.xml"
+    with open(sbml_path, "w") as f_out:
+        write_sbml_model(model1, f_out)
+
+    with open(sbml_path, "r") as f_in:
+        model2 = read_sbml_model(f_in)
+
+    r2_x = model2.reactions.get_by_id("EX_X")
+    r2_y = model2.reactions.get_by_id("EX_Ac")
+
+    assert r2_x.lower_bound == r_x.lower_bound
+    assert r2_x.upper_bound == r_x.upper_bound
+    assert r2_y.lower_bound == r_y.lower_bound  # before fix #1300, this would fail
+    assert r2_y.upper_bound == r_y.upper_bound  # before fix #1300, this would fail
+
+
+def test_gprs(large_model: Model, tmp_path: Path) -> None:
     """Test that GPRs are written and read correctly.
 
     Parameters
     ----------
-    data_directory: str
-        Directory where the data is.
+    large_model: Model
+        Model to test gprs on.
     tmp_path: Path
         Directory to use for temporary data.
     """
-    model1 = read_sbml_model(join(data_directory, "iJO1366.xml.gz"))
-
-    sbml_path = join(str(tmp_path), "test.xml")
+    model1 = large_model
+    sbml_path = tmp_path / "test.xml"
     with open(sbml_path, "w") as f_out:
         write_sbml_model(model1, f_out)
 
@@ -637,12 +674,12 @@ def test_identifiers_annotation() -> None:
         assert data is None
 
 
-def test_smbl_with_notes(data_directory: str) -> None:
+def test_smbl_with_notes(data_directory: Path, tmp_path: Path) -> None:
     """Test that NOTES in the RECON 2.2 style are written and read correctly.
 
     Parameters
     ----------
-    data_directory: str
+    data_directory: Path
         Directory where the data is.
     """
     sbml_path = join(data_directory, "example_notes.xml")
@@ -732,7 +769,6 @@ def test_smbl_with_notes(data_directory: str) -> None:
             )
         for annotation_key in metabolite_annotations[met_id].keys():
             assert annotation_key in model.metabolites.get_by_id(met_id).annotation
-            print(met_id)
             assert (
                 metabolite_annotations[met_id][annotation_key]
                 == model.metabolites.get_by_id(met_id).annotation[annotation_key]
@@ -754,12 +790,12 @@ def test_smbl_with_notes(data_directory: str) -> None:
         )
 
 
-def test_stable_gprs(data_directory: str, tmp_path: Path) -> None:
+def test_stable_gprs(data_directory: Path, tmp_path: Path) -> None:
     """Test that GPRs are written correctly after manual changes.
 
     Parameters
     ----------
-    data_directory: str
+    data_directory: Path
         Directory where the data is.
     tmp_path: Path
         Directory to use for temporary data.
@@ -777,7 +813,18 @@ def test_stable_gprs(data_directory: str, tmp_path: Path) -> None:
 def test_writing_xml_with_annotation(
     compare_models: Callable, data_directory: Path, tmp_path: Path
 ):
+    """Test consistency when reading and writing models to SBML."""
     model = read_sbml_model(str(join(data_directory, "e_coli_core_for_annotation.xml")))
     write_sbml_model(model, str(join(tmp_path, "e_coli_core_writing.xml")))
     reread_model = read_sbml_model(str(join(tmp_path, "e_coli_core_writing.xml")))
     compare_models(model, reread_model)
+
+
+def test_history(data_directory: Path) -> None:
+    """Test that the history is read from the model."""
+    mini = read_sbml_model(join(data_directory, "mini_history.xml"))
+    assert "creators" in mini._sbml
+    assert "organisation" in mini._sbml["creators"][0]
+    assert "created" in mini._sbml
+    assert isinstance(mini._sbml["created"], str)
+    assert "2022" in mini._sbml["created"]

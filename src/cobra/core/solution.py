@@ -174,16 +174,24 @@ def get_solution(
     reduced = np.empty(len(reactions))
     var_primals = model.solver.primal_values
     shadow = np.empty(len(metabolites))
-    if model.solver.is_integer:
+
+    try:
+        var_duals = model.solver.reduced_costs
+        constr_duals = model.solver.shadow_prices
+        duals_available = True
+    except Exception:
+        duals_available = False
+
+    if model.solver.is_integer or not duals_available:
         reduced.fill(np.nan)
         shadow.fill(np.nan)
-        for (i, rxn) in enumerate(reactions):
+        for i, rxn in enumerate(reactions):
             rxn_index.append(rxn.id)
             fluxes[i] = var_primals[rxn.id] - var_primals[rxn.reverse_id]
         met_index = [met.id for met in metabolites]
     else:
         var_duals = model.solver.reduced_costs
-        for (i, rxn) in enumerate(reactions):
+        for i, rxn in enumerate(reactions):
             forward = rxn.id
             reverse = rxn.reverse_id
             rxn_index.append(forward)
@@ -191,7 +199,7 @@ def get_solution(
             reduced[i] = var_duals[forward] - var_duals[reverse]
         met_index = []
         constr_duals = model.solver.shadow_prices
-        for (i, met) in enumerate(metabolites):
+        for i, met in enumerate(metabolites):
             met_index.append(met.id)
             shadow[i] = constr_duals[met.id]
     return Solution(

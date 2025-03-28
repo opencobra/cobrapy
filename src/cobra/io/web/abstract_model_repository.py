@@ -1,6 +1,5 @@
 """Provide an abstract base class that describes a remote model repository."""
 
-
 from abc import ABC, abstractmethod
 from typing import Union
 

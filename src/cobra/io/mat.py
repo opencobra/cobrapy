@@ -3,7 +3,8 @@
 import logging
 import re
 from collections import OrderedDict
-from typing import Dict, Iterable, List, Optional, Pattern
+from pathlib import Path
+from typing import IO, Dict, Iterable, List, Optional, Pattern, Union
 
 import numpy as np
 
@@ -212,19 +213,23 @@ def _cell_to_str_list(
     """
     if str_prefix and pattern_split:
         return [
-            [
-                str_prefix + str_found if str_prefix not in str_found else str_found
-                for str_found in pattern_split.findall(str(each_cell[0][0]))
-            ]
-            if np.size(each_cell[0])
-            else empty_value
+            (
+                [
+                    str_prefix + str_found if str_prefix not in str_found else str_found
+                    for str_found in pattern_split.findall(str(each_cell[0][0]))
+                ]
+                if np.size(each_cell[0])
+                else empty_value
+            )
             for each_cell in m_cell
         ]
     elif pattern_split:
         return [
-            pattern_split.findall(str(each_cell[0][0]))
-            if np.size(each_cell[0])
-            else empty_value
+            (
+                pattern_split.findall(str(each_cell[0][0]))
+                if np.size(each_cell[0])
+                else empty_value
+            )
             for each_cell in m_cell
         ]
     else:
@@ -284,13 +289,15 @@ def _cell_to_float_list(
 
 
 def load_matlab_model(
-    infile_path: str, variable_name: Optional[str] = None, inf: float = np.inf
+    infile_path: Union[str, Path, IO],
+    variable_name: Optional[str] = None,
+    inf: float = np.inf,
 ) -> Model:
     """Load a cobra model stored as a .mat file.
 
     Parameters
     ----------
-    infile_path : str
+    infile_path : str or Path or filehandle
         File path or descriptor of the .mat file describing the cobra model.
     variable_name : str, optional
         The variable name of the model in the .mat file. If None, then the
@@ -317,7 +324,12 @@ def load_matlab_model(
     if not scipy_io:
         raise ImportError("load_matlab_model() requires scipy.")
 
-    data = scipy_io.loadmat(infile_path)
+    if isinstance(infile_path, str):
+        data = scipy_io.loadmat(infile_path)
+    elif isinstance(infile_path, Path):
+        data = scipy_io.loadmat(infile_path.open("rb"))  # noqa W9018
+    else:
+        data = scipy_io.loadmat(infile_path)  # noqa W9018
     possible_names = []
     if variable_name is None:
         # skip meta variables
@@ -339,7 +351,7 @@ def load_matlab_model(
 
 
 def save_matlab_model(
-    model: Model, file_name: str, varname: Optional[str] = None
+    model: Model, file_name: Union[str, Path, IO], varname: Optional[str] = None
 ) -> None:
     """Save the cobra model as a .mat file.
 
@@ -349,7 +361,7 @@ def save_matlab_model(
     ----------
     model : cobra.Model
         The cobra model to represent.
-    file_name : str or file-like
+    file_name : str or file-like or Path
         File path or descriptor that the MATLAB representation should be
         written to.
     varname : str, optional
@@ -473,9 +485,11 @@ def mat_parse_notes(
             # things like PMC or OMIM, but those are placed as string in notes.
             _notes = _cell_to_str_list(mat_struct[caseunfold[mat_key]][0, 0])
             notes[name] = [
-                _pubmed_re.sub("", x).strip()
-                if x and len(_pubmed_re.sub("", x).strip())
-                else None
+                (
+                    _pubmed_re.sub("", x).strip()
+                    if x and len(_pubmed_re.sub("", x).strip())
+                    else None
+                )
                 for x in _notes
             ]
         elif mat_key == "rxnConfidenceScores".casefold():
@@ -683,7 +697,7 @@ def create_mat_dict(model: Model) -> OrderedDict:
         )
     else:
         mat["subSystems"] = _cell(rxns.list_attr("subsystem"))
-    stoich_mat = create_stoichiometric_matrix(model)
+    stoich_mat = create_stoichiometric_matrix(model, array_type="dok")
     mat["S"] = stoich_mat if stoich_mat is not None else [[]]
     # multiply by 1 to convert to float, working around scipy bug
     # https://github.com/scipy/scipy/issues/4537
@@ -861,7 +875,7 @@ def from_mat_struct(
         # RECON3.0 mat has an array within an array for subsystems.
         # If we find a model that has multiple subsytems per reaction, this should be
         # modified
-        if np.sctype2char(m["subSystems"][0, 0][0][0]) == "O" and isinstance(
+        if m["subSystems"][0, 0][0][0].dtype.char == "O" and isinstance(
             m["subSystems"][0, 0][0][0][0], np.ndarray
         ):
             rxn_subsystems = [
@@ -904,7 +918,9 @@ def from_mat_struct(
         rxn_group_names = set(rxn_subsystems).difference({None})
         new_groups = []
         for g_name in sorted(rxn_group_names):
-            group_members = model.reactions.query(lambda x: x.subsystem == g_name)
+            group_members = model.reactions.query(
+                lambda x: x.subsystem == g_name  # noqa: B023
+            )
             new_group = Group(
                 id=g_name, name=g_name, members=group_members, kind="partonomy"
             )

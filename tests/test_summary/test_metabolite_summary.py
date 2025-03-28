@@ -1,6 +1,5 @@
 """Unit test the MetaboliteSummary class."""
 
-
 import pytest
 
 from cobra.flux_analysis import flux_variability_analysis, pfba

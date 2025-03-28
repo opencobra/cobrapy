@@ -6,7 +6,7 @@ import pytest
 
 from cobra import Model
 from cobra.core import Group
-from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
+from cobra.io import load_json_model, read_sbml_model, save_json_model
 
 
 def test_group_add_elements(model: Model) -> None:
@@ -39,6 +39,7 @@ def test_group_kind() -> None:
 
 
 def test_read_write_json(data_directory, tmp_path):
+    """Test reading and writing groups to json."""
     model = read_sbml_model(join(data_directory, "e_coli_core.xml"))
     assert model.groups is not None
     assert len(model.groups) == 10

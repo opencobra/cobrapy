@@ -1,6 +1,5 @@
 """Provide functions for loading metabolic models from local package data."""
 
-
 import importlib_resources
 
 import cobra.data
@@ -33,7 +32,7 @@ class Cobrapy(AbstractModelRepository):
             Passed to the parent constructor in order to enable multiple inheritance.
 
         """
-        super().__init__(url="file:////", **kwargs)
+        super().__init__(url="file://", **kwargs)
 
     def get_sbml(self, model_id: str) -> bytes:
         """

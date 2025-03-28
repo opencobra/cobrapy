@@ -24,10 +24,10 @@ from warnings import warn
 import sympy.logic.boolalg as spl
 from sympy import Symbol
 
-from cobra.core.dictlist import DictList
-from cobra.core.species import Species
-from cobra.util import resettable
-from cobra.util.util import format_long_string
+from ..util import resettable
+from ..util.util import format_long_string
+from .dictlist import DictList
+from .species import Species
 
 
 # TODO - When https://github.com/symengine/symengine.py/issues/334 is resolved,
@@ -545,9 +545,13 @@ class GPR(Module):
         """
         return self._ast2str(self, names=names)
 
-    def copy(self):
+    def copy(self) -> "GPR":
         """Copy a GPR."""
-        return deepcopy(self)
+        cls = type(self)
+        gpr = cls()
+        gpr._genes = deepcopy(self._genes)
+        gpr.body = deepcopy(self.body)
+        return gpr
 
     def __copy__(self) -> "GPR":
         """Ensure a correct shallow copy."""
@@ -676,7 +680,7 @@ class GPR(Module):
         """
 
         def _sympy_to_ast(
-            sympy_expr: Union[spl.BooleanFunction, Symbol]
+            sympy_expr: Union[spl.BooleanFunction, Symbol],
         ) -> Union[BoolOp, Name]:
             if sympy_expr.func is spl.Or:
                 return BoolOp(

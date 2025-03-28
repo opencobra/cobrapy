@@ -118,15 +118,18 @@ def test_absolute_expression(model: "Model") -> None:
 def test_fix_objective_as_constraint(solver: str, model: "Model") -> None:
     """Test fixing present objective as a constraint."""
     model.solver = solver
+    opt = model.slim_optimize()
     with model as m:
-        su.fix_objective_as_constraint(model, 1.0)
-        constraint_name = m.constraints[-1]
-        assert abs(m.constraints[-1].expression - m.objective.expression) < 1e-6
-    assert constraint_name not in m.constraints
-    su.fix_objective_as_constraint(model)
-    constraint_name = model.constraints[-1]
-    assert abs(model.constraints[-1].expression - model.objective.expression) < 1e-6
-    assert constraint_name in model.constraints
+        su.fix_objective_as_constraint(model, 1.0, name="fixed")
+        assert (m.constraints.fixed.expression - m.objective.expression).simplify() == 0
+        assert m.constraints.fixed.lb == pytest.approx(opt)
+    assert "fixed" not in m.constraints
+    su.fix_objective_as_constraint(model, name="fixed")
+    assert (
+        model.constraints.fixed.expression - model.objective.expression
+    ).simplify() == 0
+    assert m.constraints.fixed.lb == pytest.approx(opt)
+    assert "fixed" in model.constraints
 
 
 @pytest.mark.parametrize("solver", optlang_solvers)

@@ -4,7 +4,7 @@ import re
 from typing import Optional, Union
 from warnings import warn
 
-from cobra.core.object import Object
+from .object import Object
 
 
 # Numbers are not required because of the |(?=[A-Z])? block. See the
@@ -30,7 +30,7 @@ class Formula(Object):
         formula: str, optional
             An string that will be parsed as a formula.
         """
-        super().__init__(self, formula, **kwargs)
+        super().__init__(id=formula, **kwargs)
         self.formula = formula
         self.elements = {}
         if self.formula is not None:
@@ -63,7 +63,7 @@ class Formula(Object):
             return
         composition = {}
         parsed = element_re.findall(tmp_formula)
-        for (element, count) in parsed:
+        for element, count in parsed:
             if count == "":
                 count = 1
             else:

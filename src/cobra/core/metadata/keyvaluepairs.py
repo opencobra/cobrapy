@@ -3,10 +3,11 @@
 Key-Value pairs are described in SBML FBC3. For the FBC3 standard, see
 https://github.com/bgoli/sbml-fbc-spec/blob/main/sf_svn/spec/main.pdf
 """
+
 import uuid
 from collections import UserDict
+from dataclasses import asdict, dataclass
 from typing import Dict, Iterable, Optional, Union
-from dataclasses import dataclass, field, fields, asdict
 
 from ...util import format_long_string
 
@@ -30,6 +31,7 @@ class KeyValueEntry:
     uri: str
         Can be a URN or URL. Optional (default None).
     """
+
     key: str
     id: Optional[str] = None
     name: Optional[str] = None
@@ -53,8 +55,8 @@ class KeyValueEntry:
         if isinstance(data, KeyValueEntry):
             return data
         elif isinstance(data, dict):
-            if 'key' not in data:
-                data['key'] = uuid.uuid4().hex
+            if "key" not in data:
+                data["key"] = uuid.uuid4().hex
             return KeyValueEntry(**data)
         else:
             raise TypeError(f"Invalid format for KeyValueEntry: '{data}'")
@@ -91,7 +93,7 @@ class KeyValuePairs(UserDict):
         an iterable containing entry information
     """
 
-    def __init__(self, entries: Iterable[Union[Dict, KeyValueEntry]] = None):
+    def __init__(self, entries: Optional[Iterable[Union[Dict, KeyValueEntry]]] = None):
         """Initialize the KeyValuePairs dictionary class.
 
         Parameters
@@ -166,7 +168,7 @@ class KeyValuePairs(UserDict):
         """
         return {k: asdict(v) for k, v in self.data.items()}
 
-    #query
+    # query
 
-    #add_key_value_pair
-    #delete_key_value_pair?? Maybe with query
+    # add_key_value_pair
+    # delete_key_value_pair?? Maybe with query

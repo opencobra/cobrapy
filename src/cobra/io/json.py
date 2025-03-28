@@ -1,6 +1,8 @@
 """Provide functions for I/O in JSON format."""
+
+import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import IO, TYPE_CHECKING, Any, List, Union
 
 import jsonschema
 from importlib_resources import files
@@ -10,11 +12,6 @@ from cobra import io as cio
 from .dict import model_from_dict, model_to_dict
 
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
 if TYPE_CHECKING:
     from cobra import Model
 
@@ -22,16 +19,23 @@ if TYPE_CHECKING:
 JSON_SPEC = "1"
 
 
-def json_schema_v1() -> Dict:
-    with files(cio).joinpath("schema_v1.json").open("r") as handle:
-        schema_v1 = json.load(handle)
-    return schema_v1
+def _validator_for_json_schema(schema_version):
+    if schema_version == 1:
+        schema_filename = "schema_v1.json"
+    elif schema_version == 2:
+        schema_filename = "schema_v2.json"
+    else:
+        raise ValueError(
+            f"Only v1 and v2 of JSON schema are available. JSON "
+            f"schema v{schema_version} is not supported."
+        )
+    with files(cio).joinpath(schema_filename).open("r") as handle:
+        schema = json.load(handle)
 
-
-def json_schema_v2() -> Dict:
-    with files(cio).joinpath("schema_v2.json").open("r") as handle:
-        schema_v2 = json.load(handle)
-    return schema_v2
+    # TODO: Should the validator be picked by schema?
+    #  Something like validators.validator_for
+    validator = jsonschema.Draft7Validator(schema)
+    return validator
 
 
 def to_json(model: "Model", sort: bool = False, **kwargs: Any) -> str:
@@ -86,7 +90,7 @@ def from_json(document: str) -> "Model":
 
 def save_json_model(
     model: "Model",
-    filename: Union[str, Path],
+    filename: Union[str, Path, IO],
     sort: bool = False,
     pretty: bool = False,
     **kwargs: Any,
@@ -142,7 +146,7 @@ def save_json_model(
         json.dump(obj, filename, **dump_opts)
 
 
-def load_json_model(filename: Union[str, Path]) -> "Model":
+def load_json_model(filename: Union[str, Path, IO]) -> "Model":
     """Load a cobra model from a file in JSON format.
 
     Parameters
@@ -172,7 +176,8 @@ def validate_json_model(
     filename: Union[str, bytes], json_schema_version: int = 1
 ) -> List:
     """
-    Validate a model in json format against the schema with given version
+    Validate a model in json format against the schema with given version.
+
     Parameters
     ----------
     filename : str or file-like
@@ -186,21 +191,7 @@ def validate_json_model(
     errors : list
         The list of errors encountered while validating
     """
-
-    if json_schema_version == 1:
-        schema = json_schema_v1()
-    elif json_schema_version == 2:
-        schema = json_schema_v2()
-    else:
-        raise ValueError(
-            f"Only v1 and v2 of JSON schema are available. JSON "
-            f"schema v{json_schema_version} is not supported."
-        )
-
-    # TODO - Should the validator be picked by schema?
-    #  Something like validators.validator_for
-    validator = jsonschema.Draft7Validator(schema)
-
+    validator = _validator_for_json_schema(schema_version=json_schema_version)
     try:
         if isinstance(filename, (str, Path)):
             with open(filename, "r") as file_handle:

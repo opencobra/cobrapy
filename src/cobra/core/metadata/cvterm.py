@@ -3,7 +3,17 @@
 import re
 from collections import UserList
 from enum import Enum
-from typing import Callable, Dict, FrozenSet, Iterable, List, Optional, Pattern, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    FrozenSet,
+    Iterable,
+    List,
+    Optional,
+    Pattern,
+    Union,
+)
 
 from .helper import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
 
@@ -124,8 +134,6 @@ class CVTerm:
         qualifier: Qualifier or str
             The qualifier for the relationship.
         """
-        self._ex_res = None
-        self._qualifier = None
         self._ex_res = self.check_ex_res_type(ex_res)
         self._qualifier = self.check_qualifier_type(qualifier)
 
@@ -195,7 +203,7 @@ class CVTerm:
 
     @staticmethod
     def check_ex_res_type(
-        ex_res: Optional[Union["ExternalResources", Dict, str]]
+        ex_res: Optional[Union["ExternalResources", Dict, str]],
     ) -> "ExternalResources":
         """Check and parse input to ExternalResources.
 
@@ -403,7 +411,7 @@ class CVTermList(UserList):
        accept iterables, including CVTermList.
     """
 
-    def __init__(self, data: Iterable[Union[CVTerm, Dict]] = None):
+    def __init__(self, data: Optional[Iterable[Union[CVTerm, Dict]]] = None):
         """Initialize CVTermList object.
 
         Parameters
@@ -418,8 +426,8 @@ class CVTermList(UserList):
         """
         if data is None:
             data = []
-        data = [self._check_CVTerm(datum) for datum in data]
-        super().__init__(data)
+        checked_data = [self._check_CVTerm(datum) for datum in data]
+        super().__init__(checked_data)
 
     @staticmethod
     def _check_CVTerm(cvterm: Union[CVTerm, Dict]) -> Optional["CVTerm"]:
@@ -436,15 +444,17 @@ class CVTermList(UserList):
             )
 
     @staticmethod
-    def from_data(data: Optional[Union[List, "CVTerm", "CVTermList"]]) -> "CVTermList":
+    def from_data(
+        data: Optional[Union[List, Dict, "CVTerm", "CVTermList"]],
+    ) -> "CVTermList":
         """Parse a CVTermList object from given data.
 
         Parameters
         ----------
-        data: list, CVTerm or CVTermList or None, optional
+        data: list, dict, CVTerm or CVTermList or None, optional
             This will be transformed to CVTermList class.
             None will result in an empty CVTermList.
-            CVTerm will be placed in a list and become a CVTermList.
+            CVTerm and dict will be placed in a list and become a CVTermList.
             If given CVTermList, will return the data untransformed.
 
         Returns
@@ -462,6 +472,9 @@ class CVTermList(UserList):
             return CVTermList(data)
         elif isinstance(data, CVTerm):
             return CVTermList([data])
+        elif isinstance(data, dict):
+            return CVTermList([data])
+
         elif isinstance(data, CVTermList):
             return data
         else:
@@ -492,7 +505,7 @@ class CVTermList(UserList):
         """
         self.extend(cvterms)
 
-    def add_simple_annotations(self, data: Dict = None) -> None:
+    def add_simple_annotations(self, data: Optional[Dict] = None) -> None:
         """Add simple annotation.
 
         Adds standardized via old annotation format (dictionary like format).
@@ -519,7 +532,8 @@ class CVTermList(UserList):
         >>> from cobra import Species
         >>> s = Species()
         >>> s.annotation.standardized.add_simple_annotations({"chebi": "CHEBI:17234"})
-        >>> s.annotation.standardized.add_simple_annotations({"chebi": ["CHBEI:1723456", "CHEBI:172345"]})
+        >>> chebi_ent = ["CHBEI:1723456", "CHEBI:172345"]
+        >>> s.annotation.standardized.add_simple_annotations({"chebi": chebi_ent})
         >>> s.annotation
         >>> s.annotation.standardized
         >>> s.annotation.annotations
@@ -560,7 +574,7 @@ class CVTermList(UserList):
         self.add_cvterms(cvterm_list)
 
     def delete_annotation(self, resource: Union[str, Pattern]) -> None:
-        """Delete annotation - the converse of add_simple_annotation.
+        r"""Delete annotation - the converse of add_simple_annotation.
 
         This will go over the CVTerms, and delete all resources that match the pattern.
         It will call the funciton recursively for ExternalResources that have
@@ -665,7 +679,10 @@ class CVTermList(UserList):
         resources = self.resources
         for res in resources:
             if re.match(URL_IDENTIFIERS_PATTERN, res):
-                namespace, identifier = parse_identifiers_uri(res)
+                identifier_match = parse_identifiers_uri(res)
+                if identifier_match is None:
+                    continue
+                namespace, identifier = identifier_match
                 if namespace in annotation_dict.keys():
                     annotation_dict[namespace].append(identifier)
                 else:
@@ -836,7 +853,7 @@ class CVTermList(UserList):
         elif isinstance(iterable, Iterable):
             self.data.extend([self._check_CVTerm(i) for i in iterable])
 
-    def __eq__(self, other: [list, "CVTermList"]) -> bool:
+    def __eq__(self, other: Union[list, "CVTermList"]) -> bool:
         """Compare two CVTermList objects to find out whether they are the same.
 
         Equality is defined as them having the same data, but not necessarily the same
@@ -945,10 +962,12 @@ class ExternalResources:
         frozenset:
             The list of URIs in a frozenset.
         """
+        if self._resources is None:
+            return frozenset()
         return frozenset(self._resources)
 
     @resources.setter
-    def resources(self, value: Union[List[str], str]) -> None:
+    def resources(self, value: Optional[Union[List[str], str]]) -> None:
         """Set resources of ExternalResources.
 
         Will set the URIs of ExternalResources.
@@ -1038,7 +1057,7 @@ class ExternalResources:
                 f"The nested data structure does not have valid CVTerm format: {value}"
             )
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         """Generate a dict representing an ExternalResource object.
 
         Returns
@@ -1048,7 +1067,9 @@ class ExternalResources:
             "resources" - sorted list of resources.
             "nested_data" - optional, dict of nested_data. See CVTermList.to_dict()
         """
-        ex_dic = {"resources": sorted(self._resources)}
+        if self._resources is None:
+            return {}
+        ex_dic: Dict[str, Any] = {"resources": sorted(self._resources)}
         if self.nested_data is not None and len(self.nested_data):
             ex_dic["nested_data"] = self.nested_data.to_list_of_dicts()
         return ex_dic
