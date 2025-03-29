@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, List, Union
+from typing import IO, TYPE_CHECKING, Any, Iterable, TextIO, Union
 
 import jsonschema
 from importlib_resources import files
@@ -173,8 +173,8 @@ def load_json_model(filename: Union[str, Path, IO]) -> "Model":
 
 
 def validate_json_model(
-    filename: Union[str, bytes], json_schema_version: int = 1
-) -> List:
+    filename: Union[str, Path, bytes, TextIO], json_schema_version: int = 1
+) -> Iterable[Any]:
     """
     Validate a model in json format against the schema with given version.
 
@@ -188,8 +188,8 @@ def validate_json_model(
         Currently we have v1 and v2 only and v2 is under development
     Returns
     -------
-    errors : list
-        The list of errors encountered while validating
+    errors : Iterable
+        The iterable of errors encountered while validating
     """
     validator = _validator_for_json_schema(schema_version=json_schema_version)
     try:

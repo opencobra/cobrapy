@@ -25,32 +25,38 @@ class Qualifier(Enum):
     https://co.mbine.org/author/biomodels.net-qualifiers/
 
     Qualifiers are divided into two groups
-    bqb     These kinds of qualifiers define the relationship between a biological
-            object represented by a model element and its annotation.
-    bqm     These kinds of qualifiers define the relationship between a modelling
-            object and its annotation.
+    Biological (bqb)    These kinds of qualifiers define the relationship between a
+                        biological object represented by a model element and its
+                        annotation.
+    Modelling (bqm)     These kinds of qualifiers define the relationship between a
+                        modelling object and its annotation.
     """
 
-    bqb_is = "bqb_is"
-    bqb_hasPart = "bqb_hasPart"
-    bqb_isPartOf = "bqb_isPartOf"
-    bqb_isVersionOf = "bqb_isVersionOf"
-    bqb_hasVersion = "bqb_hasVersion"
-    bqb_isHomologTo = "bqb_isHomologTo"
-    bqb_isDescribedBy = "bqb_isDescribedBy"
-    bqb_isEncodedBy = "bqb_isEncodedBy"
-    bqb_encodes = "bqb_encodes"
-    bqb_occursIn = "bqb_occursIn"
-    bqb_hasProperty = "bqb_hasProperty"
-    bqb_isPropertyOf = "bqb_isPropertyOf"
-    bqb_hasTaxon = "bqb_hasTaxon"
-    bqb_unknown = "bqb_unknown"
-    bqm_is = "bqm_is"
-    bqm_isDescribedBy = "bqm_isDescribedBy"
-    bqm_isDerivedFrom = "bqm_isDerivedFrom"
-    bqm_isInstanceOf = "bqm_isInstanceOf"
-    bqm_hasInstance = "bqm_hasInstance"
-    bqm_unknown = "bqm_unknown"
+    def __init__(self, value):
+        """Initialize Qualifier enums by creating a lookup dictionary."""
+        self.__class__._map = getattr(self.__class__, "_map", {}) | {value: self}
+
+    Biological_is = "bqb_is"
+    Biological_hasPart = "bqb_hasPart"
+    Biological_isPartOf = "bqb_isPartOf"
+    Biological_isVersionOf = "bqb_isVersionOf"
+    Biological_hasVersion = "bqb_hasVersion"
+    Biological_isHomologTo = "bqb_isHomologTo"
+    Biological_isDescribedBy = "bqb_isDescribedBy"
+    Biological_isEncodedBy = "bqb_isEncodedBy"
+    Biological_encodes = "bqb_encodes"
+    Biological_occursIn = "bqb_occursIn"
+    Biological_hasProperty = "bqb_hasProperty"
+    Biological_isPropertyOf = "bqb_isPropertyOf"
+    Biological_hasTaxon = "bqb_hasTaxon"
+    Biological_unknown = "bqb_unknown"
+
+    Modelling_is = "bqm_is"
+    Modelling_isDescribedBy = "bqm_isDescribedBy"
+    Modelling_isDerivedFrom = "bqm_isDerivedFrom"
+    Modelling_isInstanceOf = "bqm_isInstanceOf"
+    Modelling_hasInstance = "bqm_hasInstance"
+    Modelling_unknown = "bqm_unknown"
 
 
 class CVTerm:
@@ -124,7 +130,7 @@ class CVTerm:
     def __init__(
         self,
         ex_res: Optional[Union["ExternalResources", Dict, str]] = None,
-        qualifier: Union[Qualifier, str] = Qualifier.bqb_is,
+        qualifier: Union[Qualifier, str] = Qualifier.Biological_is,
     ):
         """Initialize a CVTerm.
 
@@ -267,12 +273,12 @@ class CVTerm:
             Will raise this error if given a string that does not match the defined
             Qualifier members.
         """
-        if isinstance(qual, str) and qual not in Qualifier.__members__:
+        if isinstance(qual, str) and qual not in Qualifier._map:
             raise TypeError(f"{qual} is not a supported enum Qualifier")
         elif isinstance(qual, Qualifier):
             return qual
         elif isinstance(qual, str):
-            return Qualifier[qual]
+            return Qualifier._map[qual]
         else:
             raise TypeError(
                 f"Allowed types for CVTerm qualifier must be Qualifier,"
@@ -322,7 +328,7 @@ class CVTerm:
         """
         return cls(
             ex_res=data_dict.get("external_resources", None),
-            qualifier=data_dict.get("qualifier", Qualifier["bqb_is"]),
+            qualifier=data_dict.get("qualifier", Qualifier.Biological_is),
         )
 
     def __eq__(self, other: Union["CVTerm", dict]) -> bool:
@@ -555,7 +561,7 @@ class CVTermList(UserList):
             if key.lower() == "sbo":
                 continue
 
-            qual = Qualifier["bqb_is"]
+            qual = Qualifier.Biological_is
             # if there is only one identifier i.e. annotation
             # of the form { "chebi": ["CHEBI:17234"]}
             if isinstance(value, str):
@@ -771,7 +777,7 @@ class CVTermList(UserList):
         try:
             # if the search_function is a regular expression
             regex_searcher = re.compile(search_function)
-
+            print(f"Search function: '{search_function}'")
             if attribute is None:
                 attribute = ""
 
@@ -779,7 +785,10 @@ class CVTermList(UserList):
                 matches = [
                     cvterm
                     for cvterm in self.data
-                    if regex_searcher.findall(select_attribute(cvterm).name) != []
+                    if (
+                        regex_searcher.findall(select_attribute(cvterm).name) != []
+                        or regex_searcher.findall(select_attribute(cvterm).value) != []
+                    )
                 ]
             elif attribute == "resources":
                 matches = [
@@ -803,6 +812,7 @@ class CVTermList(UserList):
                     cvterm
                     for cvterm in self.data
                     if regex_searcher.findall(cvterm.qualifier.name) != []
+                    or regex_searcher.findall(cvterm.qualifier.value) != []
                     or any(regex_searcher.findall(res) for res in cvterm.resources)
                 ]
         except TypeError:

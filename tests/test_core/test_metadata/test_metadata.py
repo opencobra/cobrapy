@@ -103,7 +103,7 @@ def test_annotation() -> None:
     cvt = CVTermList(
         [
             CVTerm(
-                qualifier="bqb_is",
+                qualifier=Qualifier.Biological_is,
                 ex_res=ExternalResources(
                     resources=[
                         "https://identifiers.org/chebi/CHEBI:43215",
@@ -455,33 +455,48 @@ def test_cvtermlist_query():
     )
     cvtermlist = CVTermList()
     for i, res in enumerate(resources):
-        cvtermlist.extend(
-            [CVTerm(qualifier=list(Qualifier.__members__)[i], ex_res=res)]
-        )
+        cvtermlist.extend([CVTerm(qualifier=list(Qualifier._map)[i], ex_res=res)])
 
     cvtermlist.append(
         CVTerm(
             ex_res={
                 "resources": ECO_EXAMPLE,
                 "nested_data": CVTerm(
-                    qualifier="bqb_isDescribedBy", ex_res=PUBMED_EXAMPLE
+                    qualifier=Qualifier.Biological_isDescribedBy, ex_res=PUBMED_EXAMPLE
                 ),
             },
-            qualifier=list(Qualifier.__members__)[19],
+            qualifier=list(Qualifier._map)[19],
         )
     )
+    print(cvtermlist)
     assert isinstance(
         cvtermlist.query(search_function="bqm", attribute="qualifier"), CVTermList
     )
     assert len(cvtermlist.query(search_function="bqm", attribute="qualifier")) == 6
+    assert (
+        len(cvtermlist.query(search_function="Modelling", attribute="qualifier")) == 6
+    )
+    assert (
+        len(
+            cvtermlist.query(search_function="bqb_isDescribedBy", attribute="qualifier")
+        )
+        == 1
+    )
+    assert (
+        len(
+            cvtermlist.query(
+                search_function="Biological_isDescribedBy", attribute="qualifier"
+            )
+        )
+        == 1
+    )
     assert (
         len(cvtermlist.query(search_function=r"bqm_is\S+", attribute="qualifier")) == 3
     )
     assert (
         len(
             cvtermlist.query(
-                search_function=lambda x: list(Qualifier.__members__).index(x.value)
-                > 18,
+                search_function=lambda x: list(Qualifier._map).index(x.value) > 18,
                 attribute="qualifier",
             )
         )
@@ -509,7 +524,15 @@ def test_cvtermlist_query():
     assert len(cvtermlist.query(search_function="pubmed", attribute="resources")) == 1
 
     assert (
-        len(cvtermlist.query(search_function=lambda x: x.qualifier.name == "bqm_is"))
+        len(cvtermlist.query(search_function=lambda x: x.qualifier.value == "bqm_is"))
+        == 1
+    )
+    assert (
+        len(
+            cvtermlist.query(
+                search_function=lambda x: x.qualifier.name == "Modelling_is"
+            )
+        )
         == 1
     )
 

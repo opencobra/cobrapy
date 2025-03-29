@@ -1904,9 +1904,9 @@ def _cvterms_to_sbml(cvterms: CVTermList) -> List["libsbml.CVTerm"]:
     cv_list = []
     for cvterm in cvterms:
         qualifier = cvterm.qualifier
-        if qualifier.name.startswith("bqb"):
+        if qualifier.value.startswith("bqb"):
             qualifier_type = libsbml.BIOLOGICAL_QUALIFIER
-        elif qualifier.name.startswith("bqm"):
+        elif qualifier.value.startswith("bqm"):
             qualifier_type = libsbml.MODEL_QUALIFIER
         else:
             raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
@@ -1915,10 +1915,10 @@ def _cvterms_to_sbml(cvterms: CVTermList) -> List["libsbml.CVTerm"]:
         cv.setQualifierType(qualifier_type)
         if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
             cv.setBiologicalQualifierType(
-                QUALIFIER_TYPES_COBRA_SBML_DICT[qualifier.name]
+                QUALIFIER_TYPES_COBRA_SBML_DICT[qualifier.value]
             )
         elif qualifier_type == libsbml.MODEL_QUALIFIER:
-            cv.setModelQualifierType(QUALIFIER_TYPES_COBRA_SBML_DICT[qualifier.name])
+            cv.setModelQualifierType(QUALIFIER_TYPES_COBRA_SBML_DICT[qualifier.value])
         else:
             raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
         for uri in sorted(cvterm.external_resources.resources):
