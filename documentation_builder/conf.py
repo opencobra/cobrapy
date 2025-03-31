@@ -15,6 +15,7 @@
 import sys
 from os.path import dirname, join
 
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -25,14 +26,16 @@ sys.path.insert(0, SRC_PATH)
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+# Note that, for now, autoapi.extension should be loaded before sphinx.ext.viewcode
+# because of this bug: https://github.com/readthedocs/sphinx-autoapi/issues/422
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
+    "autoapi.extension",
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
-    "autoapi.extension",
     "nbsphinx",
 ]
 # Document Python Code
@@ -58,6 +61,7 @@ copyright = "2016-2022, The cobrapy core team"
 # This import has to be here.
 from cobra import __version__ as release  # noqa: E402
 
+
 version = ".".join(release.split(".")[:2])
 
 # List of patterns, relative to source directory, that match files and
@@ -69,8 +73,7 @@ pygments_style = "sphinx"
 # -- Options for HTML output --------------------------------------------------
 
 mathjax_path = (
-    "https://cdn.mathjax.org/mathjax/latest/"
-    "MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+    "https://cdn.mathjax.org/mathjax/latest/" "MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 )
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -100,9 +103,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ("index", "cobra", u"cobra Documentation", [u"The cobrapy core team"], 1)
-]
+man_pages = [("index", "cobra", "cobra Documentation", ["The cobrapy core team"], 1)]
 
 # -- Options for Texinfo output ------------------------------------------------
 
@@ -123,8 +124,8 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    "http://docs.python.org/": None,
-    "http://docs.scipy.org/doc/numpy/": None,
-    "http://docs.scipy.org/doc/scipy/reference": None,
+    "python": ("http://docs.python.org/", None),
+    "numpy": ("http://docs.scipy.org/doc/numpy/", None),
+    "scipy": ("http://docs.scipy.org/doc/scipy/reference", None),
 }
 intersphinx_cache_limit = 10  # days to keep the cached inventories

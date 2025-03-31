@@ -95,7 +95,12 @@ class KeyValuePairs(UserDict):
         an iterable containing entry information
     """
 
-    def __init__(self, entries: Optional[Iterable[Union[Dict, KeyValueEntry]]] = None):
+    def __init__(
+        self,
+        entries: Optional[
+            Union[Iterable[Union[Dict, KeyValueEntry]], "KeyValuePairs"]
+        ] = None,
+    ):
         """Initialize the KeyValuePairs dictionary class.
 
         Parameters
@@ -105,7 +110,11 @@ class KeyValuePairs(UserDict):
             dictionary.
         """
         super().__init__()
-        if entries:
+        if entries is None:
+            return
+        elif isinstance(entries, KeyValuePairs):
+            self.data = entries.data.copy()
+        else:
             for item in entries:
                 entry = KeyValueEntry.from_data(item)
                 self.data[entry.key] = entry

@@ -27,6 +27,7 @@ be viewed at `nbviewer
     solvers
     constraints_objectives
     dfba
+    metadata
     pymatbridge
     faq
     API </autoapi/cobra/index.rst>
