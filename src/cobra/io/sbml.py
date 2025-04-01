@@ -46,9 +46,8 @@ import cobra
 from ..core import (
     GPR,
     Creator,
-    CVTerm,
-    CVTermList,
-    ExternalResources,
+    StandardizedAnnotation,
+    StandardizedAnnotationList,
     Gene,
     Group,
     Metabolite,
@@ -1770,7 +1769,7 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
     if cvterms is None:
         return annotation
 
-    def _cvterm_to_cobra(_cvterm: "libsbml.CVTerm") -> Optional[CVTerm]:
+    def _cvterm_to_cobra(_cvterm: "libsbml.CVTerm") -> Optional[StandardizedAnnotation]:
         """Parse the libsbml.CVTerm object to cobra CVTerm.
 
         Parameters
@@ -1808,16 +1807,18 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
         ]
         # This kludge is necessary since _cvterm.getListNestedCVTerms() doesn't give a
         # python list, but a Swig List_t * and then SwigPyObject is not iterable
-        ext_res["nested_data"] = CVTermList(
+        ext_res["nested_data"] = StandardizedAnnotationList(
             [
                 _cvterm_to_cobra(_nested_cvterm)
                 for _nested_cvterm in nested_cv_terms
                 if _nested_cvterm
             ]
         )
-        return CVTerm(ExternalResources.from_dict(ext_res), qualifier)
+        return StandardizedAnnotation(ext_res, qualifier)
 
-    annotation.add_cvterms([_cvterm_to_cobra(cvterm) for cvterm in cvterms if cvterm])
+    annotation.add_standardized(
+        [_cvterm_to_cobra(cvterm) for cvterm in cvterms if cvterm]
+    )
 
     # history of the component
     if sbase.isSetModelHistory():
@@ -1888,7 +1889,7 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
     return provider, identifier
 
 
-def _cvterms_to_sbml(cvterms: CVTermList) -> List["libsbml.CVTerm"]:
+def _cvterms_to_sbml(cvterms: StandardizedAnnotationList) -> List["libsbml.CVTerm"]:
     """Convert cobra CVTerms to libsbml.CVTerm list.
 
     Parameters

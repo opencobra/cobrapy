@@ -4,7 +4,12 @@ from cobra.core.gene import GPR, Gene
 from cobra.core.group import Group
 from cobra.core.metabolite import Metabolite
 from cobra.core.metadata import MetaData
-from cobra.core.metadata.cvterm import CVTerm, CVTermList, ExternalResources
+from cobra.core.metadata.cvterm import (
+    Identifier,
+    Qualifier,
+    StandardizedAnnotation,
+    StandardizedAnnotationList,
+)
 from cobra.core.metadata.history import Creator, History
 from cobra.core.model import Model
 from cobra.core.object import Object

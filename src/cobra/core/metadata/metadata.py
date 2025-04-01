@@ -5,12 +5,12 @@ from collections.abc import MutableMapping
 from datetime import datetime
 from typing import Dict, Iterable, Iterator, List, Optional, Union
 
-from ..metadata.cvterm import CVTerm, CVTermList
+from ..metadata.cvterm import StandardizedAnnotation, StandardizedAnnotationList
 from ..metadata.history import Creator, History
 from ..metadata.keyvaluepairs import KeyValuePairs
 
 
-class MetaData(MutableMapping):
+class MetaData:  # (MutableMapping):
     """Meta-data of a cobrapy object.
 
     Meta-data encodes additional information on an object such as annotations
@@ -48,10 +48,12 @@ class MetaData(MutableMapping):
 
     def __init__(
         self,
-        cvterms: Optional[Union[Dict, CVTermList]] = None,
+        standardized: Optional[
+            Union[Dict, List[StandardizedAnnotation], StandardizedAnnotation]
+        ] = None,
         history: Optional[Union[Dict, History]] = None,
         sbo: str = "",
-        custompairs: Optional[List] = None,
+        custom: Optional[List] = None,
     ):
         """Initialize the MetaData class.
 
@@ -68,13 +70,13 @@ class MetaData(MutableMapping):
             For annotations that don't match the identifiers.org format.
 
         """
-        self.standardized = cvterms
+        self.standardized = standardized
         self.history = history
-        self.custompairs = KeyValuePairs(custompairs)
+        self.custom = KeyValuePairs(custom)
         self.sbo = sbo
 
     @property
-    def standardized(self) -> "CVTermList":
+    def standardized(self) -> StandardizedAnnotationList:
         """Get standardized field of MetaData.
 
         Returns
@@ -84,7 +86,12 @@ class MetaData(MutableMapping):
         return self._standardized
 
     @standardized.setter
-    def standardized(self, cvterms: Optional[Union[Dict, CVTermList]]) -> None:
+    def standardized(
+        self,
+        values: Optional[
+            Union[Dict, Iterable[StandardizedAnnotation], StandardizedAnnotationList]
+        ],
+    ) -> None:
         """Set standardized field of MetaData with controlled vocabulary (CVTerm).
 
         Parameters
@@ -93,9 +100,11 @@ class MetaData(MutableMapping):
             dict is converted to CVTermList using CVTermList.from_data().
             The wrong type will lead to a TypeError being raised.
         """
-        self._standardized = CVTermList.from_data(cvterms)
+        self._standardized = StandardizedAnnotationList.from_data(values)
 
-    def add_cvterms(self, cvterms: Iterable[Union[Dict, CVTerm]]) -> None:
+    def add_standardized(
+        self, annotations: Iterable[Union[Dict, StandardizedAnnotation]]
+    ) -> None:
         """Add one or more CVTerm objects to the standardized field.
 
          This method will add CVTerm objects to the standardized field.
@@ -110,15 +119,7 @@ class MetaData(MutableMapping):
         --------
         CVTermList.add_cvterms()
         """
-        self._standardized.add_cvterms(cvterms)
-
-    @property
-    def annotations(self) -> Dict:
-        """Backwards compatible annotations."""
-        anno_dict = self.standardized.annotations
-        if self.sbo:
-            anno_dict["sbo"] = self.sbo
-        return anno_dict
+        self._standardized.add(annotations)
 
     @property
     def history(self) -> History:
@@ -200,17 +201,17 @@ class MetaData(MutableMapping):
         self._sbo = value
 
     @property
-    def custompairs(self) -> KeyValuePairs:
+    def custom(self) -> KeyValuePairs:
         """Returns the custom key-value pairs of annotations.
 
         Returns
         -------
         KeyValuePairs: The key-value pairs.
         """
-        return self._custompairs
+        return self._custom
 
-    @custompairs.setter
-    def custompairs(self, keyvaluepairs: Union[Dict, KeyValuePairs]) -> None:
+    @custom.setter
+    def custom(self, keyvaluepairs: Union[Dict, KeyValuePairs]) -> None:
         """Set the custom key-value pairs of annotations.
 
         Parameters
@@ -219,215 +220,216 @@ class MetaData(MutableMapping):
             A dictionary or KeyValuePair instance that contain all annotation
             custom key-value pairs.
         """
-        self._custompairs = KeyValuePairs(keyvaluepairs)
+        self._custom = KeyValuePairs(keyvaluepairs)
 
-    def __setitem__(self, key: str, value: Union[List, str]) -> None:
-        """Set the item for accessing metadata as dict (the old style annotation).
-
-        Parameters
-        ----------
-        key: str
-            provider key word.
-        value: List or str
-            A str that is one term or a list that will contain multiple terms
-
-        This function will first delete the existing value for the key, and then set
-        it to the new value. Be careful - if you give this function incorrect input,
-        the deletion will happen anyway, and the value of the key will be empty!
-
-        If the key is sbo, sets the self.sbo term to the first item in the list. The
-        rest of the items in the list are ignored.
-        Cobrapy support for multiple SBO terms is not implemented yet.
-
-        See Also
-        --------
-        `CVTermList().add_simple_annotations()`
-        """
-        if key == "sbo":
-            if isinstance(value, list):
-                value = value[0]
-            self.sbo = value
-        else:
-            self.__delitem__(key)
-            self._standardized.add_simple_annotations(dict({key: value}))
-
-    def __getitem__(self, key: str) -> List:
-        """Get item using old annotation type dictionary.
-
-        If the key is sbo, will return the sbo field directly.
-        Otherwise, will query the annotations (old style) dictionary.
-
-        Note, that __setitem__, __getitem__ and __delitem__ will ignore custompairs. If
-        you want to edit that field, use relevant functions for it.
-
-        Parameters
-        ----------
-        key: str
-            provider key word.
-
-        Returns
-        -------
-        list
-        """
-        if key == "sbo":
-            return [self.sbo]
-        else:
-            return self.annotations[key]
-
-    def __delitem__(self, key: str) -> None:
-        """Delete item using old annotation type dictionary as reference.
-
-        If the key is sbo, will zero out the sbo field directly to an empty string.
-        Otherwise, will delete from the annotations (old style) dictionary, using
-        the value as a pattern to search in CVTermList resources.
-        See `CVTermList.delete_simple_annotation()`
-
-        Parameters
-        ----------
-        key: str
-            provider key word.
-
-        Note, that __setitem__, __getitem__ and __delitem__ will ignore custompairs. If
-        you want to edit that field, use relevant functions for it.
-        """
-        if key == "sbo":
-            self.sbo = ""
-        else:
-            self._standardized.delete_annotation(key)
-
-    def __eq__(self, other: Union["MetaData", Dict]) -> bool:
-        """Compare two MetaData objects to find out whether they are the same.
-
-        If given a dict, the dictionary is converted to MetaData and then compared.
-
-        Equality is defined in two ways, depending if history and custompairs exist.
-        1) If history or custompairs exist and are not empty/None, the two objects are
-           equal (the function will return True) if
-           - standardized (CVTermList) are equal
-           - all attributes of the history (History) are equal
-           - custompairs are identical
-           If one of these three conditions is not true, the function will return False.
-        2) If only standardized exist, while history and custompairs are empty
-           (history.is_empty() is True and custompairs is None) for both objects,
-           then the annotations field (CVTermList.annotations()) is compared as two
-           dictionaries.
-
-        Parameters
-        ----------
-        other: MetaData or dict
-
-        Returns
-        -------
-        bool: True if equal, False otherwise.
-        """
-        if isinstance(other, dict):
-            return self == MetaData.from_dict(other)
-        if (
-            self.standardized
-            and self.history.is_empty()
-            and not self.custompairs
-            and other.standardized
-            and other.history.is_empty()
-            and not other.custompairs
-        ):
-            return self.annotations == other.annotations
-
-        return (
-            (self.standardized == other.standardized)
-            and (self.history == other.history)
-            and (self.custompairs == other.custompairs)
-        )
-
-    def __ne__(self, other) -> bool:
-        """Define not-equal to override default.
-
-        Parameters
-        ----------
-        other: MetaData or dict
-
-        Returns
-        -------
-        bool: False if equal, True otherwise.
-
-        See Also
-        --------
-        MetaData.__eq__()
-        """
-        return not self.__eq__(other)
-
-    def __iter__(self) -> Iterator:
-        """Iterate over the MetaData annotations dict.
-
-        This function will iterate over the annotations (old-style) dictionary.
-
-        Returns
-        -------
-        Iterator
-        """
-        return iter(self.annotations)
-
-    def __len__(self) -> int:
-        """Return the length of the MetaData annotations dict.
-
-        The length of the annotations dict will be returned as a int.
-
-        Returns
-        -------
-        int
-            result of running len on the annotations dict
-        """
-        return len(self.annotations)
-
-    def __str__(self) -> str:
-        """Return the MetaData as str.
-
-        The annotations dict will be returned as a string. This does not include all
-        of the possible MetaData fields.
-
-        Returns
-        -------
-        str
-        """
-        return str(dict(self.annotations))
-
-    def __repr__(self) -> str:
-        """Return the MetaData as str with module, class, and code to recreate it.
-
-        If MetaData has standardized, history or custompairs, the dictionary will
-        contain them as keys.
-        If not, the dictionary will have only the annotations dictionary.
-        In either case, if sbo field is set, it will be outputted in the dictionary.
-
-        Returns
-        -------
-        str
-
-        See Also
-        --------
-        MetaData.from_dict()
-        """
-        repr_str = (
-            f"{self.__class__.__module__}.{self.__class__.__qualname__}.from_dict("
-        )
-        cvterms = self.standardized
-        history = self.history
-        custompairs = self.custompairs
-
-        if cvterms or not history.is_empty() or custompairs:
-            repr_str += (
-                f"'standardized': {self.standardized.to_list_of_dicts()},"
-                f"'history': {self.history.to_dict()},"
-                f"'custompairs': {self.custompairs},"
-            )
-            if self.sbo:
-                repr_str += f"'sbo': {self.sbo})"
-        else:
-            anno_dict = self.annotations
-            if self.sbo:
-                anno_dict.update({"sbo": self.sbo})
-            repr_str += f"{anno_dict})"
-        return repr_str
-
+    #
+    # def __setitem__(self, key: str, value: Union[List, str]) -> None:
+    #     """Set the item for accessing metadata as dict (the old style annotation).
+    #
+    #     Parameters
+    #     ----------
+    #     key: str
+    #         provider key word.
+    #     value: List or str
+    #         A str that is one term or a list that will contain multiple terms
+    #
+    #     This function will first delete the existing value for the key, and then set
+    #     it to the new value. Be careful - if you give this function incorrect input,
+    #     the deletion will happen anyway, and the value of the key will be empty!
+    #
+    #     If the key is sbo, sets the self.sbo term to the first item in the list. The
+    #     rest of the items in the list are ignored.
+    #     Cobrapy support for multiple SBO terms is not implemented yet.
+    #
+    #     See Also
+    #     --------
+    #     `CVTermList().add_simple_annotations()`
+    #     """
+    #     if key == "sbo":
+    #         if isinstance(value, list):
+    #             value = value[0]
+    #         self.sbo = value
+    #     else:
+    #         self.__delitem__(key)
+    #         self._standardized.add_simple_annotations(dict({key: value}))
+    #
+    # def __getitem__(self, key: str) -> List:
+    #     """Get item using old annotation type dictionary.
+    #
+    #     If the key is sbo, will return the sbo field directly.
+    #     Otherwise, will query the annotations (old style) dictionary.
+    #
+    #     Note, that __setitem__, __getitem__ and __delitem__ will ignore custompairs. If
+    #     you want to edit that field, use relevant functions for it.
+    #
+    #     Parameters
+    #     ----------
+    #     key: str
+    #         provider key word.
+    #
+    #     Returns
+    #     -------
+    #     list
+    #     """
+    #     if key == "sbo":
+    #         return [self.sbo]
+    #     else:
+    #         return self.annotations[key]
+    #
+    # def __delitem__(self, key: str) -> None:
+    #     """Delete item using old annotation type dictionary as reference.
+    #
+    #     If the key is sbo, will zero out the sbo field directly to an empty string.
+    #     Otherwise, will delete from the annotations (old style) dictionary, using
+    #     the value as a pattern to search in CVTermList resources.
+    #     See `CVTermList.delete_simple_annotation()`
+    #
+    #     Parameters
+    #     ----------
+    #     key: str
+    #         provider key word.
+    #
+    #     Note, that __setitem__, __getitem__ and __delitem__ will ignore custompairs. If
+    #     you want to edit that field, use relevant functions for it.
+    #     """
+    #     if key == "sbo":
+    #         self.sbo = ""
+    #     else:
+    #         self._standardized.delete_annotation(key)
+    #
+    # def __eq__(self, other: Union["MetaData", Dict]) -> bool:
+    #     """Compare two MetaData objects to find out whether they are the same.
+    #
+    #     If given a dict, the dictionary is converted to MetaData and then compared.
+    #
+    #     Equality is defined in two ways, depending if history and custompairs exist.
+    #     1) If history or custompairs exist and are not empty/None, the two objects are
+    #        equal (the function will return True) if
+    #        - standardized (CVTermList) are equal
+    #        - all attributes of the history (History) are equal
+    #        - custompairs are identical
+    #        If one of these three conditions is not true, the function will return False.
+    #     2) If only standardized exist, while history and custompairs are empty
+    #        (history.is_empty() is True and custompairs is None) for both objects,
+    #        then the annotations field (CVTermList.annotations()) is compared as two
+    #        dictionaries.
+    #
+    #     Parameters
+    #     ----------
+    #     other: MetaData or dict
+    #
+    #     Returns
+    #     -------
+    #     bool: True if equal, False otherwise.
+    #     """
+    #     if isinstance(other, dict):
+    #         return self == MetaData.from_dict(other)
+    #     if (
+    #         self.standardized
+    #         and self.history.is_empty()
+    #         and not self.custompairs
+    #         and other.standardized
+    #         and other.history.is_empty()
+    #         and not other.custompairs
+    #     ):
+    #         return self.annotations == other.annotations
+    #
+    #     return (
+    #         (self.standardized == other.standardized)
+    #         and (self.history == other.history)
+    #         and (self.custompairs == other.custompairs)
+    #     )
+    #
+    # def __ne__(self, other) -> bool:
+    #     """Define not-equal to override default.
+    #
+    #     Parameters
+    #     ----------
+    #     other: MetaData or dict
+    #
+    #     Returns
+    #     -------
+    #     bool: False if equal, True otherwise.
+    #
+    #     See Also
+    #     --------
+    #     MetaData.__eq__()
+    #     """
+    #     return not self.__eq__(other)
+    #
+    # def __iter__(self) -> Iterator:
+    #     """Iterate over the MetaData annotations dict.
+    #
+    #     This function will iterate over the annotations (old-style) dictionary.
+    #
+    #     Returns
+    #     -------
+    #     Iterator
+    #     """
+    #     return iter(self.annotations)
+    #
+    # def __len__(self) -> int:
+    #     """Return the length of the MetaData annotations dict.
+    #
+    #     The length of the annotations dict will be returned as a int.
+    #
+    #     Returns
+    #     -------
+    #     int
+    #         result of running len on the annotations dict
+    #     """
+    #     return len(self.annotations)
+    #
+    # def __str__(self) -> str:
+    #     """Return the MetaData as str.
+    #
+    #     The annotations dict will be returned as a string. This does not include all
+    #     of the possible MetaData fields.
+    #
+    #     Returns
+    #     -------
+    #     str
+    #     """
+    #     return str(dict(self.annotations))
+    #
+    # def __repr__(self) -> str:
+    #     """Return the MetaData as str with module, class, and code to recreate it.
+    #
+    #     If MetaData has standardized, history or custompairs, the dictionary will
+    #     contain them as keys.
+    #     If not, the dictionary will have only the annotations dictionary.
+    #     In either case, if sbo field is set, it will be outputted in the dictionary.
+    #
+    #     Returns
+    #     -------
+    #     str
+    #
+    #     See Also
+    #     --------
+    #     MetaData.from_dict()
+    #     """
+    #     repr_str = (
+    #         f"{self.__class__.__module__}.{self.__class__.__qualname__}.from_dict("
+    #     )
+    #     cvterms = self.standardized
+    #     history = self.history
+    #     custompairs = self.custompairs
+    #
+    #     if cvterms or not history.is_empty() or custompairs:
+    #         repr_str += (
+    #             f"'standardized': {self.standardized.to_list_of_dicts()},"
+    #             f"'history': {self.history.to_dict()},"
+    #             f"'custompairs': {self.custompairs},"
+    #         )
+    #         if self.sbo:
+    #             repr_str += f"'sbo': {self.sbo})"
+    #     else:
+    #         anno_dict = self.annotations
+    #         if self.sbo:
+    #             anno_dict.update({"sbo": self.sbo})
+    #         repr_str += f"{anno_dict})"
+    #     return repr_str
+    #
     def to_dict(self) -> Dict:
         """Create string dictionary for serialization.
 
@@ -446,8 +448,8 @@ class MetaData(MutableMapping):
         if self.history and not self.history.is_empty():
             d["history"] = self.history.to_dict()
 
-        if self.custompairs:
-            d["custompairs"] = self.custompairs.to_dict()
+        if self.custom:
+            d["custom"] = self.custom.to_dict()
 
         return d
 
@@ -475,15 +477,17 @@ class MetaData(MutableMapping):
         -------
         MetaData
         """
-        cvterms = data.get("standardized", None)
+        standardized = data.get("standardized", None)
         history = data.get("history", None)
-        custompairs = data.get("custompairs", None)
+        custom = data.get("custom", None)
 
-        if cvterms or history or custompairs:
-            annotation = MetaData(cvterms, history, custompairs)
+        if standardized or history or custom:
+            annotation = MetaData(standardized, history, custom)
         else:
             annotation = MetaData()
-            annotation.standardized.add_simple_annotations(data)
+            # annotation.standardized.add_simple_annotations(data)
+            raise ValueError()
+            # TODO: Fix
 
         if "sbo" in data:
             annotation["sbo"] = data["sbo"]

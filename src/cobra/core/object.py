@@ -1,8 +1,9 @@
 """Define base Object class in Cobra."""
 
-from typing import Optional
+from typing import Optional, Iterable, Union
 
 from cobra.core.metadata import MetaData
+from cobra.core.metadata.cvterm import StandardizedAnnotation
 
 
 class Object:
@@ -25,7 +26,7 @@ class Object:
         self.name = name
 
         self.notes = {}
-        self._annotation = MetaData()
+        self._annotations = None
 
     @property
     def id(self) -> str:
@@ -72,7 +73,7 @@ class Object:
         self._id = value
 
     @property
-    def annotation(self) -> MetaData:
+    def annotations(self) -> Optional[MetaData]:
         """Get annotation dictionary.
 
         Returns
@@ -80,11 +81,12 @@ class Object:
         _annotation: dict
             Returns _annotation as a dictionary.
         """
-        return self._annotation
+        # TODO: Fix doc
+        return self._annotations
 
-    @annotation.setter
-    def annotation(self, annotation):
-        """Set annotation.
+    @annotations.setter
+    def annotations(self, annotations: Optional[MetaData]):
+        """Set annotations.
 
         Parameters
         ----------
@@ -95,15 +97,35 @@ class Object:
         ------
         TypeError if annotation not a dict.
         """
-        if isinstance(annotation, MetaData):
-            self._annotation = annotation
-        elif isinstance(annotation, dict):
-            self._annotation = MetaData().from_dict(annotation)
+        # TODO: Fix doc
+        if annotations is None:
+            self._annotations = None
+        elif isinstance(annotations, MetaData):
+            self._annotations = annotations
         else:
             raise TypeError(
                 f"The data passed for annotation must be inside "
                 f"a dictionary or MetaData: {annotation}"
             )
+
+    def add_annotations(
+        self,
+        annotations: Union[
+            Union[str, StandardizedAnnotation],
+            Iterable[Union[str, StandardizedAnnotation]],
+        ],
+    ):
+        if isinstance(annotations, str):
+            annotations = [StandardizedAnnotation(annotations)]
+        elif isinstance(annotations, StandardizedAnnotation):
+            annotations = [annotations]
+
+        if self._annotations is None:
+            self._annotations = MetaData()
+
+        for annotation in annotations:
+            if isinstance(annotation, StandardizedAnnotation):
+                self._annotations.standardized.add([annotation])
 
     def __getstate__(self) -> dict:
         """Get state of annotation.
