@@ -664,7 +664,7 @@ def _sbml_to_model(
 
     # notes and annotations
     cobra_model.notes = _parse_notes_dict(model)
-    cobra_model.annotation = _parse_annotations(model)
+    cobra_model.annotations = _parse_annotations(model)
 
     # Compartments
     # FIXME: update with new compartments
@@ -690,7 +690,7 @@ def _sbml_to_model(
         met = Metabolite(sid)
         met.name = specie.getName()
         met.notes = _parse_notes_dict(specie)
-        met.annotation = _parse_annotations(specie)
+        met.annotations = _parse_annotations(specie)
         met.compartment = specie.getCompartment()
 
         specie_fbc: "libsbml.FbcSpeciesPlugin" = specie.getPlugin("fbc")
@@ -736,7 +736,7 @@ def _sbml_to_model(
         ex_rid = f"EX_{met.id}"
         ex_reaction = Reaction(ex_rid)
         ex_reaction.name = ex_rid
-        ex_reaction.annotation = {"sbo": [SBO_EXCHANGE_REACTION]}
+        ex_reaction.annotations = {"sbo": [SBO_EXCHANGE_REACTION]}
         ex_reaction.lower_bound = config.lower_bound
         ex_reaction.upper_bound = config.upper_bound
         LOGGER.warning(
@@ -759,7 +759,7 @@ def _sbml_to_model(
             cobra_gene.name = gp.getName()
             if cobra_gene.name is None:
                 cobra_gene.name = gid
-            cobra_gene.annotation = _parse_annotations(gp)
+            cobra_gene.annotations = _parse_annotations(gp)
             cobra_gene.notes = _parse_notes_dict(gp)
 
             cobra_model.genes.append(cobra_gene)
@@ -832,7 +832,7 @@ def _sbml_to_model(
             rid = f_replace[F_REACTION](rid)
         cobra_reaction = Reaction(rid)
         cobra_reaction.name = reaction.getName().strip()
-        cobra_reaction.annotation = _parse_annotations(reaction)
+        cobra_reaction.annotations = _parse_annotations(reaction)
         cobra_reaction.notes = _parse_notes_dict(reaction)
 
         # set bounds
@@ -1044,7 +1044,7 @@ def _sbml_to_model(
             cobra_group.name = group.getName()
             if group.isSetKind():
                 cobra_group.kind = group.getKindAsString()
-            cobra_group.annotation = _parse_annotations(group)
+            cobra_group.annotations = _parse_annotations(group)
             cobra_group.notes = _parse_notes_dict(group)
 
             cobra_members = []
@@ -1101,7 +1101,7 @@ def _sbml_to_model(
             if f_replace and F_GROUP in f_replace:
                 gid = f_replace[F_GROUP](gid)
             cobra_group = Group(gid, name=gid, kind="partonomy")
-            cobra_group.annotation["sbo"] = ["SBO:0000633"]
+            cobra_group.annotations["sbo"] = ["SBO:0000633"]
             cobra_group.add_members(cobra_members)
             groups.append(cobra_group)
 
@@ -1211,15 +1211,15 @@ def _model_to_sbml(
         model.setName(cobra_model.name)
 
     # for parsing annotation corresponding to the model, including model history
-    _sbase_annotations(model, cobra_model.annotation)
+    _sbase_annotations(model, cobra_model.annotations)
     # for parsing notes corresponding to the model
     _sbase_notes_dict(model, cobra_model.notes)
 
     # Meta information (ModelHistory) related to SBMLDocument
     meta = getattr(cobra_model, "_sbml", None)
     if meta:
-        if "annotation" in meta:
-            _sbase_annotations(doc, meta["annotation"])
+        if "annotations" in meta:
+            _sbase_annotations(doc, meta["annotations"])
 
         if "notes" in meta:
             _sbase_notes_dict(doc, meta["notes"])
@@ -1312,7 +1312,7 @@ def _model_to_sbml(
         if metabolite.formula is not None:
             s_fbc.setChemicalFormula(metabolite.formula)
 
-        _sbase_annotations(specie, metabolite.annotation)
+        _sbase_annotations(specie, metabolite.annotations)
         _sbase_notes_dict(specie, metabolite.notes)
 
     # Genes
@@ -1328,7 +1328,7 @@ def _model_to_sbml(
         gp.setName(gname)
         gp.setLabel(gid)
 
-        _sbase_annotations(gp, cobra_gene.annotation)
+        _sbase_annotations(gp, cobra_gene.annotations)
         _sbase_notes_dict(gp, cobra_gene.notes)
 
     # Objective
@@ -1348,7 +1348,7 @@ def _model_to_sbml(
         reaction.setName(cobra_reaction.name)
         reaction.setFast(False)
         reaction.setReversible((cobra_reaction.lower_bound < 0))
-        _sbase_annotations(reaction, cobra_reaction.annotation)
+        _sbase_annotations(reaction, cobra_reaction.annotations)
         _sbase_notes_dict(reaction, cobra_reaction.notes)
 
         # stoichiometry
@@ -1429,7 +1429,7 @@ def _model_to_sbml(
             group.setKind(cobra_group.kind)
 
             _sbase_notes_dict(group, cobra_group.notes)
-            _sbase_annotations(group, cobra_group.annotation)
+            _sbase_annotations(group, cobra_group.annotations)
 
             for cobra_member in cobra_group.members:
                 member: "libsbml.Member" = group.createMember()
@@ -1795,11 +1795,9 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
         else:
             LOGGER.warning(f"The cvterm {_cvterm} has an unkown qualifier. Ignoring it")
             return None
-        ext_res = {
-            "resources": [
-                _cvterm.getResourceURI(k) for k in range(_cvterm.getNumResources())
-            ]
-        }
+        identifiers = [
+            _cvterm.getResourceURI(k) for k in range(_cvterm.getNumResources())
+        ]
 
         nested_cv_terms = [
             _cvterm.getNestedCVTerm(index)
@@ -1807,17 +1805,23 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
         ]
         # This kludge is necessary since _cvterm.getListNestedCVTerms() doesn't give a
         # python list, but a Swig List_t * and then SwigPyObject is not iterable
-        ext_res["nested_data"] = StandardizedAnnotationList(
-            [
-                _cvterm_to_cobra(_nested_cvterm)
-                for _nested_cvterm in nested_cv_terms
-                if _nested_cvterm
-            ]
+        nested_data = [
+            cobra_cvterm
+            for _nested_cvterm in nested_cv_terms
+            if _nested_cvterm is not None
+            and (cobra_cvterm := _cvterm_to_cobra(_nested_cvterm)) is not None
+        ]
+        return StandardizedAnnotation(
+            identifiers=identifiers, qualifier=qualifier, annotations=nested_data
         )
-        return StandardizedAnnotation(ext_res, qualifier)
 
     annotation.add_standardized(
-        [_cvterm_to_cobra(cvterm) for cvterm in cvterms if cvterm]
+        [
+            cobra_cvterm
+            for cvterm in cvterms
+            if cvterm is not None
+            and (cobra_cvterm := _cvterm_to_cobra(cvterm)) is not None
+        ]
     )
 
     # history of the component

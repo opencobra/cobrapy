@@ -8,14 +8,14 @@ https://github.com/sbmlteam/sbml-specifications/blob/develop/sbml-level-3/versio
 # TODO: Update docstring with final release, when available.
 import uuid
 from collections import UserDict
-from dataclasses import asdict, dataclass
+from dataclasses import asdict
 from typing import Dict, Iterable, Optional, Union
 
 from ...util import format_long_string
+from .. import object as cobject
 
 
-@dataclass
-class KeyValueEntry:
+class CustomAnnotation(cobject.Object):
     """Single key-value entry.
 
     The key is an attribute on the entry.
@@ -24,24 +24,57 @@ class KeyValueEntry:
     ----------
     key: str
         Defined as mandatory in the FBC3 standard.
-    id: str
-        optional. Default None.
-    name: str
-        optional. Default None.
     value: str
         optional. Default None.
     uri: str
         Can be a URN or URL. Optional (default None).
     """
 
-    key: str
-    id: Optional[str] = None
-    name: Optional[str] = None
-    value: Optional[str] = None
-    uri: Optional[str] = None
+    def __init__(
+        self, key: str, value: Optional[str] = None, uri: Optional[str] = None
+    ):
+        super(__class__, self).__init__()
+        self._key = key
+        self._value = value
+        self._uri = uri
+        self._target = None
+
+    def _set_target(self, target: Optional["cobject.Object"]) -> None:
+        self._target = target
+
+    def remove_from_object(self):
+        if self._target is None:
+            raise ValueError(
+                "Cannot remove annontation, since no object is associated with annotation."
+            )
+        self._target.remove_annotations(self)
+
+    # We should probably make key read-only, to prevent keys from becoming duplicate in
+    # CustomAnnotationList objects.
+    @property
+    def key(self) -> str:
+        return self._key
+
+    @property
+    def value(self) -> Optional[str]:
+        return self._value
+
+    @value.setter
+    def value(self, value: Optional[str]) -> None:
+        self._value = value
+
+    @property
+    def uri(self) -> Optional[str]:
+        return self._uri
+
+    @uri.setter
+    def uri(self, uri: Optional[str]) -> None:
+        self._uri = uri
 
     @staticmethod
-    def from_data(data: Optional[Union[Dict, "KeyValueEntry"]]) -> "KeyValueEntry":
+    def from_data(
+        data: Optional[Union[Dict, "CustomAnnotation"]],
+    ) -> "CustomAnnotation":
         """Make a KeyValueDict object using the data passed.
 
         Parameters
@@ -54,14 +87,29 @@ class KeyValueEntry:
         -------
         KeyValueEntry
         """
-        if isinstance(data, KeyValueEntry):
+        if isinstance(data, CustomAnnotation):
             return data
         elif isinstance(data, dict):
             if "key" not in data:
                 data["key"] = uuid.uuid4().hex
-            return KeyValueEntry(**data)
+            ann = CustomAnnotation(
+                key=data["key"], value=data.get("value"), uri=data.get("uri")
+            )
+            if "id" in data:
+                ann.id = data["id"]
+            if "name" in data:
+                ann.name = data["name"]
+            # TODO: Handle annotations
+            return ann
         else:
-            raise TypeError(f"Invalid format for KeyValueEntry: '{data}'")
+            raise TypeError(f"Invalid format for CustomAnnotation: '{data}'")
+
+    def _asdict(self) -> dict:
+        return {
+            k: v
+            for k in ["key", "value", "uri", "id", "name"]
+            if (v := getattr(self, k, None)) is not None and v != ""
+        }
 
     def __str__(self) -> str:
         """Get string representation of the KeyValueEntry as dictionary.
@@ -70,7 +118,7 @@ class KeyValueEntry:
         -------
         str
         """
-        return str(asdict(self))
+        return str(self._asdict())
 
     def __repr__(self) -> str:
         """Get string representation, including module and class name.
@@ -86,7 +134,7 @@ class KeyValueEntry:
         )
 
 
-class KeyValuePairs(UserDict):
+class CustomAnnotationList(UserDict):
     """A UserDict to store KeyValueEntries.
 
     Parameters
@@ -98,7 +146,7 @@ class KeyValuePairs(UserDict):
     def __init__(
         self,
         entries: Optional[
-            Union[Iterable[Union[Dict, KeyValueEntry]], "KeyValuePairs"]
+            Union[Iterable[Union[Dict, CustomAnnotation]], "CustomAnnotationList"]
         ] = None,
     ):
         """Initialize the KeyValuePairs dictionary class.
@@ -112,14 +160,14 @@ class KeyValuePairs(UserDict):
         super().__init__()
         if entries is None:
             return
-        elif isinstance(entries, KeyValuePairs):
+        elif isinstance(entries, CustomAnnotationList):
             self.data = entries.data.copy()
         else:
             for item in entries:
-                entry = KeyValueEntry.from_data(item)
+                entry = CustomAnnotation.from_data(item)
                 self.data[entry.key] = entry
 
-    def __setitem__(self, key: str, item: Union[Dict, KeyValueEntry]) -> None:
+    def __setitem__(self, key: str, item: Union[Dict, CustomAnnotation]) -> None:
         """Set item.
 
         Parameters
@@ -127,7 +175,7 @@ class KeyValuePairs(UserDict):
         key: str
         item: dictionary or KeyValueEntry
         """
-        entry = KeyValueEntry.from_data(item)
+        entry = CustomAnnotation.from_data(item)
         self.data[key] = entry
 
     def __str__(self) -> str:
@@ -178,6 +226,35 @@ class KeyValuePairs(UserDict):
             a dict.
         """
         return {k: asdict(v) for k, v in self.data.items()}
+
+    def add(
+        self,
+        items: Union[CustomAnnotation, Dict, Iterable[Union[CustomAnnotation, Dict]]],
+    ) -> None:
+        if isinstance(items, CustomAnnotation):
+            items = [items]
+        elif isinstance(items, dict):
+            items = [CustomAnnotation.from_data(items)]
+        for item in items:
+            item = CustomAnnotation.from_data(item)
+            self.data[item.key] = item
+
+    def remove(
+        self,
+        items: Union[CustomAnnotation, str, Iterable[Union[CustomAnnotation, str]]],
+    ) -> None:
+        if isinstance(items, CustomAnnotation):
+            items = [items.key]
+        elif isinstance(items, str):
+            items = [items]
+
+        for item in items:
+            if isinstance(item, CustomAnnotation):
+                item = item.key
+            # If CustomAnnotation object is removed from CustomAnnotationList, it will
+            # also not belong to the target Object anymore.
+            self.data[item]._set_target(None)
+            del self.data[item]
 
     # query
 

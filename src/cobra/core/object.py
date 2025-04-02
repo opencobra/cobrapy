@@ -1,9 +1,10 @@
 """Define base Object class in Cobra."""
 
-from typing import Optional, Iterable, Union
+from typing import TYPE_CHECKING, Optional, Iterable, Union
 
-from cobra.core.metadata import MetaData
-from cobra.core.metadata.cvterm import StandardizedAnnotation
+
+if TYPE_CHECKING:
+    from cobra.core.metadata import MetaData, StandardizedAnnotation, CustomAnnotation
 
 
 class Object:
@@ -22,14 +23,16 @@ class Object:
         Objects will have notes and _annotation as dicitionaries, initialized as empty
         dictionaries.
         """
+        from cobra.core.metadata import MetaData
+
         self._id = id
         self.name = name
 
         self.notes = {}
-        self._annotations = None
+        self._annotations = MetaData()
 
     @property
-    def id(self) -> str:
+    def id(self) -> Optional[str]:
         """Get the Object id.
 
         Returns
@@ -73,7 +76,7 @@ class Object:
         self._id = value
 
     @property
-    def annotations(self) -> Optional[MetaData]:
+    def annotations(self) -> "MetaData":
         """Get annotation dictionary.
 
         Returns
@@ -85,7 +88,7 @@ class Object:
         return self._annotations
 
     @annotations.setter
-    def annotations(self, annotations: Optional[MetaData]):
+    def annotations(self, annotations: Optional["MetaData"]):
         """Set annotations.
 
         Parameters
@@ -98,26 +101,36 @@ class Object:
         TypeError if annotation not a dict.
         """
         # TODO: Fix doc
+        from cobra.core.metadata import MetaData
+
         if annotations is None:
-            self._annotations = None
+            self._annotations = MetaData()
         elif isinstance(annotations, MetaData):
             self._annotations = annotations
         else:
             raise TypeError(
                 f"The data passed for annotation must be inside "
-                f"a dictionary or MetaData: {annotation}"
+                f"a dictionary or MetaData: {annotations}"
             )
 
     def add_annotations(
         self,
         annotations: Union[
-            Union[str, StandardizedAnnotation],
-            Iterable[Union[str, StandardizedAnnotation]],
+            Union[str, "StandardizedAnnotation", "CustomAnnotation"],
+            Iterable[Union[str, "StandardizedAnnotation", "CustomAnnotation"]],
         ],
     ):
+        from cobra.core.metadata import (
+            MetaData,
+            StandardizedAnnotation,
+            CustomAnnotation,
+        )
+
         if isinstance(annotations, str):
             annotations = [StandardizedAnnotation(annotations)]
-        elif isinstance(annotations, StandardizedAnnotation):
+        elif isinstance(annotations, StandardizedAnnotation) or isinstance(
+            annotations, CustomAnnotation
+        ):
             annotations = [annotations]
 
         if self._annotations is None:
@@ -125,7 +138,40 @@ class Object:
 
         for annotation in annotations:
             if isinstance(annotation, StandardizedAnnotation):
+                annotation._set_target(self)
                 self._annotations.standardized.add([annotation])
+            elif isinstance(annotation, CustomAnnotation):
+                annotation._set_target(self)
+                self._annotations.custom.add(annotation)
+
+    def remove_annotations(
+        self,
+        annotations: Union[
+            "StandardizedAnnotation",
+            "CustomAnnotation",
+            Iterable[Union["StandardizedAnnotation", "CustomAnnotation"]],
+        ],
+    ):
+        from cobra.core.metadata import StandardizedAnnotation, CustomAnnotation
+
+        if isinstance(annotations, StandardizedAnnotation) or isinstance(
+            annotations, CustomAnnotation
+        ):
+            annotations = [annotations]
+
+        if self._annotations is None:
+            raise ValueError(
+                "Cannot remove annotations, because there are no annotations"
+                "associated with this object."
+            )
+
+        for annotation in annotations:
+            if isinstance(annotation, StandardizedAnnotation):
+                annotation._set_target(None)
+                self._annotations.standardized.remove(annotation)
+            elif isinstance(annotation, CustomAnnotation):
+                annotation._set_target(None)
+                self._annotations.custom.remove(annotation)
 
     def __getstate__(self) -> dict:
         """Get state of annotation.

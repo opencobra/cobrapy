@@ -5,9 +5,9 @@ from collections.abc import MutableMapping
 from datetime import datetime
 from typing import Dict, Iterable, Iterator, List, Optional, Union
 
-from ..metadata.cvterm import StandardizedAnnotation, StandardizedAnnotationList
 from ..metadata.history import Creator, History
-from ..metadata.keyvaluepairs import KeyValuePairs
+from ..metadata import cvterm as CV
+from ..metadata import keyvaluepairs as KV
 
 
 class MetaData:  # (MutableMapping):
@@ -49,7 +49,7 @@ class MetaData:  # (MutableMapping):
     def __init__(
         self,
         standardized: Optional[
-            Union[Dict, List[StandardizedAnnotation], StandardizedAnnotation]
+            Union[Dict, List["CV.StandardizedAnnotation"], "CV.StandardizedAnnotation"]
         ] = None,
         history: Optional[Union[Dict, History]] = None,
         sbo: str = "",
@@ -72,11 +72,11 @@ class MetaData:  # (MutableMapping):
         """
         self.standardized = standardized
         self.history = history
-        self.custom = KeyValuePairs(custom)
+        self.custom = KV.CustomAnnotationList(custom)
         self.sbo = sbo
 
     @property
-    def standardized(self) -> StandardizedAnnotationList:
+    def standardized(self) -> "CV.StandardizedAnnotationList":
         """Get standardized field of MetaData.
 
         Returns
@@ -89,7 +89,11 @@ class MetaData:  # (MutableMapping):
     def standardized(
         self,
         values: Optional[
-            Union[Dict, Iterable[StandardizedAnnotation], StandardizedAnnotationList]
+            Union[
+                Dict,
+                Iterable["CV.StandardizedAnnotation"],
+                "CV.StandardizedAnnotationList",
+            ]
         ],
     ) -> None:
         """Set standardized field of MetaData with controlled vocabulary (CVTerm).
@@ -100,10 +104,10 @@ class MetaData:  # (MutableMapping):
             dict is converted to CVTermList using CVTermList.from_data().
             The wrong type will lead to a TypeError being raised.
         """
-        self._standardized = StandardizedAnnotationList.from_data(values)
+        self._standardized = CV.StandardizedAnnotationList.from_data(values)
 
     def add_standardized(
-        self, annotations: Iterable[Union[Dict, StandardizedAnnotation]]
+        self, annotations: Iterable[Union[Dict, "CV.StandardizedAnnotation"]]
     ) -> None:
         """Add one or more CVTerm objects to the standardized field.
 
@@ -201,7 +205,7 @@ class MetaData:  # (MutableMapping):
         self._sbo = value
 
     @property
-    def custom(self) -> KeyValuePairs:
+    def custom(self) -> "KV.CustomAnnotationList":
         """Returns the custom key-value pairs of annotations.
 
         Returns
@@ -211,7 +215,7 @@ class MetaData:  # (MutableMapping):
         return self._custom
 
     @custom.setter
-    def custom(self, keyvaluepairs: Union[Dict, KeyValuePairs]) -> None:
+    def custom(self, keyvaluepairs: Union[Dict, "KV.CustomAnnotationList"]) -> None:
         """Set the custom key-value pairs of annotations.
 
         Parameters
@@ -220,7 +224,7 @@ class MetaData:  # (MutableMapping):
             A dictionary or KeyValuePair instance that contain all annotation
             custom key-value pairs.
         """
-        self._custom = KeyValuePairs(keyvaluepairs)
+        self._custom = KV.CustomAnnotationList(keyvaluepairs)
 
     #
     # def __setitem__(self, key: str, value: Union[List, str]) -> None:

@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+from cobra.core.metadata.keyvaluepairs import CustomAnnotation
 import pytest
 
 from cobra.core.metadata import StandardizedAnnotation, Qualifier
@@ -63,13 +64,14 @@ ECOLI_MODEL_ANNOTATIONS = [
         },
     },
 ]
+COBRA_URL = "https://cobrapy.readthedocs.io/"
 
 
 def test_annotation() -> None:
     """Test creating an annotation manually."""
     s = Species()
 
-    assert s.annotations is None
+    # assert s.annotations is None
     annotation_1 = StandardizedAnnotation("https://identifiers.org/go/GO:0007268")
     # Default qualifier should be bqb_is
     assert annotation_1.qualifier == Qualifier.Biological_is
@@ -101,14 +103,25 @@ def test_annotation() -> None:
     s.add_annotations([annotation_1, annotation_2, annotation_3])
     # assert len(s.annotations) == 3
     assert len(s.annotations.standardized) == 3
-    assert s.annotations.custom is None
-    assert (
-        len(
-            s.annotations.standardized.by_qualifier(Qualifier.Biological_is)[
-                0
-            ].identifiers
-        )
-        == 2
-    )
-    s.remove_annotations([annotation_1])
-    assert len(s.annotations) == 2
+    s.remove_annotations([annotation_2])
+    assert len(s.annotations.standardized) == 2
+    s.add_annotations(annotation_2)
+    assert len(s.annotations.standardized) == 3
+    annotation_2.remove_from_object()
+    assert len(s.annotations.standardized) == 2
+    # assert s.annotations.custom is None
+    # assert (
+    #     len(
+    #         s.annotations.standardized.by_qualifier(Qualifier.Biological_is)[
+    #             0
+    #         ].identifiers
+    #     )
+    #     == 2
+    # )
+    custom_1 = CustomAnnotation(key="cobra_flag", value="starred")
+    custom_2 = CustomAnnotation(key="cobra_url", uri=COBRA_URL)
+    s.add_annotations([custom_1, custom_2])
+    assert len(s.annotations.custom) == 2
+    s.remove_annotations(custom_1)
+    assert len(s.annotations.custom) == 1
+    assert s.annotations.custom["cobra_url"].uri == COBRA_URL

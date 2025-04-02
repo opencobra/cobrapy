@@ -13,6 +13,7 @@ from typing import (
 import re
 
 from .helper import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
+from .. import object as CObject
 
 
 class Qualifier(Enum):
@@ -179,6 +180,22 @@ class StandardizedAnnotation:
         self._identifiers = self.check_identifier_type(identifiers)
         self._qualifier = self.check_qualifier_type(qualifier)
         self._annotations = self.check_annotation_type(annotations)
+        self._target = None
+        # TODO: Keep track of target Object, so we can do annotation.remove
+
+    def _set_target(self, target: Optional["CObject.Object"]) -> None:
+        self._target = target
+        if self._annotations is None:
+            return
+        for ann in self._annotations:
+            ann._set_target(target)
+
+    def remove_from_object(self):
+        if self._target is None:
+            raise ValueError(
+                "Cannot remove annontation, since no object is associated with annotation."
+            )
+        self._target.remove_annotations(self)
 
     @property
     def qualifier(self) -> Qualifier:

@@ -5,10 +5,10 @@ __version__ = "0.29.1"
 from cobra.core import (
     Configuration,
     DictList,
+    Object,
     Gene,
     Metabolite,
     Model,
-    Object,
     Reaction,
     Solution,
     Species,
