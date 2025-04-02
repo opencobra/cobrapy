@@ -6,10 +6,11 @@ from pathlib import Path
 from cobra.core.metadata.keyvaluepairs import CustomAnnotation
 import pytest
 
+from cobra import Model
 from cobra.core.metadata import StandardizedAnnotation, Qualifier
 from cobra.core.species import Species
 
-# from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
+from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
 
 
 PUBMED_EXAMPLE = "https://identifiers.org/pubmed/1111111"
@@ -125,3 +126,41 @@ def test_annotation() -> None:
     s.remove_annotations(custom_1)
     assert len(s.annotations.custom) == 1
     assert s.annotations.custom["cobra_url"].uri == COBRA_URL
+
+
+def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
+    """Test annotation consistency when writing and reading an SBML file."""
+    out_path = tmp_path / "e_coli_core_json_writing.sbml"
+    assert write_sbml_model(annotation_model, str(out_path)) is None
+
+    model = read_sbml_model(str(out_path))
+    print(model.annotations)
+    print(model.annotations.standardized)
+    for ann in model.annotations.standardized:
+        print(ann)
+    assert len(model.annotations.standardized) == 2
+    # Because of changes to eq, to compare using the old format,
+    # we need annotation.annotations
+    # TODO: get comments from cdiener
+    # assert model.annotation.annotations == {
+    #     "bigg.model": ["e_coli_core"],
+    #     "doi": ["10.1128/ecosalplus.10.2.1"],
+    #     "eco": ["ECO:0000004"],
+    #     "ncbiprotein": ["16128336"],
+    #     "pubmed": ["1111111"],
+    #     "taxonomy": ["511145"],
+    # }
+    # assert model.annotation.standardized == CVTermList.from_data(
+    #     ECOLI_MODEL_ANNOTATIONS
+    # )
+    # assert model.annotation.standardized == ECOLI_MODEL_ANNOTATIONS
+    #
+    # for met_id in model.metabolites.list_attr("id"):
+    #     original_met_annot = annotation_model.metabolites.get_by_id(met_id).annotation
+    #     new_met_annot = model.metabolites.get_by_id(met_id).annotation
+    #     assert original_met_annot == new_met_annot
+    #
+    # for rxn_id in model.reactions.list_attr("id"):
+    #     original_rxn_annot = annotation_model.reactions.get_by_id(rxn_id).annotation
+    #     new_rxn_annot = model.reactions.get_by_id(rxn_id).annotation
+    #     assert original_rxn_annot == new_rxn_annot

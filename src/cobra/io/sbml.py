@@ -1758,16 +1758,16 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
     MetaData
         a metadata object storing COBRA annotation
     """
-    annotation = MetaData()
+    annotations = MetaData()
 
     # SBO term
     if sbase.isSetSBOTerm():
-        annotation["sbo"] = sbase.getSBOTermID()
+        annotations.sbo = sbase.getSBOTermID()
 
     # RDF annotation
     cvterms = sbase.getCVTerms()
     if cvterms is None:
-        return annotation
+        return annotations
 
     def _cvterm_to_cobra(_cvterm: "libsbml.CVTerm") -> Optional[StandardizedAnnotation]:
         """Parse the libsbml.CVTerm object to cobra CVTerm.
@@ -1811,11 +1811,14 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
             if _nested_cvterm is not None
             and (cobra_cvterm := _cvterm_to_cobra(_nested_cvterm)) is not None
         ]
+        print(identifiers)
+        print(qualifier)
+        print(nested_data)
         return StandardizedAnnotation(
             identifiers=identifiers, qualifier=qualifier, annotations=nested_data
         )
 
-    annotation.add_standardized(
+    annotations.add_standardized(
         [
             cobra_cvterm
             for cvterm in cvterms
@@ -1825,9 +1828,12 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
     )
 
     # history of the component
+    # TODO: Should we maybe keep track of the creators and reference the same object
+    # when there is a match? This would reduce the number of objects created and
+    # facilitate fixing a mistake.
     if sbase.isSetModelHistory():
         model_history: "libsbml.ModelHistory" = sbase.getModelHistory()
-        annotation.history.creators = [
+        annotations.history.creators = [
             (
                 Creator(
                     name=creator.getName() or None,
@@ -1847,13 +1853,13 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
 
         if model_history.isSetCreatedDate():
             date: libsbml.Date = model_history.getCreatedDate()
-            annotation.history.created_date = date.getDateAsString()
+            annotations.history.created_date = date.getDateAsString()
 
-        annotation.history.modified_dates = [
+        annotations.history.modified_dates = [
             _date.getDateAsString() for _date in model_history.getListModifiedDates()
         ]
 
-    return annotation
+    return annotations
 
 
 def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
@@ -1926,49 +1932,38 @@ def _cvterms_to_sbml(cvterms: StandardizedAnnotationList) -> List["libsbml.CVTer
             cv.setModelQualifierType(QUALIFIER_TYPES_COBRA_SBML_DICT[qualifier.value])
         else:
             raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
-        for uri in sorted(cvterm.external_resources.resources):
+        for uri in sorted(x.uri for x in cvterm.identifiers):
             cv.addResource(uri)
 
-        [
+        for _cv in _cvterms_to_sbml(cvterm.annotations):
             _check(cv.addNestedCVTerm(_cv), f"Adding nested cvterm: {_cv}")
-            for _cv in _cvterms_to_sbml(cvterm.external_resources.nested_data)
-        ]
 
         cv_list.append(cv)
 
     return cv_list
 
 
-def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
+def _sbase_annotations(sbase: libsbml.SBase, annotations: MetaData) -> None:
     """Set SBase annotations based on cobra annotations.
 
     Parameters
     ----------
     sbase : libsbml.SBase
         SBML object to annotate
-    annotation : dict, cobra annotation structure
+    annotations : dict, cobra annotation structure
         cobra object with annotation information
 
     Raises
     ------
     CobraSBMLError for unsupported qualifier
     """
-    annotation_data = deepcopy(annotation)
 
-    if not isinstance(annotation_data, MetaData):
+    if not isinstance(annotations, MetaData):
         raise TypeError(
-            f"The annotation object must be of type 'Metadata': {annotation_data}"
+            f"The annotations object must be of type 'Metadata': {annotations}"
         )
 
-    if "SBO" in annotation_data:
-        LOGGER.warning(
-            "'SBO' provider is deprecated, use 'sbo' provider instead. Converting to"
-            "'sbo' for writing."
-        )
-        annotation_data["sbo"] = annotation_data.pop("SBO")
-
-    if "sbo" in annotation and annotation.sbo:
-        sbo_term = annotation_data.sbo
+    if (sbo_term := getattr(annotations, "sbo", None)) is not None and sbo_term != "":
         if isinstance(sbo_term, list):
             sbo_term = sbo_term[0]
         _check(sbase.setSBOTerm(sbo_term), f"Setting SBOTerm: {sbo_term}")
@@ -1979,14 +1974,14 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
 
     # set standardized
     # Question for @matthiaskoenig - should I be using createCVTerms?
-    for cv in _cvterms_to_sbml(annotation.standardized):
+    for cv in _cvterms_to_sbml(annotations.standardized):
         _check(sbase.addCVTerm(cv, newBag=True), f"Setting cvterm: {cv}")
 
     # set history
-    if not annotation.history.is_empty():
+    if not annotations.history.is_empty():
         comp_history = libsbml.ModelHistory()
 
-        for creator in annotation.history.creators:
+        for creator in annotations.history.creators:
             comp_creator = libsbml.ModelCreator()
             if creator.name:
                 comp_creator.setName(creator.name)
@@ -1999,9 +1994,9 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
                 f"adding creator to {sbase.getId}.",
             )
 
-        if annotation.history.created_date:
+        if annotations.history.created_date:
             date = libsbml.Date(
-                annotation.history.created_date.strftime(STRTIME_FORMAT)
+                annotations.history.created_date.strftime(STRTIME_FORMAT)
             )
             _check(
                 comp_history.setCreatedDate(date), f"set creation date for {sbase.id}"
@@ -2012,7 +2007,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotation: MetaData) -> None:
             date = libsbml.Date(timestr)
             _check(comp_history.setCreatedDate(date), "set creation date for document")
 
-        for modified_date in annotation.history.modified_dates:
+        for modified_date in annotations.history.modified_dates:
             date = libsbml.Date(modified_date.strftime(STRTIME_FORMAT))
             _check(
                 comp_history.addModifiedDate(date),

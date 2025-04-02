@@ -79,6 +79,12 @@ class Identifier:
             namespace, identifier = identifier_match
             self._namespace = namespace
             self._identifier = identifier
+            self._uri = value
+        else:
+            # TODO: Warn user
+            self._namespace = None
+            self._identifier = None
+            self._uri = value
 
     @property
     def namespace(self) -> Optional[str]:
@@ -87,6 +93,19 @@ class Identifier:
     @property
     def identifier(self) -> Optional[str]:
         return self._identifier
+
+    def to_dict(self):
+        return {
+            k: v
+            for k in ["uri", "namespace", "identifier"]
+            if (v := getattr(self, k, None)) is not None
+        }
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__module__}.{self.__class__.__qualname__}"
+            f"({self.to_dict()})"
+        )
 
 
 class StandardizedAnnotation:
@@ -247,7 +266,7 @@ class StandardizedAnnotation:
         self._identifiers = self.check_identifier_type(identifiers)
 
     @property
-    def annotations(self) -> List["StandardizedAnnotation"]:
+    def annotations(self) -> "StandardizedAnnotationList":
         """Get the nested annotations.
 
         Returns
@@ -367,40 +386,44 @@ class StandardizedAnnotation:
         ann: Optional[
             Union["StandardizedAnnotation", Iterable["StandardizedAnnotation"]]
         ],
-    ) -> List["StandardizedAnnotation"]:
-        if ann is None:
-            return []
-        elif isinstance(ann, StandardizedAnnotation):
-            return [ann]
-        elif isinstance(ann, ABCIterable):
-            return [x for y in ann for x in __class__.check_annotation_type(y)]
-        else:
-            raise TypeError(
-                f"Allowed types for nested StandardizedAnnotation annotations"
-                f"are StandardizedAnnotation or a list of StandardizedAnnotation"
-                f"objects, not {type(ann)}: ann"
-            )
+    ) -> "StandardizedAnnotationList":
+        return StandardizedAnnotationList.from_data(ann)
+        #
+        # if ann is None:
+        #     return StandardizedAnnotationList.from_data(None)
+        # elif isinstance(ann, StandardizedAnnotation):
+        #     return [ann]
+        # elif isinstance(ann, ABCIterable):
+        #     return [x for y in ann for x in __class__.check_annotation_type(y)]
+        # else:
+        # raise TypeError(
+        #     f"Allowed types for nested StandardizedAnnotation annotations"
+        #     f"are StandardizedAnnotation or a list of StandardizedAnnotation"
+        #     f"objects, not {type(ann)}: ann"
+        # )
+        #
 
-    # def to_dict(self) -> Dict:
-    #     """Represent a CVTerm object in python dict.
-    #
-    #     Returns
-    #     -------
-    #     dict:
-    #         A dict that has two keys
-    #         "qualifier" - the qualifier as a string
-    #         "external_resources" - the resources as a dictionary
-    #
-    #     See Also
-    #     --------
-    #     ExternalResources.to_dict()
-    #
-    #     """
-    #     return {
-    #         "qualifier": self.qualifier.value,
-    #         "external_resources": self.external_resources.to_dict(),
-    #     }
-    #
+    def to_dict(self) -> Dict:
+        """Represent a CVTerm object in python dict.
+
+        Returns
+        -------
+        dict:
+            A dict that has two keys
+            "qualifier" - the qualifier as a string
+            "external_resources" - the resources as a dictionary
+
+        See Also
+        --------
+        ExternalResources.to_dict()
+
+        """
+        return {
+            "qualifier": self.qualifier.value,
+            "identifiers": [identifier.to_dict() for identifier in self.identifiers],
+            "annotations": self.annotations.to_list_of_dicts(),
+        }
+
     # @classmethod
     # def from_dict(cls, data_dict: Dict) -> "CVTerm":
     #     """Generate a CVTerm object based on a python dict.
@@ -460,18 +483,18 @@ class StandardizedAnnotation:
     #         return False
     #     return True
     #
-    # def __repr__(self) -> str:
-    #     """Return the StandardizedAnnotation as str with module, class, and code to recreate it.
-    #
-    #     Returns
-    #     -------
-    #     str
-    #     """
-    #     return (
-    #         f"{self.__class__.__module__}.{self.__class__.__qualname__}"
-    #         f"({self.to_dict()})"
-    #     )
-    #
+    def __repr__(self) -> str:
+        """Return the StandardizedAnnotation as str with module, class, and code to recreate it.
+
+        Returns
+        -------
+        str
+        """
+        return (
+            f"{self.__class__.__module__}.{self.__class__.__qualname__}"
+            f"({self.to_dict()})"
+        )
+
     # def _repr_html_(self) -> str:
     #     """Return the CVTerm as HTML string with qualifier, resources and address.
     #
@@ -516,7 +539,7 @@ class StandardizedAnnotationList(UserList):
     """
 
     def __init__(
-        self, data: Optional[Iterable[Union[StandardizedAnnotation, str]]] = None
+        self, data: Optional[Iterable[Union[StandardizedAnnotation, Dict, str]]] = None
     ):
         """Initialize CVTermList object.
 
@@ -542,7 +565,7 @@ class StandardizedAnnotationList(UserList):
 
     @staticmethod
     def _check_standardized_annotation(
-        ann: Optional[Union[StandardizedAnnotation, str]],
+        ann: Optional[Union[StandardizedAnnotation, Dict, str]],
     ) -> Optional["StandardizedAnnotation"]:
         if ann is None:
             return None
@@ -555,11 +578,17 @@ class StandardizedAnnotationList(UserList):
                 f"Allowed types for StandardizedAnnotationList are str and"
                 f"StandardizedAnnotation, not {type(ann)}: {ann}"
             )
+        # TODO: Handle dict
 
     @staticmethod
     def from_data(
         data: Optional[
-            Union[List, Dict, "StandardizedAnnotation", "StandardizedAnnotationList"]
+            Union[
+                Iterable[Union[Dict, "StandardizedAnnotation"]],
+                Dict,
+                "StandardizedAnnotation",
+                "StandardizedAnnotationList",
+            ]
         ],
     ) -> "StandardizedAnnotationList":
         """Parse a CVTermList object from given data.
@@ -583,7 +612,7 @@ class StandardizedAnnotationList(UserList):
         """
         if data is None:
             return StandardizedAnnotationList()
-        elif isinstance(data, list):
+        elif isinstance(data, ABCIterable):
             return StandardizedAnnotationList(data)
         elif isinstance(data, StandardizedAnnotation):
             return StandardizedAnnotationList([data])
@@ -595,21 +624,21 @@ class StandardizedAnnotationList(UserList):
         else:
             raise TypeError(f"Invalid format for StandardizedAnnotationList: '{data}'")
 
-    # def to_list_of_dicts(self) -> List[dict]:
-    #     """Represent a CVTermList object as a list of python dicts.
-    #
-    #     Returns:
-    #     -------
-    #     list:
-    #         a list where each item is a dict, made by CVTerm.to_dict(). Used for JSON
-    #         and YAML export.
-    #
-    #     See Also
-    #     --------
-    #     CVTerm.to_dict()
-    #     """
-    #     return [cvterm.to_dict() for cvterm in self.data]
-    #
+    def to_list_of_dicts(self) -> List[dict]:
+        """Represent a CVTermList object as a list of python dicts.
+
+        Returns:
+        -------
+        list:
+            a list where each item is a dict, made by CVTerm.to_dict(). Used for JSON
+            and YAML export.
+
+        See Also
+        --------
+        CVTerm.to_dict()
+        """
+        return [cvterm.to_dict() for cvterm in self.data]
+
     def add(self, ann: Iterable[Union[StandardizedAnnotation, str]]) -> None:
         """Add multiple CVTerm to CVTermList.
 
