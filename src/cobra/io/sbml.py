@@ -46,14 +46,14 @@ import cobra
 from ..core import (
     GPR,
     Creator,
-    StandardizedAnnotation,
-    StandardizedAnnotationList,
     Gene,
     Group,
     Metabolite,
     MetaData,
     Model,
     Reaction,
+    StandardizedAnnotation,
+    StandardizedAnnotationList,
 )
 from ..core.metadata.history import STRTIME_FORMAT
 from ..manipulation.validate import check_metabolite_compartment_formula
@@ -631,12 +631,10 @@ def _sbml_to_model(
             if c.isSetName():
                 creator_data["name"] = c.getName()
             else:
-                creator_data["family_name"] = (
-                    c.getFamilyName() if c.isSetFamilyName() else None
-                )
-                creator_data["given_name"] = (
-                    c.getGivenName() if c.isSetGivenName() else None
-                )
+                name = c.getGivenName() if c.isSetGivenName() else ""
+                if c.isSetFamilyName():
+                    name = f"{name} {c.getFamilyName()}"
+                creator_data["name"] = name.strip()
             creators.append(creator_data)
 
     meta["creators"] = creators
@@ -1811,9 +1809,6 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
             if _nested_cvterm is not None
             and (cobra_cvterm := _cvterm_to_cobra(_nested_cvterm)) is not None
         ]
-        print(identifiers)
-        print(qualifier)
-        print(nested_data)
         return StandardizedAnnotation(
             identifiers=identifiers, qualifier=qualifier, annotations=nested_data
         )

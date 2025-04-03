@@ -5,9 +5,9 @@ from collections.abc import MutableMapping
 from datetime import datetime
 from typing import Dict, Iterable, Iterator, List, Optional, Union
 
-from ..metadata.history import Creator, History
 from ..metadata import cvterm as CV
 from ..metadata import keyvaluepairs as KV
+from ..metadata.history import Creator, History
 
 
 class MetaData:  # (MutableMapping):
@@ -301,65 +301,56 @@ class MetaData:  # (MutableMapping):
     #     else:
     #         self._standardized.delete_annotation(key)
     #
-    # def __eq__(self, other: Union["MetaData", Dict]) -> bool:
-    #     """Compare two MetaData objects to find out whether they are the same.
-    #
-    #     If given a dict, the dictionary is converted to MetaData and then compared.
-    #
-    #     Equality is defined in two ways, depending if history and custompairs exist.
-    #     1) If history or custompairs exist and are not empty/None, the two objects are
-    #        equal (the function will return True) if
-    #        - standardized (CVTermList) are equal
-    #        - all attributes of the history (History) are equal
-    #        - custompairs are identical
-    #        If one of these three conditions is not true, the function will return False.
-    #     2) If only standardized exist, while history and custompairs are empty
-    #        (history.is_empty() is True and custompairs is None) for both objects,
-    #        then the annotations field (CVTermList.annotations()) is compared as two
-    #        dictionaries.
-    #
-    #     Parameters
-    #     ----------
-    #     other: MetaData or dict
-    #
-    #     Returns
-    #     -------
-    #     bool: True if equal, False otherwise.
-    #     """
-    #     if isinstance(other, dict):
-    #         return self == MetaData.from_dict(other)
-    #     if (
-    #         self.standardized
-    #         and self.history.is_empty()
-    #         and not self.custompairs
-    #         and other.standardized
-    #         and other.history.is_empty()
-    #         and not other.custompairs
-    #     ):
-    #         return self.annotations == other.annotations
-    #
-    #     return (
-    #         (self.standardized == other.standardized)
-    #         and (self.history == other.history)
-    #         and (self.custompairs == other.custompairs)
-    #     )
-    #
-    # def __ne__(self, other) -> bool:
-    #     """Define not-equal to override default.
-    #
-    #     Parameters
-    #     ----------
-    #     other: MetaData or dict
-    #
-    #     Returns
-    #     -------
-    #     bool: False if equal, True otherwise.
-    #
-    #     See Also
-    #     --------
-    #     MetaData.__eq__()
-    #     """
-    #     return not self.__eq__(other)
+    def __eq__(self, other: Union["MetaData", Dict]) -> bool:
+        """Compare two MetaData objects to find out whether they are the same.
+
+        If given a dict, the dictionary is converted to MetaData and then compared.
+
+        Equality is defined in two ways, depending if history and custompairs exist.
+        1) If history or custompairs exist and are not empty/None, the two objects are
+           equal (the function will return True) if
+           - standardized (CVTermList) are equal
+           - all attributes of the history (History) are equal
+           - custompairs are identical
+           If one of these three conditions is not true, the function will return False.
+        2) If only standardized exist, while history and custompairs are empty
+           (history.is_empty() is True and custompairs is None) for both objects,
+           then the annotations field (CVTermList.annotations()) is compared as two
+           dictionaries.
+
+        Parameters
+        ----------
+        other: MetaData or dict
+
+        Returns
+        -------
+        bool: True if equal, False otherwise.
+        """
+        if isinstance(other, dict):
+            return self == MetaData.from_dict(other)
+        return (
+            (self.standardized == other.standardized)
+            and (self.history == other.history)
+            and (self.custom == other.custom)
+        )
+
+    def __ne__(self, other) -> bool:
+        """Define not-equal to override default.
+
+        Parameters
+        ----------
+        other: MetaData or dict
+
+        Returns
+        -------
+        bool: False if equal, True otherwise.
+
+        See Also
+        --------
+        MetaData.__eq__()
+        """
+        return not self.__eq__(other)
+
     #
     # def __iter__(self) -> Iterator:
     #     """Iterate over the MetaData annotations dict.
@@ -494,6 +485,6 @@ class MetaData:  # (MutableMapping):
             # TODO: Fix
 
         if "sbo" in data:
-            annotation["sbo"] = data["sbo"]
+            annotation.sbo = data["sbo"]
 
         return annotation

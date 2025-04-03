@@ -1,10 +1,10 @@
 """Define base Object class in Cobra."""
 
-from typing import TYPE_CHECKING, Optional, Iterable, Union
+from typing import TYPE_CHECKING, Iterable, Optional, Union
 
 
 if TYPE_CHECKING:
-    from cobra.core.metadata import MetaData, StandardizedAnnotation, CustomAnnotation
+    from cobra.core.metadata import CustomAnnotation, MetaData, StandardizedAnnotation
 
 
 class Object:
@@ -116,14 +116,16 @@ class Object:
     def add_annotations(
         self,
         annotations: Union[
-            Union[str, "StandardizedAnnotation", "CustomAnnotation"],
+            str,
+            "StandardizedAnnotation",
+            "CustomAnnotation",
             Iterable[Union[str, "StandardizedAnnotation", "CustomAnnotation"]],
         ],
     ):
         from cobra.core.metadata import (
+            CustomAnnotation,
             MetaData,
             StandardizedAnnotation,
-            CustomAnnotation,
         )
 
         if isinstance(annotations, str):
@@ -137,6 +139,8 @@ class Object:
             self._annotations = MetaData()
 
         for annotation in annotations:
+            if isinstance(annotation, str):
+                annotation = StandardizedAnnotation(annotation)
             if isinstance(annotation, StandardizedAnnotation):
                 annotation._set_target(self)
                 self._annotations.standardized.add([annotation])
@@ -152,7 +156,7 @@ class Object:
             Iterable[Union["StandardizedAnnotation", "CustomAnnotation"]],
         ],
     ):
-        from cobra.core.metadata import StandardizedAnnotation, CustomAnnotation
+        from cobra.core.metadata import CustomAnnotation, StandardizedAnnotation
 
         if isinstance(annotations, StandardizedAnnotation) or isinstance(
             annotations, CustomAnnotation

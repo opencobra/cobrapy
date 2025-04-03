@@ -2,14 +2,14 @@
 
 import json
 from pathlib import Path
+from pprint import pprint
 
-from cobra.core.metadata.keyvaluepairs import CustomAnnotation
 import pytest
 
 from cobra import Model
-from cobra.core.metadata import StandardizedAnnotation, Qualifier
+from cobra.core.metadata import Qualifier, StandardizedAnnotation
+from cobra.core.metadata.keyvaluepairs import CustomAnnotation
 from cobra.core.species import Species
-
 from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
 
 
@@ -34,35 +34,29 @@ RESOURCE_LIST = [
 ECOLI_MODEL_ANNOTATIONS = [
     {
         "qualifier": "bqb_hasTaxon",
-        "external_resources": {"resources": ["http://identifiers.org/taxonomy/511145"]},
+        "identifiers": ["http://identifiers.org/tanomy/511145"],
     },
     {
         "qualifier": "bqm_is",
-        "external_resources": {
-            "resources": ["http://identifiers.org/bigg.model/e_coli_core"],
-            "nested_data": [
-                {
-                    "qualifier": "bqb_isDescribedBy",
-                    "external_resources": {"resources": [PUBMED_EXAMPLE]},
-                },
-                {
-                    "qualifier": "bqb_isDescribedBy",
-                    "external_resources": {"resources": [ECO_EXAMPLE]},
-                },
-            ],
-        },
+        "identifiers": ["http://identifiers.org/bigg.model/e_coli_core"],
+        "annotations": [
+            {
+                "qualifier": "bqb_isDescribedBy",
+                "identifiers": [PUBMED_EXAMPLE],
+            },
+            {
+                "qualifier": "bqb_isDescribedBy",
+                "identifiers": [ECO_EXAMPLE],
+            },
+        ],
     },
     {
         "qualifier": "bqm_isDescribedBy",
-        "external_resources": {
-            "resources": ["http://identifiers.org/doi/10.1128/ecosalplus.10.2.1"]
-        },
+        "identifiers": ["http://identifiers.org/doi/10.1128/ecosalplus.10.2.1"],
     },
     {
         "qualifier": "bqm_isDescribedBy",
-        "external_resources": {
-            "resources": ["http://identifiers.org/ncbiprotein/16128336"]
-        },
+        "identifiers": ["http://identifiers.org/ncbiprotein/16128336"],
     },
 ]
 COBRA_URL = "https://cobrapy.readthedocs.io/"
@@ -138,7 +132,76 @@ def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
     print(model.annotations.standardized)
     for ann in model.annotations.standardized:
         print(ann)
-    assert len(model.annotations.standardized) == 2
+    print(model.annotations.standardized.identifiers)
+    pprint(model.annotations.standardized.to_records())
+    pprint(model.annotations.standardized.to_list_of_dicts())
+    assert len(model.annotations.standardized) == 4
+    ann_dict = [
+        {
+            "identifiers": [
+                {
+                    "identifier": "511145",
+                    "namespace": "taxonomy",
+                    "uri": "http://identifiers.org/taxonomy/511145",
+                }
+            ],
+            "qualifier": "bqb_hasTaxon",
+        },
+        {
+            "annotations": [
+                {
+                    "identifiers": [
+                        {
+                            "identifier": "1111111",
+                            "namespace": "pubmed",
+                            "uri": "https://identifiers.org/pubmed/1111111",
+                        }
+                    ],
+                    "qualifier": "bqb_isDescribedBy",
+                },
+                {
+                    "identifiers": [
+                        {
+                            "identifier": "ECO:0000004",
+                            "namespace": "eco",
+                            "uri": "https://identifiers.org/eco/ECO:0000004",
+                        }
+                    ],
+                    "qualifier": "bqb_isDescribedBy",
+                },
+            ],
+            "identifiers": [
+                {
+                    "identifier": "e_coli_core",
+                    "namespace": "bigg.model",
+                    "uri": "http://identifiers.org/bigg.model/e_coli_core",
+                }
+            ],
+            "qualifier": "bqm_is",
+        },
+        {
+            "identifiers": [
+                {
+                    "identifier": "10.1128/ecosalplus.10.2.1",
+                    "namespace": "doi",
+                    "uri": "http://identifiers.org/doi/10.1128/ecosalplus.10.2.1",
+                }
+            ],
+            "qualifier": "bqm_isDescribedBy",
+        },
+        {
+            "identifiers": [
+                {
+                    "identifier": "16128336",
+                    "namespace": "ncbiprotein",
+                    "uri": "http://identifiers.org/ncbiprotein/16128336",
+                }
+            ],
+            "qualifier": "bqm_isDescribedBy",
+        },
+    ]
+    assert model.annotations.standardized == ann_dict
+    assert 1 == 0
     # Because of changes to eq, to compare using the old format,
     # we need annotation.annotations
     # TODO: get comments from cdiener

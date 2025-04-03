@@ -1,19 +1,24 @@
 """Define the Controlled Vocabulary term class."""
 
+import re
 from collections import UserList
 from collections.abc import Iterable as ABCIterable
 from enum import Enum
 from typing import (
+    Any,
+    Callable,
     Dict,
+    FrozenSet,
     Iterable,
     List,
     Optional,
+    Pattern,
+    Tuple,
     Union,
 )
-import re
 
-from .helper import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
 from .. import object as CObject
+from .helper import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
 
 
 class Qualifier(Enum):
@@ -59,14 +64,13 @@ class Qualifier(Enum):
 
 class Identifier:
     def __init__(self, uri: str) -> None:
-        self._uri = None
         self._namespace = None
         self._identifier = None
 
         self.uri = uri
 
     @property
-    def uri(self) -> Optional[str]:
+    def uri(self) -> str:
         return self._uri
 
     @uri.setter
@@ -106,6 +110,28 @@ class Identifier:
             f"{self.__class__.__module__}.{self.__class__.__qualname__}"
             f"({self.to_dict()})"
         )
+
+    def _repr_html(self) -> str:
+        s = f"Identifier: {self.uri}"
+        if self.namespace is not None:
+            s = f"{s} ({self.namespace}: {self.identifier})"
+        return s
+
+    def __eq__(self, other: Any):
+        if isinstance(other, str):
+            return self.uri == other
+        if isinstance(other, Identifier):
+            return self.uri == other.uri
+        if isinstance(other, dict):
+            return self.uri == other.get("uri")
+        if isinstance(other, tuple):
+            if len(other) != 2 or self.namespace is None:
+                return False
+            return self.namespace == other[0] and self.identifier == other[1]
+        return False
+
+    def __hash__(self):
+        return hash(self.uri)
 
 
 class StandardizedAnnotation:
@@ -304,7 +330,7 @@ class StandardizedAnnotation:
     @staticmethod
     def check_identifier_type(
         identifiers: Optional[
-            Union["Identifier", str, Iterable[Union["Identifier", str]]]
+            Union["Identifier", str, Dict, Iterable[Union["Identifier", str, Dict]]]
         ],
     ) -> List["Identifier"]:
         """Check and parse input to ExternalResources.
@@ -339,6 +365,8 @@ class StandardizedAnnotation:
             return [identifiers]
         elif isinstance(identifiers, str):
             return [Identifier(identifiers)]
+        elif isinstance(identifiers, dict):
+            return [Identifier(identifiers.get("uri", None))]
         elif isinstance(identifiers, ABCIterable):
             return [x for y in identifiers for x in __class__.check_identifier_type(y)]
         else:
@@ -418,71 +446,106 @@ class StandardizedAnnotation:
         ExternalResources.to_dict()
 
         """
-        return {
+        d = {
             "qualifier": self.qualifier.value,
             "identifiers": [identifier.to_dict() for identifier in self.identifiers],
-            "annotations": self.annotations.to_list_of_dicts(),
         }
+        if self.annotations:
+            d["annotations"] = self.annotations.to_list_of_dicts()
+        return d
 
-    # @classmethod
-    # def from_dict(cls, data_dict: Dict) -> "CVTerm":
-    #     """Generate a CVTerm object based on a python dict.
-    #
-    #     Parameters
-    #     ----------
-    #     data_dict: dict
-    #         A dict that has two keys
-    #         "qualifier" - the qualifier as a string, optional. If not present, the
-    #         qualifier is set to bqb_is.
-    #         "external_resources" - the resources as a dictionary, optional
-    #
-    #     Returns
-    #     -------
-    #     CVTerm
-    #
-    #     See Also
-    #     --------
-    #     ExternalResources.to_dict()
-    #
-    #     """
-    #     return cls(
-    #         ex_res=data_dict.get("external_resources", None),
-    #         qualifier=data_dict.get("qualifier", Qualifier.Biological_is),
-    #     )
-    #
-    # def __eq__(self, other: Union["CVTerm", dict]) -> bool:
-    #     """Compare two CVTerm objects and return boolean for equality.
-    #
-    #     If a dict is given, it is transformed to CVTerm.
-    #     First, the qualifier is compared. If they are not identical, False is returned.
-    #     Then the external resources are compared, see ExternalResources.__eq__().
-    #
-    #     Parameters
-    #     ----------
-    #     other: dict or CVTerm
-    #
-    #     Returns
-    #     -------
-    #     bool
-    #         False if other is not CVTerm or dict.
-    #         False if qualifiers are different, or external resources are different.
-    #         True if qualifier and external resources are identical.
-    #
-    #     See Also
-    #     --------
-    #     CVTerm.from_dict()
-    #     ExternalResources.__eq__()
-    #     """
-    #     if not isinstance(other, (CVTerm, dict)):
-    #         return False
-    #     if isinstance(other, dict):
-    #         return self == CVTerm.from_dict(other)
-    #     if self.qualifier != other.qualifier:
-    #         return False
-    #     if self.external_resources != other.external_resources:
-    #         return False
-    #     return True
-    #
+    def to_records(self):
+        l, _ = self._to_records()
+        return l
+
+    def _to_records(
+        self, group_counter: int = 1, parent_group: int = 0
+    ) -> Tuple[List[Dict], int]:
+        l = []
+        for identifier in self.identifiers:
+            entry = {
+                "qualifier": self.qualifier.value,
+                "uri": identifier.uri,
+                "namespace": identifier.namespace,
+                "identifier": identifier.identifier,
+                "annotation_group": group_counter,
+                "parent_group": parent_group,
+            }
+            l.append(entry)
+        if self.annotations:
+            new_l, group_counter = self.annotations._to_records(
+                group_counter=(group_counter + 1), parent_group=group_counter
+            )
+            l.extend(new_l)
+        else:
+            group_counter = group_counter + 1
+        return l, group_counter
+
+    @classmethod
+    def from_dict(cls, data_dict: Dict) -> "StandardizedAnnotation":
+        """Generate a CVTerm object based on a python dict.
+
+        Parameters
+        ----------
+        data_dict: dict
+            A dict that has two keys
+            "qualifier" - the qualifier as a string, optional. If not present, the
+            qualifier is set to bqb_is.
+            "external_resources" - the resources as a dictionary, optional
+
+        Returns
+        -------
+        CVTerm
+
+        See Also
+        --------
+        ExternalResources.to_dict()
+
+        """
+        return cls(
+            identifiers=data_dict.get("identifiers", None),
+            qualifier=data_dict.get("qualifier", Qualifier.Biological_is),
+            annotations=data_dict.get("annotations", None),
+        )
+
+    def __eq__(self, other: Any) -> bool:
+        """Compare two CVTerm objects and return boolean for equality.
+
+        If a dict is given, it is transformed to CVTerm.
+        First, the qualifier is compared. If they are not identical, False is returned.
+        Then the external resources are compared, see ExternalResources.__eq__().
+
+        Parameters
+        ----------
+        other: dict or CVTerm
+
+        Returns
+        -------
+        bool
+            False if other is not CVTerm or dict.
+            False if qualifiers are different, or external resources are different.
+            True if qualifier and external resources are identical.
+
+        See Also
+        --------
+        CVTerm.from_dict()
+        """
+
+        if isinstance(other, dict):
+            return self == StandardizedAnnotation.from_dict(other)
+        if isinstance(other, StandardizedAnnotation):
+            if self.qualifier != other.qualifier:
+                return False
+            if len(self.identifiers) != len(other.identifiers):
+                return False
+            for idf in self.identifiers:
+                if not idf in other.identifiers:
+                    return False
+            if self.annotations != other.annotations:
+                return False
+            return True
+        return False
+
     def __repr__(self) -> str:
         """Return the StandardizedAnnotation as str with module, class, and code to recreate it.
 
@@ -495,21 +558,23 @@ class StandardizedAnnotation:
             f"({self.to_dict()})"
         )
 
-    # def _repr_html_(self) -> str:
-    #     """Return the CVTerm as HTML string with qualifier, resources and address.
-    #
-    #     Returns
-    #     -------
-    #     str
-    #         HTML formatted string
-    #     """
-    #     return f"""
-    #                 {self.qualifier.name}:
-    #                 "<p><strong>Resources</strong>"
-    #                 {"<p>".join([res for res in self.external_resources.resources])}
-    #                 <strong>Memory address</strong>{id(self):#x}
-    #             """
-    #
+    def _repr_html_(self) -> str:
+        """Return the CVTerm as HTML string with qualifier, resources and address.
+
+        Returns
+        -------
+        str
+            HTML formatted string
+        """
+        # TODO: Fix this HTML
+        return f"""
+                    {self.qualifier.name}:
+                    <p><strong>Identifiers</strong>
+                    {"</p><p>".join([res._repr_html() for res in self.identifiers])}
+                    <p><strong>Annotations</strong></p>
+                    <p>{self.annotations._repr_html_()}</p>
+                    <strong>Memory address</strong>{id(self):#x}
+                """
 
 
 class StandardizedAnnotationList(UserList):
@@ -573,9 +638,11 @@ class StandardizedAnnotationList(UserList):
             return ann
         elif isinstance(ann, str):
             return StandardizedAnnotation(ann)
+        elif isinstance(ann, dict):
+            return StandardizedAnnotation.from_dict(ann)
         else:
             raise TypeError(
-                f"Allowed types for StandardizedAnnotationList are str and"
+                f"Allowed types for StandardizedAnnotation are str and"
                 f"StandardizedAnnotation, not {type(ann)}: {ann}"
             )
         # TODO: Handle dict
@@ -612,15 +679,12 @@ class StandardizedAnnotationList(UserList):
         """
         if data is None:
             return StandardizedAnnotationList()
-        elif isinstance(data, ABCIterable):
-            return StandardizedAnnotationList(data)
-        elif isinstance(data, StandardizedAnnotation):
-            return StandardizedAnnotationList([data])
-        # elif isinstance(data, dict):
-        #     return CVTermList([data])
-        # TODO: Dict
         elif isinstance(data, StandardizedAnnotationList):
             return data
+        elif isinstance(data, ABCIterable) and not isinstance(data, dict):
+            return StandardizedAnnotationList(data)
+        elif isinstance(data, (StandardizedAnnotation, dict)):
+            return StandardizedAnnotationList([data])
         else:
             raise TypeError(f"Invalid format for StandardizedAnnotationList: '{data}'")
 
@@ -638,6 +702,21 @@ class StandardizedAnnotationList(UserList):
         CVTerm.to_dict()
         """
         return [cvterm.to_dict() for cvterm in self.data]
+
+    def to_records(self):
+        l, _ = self._to_records()
+        return l
+
+    def _to_records(
+        self, group_counter: int = 1, parent_group: int = 0
+    ) -> Tuple[List[Dict], int]:
+        l = []
+        for entry in self.data:
+            new_l, group_counter = entry._to_records(
+                group_counter=group_counter, parent_group=parent_group
+            )
+            l.extend(new_l)
+        return l, group_counter
 
     def add(self, ann: Iterable[Union[StandardizedAnnotation, str]]) -> None:
         """Add multiple CVTerm to CVTermList.
@@ -839,135 +918,131 @@ class StandardizedAnnotationList(UserList):
     #                 annotation_dict[namespace] = [identifier]
     #     return {k: sorted(annotation_dict[k]) for k in sorted(annotation_dict.keys())}
     #
-    # @property
-    # def resources(self) -> FrozenSet[str]:
-    #     """Get all resources.
-    #
-    #     Returns:
-    #     -------
-    #     FrozenSet:
-    #         a set of all external resources in the original self.data list of CVTerms
-    #         including external resources of nested data. The Set contains the URIs as
-    #         strings, not in the ExternalResources format.
-    #     """
-    #     resources = set()
-    #     for datum in self.data:
-    #         if (
-    #             datum.external_resources.resources
-    #             or datum.external_resources.nested_data
-    #         ):
-    #             resources.update(datum.external_resources.resource_nested)
-    #     return frozenset(resources)
-    #
-    # @property
-    # def qualifiers(self) -> FrozenSet[Qualifier]:
-    #     """Get all qualifiers used by CVTerm objects in the CVTermList.
-    #
-    #     Returns:
-    #     -------
-    #     FrozenSet:
-    #         a frozen set of all qualifiers in the original self.data list of CVTerms
-    #     """
-    #     qualifier_set = set()
-    #     for datum in self.data:
-    #         qualifier_set.add(datum.qualifier)
-    #     return frozenset(qualifier_set)
-    #
-    # def query(
-    #     self,
-    #     search_function: Union[str, Pattern, Callable],
-    #     attribute: Union[str, None] = None,
-    # ) -> "CVTermList":
-    #     """Query the CVTermList and return a list of CVTerm objects.
-    #
-    #     Parameters
-    #     ----------
-    #     search_function : a string, regular expression or function
-    #         Used to find the matching elements in the list.
-    #         - a regular expression (possibly compiled), in which case the
-    #         given attribute of the object should match the regular expression.
-    #         - a function which takes one argument and returns True for
-    #         desired values
-    #
-    #     attribute : string or None
-    #         the name attribute of the object to passed as argument to the
-    #         `search_function`. If this is None and a regular expression/string is given,
-    #          will match the regular expression to both qualifier and resources.
-    #
-    #     Returns
-    #     -------
-    #     CVTermList
-    #         a new list of CVTerm objects which match the query
-    #
-    #     Examples
-    #     --------
-    #     >>> from cobra.io import load_model
-    #     >>> model = load_model('iJO1366')
-    #     >>> model.annotation.standardized.query('bqb', 'qualifier')
-    #     >>> import re
-    #     >>> regex = re.compile('^bqm')
-    #     >>> model.annotation.standardized.query(regex, 'qualifier')
-    #     """
-    #
-    #     def select_attribute(
-    #         x: CVTerm,
-    #     ) -> Union[CVTerm, ExternalResources, Qualifier, set]:
-    #         if attribute is None:
-    #             return x
-    #         else:
-    #             return getattr(x, attribute)
-    #
-    #     try:
-    #         # if the search_function is a regular expression
-    #         regex_searcher = re.compile(search_function)
-    #         print(f"Search function: '{search_function}'")
-    #         if attribute is None:
-    #             attribute = ""
-    #
-    #         if attribute == "qualifier":
-    #             matches = [
-    #                 cvterm
-    #                 for cvterm in self.data
-    #                 if (
-    #                     regex_searcher.findall(select_attribute(cvterm).name) != []
-    #                     or regex_searcher.findall(select_attribute(cvterm).value) != []
-    #                 )
-    #             ]
-    #         elif attribute == "resources":
-    #             matches = [
-    #                 cvterm
-    #                 for cvterm in self.data
-    #                 if any(
-    #                     regex_searcher.findall(res) for res in select_attribute(cvterm)
-    #                 )
-    #             ]
-    #         elif attribute == "external_resources":
-    #             matches = [
-    #                 cvterm
-    #                 for cvterm in self.data
-    #                 if any(
-    #                     regex_searcher.findall(res)
-    #                     for res in select_attribute(cvterm).resources
-    #                 )
-    #             ]
-    #         else:
-    #             matches = [
-    #                 cvterm
-    #                 for cvterm in self.data
-    #                 if regex_searcher.findall(cvterm.qualifier.name) != []
-    #                 or regex_searcher.findall(cvterm.qualifier.value) != []
-    #                 or any(regex_searcher.findall(res) for res in cvterm.resources)
-    #             ]
-    #     except TypeError:
-    #         matches = [
-    #             cvterm
-    #             for cvterm in self.data
-    #             if search_function(select_attribute(cvterm))
-    #         ]
-    #
-    #     results = self.__class__(matches)
-    #     return results
-    #
+    @property
+    def identifiers(self) -> FrozenSet[Identifier]:
+        """Get all Identifiers.
+
+        Returns:
+        -------
+        FrozenSet:
+            a set of all external resources in the original self.data list of CVTerms
+            including external resources of nested data. The Set contains the URIs as
+            strings, not in the ExternalResources format.
+        """
+        resources = set()
+        for entry in self.data:
+            resources.update(entry.identifiers)
+            if entry.annotations:
+                resources.update(entry.annotations.identifiers)
+        return frozenset(resources)
+
+    @property
+    def qualifiers(self) -> FrozenSet[Qualifier]:
+        """Get all qualifiers used by CVTerm objects in the CVTermList.
+
+        Note it does not return nested qualifiers.
+
+        Returns:
+        -------
+        FrozenSet:
+            a frozen set of all qualifiers in the original self.data list of CVTerms
+        """
+        qualifier_set = set()
+        for entry in self.data:
+            qualifier_set.add(entry.qualifier)
+        return frozenset(qualifier_set)
+
+    def query(
+        self,
+        search_function: Union[str, Pattern, Callable],
+        attribute: Union[str, None] = None,
+    ) -> "StandardizedAnnotationList":
+        """Query the CVTermList and return a list of CVTerm objects.
+
+        Parameters
+        ----------
+        search_function : a string, regular expression or function
+            Used to find the matching elements in the list.
+            - a regular expression (possibly compiled), in which case the
+            given attribute of the object should match the regular expression.
+            - a function which takes one argument and returns True for
+            desired values
+
+        attribute : string or None
+            the name attribute of the object to passed as argument to the
+            `search_function`. If this is None and a regular expression/string is given,
+             will match the regular expression to both qualifier and resources.
+
+        Returns
+        -------
+        CVTermList
+            a new list of CVTerm objects which match the query
+
+        Examples
+        --------
+        >>> from cobra.io import load_model
+        >>> model = load_model('iJO1366')
+        >>> model.annotation.standardized.query('bqb', 'qualifier')
+        >>> import re
+        >>> regex = re.compile('^bqm')
+        >>> model.annotation.standardized.query(regex, 'qualifier')
+        """
+
+        # TODO: Clean up this whole method.
+        def select_attribute(
+            x: StandardizedAnnotation,
+        ) -> Union[StandardizedAnnotation, Identifier, Qualifier, set]:
+            if attribute is None:
+                return x
+            else:
+                return getattr(x, attribute)
+
+        try:
+            # if the search_function is a regular expression
+            regex_searcher = re.compile(search_function)
+            print(f"Search function: '{search_function}'")
+            if attribute is None:
+                attribute = ""
+
+            if attribute == "qualifier":
+                matches = [
+                    cvterm
+                    for cvterm in self.data
+                    if (
+                        regex_searcher.findall(select_attribute(cvterm).name) != []
+                        or regex_searcher.findall(select_attribute(cvterm).value) != []
+                    )
+                ]
+            elif attribute == "identifiers":
+                matches = [
+                    cvterm
+                    for cvterm in self.data
+                    if any(
+                        regex_searcher.findall(res.uri)
+                        for res in select_attribute(cvterm)
+                    )
+                ]
+            else:
+                matches = [
+                    cvterm
+                    for cvterm in self.data
+                    if regex_searcher.findall(cvterm.qualifier.name) != []
+                    or regex_searcher.findall(cvterm.qualifier.value) != []
+                    or any(
+                        regex_searcher.findall(res.uri) for res in cvterm.identifiers
+                    )
+                ]
+        except TypeError as err:
+            print(err)
+            matches = [
+                cvterm
+                for cvterm in self.data
+                if search_function(select_attribute(cvterm))
+            ]
+
+        results = self.__class__(matches)
+        return results
+
     def __setitem__(self, key: int, value: Union[StandardizedAnnotation, str]) -> None:
         """Set item in CVTermList.
 
@@ -1024,43 +1099,44 @@ class StandardizedAnnotationList(UserList):
                 ]
             )
 
-    # def __eq__(self, other: Union[list, "CVTermList"]) -> bool:
-    #     """Compare two CVTermList objects to find out whether they are the same.
-    #
-    #     Equality is defined as them having the same data, but not necessarily the same
-    #     objects. If the given item is not a CVTermList or list, this function will
-    #     return False.
-    #
-    #     Parameters
-    #     ----------
-    #     other: CVTermList or list
-    #
-    #     Returns
-    #     -------
-    #     bool: True if the data matches, False otherwise
-    #     """
-    #     if isinstance(other, list):
-    #         return self.__eq__(CVTermList.from_data(other))
-    #     if not isinstance(other, CVTermList):
-    #         return False
-    #     if len(self.data) != len(other.data):
-    #         return False
-    #     for self_i, other_i in zip(self.data, other.data):
-    #         if self_i != other_i:
-    #             return False
-    #     return True
-    #
-    # def _repr_html_(self) -> str:
-    #     """Generate CVTermList as HTML.
-    #
-    #     Returns
-    #     -------
-    #     str
-    #         HTML representation of the list of CVTerm resources.
-    #     """
-    #     return f"""CVTermList{"<p>".join([cvterm._repr_html_()
-    #                                       for cvterm in self.data])}"""
-    #
+    def __eq__(self, other: Union[Iterable, "StandardizedAnnotationList"]) -> bool:
+        """Compare two CVTermList objects to find out whether they are the same.
+
+        Equality is defined as them having the same data, but not necessarily the same
+        objects. If the given item is not a CVTermList or list, this function will
+        return False.
+
+        Parameters
+        ----------
+        other: CVTermList or list
+
+        Returns
+        -------
+        bool: True if the data matches, False otherwise
+        """
+        if isinstance(other, ABCIterable) and not isinstance(
+            other, StandardizedAnnotationList
+        ):
+            return self.__eq__(StandardizedAnnotationList.from_data(other))
+        if not isinstance(other, StandardizedAnnotationList):
+            return False
+        if len(self.data) != len(other.data):
+            return False
+        for other_entry in other.data:
+            if not other_entry in self.data:
+                return False
+        return True
+
+    def _repr_html_(self) -> str:
+        """Generate CVTermList as HTML.
+
+        Returns
+        -------
+        str
+            HTML representation of the list of CVTerm resources.
+        """
+        entries = [cvterm._repr_html_() for cvterm in self.data]
+        return f"""StandardizedAnnotationList{"<p>".join(entries)}"""
 
 
 # class ExternalResources:
