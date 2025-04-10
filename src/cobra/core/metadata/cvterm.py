@@ -3,7 +3,6 @@
 import re
 from collections import UserList
 from collections.abc import Iterable as ABCIterable
-from enum import Enum
 from typing import (
     Any,
     Callable,
@@ -17,121 +16,10 @@ from typing import (
     Union,
 )
 
+from cobra.core.metadata.identifier import get_default_qualifier
+
 from .. import object as CObject
-from .helper import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
-
-
-class Qualifier(Enum):
-    """The possible qualifiers inside a CVTerm.
-
-    The qualifiers and their detailed description are present in:
-    https://co.mbine.org/author/biomodels.net-qualifiers/
-
-    Qualifiers are divided into two groups
-    Biological (bqb)    These kinds of qualifiers define the relationship between a
-                        biological object represented by a model element and its
-                        annotation.
-    Modelling (bqm)     These kinds of qualifiers define the relationship between a
-                        modelling object and its annotation.
-    """
-
-    def __init__(self, value):
-        """Initialize Qualifier enums by creating a lookup dictionary."""
-        self.__class__._map = getattr(self.__class__, "_map", {}) | {value: self}
-
-    Biological_is = "bqb_is"
-    Biological_hasPart = "bqb_hasPart"
-    Biological_isPartOf = "bqb_isPartOf"
-    Biological_isVersionOf = "bqb_isVersionOf"
-    Biological_hasVersion = "bqb_hasVersion"
-    Biological_isHomologTo = "bqb_isHomologTo"
-    Biological_isDescribedBy = "bqb_isDescribedBy"
-    Biological_isEncodedBy = "bqb_isEncodedBy"
-    Biological_encodes = "bqb_encodes"
-    Biological_occursIn = "bqb_occursIn"
-    Biological_hasProperty = "bqb_hasProperty"
-    Biological_isPropertyOf = "bqb_isPropertyOf"
-    Biological_hasTaxon = "bqb_hasTaxon"
-    Biological_unknown = "bqb_unknown"
-
-    Modelling_is = "bqm_is"
-    Modelling_isDescribedBy = "bqm_isDescribedBy"
-    Modelling_isDerivedFrom = "bqm_isDerivedFrom"
-    Modelling_isInstanceOf = "bqm_isInstanceOf"
-    Modelling_hasInstance = "bqm_hasInstance"
-    Modelling_unknown = "bqm_unknown"
-
-
-class Identifier:
-    def __init__(self, uri: str) -> None:
-        self._namespace = None
-        self._identifier = None
-
-        self.uri = uri
-
-    @property
-    def uri(self) -> str:
-        return self._uri
-
-    @uri.setter
-    def uri(self, value: str) -> None:
-        if re.match(URL_IDENTIFIERS_PATTERN, value):
-            identifier_match = parse_identifiers_uri(value)
-
-            if identifier_match is None:
-                raise ValueError(f"The provided URI is not valid: {value}")
-            namespace, identifier = identifier_match
-            self._namespace = namespace
-            self._identifier = identifier
-            self._uri = value
-        else:
-            # TODO: Warn user
-            self._namespace = None
-            self._identifier = None
-            self._uri = value
-
-    @property
-    def namespace(self) -> Optional[str]:
-        return self._namespace
-
-    @property
-    def identifier(self) -> Optional[str]:
-        return self._identifier
-
-    def to_dict(self):
-        return {
-            k: v
-            for k in ["uri", "namespace", "identifier"]
-            if (v := getattr(self, k, None)) is not None
-        }
-
-    def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__module__}.{self.__class__.__qualname__}"
-            f"({self.to_dict()})"
-        )
-
-    def _repr_html(self) -> str:
-        s = f"Identifier: {self.uri}"
-        if self.namespace is not None:
-            s = f"{s} ({self.namespace}: {self.identifier})"
-        return s
-
-    def __eq__(self, other: Any):
-        if isinstance(other, str):
-            return self.uri == other
-        if isinstance(other, Identifier):
-            return self.uri == other.uri
-        if isinstance(other, dict):
-            return self.uri == other.get("uri")
-        if isinstance(other, tuple):
-            if len(other) != 2 or self.namespace is None:
-                return False
-            return self.namespace == other[0] and self.identifier == other[1]
-        return False
-
-    def __hash__(self):
-        return hash(self.uri)
+from cobra.core.metadata import Identifier, Qualifier, Identifier
 
 
 class StandardizedAnnotation:
@@ -225,22 +113,25 @@ class StandardizedAnnotation:
         self._identifiers = self.check_identifier_type(identifiers)
         self._qualifier = self.check_qualifier_type(qualifier)
         self._annotations = self.check_annotation_type(annotations)
-        self._target = None
+        self._parent = None
         # TODO: Keep track of target Object, so we can do annotation.remove
 
-    def _set_target(self, target: Optional["CObject.Object"]) -> None:
-        self._target = target
-        if self._annotations is None:
-            return
-        for ann in self._annotations:
-            ann._set_target(target)
+    def _set_parent(
+        self,
+        parent: Optional[
+            Union[
+                "CObject.Object", "StandardizedAnnotationList", "StandardizedAnnotation"
+            ]
+        ],
+    ) -> None:
+        self._parent = parent
 
-    def remove_from_object(self):
-        if self._target is None:
+    def remove_from_parent(self):
+        if self._parent is None:
             raise ValueError(
-                "Cannot remove annontation, since no object is associated with annotation."
+                "Cannot remove annotation, since no object is associated with annotation."
             )
-        self._target.remove_annotations(self)
+        self._parent.remove(self)
 
     @property
     def qualifier(self) -> Qualifier:
@@ -291,6 +182,17 @@ class StandardizedAnnotation:
         """
         self._identifiers = self.check_identifier_type(identifiers)
 
+    def add_identifiers(self, identifiers: Iterable[Union[str, "Identifier"]]) -> None:
+        identifiers = self.check_identifier_type(identifiers)
+        self.identifiers.extend(identifiers)
+
+    @property
+    def uris(self) -> FrozenSet[str]:
+        l = {entry.uri for entry in self.identifiers}
+        for entry in self.annotations:
+            l.update(entry.uris)
+        return frozenset(l)
+
     @property
     def annotations(self) -> "StandardizedAnnotationList":
         """Get the nested annotations.
@@ -330,7 +232,13 @@ class StandardizedAnnotation:
     @staticmethod
     def check_identifier_type(
         identifiers: Optional[
-            Union["Identifier", str, Dict, Iterable[Union["Identifier", str, Dict]]]
+            Union[
+                "Identifier",
+                str,
+                Dict[str, str],
+                Tuple[str, str],
+                Iterable[Union["Identifier", str, Dict[str, str], Tuple[str, str]]],
+            ]
         ],
     ) -> List["Identifier"]:
         """Check and parse input to ExternalResources.
@@ -361,12 +269,8 @@ class StandardizedAnnotation:
         # TODO: Fix doc
         if identifiers is None:
             return []
-        elif isinstance(identifiers, Identifier):
-            return [identifiers]
-        elif isinstance(identifiers, str):
-            return [Identifier(identifiers)]
-        elif isinstance(identifiers, dict):
-            return [Identifier(identifiers.get("uri", None))]
+        elif isinstance(identifiers, (Identifier, str, dict)):
+            return [Identifier.from_data(identifiers)]
         elif isinstance(identifiers, ABCIterable):
             return [x for y in identifiers for x in __class__.check_identifier_type(y)]
         else:
@@ -454,13 +358,16 @@ class StandardizedAnnotation:
             d["annotations"] = self.annotations.to_list_of_dicts()
         return d
 
-    def to_records(self):
+    def to_tuples(self) -> List[Tuple[str, str]]:
+        return [(idf.namespace, idf.identifier) for idf in self.identifiers]
+
+    def to_records(self) -> List[Dict[str, Any]]:
         l, _ = self._to_records()
         return l
 
     def _to_records(
         self, group_counter: int = 1, parent_group: int = 0
-    ) -> Tuple[List[Dict], int]:
+    ) -> Tuple[List[Dict[str, Any]], int]:
         l = []
         for identifier in self.identifiers:
             entry = {
@@ -604,7 +511,10 @@ class StandardizedAnnotationList(UserList):
     """
 
     def __init__(
-        self, data: Optional[Iterable[Union[StandardizedAnnotation, Dict, str]]] = None
+        self,
+        data: Optional[
+            Iterable[Union[StandardizedAnnotation, Dict, Identifier, str]]
+        ] = None,
     ):
         """Initialize CVTermList object.
 
@@ -620,12 +530,24 @@ class StandardizedAnnotationList(UserList):
         """
         if data is None:
             data = []
+
         checked_data = [
             filtered_entry
             for entry in data
-            if (filtered_entry := self._check_standardized_annotation(entry))
+            if (not isinstance(entry, (str, Identifier)))
+            and (filtered_entry := self._check_standardized_annotation(entry))
             is not None
         ]
+        # str and Identifier instances are handled separately and added as one
+        # Standardized annotation instance with the default qualifier (Biological_is).
+        if no_qualifier_data := [
+            entry for entry in data if isinstance(entry, (str, Identifier))
+        ]:
+            checked_data.insert(
+                0, StandardizedAnnotation(identifiers=no_qualifier_data)
+            )
+        for entry in checked_data:
+            entry._set_parent(self)
         super().__init__(checked_data)
 
     @staticmethod
@@ -651,7 +573,8 @@ class StandardizedAnnotationList(UserList):
     def from_data(
         data: Optional[
             Union[
-                Iterable[Union[Dict, "StandardizedAnnotation"]],
+                Iterable[Union[str, Dict, "StandardizedAnnotation"]],
+                str,
                 Dict,
                 "StandardizedAnnotation",
                 "StandardizedAnnotationList",
@@ -681,10 +604,10 @@ class StandardizedAnnotationList(UserList):
             return StandardizedAnnotationList()
         elif isinstance(data, StandardizedAnnotationList):
             return data
-        elif isinstance(data, ABCIterable) and not isinstance(data, dict):
-            return StandardizedAnnotationList(data)
-        elif isinstance(data, (StandardizedAnnotation, dict)):
+        elif isinstance(data, (StandardizedAnnotation, dict, str)):
             return StandardizedAnnotationList([data])
+        elif isinstance(data, ABCIterable):
+            return StandardizedAnnotationList(data)
         else:
             raise TypeError(f"Invalid format for StandardizedAnnotationList: '{data}'")
 
@@ -718,7 +641,26 @@ class StandardizedAnnotationList(UserList):
             l.extend(new_l)
         return l, group_counter
 
-    def add(self, ann: Iterable[Union[StandardizedAnnotation, str]]) -> None:
+    def _find_first_by_qualifier(
+        self,
+        qualifier: Qualifier = Qualifier.Biological_is,
+    ) -> Optional[StandardizedAnnotation]:
+        for entry in self.data:
+            if entry.qualifier == qualifier:
+                return entry
+        return None
+
+    def _find_first_or_create_by_qualifier(
+        self, qualifier: Qualifier = Qualifier.Biological_is
+    ) -> StandardizedAnnotation:
+        entry = self._find_first_by_qualifier(qualifier)
+        if entry is None:
+            entry = StandardizedAnnotation(qualifier=qualifier, identifiers=[])
+            entry._set_parent(self)
+            self.data.insert(0, entry)
+        return entry
+
+    def add(self, ann: Iterable[Union[StandardizedAnnotation, Dict, str]]) -> None:
         """Add multiple CVTerm to CVTermList.
 
         Parameters
@@ -734,74 +676,6 @@ class StandardizedAnnotationList(UserList):
         ]
         self.extend(checked_ann)
 
-    # def add_simple_annotations(self, data: Optional[Dict] = None) -> None:
-    #     """Add simple annotation.
-    #
-    #     Adds standardized via old annotation format (dictionary like format).
-    #     The default qualifier, i.e "bqb_is", will be used.
-    #     This function will add identifiers.org to the keys given to form  the URI.
-    #     If the annotation does not match the identifiers format, you should use
-    #     add_cvterms directly (and create the correct link) and/or use the
-    #     custompairs field of annotation.
-    #
-    #     This function will skip "sbo" keys since they should be added via
-    #     annotation["sbo"], see MetaData.
-    #
-    #     Parameters
-    #     ----------
-    #     data : dict
-    #         the data in old annotation format
-    #         keys are str representing namespace
-    #         If the value is a list, each value is added to the namespace, making a
-    #         CVTerm with one ExternalResources object htat has mulitple URIs. If the
-    #         value is a string, then only one value will be added to the namespace.
-    #
-    #     Examples
-    #     --------
-    #     >>> from cobra import Species
-    #     >>> s = Species()
-    #     >>> s.annotation.standardized.add_simple_annotations({"chebi": "CHEBI:17234"})
-    #     >>> chebi_ent = ["CHBEI:1723456", "CHEBI:172345"]
-    #     >>> s.annotation.standardized.add_simple_annotations({"chebi": chebi_ent})
-    #     >>> s.annotation
-    #     >>> s.annotation.standardized
-    #     >>> s.annotation.annotations
-    #     """
-    #     if data is None:
-    #         data = {}
-    #
-    #     if not isinstance(data, dict):
-    #         raise TypeError(f"The data passed must be of type dict: {data}")
-    #
-    #     cvterm_list = []
-    #     for key, value in data.items():
-    #
-    #         if not isinstance(value, (list, str)):
-    #             raise TypeError(
-    #                 f"The value passed must be of type list or str: {value}"
-    #             )
-    #         if key.lower() == "sbo":
-    #             continue
-    #
-    #         qual = Qualifier.Biological_is
-    #         # if there is only one identifier i.e. annotation
-    #         # of the form { "chebi": ["CHEBI:17234"]}
-    #         if isinstance(value, str):
-    #             uri = ["https://identifiers.org/" + key + "/" + value]
-    #         # if there are multiple identifiers for this key i.e. annotation
-    #         # of the form { "chebi": ["CHEBI:124", "CHEBI:17234"]}
-    #         elif isinstance(value, list):
-    #             uri = [
-    #                 "https://identifiers.org/" + key + "/" + identifier
-    #                 for identifier in value
-    #             ]
-    #         else:
-    #             raise TypeError(
-    #                 f"The identifier passed must be of type string or list: {value}"
-    #             )
-    #         cvterm_list.append(CVTerm(ex_res=ExternalResources(uri), qualifier=qual))
-    #     self.add_cvterms(cvterm_list)
-    #
     # def delete_annotation(self, resource: Union[str, Pattern]) -> None:
     #     r"""Delete annotation - the converse of add_simple_annotation.
     #
@@ -937,6 +811,13 @@ class StandardizedAnnotationList(UserList):
         return frozenset(resources)
 
     @property
+    def uris(self) -> FrozenSet[str]:
+        l = set()
+        for entry in self.data:
+            l.update(entry.uris)
+        return frozenset(l)
+
+    @property
     def qualifiers(self) -> FrozenSet[Qualifier]:
         """Get all qualifiers used by CVTerm objects in the CVTermList.
 
@@ -951,6 +832,12 @@ class StandardizedAnnotationList(UserList):
         for entry in self.data:
             qualifier_set.add(entry.qualifier)
         return frozenset(qualifier_set)
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __len__(self):
+        return len(self.data)
 
     def query(
         self,
@@ -1057,8 +944,9 @@ class StandardizedAnnotationList(UserList):
         """
         checked_value = self._check_standardized_annotation(value)
         if checked_value is None:
-            TypeError(f"Value cannot be None.")
+            raise TypeError(f"Value cannot be None.")
             # TODO: Elaborate (or automatically delete when None)
+        checked_value._set_parent(self)
         UserList.__setitem__(self, key, checked_value)
 
     def append(self, item: Union[StandardizedAnnotation, str]) -> None:
@@ -1071,8 +959,9 @@ class StandardizedAnnotationList(UserList):
         """
         checked_item = self._check_standardized_annotation(item)
         if checked_item is None:
-            TypeError(f"Item cannot be None.")
+            raise TypeError(f"Item cannot be None.")
             # TODO: Elaborate (or do nothing when None)
+        checked_item._set_parent(self)
         UserList.append(self, checked_item)
 
     def extend(
@@ -1088,16 +977,17 @@ class StandardizedAnnotationList(UserList):
         iterable : Iterable
         """
         if isinstance(iterable, StandardizedAnnotationList):
-            self.data.extend(iterable.data)
+            self.extend(iterable.data)
         elif isinstance(iterable, Iterable):
-            self.data.extend(
-                [
-                    checked_item
-                    for item in iterable
-                    if (checked_item := self._check_standardized_annotation(item))
-                    is not None
-                ]
-            )
+            checked_data = [
+                checked_item
+                for item in iterable
+                if (checked_item := self._check_standardized_annotation(item))
+                is not None
+            ]
+            for d in checked_data:
+                d._set_parent(self)
+            self.data.extend(checked_data)
 
     def __eq__(self, other: Union[Iterable, "StandardizedAnnotationList"]) -> bool:
         """Compare two CVTermList objects to find out whether they are the same.
@@ -1139,279 +1029,148 @@ class StandardizedAnnotationList(UserList):
         return f"""StandardizedAnnotationList{"<p>".join(entries)}"""
 
 
-# class ExternalResources:
-#     """Representation of a single set of resources and its nested annotation.
-#
-#     Each resource in the resources fields is a URI that uniquely identifies both the
-#     resource and the data within the resource. Since a URI is not a URL, it does not
-#     have to map to a physical Web object; it simply needs to identify, uniquely, a
-#     controlled vocabulary term or database object.
-#     These URIs are MIRIAM identifiers, following the format defined in
-#     https://identifiers.org/.
-#
-#     The format allowed is
-#     https://identifiers.org/[provider_code/]namespace:accession
-#
-#     The optional parameter provider_code denotes the Provider Code part of the Prefix.
-#     It is trailed by a slash, to separate it from the required namespace,
-#      which is followed by a colon and the accession.
-#
-#     Example Resources URIs
-#     ----------------------
-#     https://identifiers.org/pubmed:22140103
-#     https://identifiers.org/ec-code:1.1.1.1
-#
-#     https://identifiers.org/epmc/pubmed:22140103
-#     https://identifiers.org/expasy/ec-code:1.1.1.1
-#
-#
-#     Parameters
-#     ----------
-#     resources: list or str
-#         A list of URIs (resources)
-#     nested_data : CVTermList
-#         Nested annotation, in CVTermList format
-#
-#     Can also be created from dictionary, see ExternalResources.from_dict()
-#     """
-#
-#     def __init__(
-#         self,
-#         resources: Optional[Union[List, str]] = None,
-#         nested_data: Optional[Union[Dict, CVTerm, CVTermList]] = None,
-#     ):
-#         """Initialize ExternalResources object.
-#
-#         Parameters
-#         ----------
-#         resources: list or str, optional
-#             A list of URIs (resources) or str. Str will be placed in a list if only
-#             one resource is used.
-#         nested_data : dict or CVTerm or CVTermList, optional
-#             Nested annotation, in CVTermList format
-#
-#         See Also
-#         --------
-#         ExternalResources.resources()
-#         ExternalResources.nested_data()
-#         """
-#         self._resources = None
-#         self._nested_data = None
-#         self.resources = resources
-#         if resources:
-#             self.nested_data = nested_data
-#
-#     @property
-#     def resources(self) -> FrozenSet:
-#         """Get resources of ExternalResources.
-#
-#         Returns
-#         -------
-#         frozenset:
-#             The list of URIs in a frozenset.
-#         """
-#         if self._resources is None:
-#             return frozenset()
-#         return frozenset(self._resources)
-#
-#     @resources.setter
-#     def resources(self, value: Optional[Union[List[str], str]]) -> None:
-#         """Set resources of ExternalResources.
-#
-#         Will set the URIs of ExternalResources.
-#
-#         Parameters
-#         ----------
-#         value: str or list
-#             Should be list of URIs. If only one string is given, the function
-#             assumes it is one URI, and it is placed in a list.
-#             If None is given, the resources field is set to an empty list.
-#
-#         Raises
-#         ------
-#         TypeError
-#             If value is neither list nor str.
-#         """
-#         if value is None:
-#             value = []
-#         if isinstance(value, list):
-#             self._resources = value
-#         elif isinstance(value, str):
-#             self._resources = [value]
-#         else:
-#             raise TypeError(f"The resources must be a string or a list: {value}")
-#
-#     @property
-#     def resource_nested(self) -> FrozenSet:
-#         """Get resources, including resources of nested data.
-#
-#         This will get resources of the current ExternalResource and all resources
-#         of nested data, if they exist.
-#
-#         Returns
-#         -------
-#         FrozenSet: a frozen set of URIs
-#         """
-#         resources = set()
-#         resources.update(self.resources)
-#         if self.nested_data:
-#             resources.update(self.nested_data.resources)
-#         return frozenset(resources)
-#
-#     @property
-#     def nested_data(self) -> Optional[CVTermList]:
-#         """Get nested data of ExternalResources.
-#
-#         Returns
-#         -------
-#         CVTermList: optional
-#             Will return None if this ExternalResources object has no nested data.
-#         """
-#         return self._nested_data
-#
-#     @nested_data.setter
-#     def nested_data(self, value: Optional[Union[Dict, List, CVTerm, CVTermList]]):
-#         """Set nested data of ExternalResources.
-#
-#         This function will convert the given value to CVTermList as follows
-#         - dict is converted to CVTerm via CVTerm.from_dict()
-#         - list is converted via CVTermList.from_data()
-#         - CVTerm is placed in a list and tranformed to CVTermList
-#         - CVTermList is unchanged
-#         - None will set the nested_data as an empty CVTermList (used for new
-#             ExternalResources objects)
-#
-#         Parameters
-#         ----------
-#         value: dict or list or CVTerm or CVTermList, optional
-#
-#         Raises
-#         ------
-#         TypeError
-#             If value is neither None, list, CVTerm or CVTermList.
-#         """
-#         if value is None:
-#             self._nested_data = CVTermList()
-#         elif isinstance(value, CVTerm):
-#             self._nested_data = CVTermList([value])
-#         elif isinstance(value, CVTermList):
-#             self._nested_data = value
-#         elif isinstance(value, list):
-#             self._nested_data = CVTermList.from_data(value)
-#         elif isinstance(value, dict):
-#             self._nested_data = CVTermList.from_data(CVTerm.from_dict(value))
-#         else:
-#             raise TypeError(
-#                 f"The nested data structure does not have valid CVTerm format: {value}"
-#             )
-#
-#     def to_dict(self) -> Dict[str, Any]:
-#         """Generate a dict representing an ExternalResource object.
-#
-#         Returns
-#         -------
-#         dict
-#             A dictionary with two keys
-#             "resources" - sorted list of resources.
-#             "nested_data" - optional, dict of nested_data. See CVTermList.to_dict()
-#         """
-#         if self._resources is None:
-#             return {}
-#         ex_dic: Dict[str, Any] = {"resources": sorted(self._resources)}
-#         if self.nested_data is not None and len(self.nested_data):
-#             ex_dic["nested_data"] = self.nested_data.to_list_of_dicts()
-#         return ex_dic
-#
-#     @classmethod
-#     def from_dict(cls, input_data: Dict) -> "ExternalResources":
-#         """Generate ExternalResources object from dict.
-#
-#         Parameters
-#         ----------
-#         input_data: dict
-#             Accepts a dictionary as input that has two keys
-#             "resources", optional a list of URIs
-#             "nested_data", optional - nested data. Nested data must be a list,
-#             CVTerm or CVTermList.
-#
-#         Returns
-#         -------
-#         ExternalResources
-#
-#         See Also
-#         --------
-#         ExternalResources.nested_data
-#
-#         """
-#         ex_res = cls(
-#             resources=input_data.get("resources", None),
-#             nested_data=input_data.get("nested_data", None),
-#         )
-#         return ex_res
-#
-#     def __eq__(self, other: "ExternalResources") -> bool:
-#         """Compare two ExternalResources object.
-#
-#         Compare two ExternalResources objects to find out whether
-#         they are same (have same data) or not.
-#
-#         Returns
-#         -------
-#         bool
-#             True if resources are equal in both objects, and both objects have the same
-#             nested_data (None or identical CVTerm). False otherwise.
-#         """
-#         if self.resources != other.resources:
-#             return False
-#         if self.nested_data is None and other.nested_data is None:
-#             return True
-#         elif self.nested_data is None or other.nested_data is None:
-#             return False
-#         elif self.nested_data != other.nested_data:
-#             return False
-#         return True
-#
-#     def __str__(self) -> str:
-#         """Return ExternalResources dictionary as str.
-#
-#         Returns
-#         -------
-#         str
-#             String output of to_dict().
-#
-#         See Also
-#         --------
-#         ExternalResources.to_dict()
-#         """
-#         return str(self.to_dict())
-#
-#     def __repr__(self) -> str:
-#         """Generate ExternalResources as str, with class.
-#
-#         Returns
-#         -------
-#         str
-#         """
-#         return (
-#             f"{self.__class__.__module__}.{self.__class__.__qualname__} "
-#             f"{self.__str__()}"
-#         )
-#
-#     def _repr_html_(self) -> str:
-#         """Generate ExternalResources as HTML.
-#
-#         Returns
-#         -------
-#         str
-#             HTML representation of the external resource.
-#         """
-#         html_rep = f"""
-#                     <p>
-#                         <strong>Resources</strong>{"<p>".join(self.resources)}<p>"""
-#         if self.nested_data is not None and len(self.nested_data):
-#             html_rep += f"""<strong>Nested Data</strong>{self.nested_data}<p>"""
-#
-#         html_rep += f"""
-#                         <strong>Memory address</strong>{id(self):#x}
-#                 <p>"""
-#         return html_rep
+class SimplifiedAnnotationInterface:
+    def __init__(self, standardized_annotations: StandardizedAnnotationList):
+        self._annotations = standardized_annotations
+
+    def add(
+        self,
+        data: Optional[
+            Union[
+                Dict,
+                str,
+                Tuple[str, str],
+                List[Union[str, Identifier, Tuple[str, str]]],
+            ]
+        ] = None,
+    ) -> None:
+        if data is None:
+            data = []
+
+        if isinstance(data, dict):
+            data = list(data.items())
+
+        if isinstance(data, (str, tuple)):
+            data = [data]
+
+        if not isinstance(data, list):
+            raise TypeError(
+                "The supplied annotations were not of type List, or could "
+                "not be converted to a list."
+            )
+
+        cvterms = {}
+        for entry in data:
+            if isinstance(entry, tuple):
+                if len(entry) != 2:
+                    raise ValueError(
+                        f"Only tuples of length 2 can be converted to annotations."
+                    )
+                l = []
+                if isinstance(entry[1], list):
+                    l.extend([(entry[0], v) for v in entry[1]])
+                else:
+                    l.append(entry)
+                entry = l
+            elif isinstance(entry, str):
+                entry = [entry]
+            else:
+                raise TypeError("Entry could could not be converted to an Identifier.")
+            for x in entry:
+                x = Identifier.from_data(x)
+                if x.namespace is None:
+                    raise ValueError(
+                        f"Could not determine namespace of identifier {x}."
+                    )
+
+                qualifier = get_default_qualifier(x.namespace)
+                if not qualifier in cvterms:
+                    cvterms[qualifier] = []
+                cvterms[qualifier].append(x)
+
+        for qualifier, identifiers in cvterms.items():
+            ann = self._annotations._find_first_or_create_by_qualifier(qualifier)
+            ann.add_identifiers(identifiers)
+
+    def __getitem__(
+        self, idx: Union[int, str, Qualifier]
+    ) -> Optional[Union[StandardizedAnnotation, Dict[str, str], List[str]]]:
+        if isinstance(idx, int):
+            return self._annotations.data[idx]
+        if isinstance(idx, Qualifier):
+            idfs = self._annotations._find_first_by_qualifier(idx)
+            if idfs is None:
+                return None
+            idfs = idfs.to_tuples()
+            d = {}
+            for k, v in idfs:
+                if not k in d:
+                    d[k] = [v]
+                else:
+                    d[k].append(v)
+            return d
+        qual = get_default_qualifier(idx)
+        ann = self._annotations._find_first_by_qualifier(qual)
+        if ann is None:
+            return ann
+        return [v for idf in ann.identifiers if (v := idf.identifier) is not None]
+
+    def __setitem__(
+        self, key: Union[int, str, Qualifier], value
+    ) -> Optional[Union[StandardizedAnnotation, Dict[str, str], List[str]]]:
+        if isinstance(key, int):
+            idx = key
+            if isinstance(value, StandardizedAnnotation):
+                self._annotations.data[idx] = value
+            elif isinstance(value, str):
+                self._annotations.data[idx] = StandardizedAnnotation([(idx, value)])
+            else:
+                self._annotations.data[idx] = StandardizedAnnotation(
+                    [(idx, v) for v in value]
+                )
+            return
+        if isinstance(key, Qualifier):
+            idx = None
+            for i, entry in enumerate(self._annotations.data):
+                if entry.qualifier == key:
+                    idx = i
+                    break
+            if idx is None:
+                raise IndexError(f"Could not find index {key}.")
+            if isinstance(value, StandardizedAnnotation):
+                self._annotations.data[idx] = value
+            else:
+                self._annotations.data[idx] = StandardizedAnnotation(value)
+            return
+        qual = get_default_qualifier(key)
+        idx = None
+        for i, entry in enumerate(self._annotations.data):
+            if entry.qualifier == qual:
+                idx = i
+        if idx is not None:
+            self._annotations.data[idx].identifiers = [
+                x for x in self._annotations.data[idx].identifiers if x.namespace != key
+            ]
+        self.add({key: value})
+
+    def __eq__(self, other: Union[Iterable, "StandardizedAnnotationList"]) -> bool:
+        return self._annotations == other
+
+    def __iter__(self):
+        visited_qualifiers = set()
+        for entry in self._annotations.data:
+            qualifier = entry.qualifier
+            # Only the first occurence of each qualifier is handled in simplified
+            # annotations.
+            if qualifier in visited_qualifiers:
+                continue
+            visited_qualifiers.add(qualifier)
+
+            for identifier in entry.identifiers:
+                if identifier.namespace is None:
+                    continue
+                if qualifier == get_default_qualifier(identifier.namespace):
+                    yield identifier
+
+    def __len__(self):
+        return sum(1 for _ in self)

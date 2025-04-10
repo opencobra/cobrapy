@@ -1870,11 +1870,11 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
     (provider, identifier) if resolvable, None otherwise
 
     .. deprecated ::
-    Use cobra.core.metadata.helper.parse_identifiers_uri()
+    Use cobra.core.metadata.identifier.parse_identifiers_uri()
     """
     warn(
         "_parse_annotation_info() is being replaced by "
-        "cobra.core.metadata.helper.parse_identifiers_uri()",
+        "cobra.core.metadata.identifier.parse_identifiers_uri()",
         DeprecationWarning,
     )
     match = URL_IDENTIFIERS_PATTERN.match(uri)

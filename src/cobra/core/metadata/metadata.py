@@ -5,6 +5,8 @@ from collections.abc import MutableMapping
 from datetime import datetime
 from typing import Dict, Iterable, Iterator, List, Optional, Union
 
+from cobra.core.metadata.identifier import Qualifier
+
 from ..metadata import cvterm as CV
 from ..metadata import keyvaluepairs as KV
 from ..metadata.history import Creator, History
@@ -105,6 +107,22 @@ class MetaData:  # (MutableMapping):
             The wrong type will lead to a TypeError being raised.
         """
         self._standardized = CV.StandardizedAnnotationList.from_data(values)
+        self._simplified = CV.SimplifiedAnnotationInterface(self._standardized)
+
+    @property
+    def simplified(self):
+        return self._simplified
+
+    @simplified.setter
+    def simplified(self, value):
+        print(self.standardized)
+        if self.standardized is None or len(self._standardized) > 0:
+            raise Exception(
+                "There is already data present in the standardized annotation object. "
+                "Old-style simplified annotations can only be set to an object without "
+                "existing annotations. Use MetaData.simplified.add(..) instead."
+            )
+        self.simplified.add(value)
 
     def add_standardized(
         self, annotations: Iterable[Union[Dict, "CV.StandardizedAnnotation"]]
@@ -226,59 +244,60 @@ class MetaData:  # (MutableMapping):
         """
         self._custom = KV.CustomAnnotationList(keyvaluepairs)
 
-    #
-    # def __setitem__(self, key: str, value: Union[List, str]) -> None:
-    #     """Set the item for accessing metadata as dict (the old style annotation).
-    #
-    #     Parameters
-    #     ----------
-    #     key: str
-    #         provider key word.
-    #     value: List or str
-    #         A str that is one term or a list that will contain multiple terms
-    #
-    #     This function will first delete the existing value for the key, and then set
-    #     it to the new value. Be careful - if you give this function incorrect input,
-    #     the deletion will happen anyway, and the value of the key will be empty!
-    #
-    #     If the key is sbo, sets the self.sbo term to the first item in the list. The
-    #     rest of the items in the list are ignored.
-    #     Cobrapy support for multiple SBO terms is not implemented yet.
-    #
-    #     See Also
-    #     --------
-    #     `CVTermList().add_simple_annotations()`
-    #     """
-    #     if key == "sbo":
-    #         if isinstance(value, list):
-    #             value = value[0]
-    #         self.sbo = value
-    #     else:
-    #         self.__delitem__(key)
-    #         self._standardized.add_simple_annotations(dict({key: value}))
-    #
-    # def __getitem__(self, key: str) -> List:
-    #     """Get item using old annotation type dictionary.
-    #
-    #     If the key is sbo, will return the sbo field directly.
-    #     Otherwise, will query the annotations (old style) dictionary.
-    #
-    #     Note, that __setitem__, __getitem__ and __delitem__ will ignore custompairs. If
-    #     you want to edit that field, use relevant functions for it.
-    #
-    #     Parameters
-    #     ----------
-    #     key: str
-    #         provider key word.
-    #
-    #     Returns
-    #     -------
-    #     list
-    #     """
-    #     if key == "sbo":
-    #         return [self.sbo]
-    #     else:
-    #         return self.annotations[key]
+    def __setitem__(self, key: str, value: Union[List, str]) -> None:
+        """Set the item for accessing metadata as dict (the old style annotation).
+
+        Parameters
+        ----------
+        key: str
+            provider key word.
+        value: List or str
+            A str that is one term or a list that will contain multiple terms
+
+        This function will first delete the existing value for the key, and then set
+        it to the new value. Be careful - if you give this function incorrect input,
+        the deletion will happen anyway, and the value of the key will be empty!
+
+        If the key is sbo, sets the self.sbo term to the first item in the list. The
+        rest of the items in the list are ignored.
+        Cobrapy support for multiple SBO terms is not implemented yet.
+
+        See Also
+        --------
+        `CVTermList().add_simple_annotations()`
+        """
+        if key == "sbo":
+            if isinstance(value, list):
+                value = value[0]
+            self.sbo = value
+        else:
+            self._standardized[key] = value
+
+    def __getitem__(
+        self, key: Union[str, Qualifier]
+    ) -> Union[List[str], Dict[str, str]]:
+        """Get item using old annotation type dictionary.
+
+        If the key is sbo, will return the sbo field directly.
+        Otherwise, will query the annotations (old style) dictionary.
+
+        Note, that __setitem__, __getitem__ and __delitem__ will ignore custompairs. If
+        you want to edit that field, use relevant functions for it.
+
+        Parameters
+        ----------
+        key: str
+            provider key word.
+
+        Returns
+        -------
+        list
+        """
+        if key == "sbo" or key == "SBO":
+            return [self.sbo]
+        else:
+            return self.standardized[key]
+
     #
     # def __delitem__(self, key: str) -> None:
     #     """Delete item using old annotation type dictionary as reference.

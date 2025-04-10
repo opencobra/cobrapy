@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from cobra import Model
-from cobra.core.metadata import Identifier, Qualifier, StandardizedAnnotation
+from cobra.core.metadata import MetaData, Identifier, Qualifier, StandardizedAnnotation
 from cobra.core.metadata.cvterm import StandardizedAnnotationList
 from cobra.core.species import Species
 from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
@@ -32,7 +32,7 @@ RESOURCE_LIST = [
 ECOLI_MODEL_ANNOTATIONS = [
     {
         "qualifier": "bqb_hasTaxon",
-        "identifiers": ["http://identifiers.org/taxonomy/511145"],
+        "identifiers": ["http://identifiers.org/tanomy/511145"],
     },
     {
         "qualifier": "bqm_is",
@@ -58,6 +58,7 @@ ECOLI_MODEL_ANNOTATIONS = [
     },
 ]
 COBRA_URL = "https://cobrapy.readthedocs.io/"
+CHEBI_SET = {"CHEBI:43215", "CHEBI:11881"}
 
 
 def test_annotation() -> None:
@@ -84,7 +85,13 @@ def test_annotation() -> None:
     assert s.annotations.history.modified_dates == []
 
     # setting annotation via old annotation format
-    # s.annotations.standardized["chebi"] = ["CHEBI:43215", "CHEBI:11881"]
+    s.annotations.simplified["chebi"] = list(CHEBI_SET)
+
+    assert set(s.annotations.simplified["chebi"]) == CHEBI_SET
+    assert set(s.annotations.simplified["chebi"]) == CHEBI_SET
+    assert set(s.annotations.simplified[Qualifier.Biological_is]["chebi"]) == CHEBI_SET
+
+    s.annotations.standardized = StandardizedAnnotationList()
 
     s.add_annotations(
         [
@@ -132,6 +139,9 @@ def test_annotation() -> None:
     # checking old (fixed) annotation format
     # assert s.annotation == {"chebi": sorted(["CHEBI:43215", "CHEBI:11881"])}
 
+    cvt[0].remove_from_parent()
+    assert s.annotations.standardized == []
+
     # adding an SBO term
     s.annotations.sbo = ["SBO:0000123"]
     # assert "chebi" in s.annotation
@@ -152,34 +162,42 @@ def test_annotation() -> None:
     )
 
     s.annotations.standardized = cvt2
-    assert s.annotations.standardized == {
+    assert s.annotations.standardized.uris == {
         "https://identifiers.org/chebi/CHEBI:43215",
         "https://identifiers.org/chebi/CHEBI:11881",
     }
+
+    print(s.annotations.simplified[Qualifier.Biological_is])
+    print(s.annotations.simplified[0])
+    print(s.annotations.simplified["chebi"])
+
+    print(s.annotations.standardized[0])
+
+    assert 0 == 1
     # s.annotation.__delitem__("sbo")
 
     # checking old (fixed) annotation format
     # assert s.annotation == {"chebi": sorted(["CHEBI:43215", "CHEBI:11881"])}
 
 
-# def test_old_style_annotation() -> None:
-#     """Test creating old style annotations using add_simple_annotations."""
-#     s = Species()
-#     s.annotation.standardized.add_simple_annotations({"chebi": "CHEBI:17234"})
-#     s.annotation.standardized.add_simple_annotations(
-#         {"chebi": ["CHBEI:1723456", "CHEBI:172345"]}
-#     )
-#     with pytest.raises(TypeError):
-#         s.annotation.standardized.add_simple_annotations(
-#             {"chebi": [["CHEBI:123", "CHEBI:1234"]]}
-#         )
-#     assert len(s.annotation.standardized.resources) == 3
-#     s.annotation["eco"] = "123"
-#     assert len(s.annotation.standardized.resources) == 4
-#     assert s.annotation == {
-#         "chebi": ["CHEBI:17234", "CHBEI:1723456", "CHEBI:172345"],
-#         "eco": ["123"],
-#     }
+def test_old_style_annotation() -> None:
+    """Test creating old style annotations using add_simple_annotations."""
+    s = Species()
+    s.annotations.simplified.add({"chebi": "CHEBI:17234"})
+    s.annotations.simplified.add({"chebi": ["CHBEI:1723456", "CHEBI:172345"]})
+    with pytest.raises(TypeError):
+        s.annotations.simplified.add({"chebi": [["CHEBI:123", "CHEBI:1234"]]})
+    assert len(s.annotations.simplified) == 3
+    s.annotations.simplified["eco"] = "123"
+    assert len(s.annotations.simplified) == 4
+    ref_ann = MetaData()
+    ref_ann.simplified = {
+        "chebi": ["CHEBI:17234", "CHBEI:1723456", "CHEBI:172345"],
+        "eco": ["123"],
+    }
+    assert s.annotations == ref_ann
+
+
 #     s.annotation.standardized.delete_annotation("CHEBI:172345")
 #     assert len(s.annotation.standardized.resources) == 3
 #     assert s.annotation == {
@@ -270,7 +288,7 @@ def test_nested_annotation(data_directory: Path) -> None:
         }
     ]
     assert s.annotations.standardized == main_cvt
-    nested_data = s.annotations.standardized[1].annotations
+    nested_data = s.annotations.standardized[1].annoations
     assert nested_data == nested_cvt
 
 

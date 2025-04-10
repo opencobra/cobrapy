@@ -1,0 +1,187 @@
+import re
+from typing import (
+    Any,
+    Dict,
+    Optional,
+    Tuple,
+    Union,
+)
+
+from enum import Enum
+import logging
+
+
+LOGGER = logging.getLogger(__name__)
+
+__all__ = ["URL_IDENTIFIERS_PATTERN", "parse_identifiers_uri"]
+
+# the URL pattern to parse namespace and identifier
+URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")
+
+
+class Qualifier(Enum):
+    """The possible qualifiers inside a CVTerm.
+
+    The qualifiers and their detailed description are present in:
+    https://co.mbine.org/author/biomodels.net-qualifiers/
+
+    Qualifiers are divided into two groups
+    Biological (bqb)    These kinds of qualifiers define the relationship between a
+                        biological object represented by a model element and its
+                        annotation.
+    Modelling (bqm)     These kinds of qualifiers define the relationship between a
+                        modelling object and its annotation.
+    """
+
+    def __init__(self, value):
+        """Initialize Qualifier enums by creating a lookup dictionary."""
+        self.__class__._map = getattr(self.__class__, "_map", {}) | {value: self}
+
+    Biological_is = "bqb_is"
+    Biological_hasPart = "bqb_hasPart"
+    Biological_isPartOf = "bqb_isPartOf"
+    Biological_isVersionOf = "bqb_isVersionOf"
+    Biological_hasVersion = "bqb_hasVersion"
+    Biological_isHomologTo = "bqb_isHomologTo"
+    Biological_isDescribedBy = "bqb_isDescribedBy"
+    Biological_isEncodedBy = "bqb_isEncodedBy"
+    Biological_encodes = "bqb_encodes"
+    Biological_occursIn = "bqb_occursIn"
+    Biological_hasProperty = "bqb_hasProperty"
+    Biological_isPropertyOf = "bqb_isPropertyOf"
+    Biological_hasTaxon = "bqb_hasTaxon"
+    Biological_unknown = "bqb_unknown"
+
+    Modelling_is = "bqm_is"
+    Modelling_isDescribedBy = "bqm_isDescribedBy"
+    Modelling_isDerivedFrom = "bqm_isDerivedFrom"
+    Modelling_isInstanceOf = "bqm_isInstanceOf"
+    Modelling_hasInstance = "bqm_hasInstance"
+    Modelling_unknown = "bqm_unknown"
+
+
+class Identifier:
+    def __init__(self, uri: str) -> None:
+        self._namespace = None
+        self._identifier = None
+
+        self.uri = uri
+
+    @classmethod
+    def from_data(cls, data: Union[Dict[str, str], Tuple[str, str], str, "Identifier"]):
+        if isinstance(data, Identifier):
+            return data
+        if isinstance(data, str):
+            return Identifier(data)
+        if not isinstance(data, (dict, tuple)):
+            raise TypeError(
+                f"Identifiers can be created from str, tuple, dict, or Identifier"
+                f"types, not {type(data)}."
+            )
+        if isinstance(data, dict):
+            if (uri := data.get("uri", None)) is not None:
+                return Identifier(uri)
+            namespace = data["namespace"].lower()
+            identifier = data["identifier"]
+        else:
+            namespace, identifier = data
+        if not isinstance(namespace, str) or not isinstance(identifier, str):
+            raise TypeError("Namespace and identifier should be of type str.")
+        uri = f"https://identifiers.org/{namespace}/{identifier}"
+        return Identifier(uri)
+
+    @property
+    def uri(self) -> str:
+        return self._uri
+
+    @uri.setter
+    def uri(self, value: str) -> None:
+        if re.match(URL_IDENTIFIERS_PATTERN, value):
+            identifier_match = parse_identifiers_uri(value)
+
+            if identifier_match is None:
+                raise ValueError(f"The provided URI is not valid: {value}")
+            namespace, identifier = identifier_match
+            self._namespace = namespace
+            self._identifier = identifier
+            self._uri = value
+        else:
+            # TODO: Warn user
+            self._namespace = None
+            self._identifier = None
+            self._uri = value
+
+    @property
+    def namespace(self) -> Optional[str]:
+        return self._namespace
+
+    @property
+    def identifier(self) -> Optional[str]:
+        return self._identifier
+
+    def to_dict(self):
+        return {
+            k: v
+            for k in ["uri", "namespace", "identifier"]
+            if (v := getattr(self, k, None)) is not None
+        }
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__module__}.{self.__class__.__qualname__}"
+            f"({self.to_dict()})"
+        )
+
+    def _repr_html(self) -> str:
+        s = f"Identifier: {self.uri}"
+        if self.namespace is not None:
+            s = f"{s} ({self.namespace}: {self.identifier})"
+        return s
+
+    def __eq__(self, other: Any):
+        if isinstance(other, str):
+            return self.uri == other
+        if isinstance(other, Identifier):
+            return self.uri == other.uri
+        if isinstance(other, dict):
+            return self.uri == other.get("uri")
+        if isinstance(other, tuple):
+            if len(other) != 2 or self.namespace is None:
+                return False
+            return self.namespace == other[0] and self.identifier == other[1]
+        return False
+
+    def __hash__(self):
+        return hash(self.uri)
+
+
+def parse_identifiers_uri(uri: str) -> Optional[Tuple[str, str]]:
+    """Parse namespace and term from given identifiers annotation uri.
+
+    Parameters
+    ----------
+    uri : str
+        uri (identifiers.org url)
+
+    Returns
+    -------
+    (namespace, identifier) if resolvable, None otherwise
+    """
+    match = URL_IDENTIFIERS_PATTERN.match(uri)
+    if match:
+        namespace, identifier = match.group(1), match.group(2)
+        if namespace.isupper():
+            identifier = f"{namespace}:{identifier}"
+            namespace = namespace.lower()
+    else:
+        LOGGER.warning(
+            f"{uri} does not conform to "
+            f"'http(s)://identifiers.org/collection/id' or"
+            f"'http(s)://identifiers.org/COLLECTION:id"
+        )
+        return None
+    return namespace, identifier
+
+
+def get_default_qualifier(namespace):
+    return Qualifier.Biological_is

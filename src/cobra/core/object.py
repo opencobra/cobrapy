@@ -1,10 +1,15 @@
 """Define base Object class in Cobra."""
 
-from typing import TYPE_CHECKING, Iterable, Optional, Union
+from typing import TYPE_CHECKING, Iterable, Optional, Union, Tuple
 
 
 if TYPE_CHECKING:
-    from cobra.core.metadata import CustomAnnotation, MetaData, StandardizedAnnotation
+    from cobra.core.metadata import (
+        CustomAnnotation,
+        MetaData,
+        StandardizedAnnotation,
+        Identifier,
+    )
 
 
 class Object:
@@ -117,21 +122,31 @@ class Object:
         self,
         annotations: Union[
             str,
+            "Identifier",
+            Tuple[str, str],
             "StandardizedAnnotation",
             "CustomAnnotation",
-            Iterable[Union[str, "StandardizedAnnotation", "CustomAnnotation"]],
+            Iterable[
+                Union[
+                    str,
+                    "Identifier",
+                    Tuple[str, str],
+                    "StandardizedAnnotation",
+                    "CustomAnnotation",
+                ]
+            ],
         ],
     ):
         from cobra.core.metadata import (
             CustomAnnotation,
             MetaData,
             StandardizedAnnotation,
+            Identifier,
         )
 
-        if isinstance(annotations, str):
-            annotations = [StandardizedAnnotation(annotations)]
-        elif isinstance(annotations, StandardizedAnnotation) or isinstance(
-            annotations, CustomAnnotation
+        if isinstance(
+            annotations,
+            (str, tuple, Identifier, StandardizedAnnotation, CustomAnnotation),
         ):
             annotations = [annotations]
 
@@ -139,13 +154,11 @@ class Object:
             self._annotations = MetaData()
 
         for annotation in annotations:
-            if isinstance(annotation, str):
-                annotation = StandardizedAnnotation(annotation)
+            if isinstance(annotation, (str, tuple, Identifier)):
+                self._annotations.simplified.add(annotation)
             if isinstance(annotation, StandardizedAnnotation):
-                annotation._set_target(self)
                 self._annotations.standardized.add([annotation])
             elif isinstance(annotation, CustomAnnotation):
-                annotation._set_target(self)
                 self._annotations.custom.add(annotation)
 
     def remove_annotations(
@@ -171,10 +184,8 @@ class Object:
 
         for annotation in annotations:
             if isinstance(annotation, StandardizedAnnotation):
-                annotation._set_target(None)
                 self._annotations.standardized.remove(annotation)
             elif isinstance(annotation, CustomAnnotation):
-                annotation._set_target(None)
                 self._annotations.custom.remove(annotation)
 
     def __getstate__(self) -> dict:
