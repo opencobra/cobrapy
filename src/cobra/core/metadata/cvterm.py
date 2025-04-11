@@ -2,7 +2,7 @@
 
 import re
 from collections import UserList
-from collections.abc import Iterable as ABCIterable
+from collections.abc import Iterable as ABCIterable, KeysView, MutableMapping
 from typing import (
     Any,
     Callable,
@@ -116,15 +116,14 @@ class StandardizedAnnotation:
         self._parent = None
         # TODO: Keep track of target Object, so we can do annotation.remove
 
-    def _set_parent(
-        self,
-        parent: Optional[
-            Union[
-                "CObject.Object", "StandardizedAnnotationList", "StandardizedAnnotation"
-            ]
-        ],
-    ) -> None:
-        self._parent = parent
+    def _set_parent(self, parent):
+        if self._parent is None or self._parent is parent:
+            self._parent = parent
+        else:
+            raise ValueError(
+                "StandardizedAnnotation already has a different parent. Create a new "
+                "annotation if you would like to add an annotation to a second object."
+            )
 
     def remove_from_parent(self):
         if self._parent is None:
@@ -132,6 +131,10 @@ class StandardizedAnnotation:
                 "Cannot remove annotation, since no object is associated with annotation."
             )
         self._parent.remove(self)
+        self._parent = None
+
+    def _remove_identifier(self, identifier):
+        self.identifiers.remove(identifier)
 
     @property
     def qualifier(self) -> Qualifier:
@@ -181,9 +184,13 @@ class StandardizedAnnotation:
         CVTerm.check_identifier_type()
         """
         self._identifiers = self.check_identifier_type(identifiers)
+        for idf in self._identifiers:
+            idf._set_parent(self)
 
     def add_identifiers(self, identifiers: Iterable[Union[str, "Identifier"]]) -> None:
         identifiers = self.check_identifier_type(identifiers)
+        for idf in identifiers:
+            idf._set_parent(self)
         self.identifiers.extend(identifiers)
 
     @property
@@ -1029,7 +1036,7 @@ class StandardizedAnnotationList(UserList):
         return f"""StandardizedAnnotationList{"<p>".join(entries)}"""
 
 
-class SimplifiedAnnotationInterface:
+class SimplifiedAnnotationInterface(MutableMapping):
     def __init__(self, standardized_annotations: StandardizedAnnotationList):
         self._annotations = standardized_annotations
 
@@ -1109,55 +1116,53 @@ class SimplifiedAnnotationInterface:
                 else:
                     d[k].append(v)
             return d
+        if isinstance(idx, str):
+            qual = get_default_qualifier(idx)
+            ann = self._annotations._find_first_by_qualifier(qual)
+            if ann is None:
+                return ann
+            return [
+                v
+                for idf in ann.identifiers
+                if (v := idf.identifier) is not None and idf.namespace == idx
+            ]
+        raise TypeError("Index should be of type int, str or Qualifier.")
+
+    def __delitem__(self, idx: str):
+        if not isinstance(idx, str):
+            raise TypeError("Index should be of type str.")
         qual = get_default_qualifier(idx)
         ann = self._annotations._find_first_by_qualifier(qual)
         if ann is None:
-            return ann
-        return [v for idf in ann.identifiers if (v := idf.identifier) is not None]
+            raise IndexError(
+                f"Could not find annotations for f'{idx}' (qualifier '{qual}')"
+            )
+
+        for idf in list(ann.identifiers):
+            if idf.namespace is None:
+                continue
+            if idf.namespace == idx:
+                idf.remove_from_parent()
 
     def __setitem__(
-        self, key: Union[int, str, Qualifier], value
+        self, key: str, value
     ) -> Optional[Union[StandardizedAnnotation, Dict[str, str], List[str]]]:
-        if isinstance(key, int):
-            idx = key
-            if isinstance(value, StandardizedAnnotation):
-                self._annotations.data[idx] = value
-            elif isinstance(value, str):
-                self._annotations.data[idx] = StandardizedAnnotation([(idx, value)])
-            else:
-                self._annotations.data[idx] = StandardizedAnnotation(
-                    [(idx, v) for v in value]
-                )
-            return
-        if isinstance(key, Qualifier):
-            idx = None
-            for i, entry in enumerate(self._annotations.data):
-                if entry.qualifier == key:
-                    idx = i
-                    break
-            if idx is None:
-                raise IndexError(f"Could not find index {key}.")
-            if isinstance(value, StandardizedAnnotation):
-                self._annotations.data[idx] = value
-            else:
-                self._annotations.data[idx] = StandardizedAnnotation(value)
-            return
-        qual = get_default_qualifier(key)
-        idx = None
-        for i, entry in enumerate(self._annotations.data):
-            if entry.qualifier == qual:
-                idx = i
-        if idx is not None:
-            self._annotations.data[idx].identifiers = [
-                x for x in self._annotations.data[idx].identifiers if x.namespace != key
-            ]
+        if not isinstance(key, str):
+            raise TypeError("Index should be of type str.")
+
+        try:
+            del self[key]
+        except IndexError:
+            pass
+
         self.add({key: value})
 
     def __eq__(self, other: Union[Iterable, "StandardizedAnnotationList"]) -> bool:
         return self._annotations == other
 
-    def __iter__(self):
+    def items(self):
         visited_qualifiers = set()
+        visited_namespaces = set()
         for entry in self._annotations.data:
             qualifier = entry.qualifier
             # Only the first occurence of each qualifier is handled in simplified
@@ -1166,11 +1171,68 @@ class SimplifiedAnnotationInterface:
                 continue
             visited_qualifiers.add(qualifier)
 
-            for identifier in entry.identifiers:
-                if identifier.namespace is None:
-                    continue
-                if qualifier == get_default_qualifier(identifier.namespace):
-                    yield identifier
+            identifiers = True
+            while identifiers:
+                identifiers = []
+                current_namespace = None
+                for identifier in entry.identifiers:
+                    if identifier.namespace is None:
+                        continue
+                    if identifier.namespace in visited_namespaces:
+                        continue
+                    if current_namespace is None:
+                        if qualifier == get_default_qualifier(identifier.namespace):
+                            current_namespace = identifier.namespace
+                            identifiers.append(identifier)
+                    else:
+                        if identifier.namespace == current_namespace:
+                            identifiers.append(identifier)
+                visited_namespaces.add(current_namespace)
+                if identifiers:
+                    yield (current_namespace, identifiers)
+                else:
+                    break
+
+    def __iter__(self):
+        for k, _ in self.items():
+            yield k
+
+    def keys(self):
+        return KeysView(self)
+        # for k in self:
+        #     yield k
+
+    def values(self):
+        for _, v in self.items():
+            yield v
+
+    def identifiers(self):
+        for _, v in self.items():
+            for identifier in v:
+                yield identifier
+
+    def tuples(self):
+        for k, v in self.items():
+            for identifier in v:
+                yield (k, identifier)
+
+    @property
+    def number_of_identifiers(self):
+        return sum(1 for _ in self.identifiers())
 
     def __len__(self):
         return sum(1 for _ in self)
+
+    def delete_annotation(self, value):
+        for entry in self.identifiers():
+            if entry.identifier == value:
+                entry.remove_from_parent()
+                return
+        raise ValueError(f"No annotation found for '{value}'")
+
+    def to_dict(self):
+        return dict(self)
+
+    def clear(self):
+        for k in self:
+            del self[k]

@@ -115,13 +115,13 @@ class MetaData:  # (MutableMapping):
 
     @simplified.setter
     def simplified(self, value):
-        print(self.standardized)
-        if self.standardized is None or len(self._standardized) > 0:
-            raise Exception(
-                "There is already data present in the standardized annotation object. "
-                "Old-style simplified annotations can only be set to an object without "
-                "existing annotations. Use MetaData.simplified.add(..) instead."
-            )
+        self.simplified.clear()
+        # if self.standardized is None or len(self._standardized) > 0:
+        #     raise Exception(
+        #         "There is already data present in the standardized annotation object. "
+        #         "Old-style simplified annotations can only be set to an object without "
+        #         "existing annotations. Use MetaData.simplified.add(..) instead."
+        #     )
         self.simplified.add(value)
 
     def add_standardized(

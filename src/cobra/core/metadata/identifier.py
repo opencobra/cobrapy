@@ -64,8 +64,26 @@ class Identifier:
     def __init__(self, uri: str) -> None:
         self._namespace = None
         self._identifier = None
+        self._parent = None
 
         self.uri = uri
+
+    def _set_parent(self, parent):
+        if self._parent is None or self._parent is parent:
+            self._parent = parent
+        else:
+            raise ValueError(
+                "Identifier already has a different parent. Create a new "
+                "identifier if you would like to add an identifier to a second object."
+            )
+
+    def remove_from_parent(self):
+        if self._parent is None:
+            raise ValueError(
+                "Cannot remove identifier, since no parent is associated with identifier."
+            )
+        self._parent._remove_identifier(self)
+        self._parent = None
 
     @classmethod
     def from_data(cls, data: Union[Dict[str, str], Tuple[str, str], str, "Identifier"]):

@@ -184,53 +184,65 @@ def test_old_style_annotation() -> None:
     """Test creating old style annotations using add_simple_annotations."""
     s = Species()
     s.annotations.simplified.add({"chebi": "CHEBI:17234"})
-    s.annotations.simplified.add({"chebi": ["CHBEI:1723456", "CHEBI:172345"]})
+    s.annotations.simplified.add({"chebi": ["CHEBI:1723456", "CHEBI:172345"]})
     with pytest.raises(TypeError):
         s.annotations.simplified.add({"chebi": [["CHEBI:123", "CHEBI:1234"]]})
-    assert len(s.annotations.simplified) == 3
+    assert len(s.annotations.simplified) == 1
+    assert s.annotations.simplified.number_of_identifiers == 3
     s.annotations.simplified["eco"] = "123"
-    assert len(s.annotations.simplified) == 4
+    assert len(s.annotations.simplified) == 2
+    assert s.annotations.simplified.number_of_identifiers == 4
     ref_ann = MetaData()
     ref_ann.simplified = {
-        "chebi": ["CHEBI:17234", "CHBEI:1723456", "CHEBI:172345"],
+        "chebi": ["CHEBI:17234", "CHEBI:1723456", "CHEBI:172345"],
         "eco": ["123"],
     }
     assert s.annotations == ref_ann
 
+    s.annotations.simplified.delete_annotation("CHEBI:172345")
+    assert len(s.annotations.simplified) == 2
+    assert s.annotations.simplified.number_of_identifiers == 3
+    ref_ann = MetaData()
+    ref_ann.simplified = {
+        "chebi": ["CHEBI:17234", "CHEBI:1723456"],
+        "eco": ["123"],
+    }
+    assert s.annotations == ref_ann
 
-#     s.annotation.standardized.delete_annotation("CHEBI:172345")
-#     assert len(s.annotation.standardized.resources) == 3
-#     assert s.annotation == {
-#         "chebi": ["CHEBI:17234", "CHBEI:1723456"],
-#         "eco": ["123"],
-#     }
-#     s.annotation.__delitem__("chebi")
-#     assert len(s.annotation.standardized.resources) == 1
-#     s.annotation.standardized.add_simple_annotations({"chebi": "CHEBI:17234"})
-#     s.annotation.standardized.add_simple_annotations(
-#         {"chebi": ["CHBEI:1723456", "CHEBI:172345"]}
-#     )
-#     assert len(s.annotation.standardized.resources) == 4
-#     s.annotation["chebi"] = ["CHEBI:123", "CHEBI:1234"]
-#     assert len(s.annotation.standardized.resources) == 3
-#     assert s.annotation == {"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"]}
-#
-#     assert len(s.annotation.keys()) == 2
-#
-#     s.annotation["chebi"] = []
-#     assert len(s.annotation.standardized.resources) == 1
-#
-#     s.annotation = {}
-#     assert len(s.annotation.keys()) == 0
-#     s.annotation = {"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"]}
-#     assert len(s.annotation.standardized.resources) == 3
-#     s.annotation = {
-#         "chebi": ["CHEBI:123", "CHEBI:1234"],
-#         "eco": ["123"],
-#         "sbo": ["SBO:0000123"],
-#     }
-#     assert len(s.annotation.standardized.resources) == 3
-#
+    print(s.annotations.simplified.to_dict())
+    del s.annotations.simplified["chebi"]
+    print(s.annotations.simplified.to_dict())
+    assert len(s.annotations.simplified) == 1
+    assert s.annotations.simplified.number_of_identifiers == 1
+
+    s.annotations.simplified.add({"chebi": "CHEBI:17234"})
+    s.annotations.simplified.add({"chebi": ["CHBEI:1723456", "CHEBI:172345"]})
+    assert len(s.annotations.simplified) == 2
+    assert s.annotations.simplified.number_of_identifiers == 4
+    s.annotations.simplified["chebi"] = ["CHEBI:123", "CHEBI:1234"]
+    assert len(s.annotations.simplified) == 2
+    assert s.annotations.simplified.number_of_identifiers == 3
+    ref_ann = MetaData()
+    ref_ann.simplified = {"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"]}
+    assert s.annotations == ref_ann
+
+    assert len(s.annotations.simplified.keys()) == 2
+
+    s.annotations.simplified["chebi"] = []
+    assert s.annotations.simplified.number_of_identifiers == 1
+
+    s.annotations.simplified.clear()
+
+    assert len(s.annotations.simplified.keys()) == 0
+
+    s.annotations.simplified = {"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"]}
+    assert s.annotations.simplified.number_of_identifiers == 3
+    s.annotations.simplified = {
+        "chebi": ["CHEBI:123", "CHEBI:1234"],
+        "eco": ["123"],
+        "sbo": ["SBO:0000123"],
+    }
+    assert s.annotations.simplified.number_of_identifiers == 4
 
 
 def test_nested_annotation(data_directory: Path) -> None:
