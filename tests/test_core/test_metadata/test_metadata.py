@@ -7,7 +7,10 @@ import pytest
 
 from cobra import Model
 from cobra.core.metadata import MetaData, Identifier, Qualifier, StandardizedAnnotation
-from cobra.core.metadata.cvterm import StandardizedAnnotationList
+from cobra.core.metadata.cvterm import (
+    StandardizedAnnotationList,
+    SimplifiedAnnotationInterface,
+)
 from cobra.core.species import Species
 from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
 
@@ -77,21 +80,21 @@ def test_annotation() -> None:
     """
     # a cobra component
     s = Species()
-    # assert s.annotations == {}  # nothing set for annotation, so empty dict
-    assert s.annotations.standardized == StandardizedAnnotationList()
+    # assert s.metadata == {}  # nothing set for annotation, so empty dict
+    assert s.metadata.standardized == StandardizedAnnotationList()
     # assert not s.annotation.keys()
-    # assert s.annotations.custom == {}
-    assert s.annotations.history.creators == []
-    assert s.annotations.history.modified_dates == []
+    # assert s.metadata.custom == {}
+    assert s.metadata.history.creators == []
+    assert s.metadata.history.modified_dates == []
 
     # setting annotation via old annotation format
-    s.annotations.simplified["chebi"] = list(CHEBI_SET)
+    s.annotation["chebi"] = list(CHEBI_SET)
 
-    assert set(s.annotations.simplified["chebi"]) == CHEBI_SET
-    assert set(s.annotations.simplified["chebi"]) == CHEBI_SET
-    assert set(s.annotations.simplified[Qualifier.Biological_is]["chebi"]) == CHEBI_SET
+    assert set(s.annotation["chebi"]) == CHEBI_SET
+    assert set(s.annotation["chebi"]) == CHEBI_SET
+    # assert set(s.metadata.standardized[Qualifier.Biological_is]["chebi"]) == CHEBI_SET
 
-    s.annotations.standardized = StandardizedAnnotationList()
+    s.metadata.standardized = StandardizedAnnotationList()
 
     s.add_annotations(
         [
@@ -99,13 +102,13 @@ def test_annotation() -> None:
             "https://identifiers.org/chebi/CHEBI:11881",
         ]
     )
-    assert s.annotations.standardized == {
+    assert s.metadata.standardized == {
         "https://identifiers.org/chebi/CHEBI:43215",
         "https://identifiers.org/chebi/CHEBI:11881",
     }
 
     # checking old (fixed) annotation format
-    assert s.annotations.simplified == {"chebi": ["CHEBI:43215", "CHEBI:11881"]}
+    assert s.annotation == {"chebi": ["CHEBI:43215", "CHEBI:11881"]}
 
     # checking new standardized
     cvt = StandardizedAnnotationList(
@@ -123,30 +126,30 @@ def test_annotation() -> None:
     # The next assertion should probably not hold, because of how we add annotations
     # with the same qualifier. Or we should change the behaviour of add_annotations
     # etc. when only strings are supplied.
-    # assert s.annotations.standardized == cvt
-    s.annotations.standardized = []
-    assert s.annotations.standardized == StandardizedAnnotationList()
-    assert s.annotations.standardized.identifiers == frozenset()
-    assert s.annotations.standardized == {}
+    # assert s.metadata.standardized == cvt
+    s.metadata.standardized = []
+    assert s.metadata.standardized == StandardizedAnnotationList()
+    assert s.metadata.standardized.identifiers == frozenset()
+    assert s.metadata.standardized == {}
 
-    s.annotations.standardized = cvt
+    s.metadata.standardized = cvt
 
-    assert s.annotations.standardized.identifiers == {
+    assert s.metadata.standardized.identifiers == {
         "https://identifiers.org/chebi/CHEBI:43215",
         "https://identifiers.org/chebi/CHEBI:11881",
     }
 
     # checking old (fixed) annotation format
-    assert s.annotations.simplified == {"chebi": ["CHEBI:43215", "CHEBI:11881"]}
+    assert s.annotation == {"chebi": ["CHEBI:43215", "CHEBI:11881"]}
 
     cvt[0].remove_from_parent()
-    assert s.annotations.standardized == []
+    assert s.metadata.standardized == []
 
     # adding an SBO term
-    s.annotations.sbo = ["SBO:0000123"]
-    assert "chebi" in s.annotations.simplified
-    # assert "sbo" in s.annotations.simplified
-    # assert s.annotations.simplified == {
+    s.metadata.sbo = ["SBO:0000123"]
+    assert "chebi" in s.annotation
+    # assert "sbo" in s.annotation
+    # assert s.annotation == {
     #     "chebi": ["CHEBI:43215", "CHEBI:11881"],
     #     "sbo": ["SBO:0000123"],
     # }
@@ -161,17 +164,17 @@ def test_annotation() -> None:
         ]
     )
 
-    s.annotations.standardized = cvt2
-    assert s.annotations.standardized.uris == {
+    s.metadata.standardized = cvt2
+    assert s.metadata.standardized.uris == {
         "https://identifiers.org/chebi/CHEBI:43215",
         "https://identifiers.org/chebi/CHEBI:11881",
     }
 
-    print(s.annotations.simplified[Qualifier.Biological_is])
-    print(s.annotations.simplified[0])
-    print(s.annotations.simplified["chebi"])
+    # print(s.annotation[Qualifier.Biological_is])
+    # print(s.annotation[0])
+    print(s.annotation["chebi"])
 
-    print(s.annotations.standardized[0])
+    print(s.metadata.standardized[0])
 
     assert 0 == 1
     # s.annotation.__delitem__("sbo")
@@ -183,66 +186,76 @@ def test_annotation() -> None:
 def test_old_style_annotation() -> None:
     """Test creating old style annotations using add_simple_annotations."""
     s = Species()
-    s.annotations.simplified.add({"chebi": "CHEBI:17234"})
-    s.annotations.simplified.add({"chebi": ["CHEBI:1723456", "CHEBI:172345"]})
+    s.annotation.add({"chebi": "CHEBI:17234"})
+    s.annotation.add({"chebi": ["CHEBI:1723456", "CHEBI:172345"]})
     with pytest.raises(TypeError):
-        s.annotations.simplified.add({"chebi": [["CHEBI:123", "CHEBI:1234"]]})
-    assert len(s.annotations.simplified) == 1
-    assert s.annotations.simplified.number_of_identifiers == 3
-    s.annotations.simplified["eco"] = "123"
-    assert len(s.annotations.simplified) == 2
-    assert s.annotations.simplified.number_of_identifiers == 4
+        s.annotation.add({"chebi": [["CHEBI:123", "CHEBI:1234"]]})
+    assert len(s.annotation) == 1
+    assert s.annotation.number_of_identifiers == 3
+    s.annotation["eco"] = "123"
+    assert len(s.annotation) == 2
+    assert s.annotation.number_of_identifiers == 4
     ref_ann = MetaData()
-    ref_ann.simplified = {
-        "chebi": ["CHEBI:17234", "CHEBI:1723456", "CHEBI:172345"],
-        "eco": ["123"],
-    }
-    assert s.annotations == ref_ann
+    simpl_ann = SimplifiedAnnotationInterface(ref_ann)
+    simpl_ann.add(
+        {
+            "chebi": ["CHEBI:17234", "CHEBI:1723456", "CHEBI:172345"],
+            "eco": ["123"],
+        }
+    )
+    print("$Comp")
+    print(s.metadata.standardized)
+    print(ref_ann.standardized)
+    assert s.metadata == ref_ann
 
-    s.annotations.simplified.delete_annotation("CHEBI:172345")
-    assert len(s.annotations.simplified) == 2
-    assert s.annotations.simplified.number_of_identifiers == 3
+    s.annotation.delete_annotation("CHEBI:172345")
+    assert len(s.annotation) == 2
+    assert s.annotation.number_of_identifiers == 3
     ref_ann = MetaData()
-    ref_ann.simplified = {
-        "chebi": ["CHEBI:17234", "CHEBI:1723456"],
-        "eco": ["123"],
-    }
-    assert s.annotations == ref_ann
+    simpl_ann = SimplifiedAnnotationInterface(ref_ann)
+    simpl_ann.add(
+        {
+            "chebi": ["CHEBI:17234", "CHEBI:1723456"],
+            "eco": ["123"],
+        }
+    )
+    assert s.metadata == ref_ann
 
-    print(s.annotations.simplified.to_dict())
-    del s.annotations.simplified["chebi"]
-    print(s.annotations.simplified.to_dict())
-    assert len(s.annotations.simplified) == 1
-    assert s.annotations.simplified.number_of_identifiers == 1
+    print(s.annotation.to_dict())
+    del s.annotation["chebi"]
+    print(s.annotation.to_dict())
+    assert len(s.annotation) == 1
+    assert s.annotation.number_of_identifiers == 1
 
-    s.annotations.simplified.add({"chebi": "CHEBI:17234"})
-    s.annotations.simplified.add({"chebi": ["CHBEI:1723456", "CHEBI:172345"]})
-    assert len(s.annotations.simplified) == 2
-    assert s.annotations.simplified.number_of_identifiers == 4
-    s.annotations.simplified["chebi"] = ["CHEBI:123", "CHEBI:1234"]
-    assert len(s.annotations.simplified) == 2
-    assert s.annotations.simplified.number_of_identifiers == 3
+    s.annotation.add({"chebi": "CHEBI:17234"})
+    s.annotation.add({"chebi": ["CHBEI:1723456", "CHEBI:172345"]})
+    assert len(s.annotation) == 2
+    assert s.annotation.number_of_identifiers == 4
+    s.annotation["chebi"] = ["CHEBI:123", "CHEBI:1234"]
+    assert len(s.annotation) == 2
+    assert s.annotation.number_of_identifiers == 3
     ref_ann = MetaData()
-    ref_ann.simplified = {"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"]}
-    assert s.annotations == ref_ann
+    simpl_ann = SimplifiedAnnotationInterface(ref_ann)
+    simpl_ann.add({"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"]})
+    assert s.metadata == ref_ann
 
-    assert len(s.annotations.simplified.keys()) == 2
+    assert len(s.annotation.keys()) == 2
 
-    s.annotations.simplified["chebi"] = []
-    assert s.annotations.simplified.number_of_identifiers == 1
+    s.annotation["chebi"] = []
+    assert s.annotation.number_of_identifiers == 1
 
-    s.annotations.simplified.clear()
+    s.annotation.clear()
 
-    assert len(s.annotations.simplified.keys()) == 0
+    assert len(s.annotation.keys()) == 0
 
-    s.annotations.simplified = {"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"]}
-    assert s.annotations.simplified.number_of_identifiers == 3
-    s.annotations.simplified = {
+    s.annotation = {"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"]}
+    assert s.annotation.number_of_identifiers == 3
+    s.annotation = {
         "chebi": ["CHEBI:123", "CHEBI:1234"],
         "eco": ["123"],
         "sbo": ["SBO:0000123"],
     }
-    assert s.annotations.simplified.number_of_identifiers == 4
+    assert s.annotation.number_of_identifiers == 4
 
 
 def test_nested_annotation(data_directory: Path) -> None:
@@ -257,7 +270,7 @@ def test_nested_annotation(data_directory: Path) -> None:
         cvterms_data = json.load(f_cvterms)
 
     s = Species()
-    s.annotations.add_standardized(cvterms_data)
+    s.metadata.add_standardized(cvterms_data)
     # assert s.annotation == {
     #     "chebi": ["CHEBI:17627"],
     #     "eco": ["000000"],
@@ -299,8 +312,8 @@ def test_nested_annotation(data_directory: Path) -> None:
             "identifiers": [PUBMED_EXAMPLE, "https://identifiers.org/eco/000000"],
         }
     ]
-    assert s.annotations.standardized == main_cvt
-    nested_data = s.annotations.standardized[1].annoations
+    assert s.metadata.standardized == main_cvt
+    nested_data = s.metadata.standardized[1].annoations
     assert nested_data == nested_cvt
 
 
@@ -320,25 +333,25 @@ def test_cvterms_from_ecoli_xml(annotation_model: Model) -> None:
         },
     ]
     ecoli_model_cvterm = StandardizedAnnotationList.from_data(ECOLI_MODEL_ANNOTATIONS)
-    xml_model_cvterms = annotation_model.annotations.standardized
+    xml_model_cvterms = annotation_model.metadata.standardized
     model_cvterms_qualifier_set = xml_model_cvterms.qualifiers
     assert qualifier_set == model_cvterms_qualifier_set
     assert xml_model_cvterms == ecoli_model_cvterm
     assert (
         len(
-            annotation_model.annotations.standardized.query(
+            annotation_model.metadata.standardized.query(
                 "bqm_isDescribedBy", "qualifier"
             )
         )
         == 2
     )
-    nested_data = annotation_model.annotations.standardized.query(
-        "bqm_is", "qualifier"
-    )[0].annotations
+    nested_data = annotation_model.metadata.standardized.query("bqm_is", "qualifier")[
+        0
+    ].metadata
     assert nested_data == nested_cvt
 
     # check backwards compatibility
-    # assert annotation_model.annotation.annotations == {
+    # assert annotation_model.annotation.metadata == {
     #     "bigg.model": ["e_coli_core"],
     #     "doi": ["10.1128/ecosalplus.10.2.1"],
     #     "eco": ["ECO:0000004"],
@@ -347,7 +360,7 @@ def test_cvterms_from_ecoli_xml(annotation_model: Model) -> None:
     #     "taxonomy": ["511145"],
     # }
     # annotation_model.annotation.standardized.delete_annotation("coli")
-    # assert annotation_model.annotation.annotations == {
+    # assert annotation_model.annotation.metadata == {
     #     "doi": ["10.1128/ecosalplus.10.2.1"],
     #     "eco": ["ECO:0000004"],
     #     "ncbiprotein": ["16128336"],
@@ -374,9 +387,9 @@ def test_read_write_json(annotation_model: Model, tmp_path: Path):
 
     model = load_json_model(json_path)
     # Because of changes to eq, to compare using the old format,
-    # we need annotation.annotations.
+    # we need annotation.metadata.
     # TODO: get comments from cdiener
-    # assert model.annotation.annotations == {
+    # assert model.annotation.metadata == {
     #     "bigg.model": ["e_coli_core"],
     #     "doi": ["10.1128/ecosalplus.10.2.1"],
     #     "eco": ["ECO:0000004"],
@@ -384,19 +397,19 @@ def test_read_write_json(annotation_model: Model, tmp_path: Path):
     #     "pubmed": ["1111111"],
     #     "taxonomy": ["511145"],
     # }
-    assert model.annotations.standardized == StandardizedAnnotationList.from_data(
+    assert model.metadata.standardized == StandardizedAnnotationList.from_data(
         ECOLI_MODEL_ANNOTATIONS
     )
-    assert model.annotations.standardized == ECOLI_MODEL_ANNOTATIONS
+    assert model.metadata.standardized == ECOLI_MODEL_ANNOTATIONS
 
     for met_id in model.metabolites.list_attr("id"):
-        original_met_annot = annotation_model.metabolites.get_by_id(met_id).annotations
-        new_met_annot = model.metabolites.get_by_id(met_id).annotations
+        original_met_annot = annotation_model.metabolites.get_by_id(met_id).metadata
+        new_met_annot = model.metabolites.get_by_id(met_id).metadata
         assert original_met_annot == new_met_annot
 
     for rxn_id in model.reactions.list_attr("id"):
-        original_rxn_annot = annotation_model.reactions.get_by_id(rxn_id).annotations
-        new_rxn_annot = model.reactions.get_by_id(rxn_id).annotations
+        original_rxn_annot = annotation_model.reactions.get_by_id(rxn_id).metadata
+        new_rxn_annot = model.reactions.get_by_id(rxn_id).metadata
         assert original_rxn_annot == new_rxn_annot
 
 
@@ -407,9 +420,9 @@ def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
 
     model = read_sbml_model(str(out_path))
     # Because of changes to eq, to compare using the old format,
-    # we need annotation.annotations
+    # we need annotation.metadata
     # TODO: get comments from cdiener
-    # assert model.annotation.annotations == {
+    # assert model.annotation.metadata == {
     #     "bigg.model": ["e_coli_core"],
     #     "doi": ["10.1128/ecosalplus.10.2.1"],
     #     "eco": ["ECO:0000004"],
@@ -417,19 +430,19 @@ def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
     #     "pubmed": ["1111111"],
     #     "taxonomy": ["511145"],
     # }
-    assert model.annotations.standardized == StandardizedAnnotationList.from_data(
+    assert model.metadata.standardized == StandardizedAnnotationList.from_data(
         ECOLI_MODEL_ANNOTATIONS
     )
-    assert model.annotations.standardized == ECOLI_MODEL_ANNOTATIONS
+    assert model.metadata.standardized == ECOLI_MODEL_ANNOTATIONS
 
     for met_id in model.metabolites.list_attr("id"):
-        original_met_annot = annotation_model.metabolites.get_by_id(met_id).annotations
-        new_met_annot = model.metabolites.get_by_id(met_id).annotations
+        original_met_annot = annotation_model.metabolites.get_by_id(met_id).metadata
+        new_met_annot = model.metabolites.get_by_id(met_id).metadata
         assert original_met_annot == new_met_annot
 
     for rxn_id in model.reactions.list_attr("id"):
-        original_rxn_annot = annotation_model.reactions.get_by_id(rxn_id).annotations
-        new_rxn_annot = model.reactions.get_by_id(rxn_id).annotations
+        original_rxn_annot = annotation_model.reactions.get_by_id(rxn_id).metadata
+        new_rxn_annot = model.reactions.get_by_id(rxn_id).metadata
         assert original_rxn_annot == new_rxn_annot
 
 
@@ -459,8 +472,8 @@ def test_read_old_json_model(data_directory):
     expected_cvterms = StandardizedAnnotationList.from_data(
         [{"qualifier": "bqb_is", "identifiers": RESOURCE_LIST}]
     )
-    assert meta.annotations.standardized == expected_cvterms
-    assert meta.annotations.standardized == [
+    assert meta.metadata.standardized == expected_cvterms
+    assert meta.metadata.standardized == [
         {"qualifier": "bqb_is", "identifeirs": RESOURCE_LIST}
     ]
 

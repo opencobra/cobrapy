@@ -18,8 +18,8 @@ from typing import (
 
 from cobra.core.metadata.identifier import get_default_qualifier
 
-from .. import object as CObject
 from cobra.core.metadata import Identifier, Qualifier, Identifier
+from cobra.core.metadata.metadata import MetaData
 
 
 class StandardizedAnnotation:
@@ -1041,8 +1041,8 @@ class StandardizedAnnotationList(UserList):
 
 
 class SimplifiedAnnotationInterface(MutableMapping):
-    def __init__(self, standardized_annotations: StandardizedAnnotationList):
-        self._annotations = standardized_annotations
+    def __init__(self, metadata: MetaData):
+        self._metadata = metadata
 
     def add(
         self,
@@ -1088,6 +1088,9 @@ class SimplifiedAnnotationInterface(MutableMapping):
             else:
                 raise TypeError("Entry could could not be converted to an Identifier.")
             for x in entry:
+                if isinstance(x, tuple) and x[0].lower() == "sbo":
+                    self._metadata.sbo = x[1]
+                    continue
                 x = Identifier.from_data(x)
                 if x.namespace is None:
                     raise ValueError(
@@ -1100,59 +1103,55 @@ class SimplifiedAnnotationInterface(MutableMapping):
                 cvterms[qualifier].append(x)
 
         for qualifier, identifiers in cvterms.items():
-            ann = self._annotations._find_first_or_create_by_qualifier(qualifier)
+            ann = self._metadata.standardized._find_first_or_create_by_qualifier(
+                qualifier
+            )
             ann.add_identifiers(identifiers)
 
-    def __getitem__(
-        self, idx: Union[int, str, Qualifier]
-    ) -> Optional[Union[StandardizedAnnotation, Dict[str, str], List[str]]]:
-        if isinstance(idx, int):
-            return self._annotations.data[idx]
-        if isinstance(idx, Qualifier):
-            idfs = self._annotations._find_first_by_qualifier(idx)
-            if idfs is None:
-                return None
-            idfs = idfs.to_tuples()
-            d = {}
-            for k, v in idfs:
-                if not k in d:
-                    d[k] = [v]
-                else:
-                    d[k].append(v)
-            return d
-        if isinstance(idx, str):
-            qual = get_default_qualifier(idx)
-            ann = self._annotations._find_first_by_qualifier(qual)
-            if ann is None:
-                return ann
-            return [
-                v
-                for idf in ann.identifiers
-                if (v := idf.identifier) is not None and idf.namespace == idx
-            ]
-        raise TypeError("Index should be of type int, str or Qualifier.")
-
-    def __delitem__(self, idx: str):
-        if not isinstance(idx, str):
+    def __getitem__(self, key: str) -> Optional[List[str]]:
+        if not isinstance(key, str):
             raise TypeError("Index should be of type str.")
-        qual = get_default_qualifier(idx)
-        ann = self._annotations._find_first_by_qualifier(qual)
+        key = key.lower()
+        if key == "sbo":
+            return [self._metadata.sbo]
+
+        qual = get_default_qualifier(key)
+        ann = self._metadata.standardized._find_first_by_qualifier(qual)
+        if ann is None:
+            return None
+        return [
+            v
+            for idf in ann.identifiers
+            if (v := idf.identifier) is not None and idf.namespace == key
+        ]
+
+    def __delitem__(self, key: str) -> None:
+        if not isinstance(key, str):
+            raise TypeError("Index should be of type str.")
+
+        key = key.lower()
+
+        if key == "sbo":
+            self._metadata.sbo = ""
+            return
+
+        qual = get_default_qualifier(key)
+        ann = self._metadata.standardized._find_first_by_qualifier(qual)
         if ann is None:
             raise IndexError(
-                f"Could not find annotations for f'{idx}' (qualifier '{qual}')"
+                f"Could not find annotations for f'{key}' (qualifier '{qual}')"
             )
 
         for idf in list(ann.identifiers):
             if idf.namespace is None:
                 continue
-            if idf.namespace == idx:
+            if idf.namespace == key:
                 idf.remove_from_parent()
 
-    def __setitem__(
-        self, key: str, value
-    ) -> Optional[Union[StandardizedAnnotation, Dict[str, str], List[str]]]:
+    def __setitem__(self, key: str, value) -> None:
         if not isinstance(key, str):
             raise TypeError("Index should be of type str.")
+        key = key.lower()
 
         try:
             del self[key]
@@ -1171,8 +1170,8 @@ class SimplifiedAnnotationInterface(MutableMapping):
 
     def items(self):
         visited_qualifiers = set()
-        visited_namespaces = set()
-        for entry in self._annotations.data:
+        visited_namespaces = set("sbo")
+        for entry in self._metadata.standardized.data:
             qualifier = entry.qualifier
             # Only the first occurence of each qualifier is handled in simplified
             # annotations.
@@ -1196,11 +1195,14 @@ class SimplifiedAnnotationInterface(MutableMapping):
                     else:
                         if identifier.namespace == current_namespace:
                             identifiers.append(identifier)
-                visited_namespaces.add(current_namespace)
+                if current_namespace is not None:
+                    visited_namespaces.add(current_namespace)
                 if identifiers:
                     yield (current_namespace, identifiers)
                 else:
                     break
+        if sbo_term := self._metadata.sbo:
+            yield ("sbo", [sbo_term])
 
     def __iter__(self):
         for k, _ in self.items():

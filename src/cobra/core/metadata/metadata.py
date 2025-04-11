@@ -12,7 +12,7 @@ from ..metadata import keyvaluepairs as KV
 from ..metadata.history import Creator, History
 
 
-class MetaData:  # (MutableMapping):
+class MetaData:
     """Meta-data of a cobrapy object.
 
     Meta-data encodes additional information on an object such as annotations
@@ -107,22 +107,6 @@ class MetaData:  # (MutableMapping):
             The wrong type will lead to a TypeError being raised.
         """
         self._standardized = CV.StandardizedAnnotationList.from_data(values)
-        self._simplified = CV.SimplifiedAnnotationInterface(self._standardized)
-
-    @property
-    def simplified(self):
-        return self._simplified
-
-    @simplified.setter
-    def simplified(self, value):
-        self.simplified.clear()
-        # if self.standardized is None or len(self._standardized) > 0:
-        #     raise Exception(
-        #         "There is already data present in the standardized annotation object. "
-        #         "Old-style simplified annotations can only be set to an object without "
-        #         "existing annotations. Use MetaData.simplified.add(..) instead."
-        #     )
-        self.simplified.add(value)
 
     def add_standardized(
         self, annotations: Iterable[Union[Dict, "CV.StandardizedAnnotation"]]

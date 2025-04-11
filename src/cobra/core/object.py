@@ -2,7 +2,6 @@
 
 from typing import TYPE_CHECKING, Iterable, Optional, Union, Tuple
 
-
 if TYPE_CHECKING:
     from cobra.core.metadata import (
         CustomAnnotation,
@@ -10,6 +9,7 @@ if TYPE_CHECKING:
         StandardizedAnnotation,
         Identifier,
     )
+    from cobra.core.metadata.cvterm import SimplifiedAnnotationInterface
 
 
 class Object:
@@ -34,7 +34,7 @@ class Object:
         self.name = name
 
         self.notes = {}
-        self._annotations = MetaData()
+        self.metadata = None
 
     @property
     def id(self) -> Optional[str]:
@@ -81,7 +81,7 @@ class Object:
         self._id = value
 
     @property
-    def annotations(self) -> "MetaData":
+    def metadata(self) -> "MetaData":
         """Get annotation dictionary.
 
         Returns
@@ -90,10 +90,10 @@ class Object:
             Returns _annotation as a dictionary.
         """
         # TODO: Fix doc
-        return self._annotations
+        return self._metadata
 
-    @annotations.setter
-    def annotations(self, annotations: Optional["MetaData"]):
+    @metadata.setter
+    def metadata(self, metadata: Optional["MetaData"]):
         """Set annotations.
 
         Parameters
@@ -107,16 +107,28 @@ class Object:
         """
         # TODO: Fix doc
         from cobra.core.metadata import MetaData
+        from cobra.core.metadata.cvterm import SimplifiedAnnotationInterface
 
-        if annotations is None:
-            self._annotations = MetaData()
-        elif isinstance(annotations, MetaData):
-            self._annotations = annotations
+        if metadata is None:
+            self._metadata = MetaData()
+            self._annotation = SimplifiedAnnotationInterface(self._metadata)
+        elif isinstance(metadata, MetaData):
+            self._metadata = metadata
+            self._annotation = SimplifiedAnnotationInterface(self._metadata)
         else:
             raise TypeError(
                 f"The data passed for annotation must be inside "
                 f"a dictionary or MetaData: {annotations}"
             )
+
+    @property
+    def annotation(self) -> "SimplifiedAnnotationInterface":
+        return self._annotation
+
+    @annotation.setter
+    def annotation(self, value):
+        self._annotation.clear()
+        self._annotation.add(value)
 
     def add_annotations(
         self,
@@ -150,16 +162,13 @@ class Object:
         ):
             annotations = [annotations]
 
-        if self._annotations is None:
-            self._annotations = MetaData()
-
         for annotation in annotations:
             if isinstance(annotation, (str, tuple, Identifier)):
-                self._annotations.simplified.add(annotation)
+                self.annotation.add(annotation)
             if isinstance(annotation, StandardizedAnnotation):
-                self._annotations.standardized.add([annotation])
+                self.metadata.standardized.add([annotation])
             elif isinstance(annotation, CustomAnnotation):
-                self._annotations.custom.add(annotation)
+                self.metadata.custom.add(annotation)
 
     def remove_annotations(
         self,
@@ -176,17 +185,11 @@ class Object:
         ):
             annotations = [annotations]
 
-        if self._annotations is None:
-            raise ValueError(
-                "Cannot remove annotations, because there are no annotations"
-                "associated with this object."
-            )
-
         for annotation in annotations:
             if isinstance(annotation, StandardizedAnnotation):
-                self._annotations.standardized.remove(annotation)
+                self.metadata.standardized.remove(annotation)
             elif isinstance(annotation, CustomAnnotation):
-                self._annotations.custom.remove(annotation)
+                self.metadata.custom.remove(annotation)
 
     def __getstate__(self) -> dict:
         """Get state of annotation.
