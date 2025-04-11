@@ -612,6 +612,8 @@ class StandardizedAnnotationList(UserList):
         elif isinstance(data, StandardizedAnnotationList):
             return data
         elif isinstance(data, (StandardizedAnnotation, dict, str)):
+            if not data:
+                return StandardizedAnnotationList()
             return StandardizedAnnotationList([data])
         elif isinstance(data, ABCIterable):
             return StandardizedAnnotationList(data)
@@ -996,7 +998,9 @@ class StandardizedAnnotationList(UserList):
                 d._set_parent(self)
             self.data.extend(checked_data)
 
-    def __eq__(self, other: Union[Iterable, "StandardizedAnnotationList"]) -> bool:
+    def __eq__(
+        self, other: Union[dict, Iterable, "StandardizedAnnotationList"]
+    ) -> bool:
         """Compare two CVTermList objects to find out whether they are the same.
 
         Equality is defined as them having the same data, but not necessarily the same
@@ -1011,7 +1015,7 @@ class StandardizedAnnotationList(UserList):
         -------
         bool: True if the data matches, False otherwise
         """
-        if isinstance(other, ABCIterable) and not isinstance(
+        if isinstance(other, (ABCIterable, dict)) and not isinstance(
             other, StandardizedAnnotationList
         ):
             return self.__eq__(StandardizedAnnotationList.from_data(other))
@@ -1157,8 +1161,13 @@ class SimplifiedAnnotationInterface(MutableMapping):
 
         self.add({key: value})
 
-    def __eq__(self, other: Union[Iterable, "StandardizedAnnotationList"]) -> bool:
-        return self._annotations == other
+    def __eq__(self, other: Union[dict, "SimplifiedAnnotationInterface"]) -> bool:
+        self_dict = self.to_dict()
+        if isinstance(other, dict):
+            other_dict = other
+        else:
+            other_dict = other.to_dict()
+        return self_dict == other_dict
 
     def items(self):
         visited_qualifiers = set()

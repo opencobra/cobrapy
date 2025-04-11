@@ -105,7 +105,7 @@ def test_annotation() -> None:
     }
 
     # checking old (fixed) annotation format
-    # assert s.annotation == {"chebi": sorted(["CHEBI:43215", "CHEBI:11881"])}
+    assert s.annotations.simplified == {"chebi": ["CHEBI:43215", "CHEBI:11881"]}
 
     # checking new standardized
     cvt = StandardizedAnnotationList(
@@ -127,7 +127,7 @@ def test_annotation() -> None:
     s.annotations.standardized = []
     assert s.annotations.standardized == StandardizedAnnotationList()
     assert s.annotations.standardized.identifiers == frozenset()
-    # assert s.annotations == {}
+    assert s.annotations.standardized == {}
 
     s.annotations.standardized = cvt
 
@@ -137,20 +137,20 @@ def test_annotation() -> None:
     }
 
     # checking old (fixed) annotation format
-    # assert s.annotation == {"chebi": sorted(["CHEBI:43215", "CHEBI:11881"])}
+    assert s.annotations.simplified == {"chebi": ["CHEBI:43215", "CHEBI:11881"]}
 
     cvt[0].remove_from_parent()
     assert s.annotations.standardized == []
 
     # adding an SBO term
     s.annotations.sbo = ["SBO:0000123"]
-    # assert "chebi" in s.annotation
-    # assert "sbo" in s.annotation
-    # assert s.annotation == {
-    #     "chebi": sorted(["CHEBI:43215", "CHEBI:11881"]),
+    assert "chebi" in s.annotations.simplified
+    # assert "sbo" in s.annotations.simplified
+    # assert s.annotations.simplified == {
+    #     "chebi": ["CHEBI:43215", "CHEBI:11881"],
     #     "sbo": ["SBO:0000123"],
     # }
-    #
+
     cvt2 = StandardizedAnnotationList(
         [
             StandardizedAnnotation(
