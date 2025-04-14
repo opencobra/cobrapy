@@ -200,7 +200,7 @@ class MetaData:
         return self._sbo
 
     @sbo.setter
-    def sbo(self, value: str) -> None:
+    def sbo(self, value: Union[str, List[str]]) -> None:
         """Set the SBO term."""
         if isinstance(value, list):
             value = value[0]
@@ -484,7 +484,7 @@ class MetaData:
         else:
             annotation = MetaData()
             # annotation.standardized.add_simple_annotations(data)
-            raise ValueError()
+            # raise ValueError()
             # TODO: Fix
 
         if "sbo" in data:

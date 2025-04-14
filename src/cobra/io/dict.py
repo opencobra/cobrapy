@@ -5,6 +5,7 @@ import re
 from collections import OrderedDict, defaultdict
 from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Tuple, Union
 
+from cobra.core.metadata.cvterm import SimplifiedAnnotationInterface
 import numpy as np
 
 from ..core import Gene, Group, Metabolite, Model, Reaction
@@ -38,13 +39,15 @@ _ORDERED_OPTIONAL_REACTION_KEYS = [
     "objective_coefficient",
     "subsystem",
     "notes",
-    "annotation",
+    # "annotation",
+    "metadata",
 ]
 _OPTIONAL_REACTION_ATTRIBUTES = {
     "objective_coefficient": 0,
     "subsystem": "",
     "notes": {},
-    "annotation": {},
+    # "annotation": {},
+    "metadata": {},
 }
 
 _REQUIRED_METABOLITE_ATTRIBUTES = ["id", "name", "compartment"]
@@ -53,38 +56,49 @@ _ORDERED_OPTIONAL_METABOLITE_KEYS = [
     "formula",
     "_bound",
     "notes",
-    "annotation",
+    # "annotation",
+    "metadata",
 ]
 _OPTIONAL_METABOLITE_ATTRIBUTES = {
     "charge": None,
     "formula": None,
     "_bound": 0,
     "notes": {},
-    "annotation": {},
+    # "annotation": {},
+    "metadata": {},
 }
 
 _REQUIRED_GENE_ATTRIBUTES = ["id", "name"]
-_ORDERED_OPTIONAL_GENE_KEYS = ["notes", "annotation"]
+_ORDERED_OPTIONAL_GENE_KEYS = ["notes", "metadata"]
 _OPTIONAL_GENE_ATTRIBUTES = {
     "notes": {},
-    "annotation": {},
+    # "annotation": {},
+    "metadata": {},
 }
 
 _REQUIRED_GROUP_ATTRIBUTES = ["id", "kind", "members"]
-_ORDERED_OPTIONAL_GROUP_KEYS = ["name", "notes", "annotation"]
+_ORDERED_OPTIONAL_GROUP_KEYS = ["name", "notes", "metadata"]
 _OPTIONAL_GROUP_ATTRIBUTES = {
     "name": "",
     "notes": {},
-    "annotation": {},
+    # "annotation": {},
+    "metadata": {},
 }
 
-_ORDERED_OPTIONAL_MODEL_KEYS = ["name", "compartments", "notes", "annotation"]
+_ORDERED_OPTIONAL_MODEL_KEYS = [
+    "name",
+    "compartments",
+    "notes",
+    # "annotation",
+    "metadata",
+]
 _OPTIONAL_MODEL_ATTRIBUTES = {
     "name": None,
     #  "description": None, should not actually be included
     "compartments": [],
     "notes": {},
-    "annotation": {},
+    # "annotation": {},
+    "metadata": {},
 }
 
 
@@ -132,7 +146,7 @@ def _fix_type(
     if isinstance(value, dict):
         return OrderedDict((key, value[key]) for key in sorted(value))
     if isinstance(value, MetaData):
-        return value.to_dict()
+        return OrderedDict(value.to_dict())
     # handle legacy Formula type
     if value.__class__.__name__ == "Formula":
         return str(value)
@@ -196,7 +210,12 @@ def _fix_id_from_dict(
 
 
 def _fix_value_from_dict(_key: str, _value_to_fix: Union[List, str]):
-    if _key == "annotation":
+    if _key == "metadata":
+        # New style annotations for json v2.
+        anno_dict = defaultdict(list)
+        _value_to_fix = MetaData.from_dict(_value_to_fix)
+    elif _key == "annotation":
+        # Old style annotations for json v1.
         # if annotation is in the form of list of list, modify the format
         # https://github.com/opencobra/cobrapy/issues/736
         if isinstance(_value_to_fix, list) and isinstance(_value_to_fix[0], list):
@@ -208,7 +227,10 @@ def _fix_value_from_dict(_key: str, _value_to_fix: Union[List, str]):
                     provider, identifier = parse_identifiers_uri(item)
                     anno_dict[provider].append(identifier)
             _value_to_fix = anno_dict
-        _value_to_fix = MetaData.from_dict(_value_to_fix)
+        # metadata = MetaData()
+        # old_style_interface = SimplifiedAnnotationInterface(metadata)
+        # old_style_interface.add(_value_to_fix)
+        # _value_to_fix = metadata
     elif _key == "lower_bound" or _key == "upper_bound":
         _value_to_fix = float(_value_to_fix)
 
@@ -670,7 +692,7 @@ def model_from_dict(obj: Dict) -> Model:
     [
         setattr(model, k, _fix_value_from_dict(k, v))
         for k, v in obj.items()
-        if k in {"id", "name", "compartments", "annotation", "notes"}
+        if k in {"id", "name", "compartments", "metadata", "notes"}
     ]
 
     return model

@@ -359,7 +359,7 @@ class StandardizedAnnotation:
         """
         d = {
             "qualifier": self.qualifier.value,
-            "identifiers": [identifier.to_dict() for identifier in self.identifiers],
+            "identifiers": [identifier.uri for identifier in self.identifiers],
         }
         if self.annotations:
             d["annotations"] = self.annotations.to_list_of_dicts()
@@ -852,7 +852,7 @@ class StandardizedAnnotationList(UserList):
         self,
         search_function: Union[str, Pattern, Callable],
         attribute: Union[str, None] = None,
-    ) -> "StandardizedAnnotationList":
+    ) -> List[StandardizedAnnotation]:
         """Query the CVTermList and return a list of CVTerm objects.
 
         Parameters
@@ -936,8 +936,7 @@ class StandardizedAnnotationList(UserList):
                 if search_function(select_attribute(cvterm))
             ]
 
-        results = self.__class__(matches)
-        return results
+        return matches
 
     def __setitem__(self, key: int, value: Union[StandardizedAnnotation, str]) -> None:
         """Set item in CVTermList.

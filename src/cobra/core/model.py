@@ -394,7 +394,7 @@ class Model(Object):
             if attr not in do_not_copy_by_ref:
                 new.__dict__[attr] = self.__dict__[attr]
         new.notes = deepcopy(self.notes)
-        new.annotations = deepcopy(self.annotations)
+        new.metadata = deepcopy(self.metadata)
 
         new.metabolites = DictList()
         do_not_copy_by_ref = {"_reaction", "_model", "_annotations"}
@@ -404,7 +404,7 @@ class Model(Object):
                 if attr not in do_not_copy_by_ref:
                     new_met.__dict__[attr] = copy(value) if attr == "formula" else value
             new_met._model = new
-            new_met.annotations = deepcopy(metabolite.annotations)
+            new_met.metadata = deepcopy(metabolite.metadata)
             new.metabolites.append(new_met)
 
         new.genes = DictList()
@@ -416,7 +416,7 @@ class Model(Object):
                         copy(value) if attr == "formula" else value
                     )
             new_gene._model = new
-            new_gene.annotations = deepcopy(gene.annotations)
+            new_gene.metadata = deepcopy(gene.metadata)
             new.genes.append(new_gene)
 
         new.reactions = DictList()
@@ -427,7 +427,7 @@ class Model(Object):
                 if attr not in do_not_copy_by_ref:
                     new_reaction.__dict__[attr] = copy(value)
             new_reaction._model = new
-            new_reaction.annotations = deepcopy(reaction.annotations)
+            new_reaction.metadata = deepcopy(reaction.metadata)
             new.reactions.append(new_reaction)
             # update awareness
             for metabolite, stoic in reaction._metabolites.items():
@@ -446,7 +446,7 @@ class Model(Object):
                 if attr not in do_not_copy_by_ref:
                     new_group.__dict__[attr] = copy(value)
             new_group._model = new
-            new_group.annotations = deepcopy(group.annotations)
+            new_group.metadata = deepcopy(group.metadata)
             new.groups.append(new_group)
         for group in self.groups:
             new_group = new.groups.get_by_id(group.id)
@@ -687,7 +687,7 @@ class Model(Object):
         rxn = Reaction(id=reaction_id, name=name, lower_bound=lb, upper_bound=ub)
         rxn.add_metabolites({metabolite: -1})
         if sbo_term:
-            rxn.annotations.sbo = sbo_term
+            rxn.metadata.sbo = sbo_term
         self.add_reactions([rxn])
         return rxn
 
