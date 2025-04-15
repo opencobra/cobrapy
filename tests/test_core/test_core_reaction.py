@@ -333,7 +333,10 @@ def test_mass_balance(model: Model) -> None:
     imbalance = reaction.check_mass_balance()
     assert "H" in imbalance
     assert imbalance["H"] == 1
-
+    # Should be balanced even when coefficients are non-integer
+    reaction_scaled = model.reactions.get_by_id("ATPS4r") * 1.3
+    assert len(reaction_scaled.check_mass_balance()) == 0
+    
 
 def test_build_from_string(model: Model) -> None:
     """Test reaction building from string evaluation."""
