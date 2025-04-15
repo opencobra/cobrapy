@@ -9,7 +9,7 @@ if TYPE_CHECKING:
         StandardizedAnnotation,
         Identifier,
     )
-    from cobra.core.metadata.cvterm import SimplifiedAnnotationInterface
+    from cobra.core.metadata.standardized import SimplifiedAnnotationInterface
 
 
 class Object:
@@ -28,8 +28,6 @@ class Object:
         Objects will have notes and _annotation as dicitionaries, initialized as empty
         dictionaries.
         """
-        from cobra.core.metadata import MetaData
-
         self._id = id
         self.name = name
 
@@ -107,7 +105,7 @@ class Object:
         """
         # TODO: Fix doc
         from cobra.core.metadata import MetaData
-        from cobra.core.metadata.cvterm import SimplifiedAnnotationInterface
+        from cobra.core.metadata.standardized import SimplifiedAnnotationInterface
 
         if metadata is None:
             self._metadata = MetaData()

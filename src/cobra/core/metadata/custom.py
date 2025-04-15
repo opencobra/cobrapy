@@ -37,17 +37,17 @@ class CustomAnnotation(cobject.Object):
         self._key = key
         self._value = value
         self._uri = uri
-        self._target = None
+        self._parent = None
 
-    def _set_target(self, target: Optional["cobject.Object"]) -> None:
-        self._target = target
+    def _set_parent(self, parent: Optional["CustomAnnotationList"]) -> None:
+        self._parent = parent
 
     def remove_from_object(self):
-        if self._target is None:
+        if self._parent is None:
             raise ValueError(
-                "Cannot remove annontation, since no object is associated with annotation."
+                "Cannot remove annotation, since no object is associated with annotation."
             )
-        self._target.remove_annotations(self)
+        self._parent.remove(self)
 
     # We should probably make key read-only, to prevent keys from becoming duplicate in
     # CustomAnnotationList objects.
@@ -104,7 +104,7 @@ class CustomAnnotation(cobject.Object):
         else:
             raise TypeError(f"Invalid format for CustomAnnotation: '{data}'")
 
-    def _asdict(self) -> dict:
+    def to_dict(self) -> dict:
         return {
             k: v
             for k in ["key", "value", "uri", "id", "name"]
@@ -118,7 +118,7 @@ class CustomAnnotation(cobject.Object):
         -------
         str
         """
-        return str(self._asdict())
+        return str(self.to_dict())
 
     def __repr__(self) -> str:
         """Get string representation, including module and class name.
@@ -225,7 +225,7 @@ class CustomAnnotationList(UserDict):
             keys are the keys, and each value is the KeyValueEntry represented as
             a dict.
         """
-        return {k: asdict(v) for k, v in self.data.items()}
+        return {k: v.to_dict() for k, v in self.data.items()}
 
     def add(
         self,
@@ -252,8 +252,8 @@ class CustomAnnotationList(UserDict):
             if isinstance(item, CustomAnnotation):
                 item = item.key
             # If CustomAnnotation object is removed from CustomAnnotationList, it will
-            # also not belong to the target Object anymore.
-            self.data[item]._set_target(None)
+            # also not belong to the parent object anymore.
+            self.data[item]._set_parent(None)
             del self.data[item]
 
     # query

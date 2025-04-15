@@ -25,6 +25,8 @@ def _check_sbml_annotations(model: "Model") -> None:
     # {'bigg.model': 'e_coli_core', 'doi': '10.1128/ecosalplus.10.2.1',
     #  'taxonomy': '511145'}
     annotation = model.annotation
+    for x in annotation:
+        print(x)
     assert annotation is not None
     assert len(annotation) == 3
     assert set(annotation.keys()) == {"bigg.model", "doi", "taxonomy"}

@@ -1,14 +1,13 @@
 """Define the cobra MetaData class."""
 
 from collections import OrderedDict
-from collections.abc import MutableMapping
 from datetime import datetime
-from typing import Dict, Iterable, Iterator, List, Optional, Union
+from typing import Dict, Iterable, List, Optional, Union
 
 from cobra.core.metadata.identifier import Qualifier
+import cobra.core.metadata.standardized as SA
+import cobra.core.metadata.custom as CA
 
-from ..metadata import cvterm as CV
-from ..metadata import keyvaluepairs as KV
 from ..metadata.history import Creator, History
 
 
@@ -51,7 +50,7 @@ class MetaData:
     def __init__(
         self,
         standardized: Optional[
-            Union[Dict, List["CV.StandardizedAnnotation"], "CV.StandardizedAnnotation"]
+            Union[Dict, List["SA.StandardizedAnnotation"], "SA.StandardizedAnnotation"]
         ] = None,
         history: Optional[Union[Dict, History]] = None,
         sbo: str = "",
@@ -74,11 +73,11 @@ class MetaData:
         """
         self.standardized = standardized
         self.history = history
-        self.custom = KV.CustomAnnotationList(custom)
+        self.custom = CA.CustomAnnotationList(custom)
         self.sbo = sbo
 
     @property
-    def standardized(self) -> "CV.StandardizedAnnotationList":
+    def standardized(self) -> "SA.StandardizedAnnotationList":
         """Get standardized field of MetaData.
 
         Returns
@@ -93,8 +92,8 @@ class MetaData:
         values: Optional[
             Union[
                 Dict,
-                Iterable["CV.StandardizedAnnotation"],
-                "CV.StandardizedAnnotationList",
+                Iterable["SA.StandardizedAnnotation"],
+                "SA.StandardizedAnnotationList",
             ]
         ],
     ) -> None:
@@ -106,10 +105,10 @@ class MetaData:
             dict is converted to CVTermList using CVTermList.from_data().
             The wrong type will lead to a TypeError being raised.
         """
-        self._standardized = CV.StandardizedAnnotationList.from_data(values)
+        self._standardized = SA.StandardizedAnnotationList.from_data(values)
 
     def add_standardized(
-        self, annotations: Iterable[Union[Dict, "CV.StandardizedAnnotation"]]
+        self, annotations: Iterable[Union[Dict, "SA.StandardizedAnnotation"]]
     ) -> None:
         """Add one or more CVTerm objects to the standardized field.
 
@@ -207,7 +206,7 @@ class MetaData:
         self._sbo = value
 
     @property
-    def custom(self) -> "KV.CustomAnnotationList":
+    def custom(self) -> "CA.CustomAnnotationList":
         """Returns the custom key-value pairs of annotations.
 
         Returns
@@ -217,7 +216,7 @@ class MetaData:
         return self._custom
 
     @custom.setter
-    def custom(self, keyvaluepairs: Union[Dict, "KV.CustomAnnotationList"]) -> None:
+    def custom(self, keyvaluepairs: Union[Dict, "CA.CustomAnnotationList"]) -> None:
         """Set the custom key-value pairs of annotations.
 
         Parameters
@@ -226,7 +225,7 @@ class MetaData:
             A dictionary or KeyValuePair instance that contain all annotation
             custom key-value pairs.
         """
-        self._custom = KV.CustomAnnotationList(keyvaluepairs)
+        self._custom = CA.CustomAnnotationList(keyvaluepairs)
 
     def __setitem__(self, key: str, value: Union[List, str]) -> None:
         """Set the item for accessing metadata as dict (the old style annotation).

@@ -1,11 +1,11 @@
 """Test functions of keyvaluepairs.py."""
 
-from cobra.core.metadata.keyvaluepairs import KeyValueEntry, KeyValuePairs
+from cobra.core.metadata.custom import CustomAnnotation, CustomAnnotationList
 
 
 def test_keyvalueentry():
     """Test creating a single KeyValueEntry."""
-    keyvaluedict = KeyValueEntry.from_data(
+    keyvaluedict = CustomAnnotation.from_data(
         {
             "id": "KV_id",
             "name": "abc_xyz",
@@ -14,7 +14,7 @@ def test_keyvalueentry():
             "uri": "https://tinyurl.com/ybyr7b62",
         }
     )
-    assert isinstance(keyvaluedict, KeyValueEntry)
+    assert isinstance(keyvaluedict, CustomAnnotation)
     assert keyvaluedict.id == "KV_id"
     assert keyvaluedict.name == "abc_xyz"
     assert keyvaluedict.key == "keyX"
@@ -31,7 +31,7 @@ def test_keyvaluepairs():
         "value": "45",
         "uri": "https://tinyurl.com/ybyr7b62",
     }
-    entry2 = KeyValueEntry.from_data(
+    entry2 = CustomAnnotation.from_data(
         {
             "id": "id2",
             "name": "abc_xyz2",
@@ -41,7 +41,7 @@ def test_keyvaluepairs():
         }
     )
 
-    kvp = KeyValuePairs(entries=[entry1, entry2])
+    kvp = CustomAnnotationList(entries=[entry1, entry2])
     print(kvp)
     assert len(kvp) == 2
     for key in ["key1", "key2"]:

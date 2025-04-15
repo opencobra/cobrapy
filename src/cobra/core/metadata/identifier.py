@@ -202,15 +202,16 @@ def parse_identifiers_uri(uri: str) -> Optional[Tuple[str, str]]:
 
 
 DEFAULT_QUALIFIERS = {
-    "pubmed": Qualifier.Biological_isDescribedBy,
-    "doi": Qualifier.Biological_isDescribedBy,
+    "pubmed": Qualifier.Modelling_isDescribedBy,
+    "doi": Qualifier.Modelling_isDescribedBy,
     "ec-code": Qualifier.Biological_isVersionOf,
     "go": Qualifier.Biological_isVersionOf,
-    "eco": Qualifier.Biological_isDescribedBy,
-    "google.patent": Qualifier.Biological_isDescribedBy,
+    "eco": Qualifier.Modelling_isDescribedBy,
+    "google.patent": Qualifier.Modelling_isDescribedBy,
     "taxonomy": Qualifier.Biological_hasTaxon,
-    "arxiv": Qualifier.Biological_isDescribedBy,
-    "isbn": Qualifier.Biological_isDescribedBy,
+    "arxiv": Qualifier.Modelling_isDescribedBy,
+    "isbn": Qualifier.Modelling_isDescribedBy,
+    "bigg.model": Qualifier.Modelling_is,
 }
 
 

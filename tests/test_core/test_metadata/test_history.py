@@ -86,10 +86,10 @@ def test_history_from_ecoli_xml(data_directory):
         ],
     )
     print(history)
-    print(model.annotation.history)
-    assert model.annotation.history == history
-    model.annotation.history.created_date = None
-    assert model.annotation.history == History(
+    print(model.metadata.history)
+    assert model.metadata.history == history
+    model.metadata.history.created_date = None
+    assert model.metadata.history == History(
         creators=[
             Creator(
                 given_name="Matthias",

@@ -8,7 +8,7 @@ import pytest
 
 from cobra import Model
 from cobra.core.metadata import Qualifier, StandardizedAnnotation
-from cobra.core.metadata.keyvaluepairs import CustomAnnotation
+from cobra.core.metadata.custom import CustomAnnotation
 from cobra.core.species import Species
 from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
 
@@ -97,13 +97,13 @@ def test_annotation() -> None:
     assert len(annotation_3.annotations) == 2
     s.add_annotations([annotation_1, annotation_2, annotation_3])
     # assert len(s.annotations) == 3
-    assert len(s.annotations.standardized) == 3
+    assert len(s.metadata.standardized) == 3
     s.remove_annotations([annotation_2])
-    assert len(s.annotations.standardized) == 2
+    assert len(s.metadata.standardized) == 2
     s.add_annotations(annotation_2)
-    assert len(s.annotations.standardized) == 3
-    annotation_2.remove_from_object()
-    assert len(s.annotations.standardized) == 2
+    assert len(s.metadata.standardized) == 3
+    annotation_2.remove_from_parent()
+    assert len(s.metadata.standardized) == 2
     # assert s.annotations.custom is None
     # assert (
     #     len(
@@ -116,10 +116,10 @@ def test_annotation() -> None:
     custom_1 = CustomAnnotation(key="cobra_flag", value="starred")
     custom_2 = CustomAnnotation(key="cobra_url", uri=COBRA_URL)
     s.add_annotations([custom_1, custom_2])
-    assert len(s.annotations.custom) == 2
+    assert len(s.metadata.custom) == 2
     s.remove_annotations(custom_1)
-    assert len(s.annotations.custom) == 1
-    assert s.annotations.custom["cobra_url"].uri == COBRA_URL
+    assert len(s.metadata.custom) == 1
+    assert s.metadata.custom["cobra_url"].uri == COBRA_URL
 
 
 def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
@@ -128,22 +128,18 @@ def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
     assert write_sbml_model(annotation_model, str(out_path)) is None
 
     model = read_sbml_model(str(out_path))
-    print(model.annotations)
-    print(model.annotations.standardized)
-    for ann in model.annotations.standardized:
+    print(model.metadata)
+    print(model.metadata.standardized)
+    for ann in model.metadata.standardized:
         print(ann)
-    print(model.annotations.standardized.identifiers)
-    pprint(model.annotations.standardized.to_records())
-    pprint(model.annotations.standardized.to_list_of_dicts())
-    assert len(model.annotations.standardized) == 4
+    print(model.metadata.standardized.identifiers)
+    pprint(model.metadata.standardized.to_records())
+    pprint(model.metadata.standardized.to_list_of_dicts())
+    assert len(model.metadata.standardized) == 4
     ann_dict = [
         {
             "identifiers": [
-                {
-                    "identifier": "511145",
-                    "namespace": "taxonomy",
-                    "uri": "http://identifiers.org/taxonomy/511145",
-                }
+                "http://identifiers.org/taxonomy/511145",
             ],
             "qualifier": "bqb_hasTaxon",
         },
@@ -151,56 +147,36 @@ def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
             "annotations": [
                 {
                     "identifiers": [
-                        {
-                            "identifier": "1111111",
-                            "namespace": "pubmed",
-                            "uri": "https://identifiers.org/pubmed/1111111",
-                        }
+                        "https://identifiers.org/pubmed/1111111",
                     ],
                     "qualifier": "bqb_isDescribedBy",
                 },
                 {
                     "identifiers": [
-                        {
-                            "identifier": "ECO:0000004",
-                            "namespace": "eco",
-                            "uri": "https://identifiers.org/eco/ECO:0000004",
-                        }
+                        "https://identifiers.org/eco/ECO:0000004",
                     ],
                     "qualifier": "bqb_isDescribedBy",
                 },
             ],
             "identifiers": [
-                {
-                    "identifier": "e_coli_core",
-                    "namespace": "bigg.model",
-                    "uri": "http://identifiers.org/bigg.model/e_coli_core",
-                }
+                "http://identifiers.org/bigg.model/e_coli_core",
             ],
             "qualifier": "bqm_is",
         },
         {
             "identifiers": [
-                {
-                    "identifier": "10.1128/ecosalplus.10.2.1",
-                    "namespace": "doi",
-                    "uri": "http://identifiers.org/doi/10.1128/ecosalplus.10.2.1",
-                }
+                "http://identifiers.org/doi/10.1128/ecosalplus.10.2.1",
             ],
             "qualifier": "bqm_isDescribedBy",
         },
         {
             "identifiers": [
-                {
-                    "identifier": "16128336",
-                    "namespace": "ncbiprotein",
-                    "uri": "http://identifiers.org/ncbiprotein/16128336",
-                }
+                "http://identifiers.org/ncbiprotein/16128336",
             ],
             "qualifier": "bqm_isDescribedBy",
         },
     ]
-    assert model.annotations.standardized == ann_dict
+    assert model.metadata.standardized == ann_dict
     assert 1 == 0
     # Because of changes to eq, to compare using the old format,
     # we need annotation.annotations

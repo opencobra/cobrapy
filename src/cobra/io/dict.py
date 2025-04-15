@@ -5,7 +5,7 @@ import re
 from collections import OrderedDict, defaultdict
 from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Tuple, Union
 
-from cobra.core.metadata.cvterm import SimplifiedAnnotationInterface
+from cobra.core.metadata.standardized import SimplifiedAnnotationInterface
 import numpy as np
 
 from ..core import Gene, Group, Metabolite, Model, Reaction

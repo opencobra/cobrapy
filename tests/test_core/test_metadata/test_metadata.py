@@ -7,7 +7,7 @@ import pytest
 
 from cobra import Model
 from cobra.core.metadata import MetaData, Identifier, Qualifier, StandardizedAnnotation
-from cobra.core.metadata.cvterm import (
+from cobra.core.metadata.standardized import (
     StandardizedAnnotationList,
     SimplifiedAnnotationInterface,
 )
