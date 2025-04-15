@@ -201,5 +201,19 @@ def parse_identifiers_uri(uri: str) -> Optional[Tuple[str, str]]:
     return namespace, identifier
 
 
+DEFAULT_QUALIFIERS = {
+    "pubmed": Qualifier.Biological_isDescribedBy,
+    "doi": Qualifier.Biological_isDescribedBy,
+    "ec-code": Qualifier.Biological_isVersionOf,
+    "go": Qualifier.Biological_isVersionOf,
+    "eco": Qualifier.Biological_isDescribedBy,
+    "google.patent": Qualifier.Biological_isDescribedBy,
+    "taxonomy": Qualifier.Biological_hasTaxon,
+    "arxiv": Qualifier.Biological_isDescribedBy,
+    "isbn": Qualifier.Biological_isDescribedBy,
+}
+
+
 def get_default_qualifier(namespace):
-    return Qualifier.Biological_is
+    return DEFAULT_QUALIFIERS.get(str(namespace).lower(), Qualifier.Biological_is)
+    # return Qualifier.Biological_is
