@@ -4,9 +4,9 @@ from collections import OrderedDict
 from datetime import datetime
 from typing import Dict, Iterable, List, Optional, Union
 
-from cobra.core.metadata.identifier import Qualifier
-import cobra.core.metadata.standardized as SA
 import cobra.core.metadata.custom as CA
+import cobra.core.metadata.standardized as SA
+from cobra.core.metadata.identifier import Qualifier
 
 from ..metadata.history import Creator, History
 

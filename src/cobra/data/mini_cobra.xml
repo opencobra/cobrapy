@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<sbml xmlns="http://www.sbml.org/sbml/level3/version1/core" xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" sboTerm="SBO:0000624" level="3" version="1" fbc:required="false">
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" sboTerm="SBO:0000624" level="3" version="2" fbc:required="false">
   <model metaid="meta_mini_textbook" id="mini_textbook" fbc:strict="true">
     <listOfUnitDefinitions>
       <unitDefinition id="mmol_per_gDW_per_hr">
@@ -114,6 +114,7 @@
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/ADP"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/ADP-GROUP"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/58-64-0"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/58-64-0"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:13222"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:16761"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:22244"/>
@@ -151,6 +152,7 @@
                 <rdf:Bag>
                   <rdf:li rdf:resource="http://identifiers.org/bigg.metabolite/atp"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/ATP"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/56-65-5"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/56-65-5"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:10789"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:10841"/>
@@ -190,6 +192,7 @@
                   <rdf:li rdf:resource="http://identifiers.org/bigg.metabolite/dhap"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/DIHYDROXY-ACETONE-PHOSPHATE"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/57-04-5"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/57-04-5"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:14341"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:14342"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:16108"/>
@@ -220,6 +223,7 @@
                 <rdf:Bag>
                   <rdf:li rdf:resource="http://identifiers.org/bigg.metabolite/f6p"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/FRUCTOSE-6P"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/643-13-0"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/643-13-0"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:10375"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:12352"/>
@@ -252,6 +256,7 @@
                   <rdf:li rdf:resource="http://identifiers.org/bigg.metabolite/fdp"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/FRUCTOSE-16-DIPHOSPHATE"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/488-69-7"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/488-69-7"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:10374"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:22767"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:28013"/>
@@ -283,6 +288,7 @@
                 <rdf:Bag>
                   <rdf:li rdf:resource="http://identifiers.org/bigg.metabolite/g3p"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/142-10-9"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/142-10-9"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:14333"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:17138"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:5446"/>
@@ -309,6 +315,7 @@
                   <rdf:li rdf:resource="http://identifiers.org/bigg.metabolite/g6p"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/D-glucose-6-phosphate"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/GLC-6-P"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/56-73-5"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/56-73-5"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:10399"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:12375"/>
@@ -342,6 +349,7 @@
                 <rdf:Bag>
                   <rdf:li rdf:resource="http://identifiers.org/bigg.metabolite/glc__D"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/50-99-7"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/50-99-7"/>
                   <rdf:li rdf:resource="http://identifiers.org/kegg.compound/C00031"/>
                   <rdf:li rdf:resource="http://identifiers.org/pubchem.substance/3333"/>
                 </rdf:Bag>
@@ -360,6 +368,7 @@
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/OH"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/OXONIUM"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/WATER"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/7732-18-5"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/7732-18-5"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:10743"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:13352"/>
@@ -431,6 +440,7 @@
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/OXONIUM"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/WATER"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/7732-18-5"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/7732-18-5"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:10743"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:13352"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:13365"/>
@@ -499,6 +509,7 @@
                   <rdf:li rdf:resource="http://identifiers.org/bigg.metabolite/h"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/PROTON"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/12408-02-5"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/12408-02-5"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:10744"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:13357"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:15378"/>
@@ -541,6 +552,7 @@
                 <rdf:Bag>
                   <rdf:li rdf:resource="http://identifiers.org/bigg.metabolite/h"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/PROTON"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/12408-02-5"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/12408-02-5"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:10744"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:13357"/>
@@ -637,6 +649,7 @@
                   <rdf:li rdf:resource="http://identifiers.org/bigg.metabolite/nad"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/NAD"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/53-84-9"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/53-84-9"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:13389"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:13393"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:13394"/>
@@ -673,6 +686,7 @@
                   <rdf:li rdf:resource="http://identifiers.org/bigg.metabolite/nadh"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/NADH"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/58-68-4"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/58-68-4"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:13395"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:13396"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:16908"/>
@@ -703,6 +717,7 @@
                 <rdf:Bag>
                   <rdf:li rdf:resource="http://identifiers.org/bigg.metabolite/pep"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/PHOSPHO-ENOL-PYRUVATE"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/138-08-9"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/138-08-9"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:14812"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:18021"/>
@@ -735,6 +750,7 @@
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/CPD0-1421"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/PHOSPHATE-GROUP"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/Pi"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/14265-44-2"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/14265-44-2"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:14791"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:18367"/>
@@ -794,6 +810,7 @@
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/PHOSPHATE-GROUP"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/Pi"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/14265-44-2"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/14265-44-2"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:14791"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:18367"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:24838"/>
@@ -850,6 +867,7 @@
                   <rdf:li rdf:resource="http://identifiers.org/bigg.metabolite/pyr"/>
                   <rdf:li rdf:resource="http://identifiers.org/biocyc/PYRUVATE"/>
                   <rdf:li rdf:resource="http://identifiers.org/cas/127-17-3"/>
+                  <rdf:li rdf:resource="http://identifiers.org/cas/127-17-3"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:14987"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:15361"/>
                   <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:26462"/>
@@ -883,7 +901,7 @@
       <parameter sboTerm="SBO:0000625" id="R_EX_glc__D_e_lower_bound" value="-10" units="mmol_per_gDW_per_hr" constant="true"/>
     </listOfParameters>
     <listOfReactions>
-      <reaction metaid="meta_R_ATPM" id="R_ATPM" name="ATP maintenance requirement" reversible="false" fast="false" fbc:lowerFluxBound="R_ATPM_lower_bound" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_ATPM" id="R_ATPM" name="ATP maintenance requirement" reversible="false" fbc:lowerFluxBound="R_ATPM_lower_bound" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_ATPM">
@@ -905,8 +923,8 @@
           <speciesReference species="M_pi_c" stoichiometry="1" constant="true"/>
         </listOfProducts>
       </reaction>
-      <reaction metaid="meta_R_D_LACt2" id="R_D_LACt2" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub"/>
-      <reaction metaid="meta_R_ENO" id="R_ENO" name="enolase" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_D_LACt2" id="R_D_LACt2" reversible="true" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub"/>
+      <reaction metaid="meta_R_ENO" id="R_ENO" name="enolase" reversible="true" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_ENO">
@@ -929,7 +947,7 @@
           <fbc:geneProductRef fbc:geneProduct="G_b2779"/>
         </fbc:geneProductAssociation>
       </reaction>
-      <reaction metaid="meta_R_EX_glc__D_e" sboTerm="SBO:0000627" id="R_EX_glc__D_e" name="D-Glucose exchange" reversible="true" fast="false" fbc:lowerFluxBound="R_EX_glc__D_e_lower_bound" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_EX_glc__D_e" sboTerm="SBO:0000627" id="R_EX_glc__D_e" name="D-Glucose exchange" reversible="true" fbc:lowerFluxBound="R_EX_glc__D_e_lower_bound" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_EX_glc__D_e">
@@ -945,7 +963,7 @@
           <speciesReference species="M_glc__D_e" stoichiometry="1" constant="true"/>
         </listOfReactants>
       </reaction>
-      <reaction metaid="meta_R_EX_h_e" sboTerm="SBO:0000627" id="R_EX_h_e" name="H+ exchange" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_EX_h_e" sboTerm="SBO:0000627" id="R_EX_h_e" name="H+ exchange" reversible="true" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_EX_h_e">
@@ -961,7 +979,7 @@
           <speciesReference species="M_h_e" stoichiometry="1" constant="true"/>
         </listOfReactants>
       </reaction>
-      <reaction metaid="meta_R_EX_lac__D_e" sboTerm="SBO:0000627" id="R_EX_lac__D_e" name="D-lactate exchange" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_EX_lac__D_e" sboTerm="SBO:0000627" id="R_EX_lac__D_e" name="D-lactate exchange" reversible="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_EX_lac__D_e">
@@ -977,7 +995,7 @@
           <speciesReference species="M_lac__D_e" stoichiometry="1" constant="true"/>
         </listOfReactants>
       </reaction>
-      <reaction metaid="meta_R_FBA" id="R_FBA" name="fructose-bisphosphate aldolase" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_FBA" id="R_FBA" name="fructose-bisphosphate aldolase" reversible="true" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_FBA">
@@ -1004,7 +1022,7 @@
           </fbc:or>
         </fbc:geneProductAssociation>
       </reaction>
-      <reaction metaid="meta_R_GAPD" id="R_GAPD" name="glyceraldehyde-3-phosphate dehydrogenase" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_GAPD" id="R_GAPD" name="glyceraldehyde-3-phosphate dehydrogenase" reversible="true" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_GAPD">
@@ -1030,7 +1048,7 @@
           <fbc:geneProductRef fbc:geneProduct="G_b1779"/>
         </fbc:geneProductAssociation>
       </reaction>
-      <reaction metaid="meta_R_GLCpts" id="R_GLCpts" name="D-glucose transport via PEP:Pyr PTS" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_GLCpts" id="R_GLCpts" name="D-glucose transport via PEP:Pyr PTS" reversible="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_GLCpts">
@@ -1074,7 +1092,7 @@
           </fbc:or>
         </fbc:geneProductAssociation>
       </reaction>
-      <reaction metaid="meta_R_H2Ot" id="R_H2Ot" name="R H2O transport via - diffusion" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_H2Ot" id="R_H2Ot" name="R H2O transport via - diffusion" reversible="true" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_H2Ot">
@@ -1099,7 +1117,7 @@
           </fbc:or>
         </fbc:geneProductAssociation>
       </reaction>
-      <reaction metaid="meta_R_LDH_D" sboTerm="SBO:0000375" id="R_LDH_D" name="D-lactate dehydrogenase" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_LDH_D" sboTerm="SBO:0000375" id="R_LDH_D" name="D-lactate dehydrogenase" reversible="true" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_LDH_D">
@@ -1135,7 +1153,7 @@
           </fbc:or>
         </fbc:geneProductAssociation>
       </reaction>
-      <reaction metaid="meta_R_PFK" id="R_PFK" name="phosphofructokinase" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_PFK" id="R_PFK" name="phosphofructokinase" reversible="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_PFK">
@@ -1163,7 +1181,7 @@
           </fbc:or>
         </fbc:geneProductAssociation>
       </reaction>
-      <reaction metaid="meta_R_PGI" id="R_PGI" name="glucose-6-phosphate isomerase" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_PGI" id="R_PGI" name="glucose-6-phosphate isomerase" reversible="true" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_PGI">
@@ -1185,7 +1203,7 @@
           <fbc:geneProductRef fbc:geneProduct="G_b4025"/>
         </fbc:geneProductAssociation>
       </reaction>
-      <reaction metaid="meta_R_PGK" id="R_PGK" name="phosphoglycerate kinase" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_PGK" id="R_PGK" name="phosphoglycerate kinase" reversible="true" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_PGK">
@@ -1209,7 +1227,7 @@
           <fbc:geneProductRef fbc:geneProduct="G_b2926"/>
         </fbc:geneProductAssociation>
       </reaction>
-      <reaction metaid="meta_R_PGM" id="R_PGM" name="phosphoglycerate mutase" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_PGM" id="R_PGM" name="phosphoglycerate mutase" reversible="true" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_PGM">
@@ -1235,7 +1253,7 @@
           </fbc:or>
         </fbc:geneProductAssociation>
       </reaction>
-      <reaction metaid="meta_R_PIt2r" id="R_PIt2r" name="R phosphate reversible transport via - symport" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_PIt2r" id="R_PIt2r" name="R phosphate reversible transport via - symport" reversible="true" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_PIt2r">
@@ -1262,7 +1280,7 @@
           </fbc:or>
         </fbc:geneProductAssociation>
       </reaction>
-      <reaction metaid="meta_R_PYK" id="R_PYK" name="pyruvate kinase" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_PYK" id="R_PYK" name="pyruvate kinase" reversible="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_PYK">
@@ -1290,7 +1308,7 @@
           </fbc:or>
         </fbc:geneProductAssociation>
       </reaction>
-      <reaction metaid="meta_R_TPI" id="R_TPI" name="triose-phosphate isomerase" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+      <reaction metaid="meta_R_TPI" id="R_TPI" name="triose-phosphate isomerase" reversible="true" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
         <annotation>
           <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
             <rdf:Description rdf:about="#meta_R_TPI">
@@ -1333,8 +1351,8 @@
             <rdf:Description rdf:about="#meta_G_b1676">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/1208453"/>
-                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/1652654"/>
+                  <rdf:li rdf:resource="https://identifiers.org/ncbiprotein/1208453"/>
+                  <rdf:li rdf:resource="https://identifiers.org/ncbiprotein/1652654"/>
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -1359,7 +1377,7 @@
             <rdf:Description rdf:about="#meta_G_b2779">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/1653839"/>
+                  <rdf:li rdf:resource="https://identifiers.org/ncbiprotein/1653839"/>
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -1373,7 +1391,7 @@
             <rdf:Description rdf:about="#meta_G_b2926">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/1653609"/>
+                  <rdf:li rdf:resource="https://identifiers.org/ncbiprotein/1653609"/>
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -1389,8 +1407,8 @@
             <rdf:Description rdf:about="#meta_G_b3916">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/1006614"/>
-                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/1651919"/>
+                  <rdf:li rdf:resource="https://identifiers.org/ncbiprotein/1006614"/>
+                  <rdf:li rdf:resource="https://identifiers.org/ncbiprotein/1651919"/>
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>
@@ -1404,7 +1422,7 @@
             <rdf:Description rdf:about="#meta_G_b4025">
               <bqbiol:is>
                 <rdf:Bag>
-                  <rdf:li rdf:resource="http://identifiers.org/ncbiprotein/1653253"/>
+                  <rdf:li rdf:resource="https://identifiers.org/ncbiprotein/1653253"/>
                 </rdf:Bag>
               </bqbiol:is>
             </rdf:Description>

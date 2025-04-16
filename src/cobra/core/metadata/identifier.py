@@ -1,4 +1,6 @@
+import logging
 import re
+from enum import Enum
 from typing import (
     Any,
     Dict,
@@ -6,9 +8,6 @@ from typing import (
     Tuple,
     Union,
 )
-
-from enum import Enum
-import logging
 
 
 LOGGER = logging.getLogger(__name__)

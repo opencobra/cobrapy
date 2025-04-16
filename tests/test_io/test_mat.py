@@ -359,13 +359,16 @@ def test_mat_model_wrong_caps(
     }
     actual_met_annotation = mat_wrong_caps_model.metabolites.get_by_id(
         "pyr_c"
-    ).annotation.annotations
+    ).annotation
     expected_met_keys = EXPECTED_MAT_ANNOTATION.keys()
     actual_met_keys = actual_met_annotation.keys()
     assert expected_met_keys == actual_met_keys
     for key in actual_met_keys:
         assert EXPECTED_MAT_ANNOTATION[key] == actual_met_annotation[key]
     for met in mat_model.metabolites.list_attr("id"):
+        print(met)
+        print(mat_wrong_caps_model.metabolites.get_by_id(met).annotation.to_dict())
+        print(mat_model.metabolites.get_by_id(met).annotation.to_dict())
         assert (
             mat_wrong_caps_model.metabolites.get_by_id(met).annotation
             == mat_model.metabolites.get_by_id(met).annotation

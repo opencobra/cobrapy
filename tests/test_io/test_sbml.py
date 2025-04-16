@@ -337,8 +337,8 @@ def test_document_history(tmp_path: Path) -> None:
         "created_date": "2019-10-20T12:34:32Z",
         "modified_dates": ["2019-10-20T12:35:32Z"],
     }
-    annotations = MetaData(history=history)
-    model._sbml = {"annotations": annotations}
+    metadata = MetaData(history=history)
+    model._sbml = {"metadata": metadata}
 
     sbml_path = join(str(tmp_path), "test.xml")
     with open(sbml_path, "w") as f_out:
@@ -352,24 +352,24 @@ def test_document_history(tmp_path: Path) -> None:
         model2 = read_sbml_model(f_in)
 
     print(model2._sbml)
-    print(model2._sbml["annotations"])
-    print(model2._sbml["annotations"].history)
-    print(model2._sbml["annotations"].history.creators)
+    print(model2._sbml["metadata"])
+    print(model2._sbml["metadata"].history)
+    print(model2._sbml["metadata"].history.creators)
 
-    assert "annotations" in model2._sbml
-    assert len(model2._sbml["annotations"].history.creators) == 1
-    c = model2._sbml["annotations"].history.creators[0]
+    assert "metadata" in model2._sbml
+    assert len(model2._sbml["metadata"].history.creators) == 1
+    c = model2._sbml["metadata"].history.creators[0]
     assert c.name == "Max Mustermann"
     assert c.organisation == "Muster University"
     assert c.email == "muster@university.com"
 
     assert (
-        model2._sbml["annotations"].history.created_date.isoformat()
+        model2._sbml["metadata"].history.created_date.isoformat()
         == "2019-10-20T12:34:32+00:00"
     )
-    assert len(model2._sbml["annotations"].history._modified_dates) == 1
+    assert len(model2._sbml["metadata"].history._modified_dates) == 1
     assert (
-        model2._sbml["annotation"].history._modified_dates[0].isoformat()
+        model2._sbml["metadata"].history._modified_dates[0].isoformat()
         == "2019-10-20T12:35:32+00:00"
     )
 
@@ -394,8 +394,8 @@ def test_model_history(tmp_path: Path) -> None:
         "created_date": "2019-10-20T12:34:32Z",
         "modified_dates": ["2019-10-20T12:35:32Z"],
     }
-    model.annotations = MetaData(history=history)
-    assert len(model.annotations.history.creators) == 1
+    model.metadata = MetaData(history=history)
+    assert len(model.metadata.history.creators) == 1
 
     sbml_path = tmp_path / "test.xml"
     with open(sbml_path, "w") as f_out:
@@ -408,19 +408,18 @@ def test_model_history(tmp_path: Path) -> None:
     with open(sbml_path, "r") as f_in:
         model2 = read_sbml_model(f_in)
 
-    assert len(model2.annotations.history.creators) == 1
-    c = model2.annotations.history.creators[0]
+    assert len(model2.metadata.history.creators) == 1
+    c = model2.metadata.history.creators[0]
     assert c.name == "Max Mustermann"
     assert c.organisation == "Muster University"
     assert c.email == "muster@university.com"
 
     assert (
-        model2.annotations.history.created_date.isoformat()
-        == "2019-10-20T12:34:32+00:00"
+        model2.metadata.history.created_date.isoformat() == "2019-10-20T12:34:32+00:00"
     )
-    assert len(model2.annotations.history._modified_dates) == 1
+    assert len(model2.metadata.history._modified_dates) == 1
     assert (
-        model2.annotations.history._modified_dates[0].isoformat()
+        model2.metadata.history._modified_dates[0].isoformat()
         == "2019-10-20T12:35:32+00:00"
     )
 

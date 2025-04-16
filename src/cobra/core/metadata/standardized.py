@@ -2,12 +2,14 @@
 
 import re
 from collections import UserList
-from collections.abc import Iterable as ABCIterable, KeysView, MutableMapping
+from collections.abc import Iterable as ABCIterable
+from collections.abc import KeysView, MutableMapping
 from typing import (
     Any,
     Callable,
     Dict,
     FrozenSet,
+    Generator,
     Iterable,
     List,
     Optional,
@@ -16,9 +18,8 @@ from typing import (
     Union,
 )
 
+from cobra.core.metadata import Identifier, Qualifier
 from cobra.core.metadata.identifier import get_default_qualifier
-
-from cobra.core.metadata import Identifier, Qualifier, Identifier
 from cobra.core.metadata.metadata import MetaData
 
 
@@ -1049,6 +1050,7 @@ class SimplifiedAnnotationInterface(MutableMapping):
             Union[
                 Dict,
                 str,
+                "SimplifiedAnnotationInterface",
                 Tuple[str, str],
                 List[Union[str, Identifier, Tuple[str, str]]],
             ]
@@ -1056,6 +1058,9 @@ class SimplifiedAnnotationInterface(MutableMapping):
     ) -> None:
         if data is None:
             data = []
+
+        if isinstance(data, SimplifiedAnnotationInterface):
+            data = data.to_dict()
 
         if isinstance(data, dict):
             data = list(data.items())
@@ -1107,6 +1112,14 @@ class SimplifiedAnnotationInterface(MutableMapping):
             )
             ann.add_identifiers(identifiers)
 
+    @property
+    def sbo(self):
+        return self._metadata.sbo
+
+    @sbo.setter
+    def sbo(self, value):
+        self._metadata.sbo = value
+
     def __getitem__(self, key: str) -> Optional[List[str]]:
         if not isinstance(key, str):
             raise TypeError("Index should be of type str.")
@@ -1114,15 +1127,16 @@ class SimplifiedAnnotationInterface(MutableMapping):
         if key == "sbo":
             return [self._metadata.sbo]
 
-        qual = get_default_qualifier(key)
-        ann = self._metadata.standardized._find_first_by_qualifier(qual)
-        if ann is None:
+        results = []
+        for ann in self._metadata.standardized:
+            for idf in ann.identifiers:
+                if (v := idf.identifier) is not None and idf.namespace == key:
+                    results.append(v)
+
+        if results:
+            return list(sorted(set(results)))
+        else:
             return None
-        return [
-            v
-            for idf in ann.identifiers
-            if (v := idf.identifier) is not None and idf.namespace == key
-        ]
 
     def __delitem__(self, key: str) -> None:
         if not isinstance(key, str):
@@ -1134,18 +1148,14 @@ class SimplifiedAnnotationInterface(MutableMapping):
             self._metadata.sbo = ""
             return
 
-        qual = get_default_qualifier(key)
-        ann = self._metadata.standardized._find_first_by_qualifier(qual)
-        if ann is None:
-            raise IndexError(
-                f"Could not find annotations for f'{key}' (qualifier '{qual}')"
-            )
-
-        for idf in list(ann.identifiers):
-            if idf.namespace is None:
-                continue
-            if idf.namespace == key:
-                idf.remove_from_parent()
+        deleted_any = False
+        for ann in self._metadata.standardized:
+            for idf in list(ann.identifiers):
+                if idf.namespace is not None and idf.namespace == key:
+                    idf.remove_from_parent()
+                    deleted_any = True
+        if not deleted_any:
+            raise IndexError(f"Could not find annotations for f'{key}')")
 
     def __setitem__(self, key: str, value) -> None:
         if not isinstance(key, str):
@@ -1167,44 +1177,39 @@ class SimplifiedAnnotationInterface(MutableMapping):
             other_dict = other.to_dict()
         return self_dict == other_dict
 
-    def items(self):
-        visited_qualifiers = set()
+    def objects(self) -> Generator[Tuple[str, List[Identifier]], None, None]:
         visited_namespaces = set("sbo")
-        for entry in self._metadata.standardized.data:
-            qualifier = entry.qualifier
-            # Only the first occurence of each qualifier is handled in simplified
-            # annotations.
-            if qualifier in visited_qualifiers:
-                continue
-            visited_qualifiers.add(qualifier)
-
-            identifiers = True
-            while identifiers:
-                identifiers = []
-                current_namespace = None
+        while True:
+            current_namespace = None
+            identifiers = []
+            for entry in self._metadata.standardized:
                 for identifier in entry.identifiers:
                     if identifier.namespace is None:
                         continue
                     if identifier.namespace in visited_namespaces:
                         continue
                     if current_namespace is None:
-                        if qualifier == get_default_qualifier(identifier.namespace):
-                            current_namespace = identifier.namespace
-                            identifiers.append(identifier)
+                        current_namespace = identifier.namespace
+                        identifiers.append(identifier)
                     else:
                         if identifier.namespace == current_namespace:
                             identifiers.append(identifier)
-                if current_namespace is not None:
-                    visited_namespaces.add(current_namespace)
-                if identifiers:
-                    yield (current_namespace, identifiers)
-                else:
-                    break
+            if current_namespace is not None:
+                visited_namespaces.add(current_namespace)
+            identifiers = list(sorted(set(identifiers), key=lambda x: x.identifier))
+            if identifiers:
+                yield (current_namespace, identifiers)
+            else:
+                break
         if sbo_term := self._metadata.sbo:
-            yield ("sbo", [sbo_term])
+            yield ("sbo", [Identifier.from_data(("sbo", sbo_term))])
+
+    def items(self):
+        for k, v in self.objects():
+            yield (k, [x.identifier for x in v])
 
     def __iter__(self):
-        for k, _ in self.items():
+        for k, _ in self.objects():
             yield k
 
     def keys(self):
@@ -1234,10 +1239,11 @@ class SimplifiedAnnotationInterface(MutableMapping):
         return sum(1 for _ in self)
 
     def delete_annotation(self, value):
-        for entry in self.identifiers():
-            if entry.identifier == value:
-                entry.remove_from_parent()
-                return
+        for _, entries in self.objects():
+            for entry in entries:
+                if entry.identifier == value:
+                    entry.remove_from_parent()
+                    return
         raise ValueError(f"No annotation found for '{value}'")
 
     def to_dict(self):

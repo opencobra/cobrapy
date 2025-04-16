@@ -19,11 +19,19 @@ def json_schema_v1() -> Dict[str, Union[str, bool, Any]]:
     return schema_v1
 
 
+@pytest.fixture(scope="module")
+def json_schema_v2() -> Dict[str, Union[str, bool, Any]]:
+    """Fixture for cobra JSON-schema."""
+    with files(cio).joinpath("schema_v2.json").open("r") as handle:
+        schema_v2 = json.load(handle)
+    return schema_v2
+
+
 def test_validate_json(cobra_data_directory: Path) -> None:
     """Validate file according to JSON-schema."""
 
     errors = cio.validate_json_model(
-        cobra_data_directory.joinpath("mini.json"), json_schema_version=1
+        cobra_data_directory.joinpath("mini.json"), json_schema_version=2
     )
     assert next(iter(errors), None) is None
 
@@ -49,19 +57,19 @@ def test_save_json_model(
     output_file = tmp_path.joinpath("mini.json")
     cio.save_json_model(mini_model, output_file, pretty=True)
     # validate against JSONSchema
-    errors = cio.validate_json_model(output_file, json_schema_version=1)
+    errors = cio.validate_json_model(output_file, json_schema_version=2)
     assert next(iter(errors), None) is None
     output_file.unlink()
     cio.save_json_model(mini_model, str(output_file), pretty=True)
     # validate against JSONSchema
-    errors = cio.validate_json_model(output_file, json_schema_version=1)
+    errors = cio.validate_json_model(output_file, json_schema_version=2)
     assert next(iter(errors), None) is None
     output_file.unlink()
     with output_file.open("w+") as json_outfile:
         cio.save_json_model(mini_model, json_outfile, pretty=True)
         # validate against JSONSchema
         json_outfile.seek(0, 0)
-        errors = cio.validate_json_model(json_outfile, json_schema_version=1)
+        errors = cio.validate_json_model(json_outfile, json_schema_version=2)
         assert next(iter(errors), None) is None
 
 

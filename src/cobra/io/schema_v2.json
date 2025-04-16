@@ -3,28 +3,28 @@
   "title": "COBRA",
   "description": "JSON representation of COBRA model",
   "definitions": {
-    "annotation": {
+    "metadata": {
       "type": "object",
       "properties": {
         "sbo": {
           "type": "string"
         },
-        "cvterms": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "resources": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "nested_data": {
-                  "$ref": "#/definitions/annotation"
+        "standardized": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "qualifiers": {
+                "type": "string"
+              },
+              "identifiers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
                 }
+              },
+              "annotations": {
+                "$ref": "#/definitions/metadata/standardized"
               }
             }
           }
@@ -47,9 +47,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "name",
-                ],
+                "required": ["name"],
                 "additionalProperties": false
               }
             },
@@ -65,11 +63,7 @@
               }
             }
           },
-          "required": [
-            "creators",
-            "created_date",
-            "modified_dates"
-          ],
+          "required": ["creators", "created_date", "modified_dates"],
           "additionalProperties": false
         },
         "listofkeyvalue": {
@@ -94,9 +88,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "key"
-            ],
+            "required": ["key"],
             "additionalProperties": false
           }
         }
@@ -155,8 +147,8 @@
           "notes": {
             "type": "string"
           },
-          "annotation": {
-            "$ref": "#/definitions/annotation"
+          "metadata": {
+            "$ref": "#/definitions/metadata"
           }
         },
         "required": [
@@ -199,15 +191,11 @@
           "notes": {
             "type": "string"
           },
-          "annotation": {
-            "$ref": "#/definitions/annotation"
+          "metadata": {
+            "$ref": "#/definitions/metadata"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "compartment"
-        ],
+        "required": ["id", "name", "compartment"],
         "additionalProperties": false
       }
     },
@@ -226,14 +214,11 @@
           "notes": {
             "type": "string"
           },
-          "annotation": {
-            "$ref": "#/definitions/annotation"
+          "metadata": {
+            "$ref": "#/definitions/metadata"
           }
         },
-        "required": [
-          "id",
-          "name"
-        ],
+        "required": ["id", "name"],
         "additionalProperties": false
       }
     },
@@ -260,8 +245,8 @@
           "notes": {
             "type": "string"
           },
-          "annotation": {
-            "$ref": "#/definitions/annotation"
+          "metadata": {
+            "$ref": "#/definitions/metadata"
           },
           "kind": {
             "type": "string",
@@ -330,8 +315,8 @@
                 "notes": {
                   "type": "string"
                 },
-                "annotation": {
-                  "$ref": "#/definitions/annotation"
+                "metadata": {
+                  "$ref": "#/definitions/metadata"
                 }
               },
               "required": ["variable"],
@@ -341,8 +326,8 @@
           "notes": {
             "type": "string"
           },
-          "annotation": {
-            "$ref": "#/definitions/annotation"
+          "metadata": {
+            "$ref": "#/definitions/metadata"
           }
         },
         "required": ["lower_bound", "upper_bound", "constraint_comps"],
@@ -352,15 +337,10 @@
     "notes": {
       "type": "string"
     },
-    "annotation": {
-      "$ref": "#/definitions/annotation"
+    "metadata": {
+      "$ref": "#/definitions/metadata"
     }
   },
-  "required": [
-    "id",
-    "reactions",
-    "metabolites",
-    "genes"
-  ],
+  "required": ["id", "reactions", "metabolites", "genes"],
   "additionalProperties": true
 }

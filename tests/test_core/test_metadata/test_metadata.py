@@ -6,10 +6,10 @@ from pathlib import Path
 import pytest
 
 from cobra import Model
-from cobra.core.metadata import MetaData, Identifier, Qualifier, StandardizedAnnotation
+from cobra.core.metadata import Identifier, MetaData, Qualifier, StandardizedAnnotation
 from cobra.core.metadata.standardized import (
-    StandardizedAnnotationList,
     SimplifiedAnnotationInterface,
+    StandardizedAnnotationList,
 )
 from cobra.core.species import Species
 from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
@@ -108,7 +108,7 @@ def test_annotation() -> None:
     }
 
     # checking old (fixed) annotation format
-    assert s.annotation == {"chebi": ["CHEBI:43215", "CHEBI:11881"]}
+    assert s.annotation == {"chebi": list(sorted(["CHEBI:43215", "CHEBI:11881"]))}
 
     # checking new standardized
     cvt = StandardizedAnnotationList(
@@ -140,7 +140,7 @@ def test_annotation() -> None:
     }
 
     # checking old (fixed) annotation format
-    assert s.annotation == {"chebi": ["CHEBI:43215", "CHEBI:11881"]}
+    assert s.annotation == {"chebi": list(sorted(["CHEBI:43215", "CHEBI:11881"]))}
 
     cvt[0].remove_from_parent()
     assert s.metadata.standardized == []
@@ -203,9 +203,6 @@ def test_old_style_annotation() -> None:
             "eco": ["123"],
         }
     )
-    print("$Comp")
-    print(s.metadata.standardized)
-    print(ref_ann.standardized)
     assert s.metadata == ref_ann
 
     s.annotation.delete_annotation("CHEBI:172345")

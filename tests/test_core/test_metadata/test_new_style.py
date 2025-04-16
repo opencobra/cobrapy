@@ -177,7 +177,6 @@ def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
         },
     ]
     assert model.metadata.standardized == ann_dict
-    assert 1 == 0
     # Because of changes to eq, to compare using the old format,
     # we need annotation.annotations
     # TODO: get comments from cdiener

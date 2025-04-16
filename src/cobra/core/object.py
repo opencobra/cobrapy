@@ -1,13 +1,14 @@
 """Define base Object class in Cobra."""
 
-from typing import TYPE_CHECKING, Iterable, Optional, Union, Tuple
+from typing import TYPE_CHECKING, Iterable, Optional, Tuple, Union
+
 
 if TYPE_CHECKING:
     from cobra.core.metadata import (
         CustomAnnotation,
+        Identifier,
         MetaData,
         StandardizedAnnotation,
-        Identifier,
     )
     from cobra.core.metadata.standardized import SimplifiedAnnotationInterface
 
@@ -149,9 +150,9 @@ class Object:
     ):
         from cobra.core.metadata import (
             CustomAnnotation,
+            Identifier,
             MetaData,
             StandardizedAnnotation,
-            Identifier,
         )
 
         if isinstance(
