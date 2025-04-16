@@ -1,4 +1,10 @@
-"""Define the Controlled Vocabulary term class."""
+"""Classes to handle standardized annotations and legacy dict-like annotations.
+
+Standardized annotations enable users to associate MIRIAM-compliant annotations to model
+components. They correspond to Controlled Vocabulary terms (CV terms), as described in
+the SBML level 3 version 2 Core specification:
+https://identifiers.org/combine.specifications:sbml.level-3.version-2.core.release-2
+"""
 
 import re
 from collections import UserList
@@ -24,74 +30,43 @@ from cobra.core.metadata.metadata import MetaData
 
 
 class StandardizedAnnotation:
-    """CVTerm class, representing controlled vocabulary.
+    """Standardized annotation entry that defines a relation to MIRIAM identifiers.
 
-    Controlled Vocabulary (CVTerm) can be defined as a curated and controlled
-    relationship, described by a Qualifier (see above) - the relationship between an
-    object and annotation must be part of the Qualifier class. These relationships
-    are based in biochemical or biological relationships. The qualifiers/relationships
-    are divided into bqbiol/bqb (biological qualification) and bqmodel/bqm (model
-    qualifications). See two examples:
-    "bqb_is" The biological entity represented by the SBML component is the subject
-    of the referenced resource. This could serve to link a reaction to its counterpart
-    in (e.g.) the ChEBI or Reactome databases.
-    "bqm_is" The modeling object encoded by the SBML component is the subject of
-    the referenced resource. This might be used, e.g., to link the model
-    to an entry in a model database.
+    `StandardizedAnnotation` can be used to annotate cobra objects in a structural and
+    standardized manner. This improves interoperability with other tools and neatly
+    structures annotations. Therefore, standardized annotations should be preferred over
+    custom annotations (`CustomAnnotation), whenever possible.
+
+    A StandardizedAnnotation object defines a set of MIRIAM (identifiers.org)
+    identifiers and their relation to a modelling object. Relations are defined using
+    the `Qualifier` enum, which defines a predefined set of qualifiers that either
+    relate to the modelling object (e.g. `Qualifier.Modelling_is`) or relate to the
+    biological object represented by the modelling object (e.g.
+    `Qualifier.Biological_is`).
+
+    For example, the a cobra reaction representing a
+    cytosolic transketolase reaction in Homo sapiens can be annotated with the
+    identifier "https://identifiers.org/reactome/R-HSA-163751" using the qualifier
+    `Qualifier.Biological_is`, since the reactome entry R-HSA-163751 represents the
+    biological reaction entity which is represented by the reaction object. Similarly,
+    the RHEA identifier "https://identifiers.org/rhea/RHEA:27628" can be added to the
+    same `StandardizedAnnotation` object, since it relates to the same information about
+    the cobra reaction and `Qualifier.Biological_is` is also applicable. The EC code
+    ("https://identifiers.org/ec-code/2.2.1.1") for the same reaction should however be
+    annotated using the `Biological_isVersionOf` qualifier, since the reaction can be
+    seen as a version of the enzymatic acivity represented by EC 2.2.1.1. Optionally, a
+    standardized annotation object can have nested annotations. In the transketolase
+    example, this could include a StandardizedAnnotation object with the qualifier
+    `Qualifier.Biological_isDescribedBy` and the identifier
+    "https://identifiers.org/pubmed/9357955". This nested annotation adds additional
+    information to the parent annotation, without changing its meaning.
+
     See `Biomodels Qualifiers
     <https://co.mbine.org/author/biomodels.net-qualifiers/>`_
     For a definition of all qualifiers, see `SBML Level 3, Version 2 Core, p 104
     <https://identifiers.org/combine.specifications:sbml.level-3.version-2.core.release-2>`_
-
-    The annotation will have one or more URI, which are encapsulated in
-    ExternalResources class (see below).
-
-    Each CVTerm has only ONE qualifier, and can have many URI in the resources. If
-    you need to use another qualifier, it can be nested data (if relevant), or it
-    should be in another CVTerm.
-    If an object has multiple CVTerms, they are placed in a CVTermList (see below).
-
-    This is how a CVTerm object looks :
-    CVTerm.qualifier = "bqb_is"
-    CVTerm.ex_res =
-        {"resources": [
-                    "resource_uri",
-                    ...
-                ],
-                "nested_data":CVTermList Object
-        }
-
-    Examples of how CVTerms can be used
-
-    Model examples (Each of these is a separate CVTerm)
-    qualifier=bqm_is
-    resources=["https://identifiers.org/biomodels.db/BIOMD0000000003"]
-            A model identifier
-    qualifier=bqm_isDescribed_by
-    resources=["https://identifiers.org/pubmed/1833774"]
-            A published article detailing the model
-    qualifier=bqm_isVersionOf
-    resources=["https://identifiers.org/wikipathways/WP179",
-                "https://identifiers.org/reactome/REACT_152"/]
-            Two links to what this model is a version of (in this case, cell cycle).
-
-    Reaction examples
-    qualifier=bqb_is
-    resources=["https://identifiers.org/reactome/REACT_6327"/]
-        A link to a reaction database that details reactions.
-    qualifier=bqb_hasPart
-    resources=["http://identifiers.org/uniprot/P04551",
-                http://identifiers.org/uniprot/P10815"]
-             resources.nested_date = {
-                    qualifier=bqb_isDescribedby
-                    resources=["https://identifiers.org/pubmed/1111111"]
-        Two proteins that form part of the same complex. The nested data links to an
-        article describing the formation of the complex.
-        It is nested data because it is relevant to the hasPart CVTerm, but uses a
-        different qualifier.
     """
 
-    # TODO: Update
     def __init__(
         self,
         identifiers: Optional[
@@ -100,22 +75,23 @@ class StandardizedAnnotation:
         qualifier: Union[Qualifier, str] = Qualifier.Biological_is,
         annotations: Optional[Iterable["StandardizedAnnotation"]] = None,
     ):
-        """Initialize a CVTerm.
+        """Initialize a standardized annotation.
 
         Parameters
         ----------
-        identifiers: Identifier or str or list
-            The identifiers (URI format).
+        identifiers: Identifier, str, list or None, optional
+            The identifiers as `Identifier` objects or strings (URI format:
+            https://identifiers.org/<namespace>/<id>). Default None.
         qualifier: Qualifier or str
-            The qualifier for the relationship.
-        annotations: list
-            List of StandardizedAnnotation objects that should be nested in this object.
+            The qualifier for the relationship. Default `Qualifier.Biological_is`.
+        annotations: list or None, optional
+            List of StandardizedAnnotation objects that represent addional (nested)
+            annotations of this object.
         """
         self._identifiers = self.check_identifier_type(identifiers)
         self._qualifier = self.check_qualifier_type(qualifier)
-        self._annotations = self.check_annotation_type(annotations)
+        self._annotations = StandardizedAnnotationList.from_data(annotations)
         self._parent = None
-        # TODO: Keep track of target Object, so we can do annotation.remove
 
     def _set_parent(self, parent):
         if self._parent is None or self._parent is parent:
@@ -126,7 +102,17 @@ class StandardizedAnnotation:
                 "annotation if you would like to add an annotation to a second object."
             )
 
-    def remove_from_parent(self):
+    def remove_from_parent(self) -> None:
+        """Remove annotation from parent (`StandardizedAnnotationList`).
+
+        Raises
+        ------
+        ValueError if there is no known parent object.
+
+        See Also
+        --------
+        StandardizedAnnotationList.remove
+        """
         if self._parent is None:
             raise ValueError(
                 "Cannot remove annotation, since no object is associated with annotation."
@@ -139,7 +125,7 @@ class StandardizedAnnotation:
 
     @property
     def qualifier(self) -> Qualifier:
-        """Get qualifier for CVTerm.
+        """Get the qualifier.
 
         Returns
         -------
@@ -149,46 +135,55 @@ class StandardizedAnnotation:
 
     @qualifier.setter
     def qualifier(self, qualifier: Union[str, Qualifier]) -> None:
-        """Set Qualifier.
+        """Set the qualifier.
 
         Parameters
         ----------
-        qualifier - str, int or Qualifier
-            Is converted to the Qualifier class.
+        qualifier: str or Qualifier
 
         See Also
         --------
-        CVTerm.check_qualifier_type()
+        StandardizedAnnotation.check_qualifier_type()
         """
         self._qualifier = self.check_qualifier_type(qualifier)
 
     @property
     def identifiers(self) -> List["Identifier"]:
-        """Get external identifiers.
+        """Get the list of identifiers.
 
         Returns
         -------
-        ExternalResources
+        list of Identifier objects
         """
         return self._identifiers
 
     @identifiers.setter
     def identifiers(self, identifiers: Iterable[Union[str, "Identifier"]]) -> None:
-        """Set external resources.
+        """Set the identifiers.
 
         Parameters
         ----------
-        identifiers - list of str or Identifier
+        identifiers: list of str or Identifier
 
         See Also
         --------
-        CVTerm.check_identifier_type()
+        StandardizedAnnotation.check_identifier_type()
         """
+        if getattr(self, "_identifiers", None) is not None:
+            for idf in self._identifiers:
+                idf._set_parent(None)
         self._identifiers = self.check_identifier_type(identifiers)
         for idf in self._identifiers:
             idf._set_parent(self)
 
     def add_identifiers(self, identifiers: Iterable[Union[str, "Identifier"]]) -> None:
+        """Add identifiers to the standardized annotation.
+
+        Parameters
+        ----------
+        identifiers: list of str or Identifier objects
+            List of identifiers to append to the existing ones.
+        """
         identifiers = self.check_identifier_type(identifiers)
         for idf in identifiers:
             idf._set_parent(self)
@@ -196,6 +191,16 @@ class StandardizedAnnotation:
 
     @property
     def uris(self) -> FrozenSet[str]:
+        """Get the set of URIs represented by the identifiers of this annotation.
+
+        Returns
+        -------
+        Set of URIs
+
+        See Also
+        --------
+        Identifier.uri
+        """
         l = {entry.uri for entry in self.identifiers}
         for entry in self.annotations:
             l.update(entry.uris)
@@ -218,25 +223,9 @@ class StandardizedAnnotation:
         Parameters
         ----------
         annotations - list of StandardizedAnnotation objects.
-
-        See Also
-        --------
-        StandardizedAnnotation.check_annotation_type()
         """
-        self._annotations = self.check_annotation_type(annotations)
+        self._annotations = StandardizedAnnotationList.from_data(annotations)
 
-    # @property
-    # def resources(self) -> FrozenSet:
-    #     """Get all resources.
-    #
-    #     Returns:
-    #     -------
-    #     FrozenSet:
-    #         a set of all resources in the CVTerm as a set of strings
-    #         including external resources of nested data as strings
-    #     """
-    #     return self.external_resources.resource_nested
-    #
     @staticmethod
     def check_identifier_type(
         identifiers: Optional[
@@ -249,30 +238,24 @@ class StandardizedAnnotation:
             ]
         ],
     ) -> List["Identifier"]:
-        """Check and parse input to ExternalResources.
+        """Check and parse identifiers.
 
         Parameters
         ----------
-        ex_res: ExternalResources or dict or str, optional
-            Input data to check if it is or can be transformed to ExternalResources
-            class. String must start with http:// or https:// to be acceptable.
-            Dictionary must match the format required by from_dict.
-            If None is given, an empty ExternalResources is returned.
+        identifiers: Identifier, str, dict, tuple, or list thereof, optional
+            Input data to check if it is or can be transformed to Identifier objects.
+            String must start with http:// or https:// to be acceptable.
+            Dictionary must match the format required by from_data.
+            If None is given, an empty StandardizedAnnotation object is returned.
             No parsing of identifiers/URIs is done, perhaps in future versions.
 
         Returns
         -------
-        ExternalResources
-
-        Raises
-        ------
-        TypeError
-            If given anything other than None, str, dict or ExternalResources.
-            Will raise this error if given a string that does not start with http(s)://
+        list of Identifier objects
 
         See Also
         --------
-        ExternalResources.from_dict()
+        Identifier.from_dict
         """
         # TODO: Fix doc
         if identifiers is None:
@@ -321,42 +304,16 @@ class StandardizedAnnotation:
                 f"str member of the Qualifier enum {type(qual)}, {qual}"
             )
 
-    @staticmethod
-    def check_annotation_type(
-        ann: Optional[
-            Union["StandardizedAnnotation", Iterable["StandardizedAnnotation"]]
-        ],
-    ) -> "StandardizedAnnotationList":
-        return StandardizedAnnotationList.from_data(ann)
-        #
-        # if ann is None:
-        #     return StandardizedAnnotationList.from_data(None)
-        # elif isinstance(ann, StandardizedAnnotation):
-        #     return [ann]
-        # elif isinstance(ann, ABCIterable):
-        #     return [x for y in ann for x in __class__.check_annotation_type(y)]
-        # else:
-        # raise TypeError(
-        #     f"Allowed types for nested StandardizedAnnotation annotations"
-        #     f"are StandardizedAnnotation or a list of StandardizedAnnotation"
-        #     f"objects, not {type(ann)}: ann"
-        # )
-        #
-
     def to_dict(self) -> Dict:
-        """Represent a CVTerm object in python dict.
+        """Convert annotation to a python dict.
 
         Returns
         -------
         dict:
-            A dict that has two keys
+            A dict that has up to three keys
             "qualifier" - the qualifier as a string
-            "external_resources" - the resources as a dictionary
-
-        See Also
-        --------
-        ExternalResources.to_dict()
-
+            "identifiers" - the identifiers as list
+            "annotations" (optionally) - the nested annotations as a list
         """
         d = {
             "qualifier": self.qualifier.value,
@@ -367,16 +324,47 @@ class StandardizedAnnotation:
         return d
 
     def to_tuples(self) -> List[Tuple[str, str]]:
-        return [(idf.namespace, idf.identifier) for idf in self.identifiers]
+        """Convert the annotation to a list of tuples of namespace-identifier pairs.
+
+        This does not contain the qualifier or nested annotations.
+
+        Returns
+        -------
+        List of namespace-identifier pairs as tuples
+        """
+        return [
+            (idf.namespace, idf.identifier)
+            for idf in self.identifiers
+            if idf.namespace is not None and idf.identifier is not None
+        ]
 
     def to_records(self) -> List[Dict[str, Any]]:
-        l, _ = self._to_records()
-        return l
+        """Convert the annotation to a list of dictionaries that represent identifiers.
+
+        Each entry in the list represents an identifiers associated with this object,
+        either directly or as nested annotation. The resulting list is thus a flattened
+        representation of all identifiers. The hierarchical information is included
+        using the "annotation_group" and "parent_group" entries in the dictionaries.
+        Each annotation group represents a single StandardizedAnnotation object (without
+        its nested annotations). If an identifier is found in a nested annotation, the
+        "parent_group" value will be set to the "annotation_group" value of its parent
+        StandardizedAnnotation object.
+
+        Returns
+        -------
+        List of dictionaries representing Identifier records
+
+        See Also
+        --------
+        StandardizedAnnotationList.to_records
+        """
+        records, _ = self._to_records()
+        return records
 
     def _to_records(
         self, group_counter: int = 1, parent_group: int = 0
     ) -> Tuple[List[Dict[str, Any]], int]:
-        l = []
+        records = []
         for identifier in self.identifiers:
             entry = {
                 "qualifier": self.qualifier.value,
@@ -386,35 +374,36 @@ class StandardizedAnnotation:
                 "annotation_group": group_counter,
                 "parent_group": parent_group,
             }
-            l.append(entry)
+            records.append(entry)
         if self.annotations:
-            new_l, group_counter = self.annotations._to_records(
+            new_records, group_counter = self.annotations._to_records(
                 group_counter=(group_counter + 1), parent_group=group_counter
             )
-            l.extend(new_l)
+            records.extend(new_records)
         else:
             group_counter = group_counter + 1
-        return l, group_counter
+        return records, group_counter
 
     @classmethod
     def from_dict(cls, data_dict: Dict) -> "StandardizedAnnotation":
-        """Generate a CVTerm object based on a python dict.
+        """Generate a StandardizedAnnotation object from a python dict.
 
         Parameters
         ----------
         data_dict: dict
-            A dict that has two keys
+            A dict that has up to three keys
             "qualifier" - the qualifier as a string, optional. If not present, the
-            qualifier is set to bqb_is.
-            "external_resources" - the resources as a dictionary, optional
+            qualifier is set to `Qualifier.Biological_is`.
+            "identifiers" - the identifiers as a list of strings, optional.
+            "annotations" - the nested annotations as a list of dicts, optional.
 
         Returns
         -------
-        CVTerm
+        StandardizedAnnotation
 
         See Also
         --------
-        ExternalResources.to_dict()
+        to_dict
 
         """
         return cls(
@@ -424,26 +413,26 @@ class StandardizedAnnotation:
         )
 
     def __eq__(self, other: Any) -> bool:
-        """Compare two CVTerm objects and return boolean for equality.
+        """Compare StandardizedAnnotation to another object and determine equality.
 
-        If a dict is given, it is transformed to CVTerm.
-        First, the qualifier is compared. If they are not identical, False is returned.
-        Then the external resources are compared, see ExternalResources.__eq__().
+        If a dict is given, it is transformed to `StandardizedAnnotation` before
+        comparison. Will return False for any other type. The order of the identifiers
+        is ignored.
 
         Parameters
         ----------
-        other: dict or CVTerm
+        other
 
         Returns
         -------
         bool
-            False if other is not CVTerm or dict.
-            False if qualifiers are different, or external resources are different.
-            True if qualifier and external resources are identical.
+            False if other is not StandardizedAnnotation or dict.
+            False if qualifiers, identifiers or nested annotations are different.
+            True otherwise.
 
         See Also
         --------
-        CVTerm.from_dict()
+        StandardizedAnnotation.from_dict()
         """
 
         if isinstance(other, dict):
@@ -462,7 +451,8 @@ class StandardizedAnnotation:
         return False
 
     def __repr__(self) -> str:
-        """Return the StandardizedAnnotation as str with module, class, and code to recreate it.
+        """Return the StandardizedAnnotation as str with module, class, and code to
+        recreate it.
 
         Returns
         -------
@@ -474,7 +464,8 @@ class StandardizedAnnotation:
         )
 
     def _repr_html_(self) -> str:
-        """Return the CVTerm as HTML string with qualifier, resources and address.
+        """Return the StandardizedAnnotation as HTML string with qualifier, resources
+        and address.
 
         Returns
         -------

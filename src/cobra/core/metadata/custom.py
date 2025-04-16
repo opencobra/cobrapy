@@ -1,14 +1,13 @@
-"""Class to deal with Key-Value pairs.
+"""Classes to handle custom annotations.
 
-Key-Value pairs are described in the SBML FBC3 proposal. For the latest
-version of the FBC3 proposal, see Release Candidate 1:
+Custom annotations correspond to key-value pairs, described in the SBML FBC3 proposal.
+For the latest version of the FBC3 proposal, see Release Candidate 1:
 https://github.com/sbmlteam/sbml-specifications/blob/develop/sbml-level-3/version-1/fbc/spec/sbml-fbc-version-3-release-1.pdf
 """
 
 # TODO: Update docstring with final release, when available.
 import uuid
 from collections import UserDict
-from dataclasses import asdict
 from typing import Dict, Iterable, Optional, Union
 
 from ...util import format_long_string
@@ -16,76 +15,144 @@ from .. import object as cobject
 
 
 class CustomAnnotation(cobject.Object):
-    """Single key-value entry.
+    """Custom annotation entry that represents a key-value/URI pair.
 
-    The key is an attribute on the entry.
-
-    Parameters
-    ----------
-    key: str
-        Defined as mandatory in the FBC3 standard.
-    value: str
-        optional. Default None.
-    uri: str
-        Can be a URN or URL. Optional (default None).
+    `CustomAnnotation` object allow users to associate an arbitrary string value and/or
+    URI with a key. This key-value store is meant to supplement the
+    StandardizedAnnotation class, where MIRIAM-compliant annotations can be associated
+    with model components. Whenever possible, `StandardizedAnnotation` objects should be
+    preferred over CustomAnnotation objects, since they enable better interoperability
+    between modelling tools.
     """
 
     def __init__(
         self, key: str, value: Optional[str] = None, uri: Optional[str] = None
     ):
+        """Initialize a `CustomAnnotation` key-value pair object.
+
+         Parameters
+        ----------
+        key: str
+            Mandatory and descriptive string used for accessing the value/URI.
+        value: str, optional
+            Associated value. Default None.
+        uri: str, optional
+            URN or URL that links to the definition of the used key. Default None.
+        """
         super(__class__, self).__init__()
         self._key = key
         self._value = value
         self._uri = uri
         self._parent = None
 
-    def _set_parent(self, parent: Optional["CustomAnnotationList"]) -> None:
+    def _set_parent(self, parent: Optional["CustomAnnotationStore"]) -> None:
         self._parent = parent
 
     def remove_from_object(self):
+        """Remove this CustomAnnotation object from its `CustomAnnotationStore`.
+
+        This method only removes and disassociates this object from its associated
+        `CustomAnnotationStore` (e.g. `component.metadata.custom`), it does not
+        delete the object itself.
+
+        Raises
+        ------
+        ValueError if the object is not associated with a `CustomAnnotationStore`.
+
+        See Also
+        --------
+        CustomAnnotationStore.add
+        Object.add_annotation
+        """
         if self._parent is None:
             raise ValueError(
-                "Cannot remove annotation, since no object is associated with annotation."
+                "Cannot remove annotation since no object is associated with it."
             )
         self._parent.remove(self)
 
-    # We should probably make key read-only, to prevent keys from becoming duplicate in
-    # CustomAnnotationList objects.
     @property
     def key(self) -> str:
+        """Get the key.
+
+        The key is read-only to prevent duplication of keys in `CustomAnnotationStore`
+        objects.
+
+        Returns
+        -------
+        str
+            The key of the `CustomAnnotation` object.
+        """
         return self._key
 
     @property
     def value(self) -> Optional[str]:
+        """Get the value associated to the key.
+
+        Returns
+        -------
+        str or None
+            The value associated with the key, or None if no value was provided.
+        """
         return self._value
 
     @value.setter
     def value(self, value: Optional[str]) -> None:
+        """Set the value associated to the key.
+
+        Parameters
+        ----------
+        value: str or None
+            The value to be associated with the key.
+        """
         self._value = value
 
     @property
     def uri(self) -> Optional[str]:
+        """Get the URI (URN or URL) associated to the key.
+
+        Returns
+        -------
+        str or None
+            The URI associated with the key, or None if no URI was provided.
+        """
         return self._uri
 
     @uri.setter
     def uri(self, uri: Optional[str]) -> None:
+        """Set the URI associated to the key.
+
+        Parameters
+        ----------
+        uri: str or None
+            The URI to be associated with the key.
+        """
         self._uri = uri
 
     @staticmethod
     def from_data(
-        data: Optional[Union[Dict, "CustomAnnotation"]],
+        data: Union[Dict, "CustomAnnotation"],
     ) -> "CustomAnnotation":
-        """Make a KeyValueDict object using the data passed.
+        """Create a `CustomAnnotation` object from data.
 
         Parameters
         ----------
-        data - dict or KeyValueEntry
-            If dict, will use the values of the dictionary to populate a new
-            KeyValueEntry. If None, will return empty KeyValueEntry.
+        data: dict or CustomAnnotation
+            Data to use to create the `CustomAnnotation`object. If data is of type dict,
+            it should contain the key "key" and optionally "value", "uri", "id" and
+            "name". If the data is already a `CustomAnnotation` object, this object will
+            be returned.
 
         Returns
         -------
-        KeyValueEntry
+        CustomAnnotation
+
+        Raises
+        ------
+        TypeError if data is not a dict or CustomAnnotation object.
+
+        See Also
+        --------
+        to_dict
         """
         if isinstance(data, CustomAnnotation):
             return data
@@ -105,6 +172,14 @@ class CustomAnnotation(cobject.Object):
             raise TypeError(f"Invalid format for CustomAnnotation: '{data}'")
 
     def to_dict(self) -> dict:
+        """Create a dictionary with the data of the `CustomAnnotation` object.
+
+        Returns
+        -------
+        dict
+            Dictionary containing all the `CustomAnnotation` data. Dictionary will
+            contain the key "key" and optionally "value", "uri", "id" and "name".
+        """
         return {
             k: v
             for k in ["key", "value", "uri", "id", "name"]
@@ -112,7 +187,7 @@ class CustomAnnotation(cobject.Object):
         }
 
     def __str__(self) -> str:
-        """Get string representation of the KeyValueEntry as dictionary.
+        """Get string representation of the CustomAnnotation as dictionary.
 
         Returns
         -------
@@ -134,62 +209,92 @@ class CustomAnnotation(cobject.Object):
         )
 
 
-class CustomAnnotationList(UserDict):
-    """A UserDict to store KeyValueEntries.
+class CustomAnnotationStore(UserDict):
+    """A dict-like object that stores a collection of `CustomAnnotation` objects.
 
-    Parameters
-    ----------
-    entries : Iterable
-        an iterable containing entry information
+    This store allows users to associate arbitrary string values and/or
+    URIs with keys. This key-value store is meant to supplement the standardized
+    MIRIAM-compliant annotations. Whenever possible, standardized annotations are
+    preferred over custom annotations, since they enable better interoperability
+    between modelling tools.
     """
 
     def __init__(
         self,
         entries: Optional[
-            Union[Iterable[Union[Dict, CustomAnnotation]], "CustomAnnotationList"]
+            Union[Iterable[Union[Dict, CustomAnnotation]], "CustomAnnotationStore"]
         ] = None,
     ):
-        """Initialize the KeyValuePairs dictionary class.
+        """Initialize the dict-like CustomAnnotationStore class.
 
         Parameters
         ----------
-        entries: Iterable
-            An iterable of dictionaries or KeyValueEntry, which will be inputted to the
-            dictionary.
+        entries: None, CustomAnnontationStore or list of CustomAnnotation or dicts,
+        optional
+            Custom annotations to initialize the store with. Default None.
         """
         super().__init__()
         if entries is None:
             return
-        elif isinstance(entries, CustomAnnotationList):
+        elif isinstance(entries, CustomAnnotationStore):
             self.data = entries.data.copy()
         else:
             for item in entries:
                 entry = CustomAnnotation.from_data(item)
                 self.data[entry.key] = entry
 
-    def __setitem__(self, key: str, item: Union[Dict, CustomAnnotation]) -> None:
-        """Set item.
+    def __setitem__(
+        self, key: str, item: Optional[Union[Dict, CustomAnnotation, str]]
+    ) -> None:
+        """Set the value and/or URI associated with the key.
 
         Parameters
         ----------
         key: str
-        item: dictionary or KeyValueEntry
+            Key used to look up value/URI in store.
+        item: dict, str, CustomAnnotation or None
+            Value/URI to associate to key. If item is of type str, this will be
+            interpreted as value. If a dict is provided, this dict can contain any of
+            the keys "value", "uri", "id", "name", "key".
+
+        Raises
+        ------
+        ValueError if the "key" key in the provided dictionary or the key attribute of
+            the CustomAnnotation does not match the key argument.
+
+        See Also
+        --------
+        add
         """
-        entry = CustomAnnotation.from_data(item)
-        self.data[key] = entry
+        if isinstance(item, dict):
+            if "key" in item and item["key"] != key:
+                raise ValueError(
+                    "The key in the annotation dictionary is not equal to the key "
+                    "provided in the index."
+                )
+            # Make sure the key is also provided to the CustomAnnotation class.
+            item = item | {"key": key}
+        elif isinstance(item, CustomAnnotation):
+            if item.key != key:
+                raise ValueError(
+                    "The key in the annotation object is not equal to the key "
+                    "provided in the index."
+                )
+        elif isinstance(item, str):
+            item = {"key": key, "value": item}
+        else:
+            raise TypeError(
+                "CustomAnnotationStore entries should be provided as dict, str "
+                "or CustomAnnotation object."
+            )
+        self.add(item, overwrite=True)
 
     def __str__(self) -> str:
-        """Convert KeyValuePairs to str.
-
-        Parameters
-        ----------
-        self : KeyValuePairs
-            UserDict defining key value pairs
+        """Convert the custom annotation store to str.
 
         Returns
         ------
-        string
-            a string representation of a dictionary
+        str
         """
         return str(self.to_dict())
 
@@ -230,28 +335,62 @@ class CustomAnnotationList(UserDict):
     def add(
         self,
         items: Union[CustomAnnotation, Dict, Iterable[Union[CustomAnnotation, Dict]]],
+        overwrite: bool = False,
     ) -> None:
+        """Add custom annotations to the store.
+
+        Parameters
+        ----------
+        items: dict, CustomAnnotation or a list of dict or CustomAnnotation objects
+            Custom annotation items to add to the store. CustomAnnotation objects can
+            either be provided directly, or as a dictionary.
+        overwrite: bool, optional
+            Whether to overwrite an existing custom annotation with the same key.
+            Default False.
+
+        Raises
+        ------
+        IndexError if overwrite is False and the key of a custom annotation already
+            exists in the store.
+        """
         if isinstance(items, CustomAnnotation):
             items = [items]
         elif isinstance(items, dict):
             items = [CustomAnnotation.from_data(items)]
         for item in items:
             item = CustomAnnotation.from_data(item)
+            if not overwrite and item.key in self.data:
+                raise IndexError(f"Key '{item.key}' already exists in store.")
             self.data[item.key] = item
 
     def remove(
         self,
         items: Union[CustomAnnotation, str, Iterable[Union[CustomAnnotation, str]]],
     ) -> None:
-        if isinstance(items, CustomAnnotation):
-            items = [items.key]
-        elif isinstance(items, str):
+        """Remove a custom annotation from the store.
+
+        Parameters
+        ----------
+        items: str, CustomAnnotation or a list of str or CustomAnnotation objects
+            Remove the proved CustomAnnotation objects from the store. If str objects
+            are provided, they are interpreted as keys of the annotations to remove.
+
+        Raises
+        ------
+        ValueError if a provided CustomAnnotation object is not present in the store.
+        """
+        if isinstance(items, (str, CustomAnnotation)):
             items = [items]
 
         for item in items:
             if isinstance(item, CustomAnnotation):
-                item = item.key
-            # If CustomAnnotation object is removed from CustomAnnotationList, it will
+                ann = self.data[item.key]
+                if ann is not item:
+                    raise ValueError(
+                        "Provided custom annotation does not match the "
+                        "custom annotation in the store."
+                    )
+            # If CustomAnnotation object is removed from CustomAnnotationStore, it will
             # also not belong to the parent object anymore.
             self.data[item]._set_parent(None)
             del self.data[item]
