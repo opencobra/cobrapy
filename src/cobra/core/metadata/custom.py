@@ -390,6 +390,7 @@ class CustomAnnotationStore(UserDict):
                         "Provided custom annotation does not match the "
                         "custom annotation in the store."
                     )
+                item = ann
             # If CustomAnnotation object is removed from CustomAnnotationStore, it will
             # also not belong to the parent object anymore.
             self.data[item]._set_parent(None)

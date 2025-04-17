@@ -9,7 +9,6 @@ from cobra.core.metadata import (
     Identifier,
     Qualifier,
     StandardizedAnnotation,
-    StandardizedAnnotationList,
 )
 from cobra.core.metadata.history import Creator, History
 from cobra.core.model import Model

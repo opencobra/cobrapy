@@ -73,11 +73,11 @@ class MetaData:
         """
         self.standardized = standardized
         self.history = history
-        self.custom = CA.CustomAnnotationList(custom)
+        self.custom = CA.CustomAnnotationStore(custom)
         self.sbo = sbo
 
     @property
-    def standardized(self) -> "SA.StandardizedAnnotationList":
+    def standardized(self) -> "SA.StandardizedAnnotationStore":
         """Get standardized field of MetaData.
 
         Returns
@@ -93,7 +93,7 @@ class MetaData:
             Union[
                 Dict,
                 Iterable["SA.StandardizedAnnotation"],
-                "SA.StandardizedAnnotationList",
+                "SA.StandardizedAnnotationStore",
             ]
         ],
     ) -> None:
@@ -105,7 +105,7 @@ class MetaData:
             dict is converted to CVTermList using CVTermList.from_data().
             The wrong type will lead to a TypeError being raised.
         """
-        self._standardized = SA.StandardizedAnnotationList.from_data(values)
+        self._standardized = SA.StandardizedAnnotationStore.from_data(values)
 
     def add_standardized(
         self, annotations: Iterable[Union[Dict, "SA.StandardizedAnnotation"]]
@@ -206,7 +206,7 @@ class MetaData:
         self._sbo = value
 
     @property
-    def custom(self) -> "CA.CustomAnnotationList":
+    def custom(self) -> "CA.CustomAnnotationStore":
         """Returns the custom key-value pairs of annotations.
 
         Returns
@@ -216,7 +216,7 @@ class MetaData:
         return self._custom
 
     @custom.setter
-    def custom(self, keyvaluepairs: Union[Dict, "CA.CustomAnnotationList"]) -> None:
+    def custom(self, keyvaluepairs: Union[Dict, "CA.CustomAnnotationStore"]) -> None:
         """Set the custom key-value pairs of annotations.
 
         Parameters
@@ -225,7 +225,7 @@ class MetaData:
             A dictionary or KeyValuePair instance that contain all annotation
             custom key-value pairs.
         """
-        self._custom = CA.CustomAnnotationList(keyvaluepairs)
+        self._custom = CA.CustomAnnotationStore(keyvaluepairs)
 
     def __setitem__(self, key: str, value: Union[List, str]) -> None:
         """Set the item for accessing metadata as dict (the old style annotation).

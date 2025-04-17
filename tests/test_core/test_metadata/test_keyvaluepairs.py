@@ -1,6 +1,6 @@
 """Test functions of keyvaluepairs.py."""
 
-from cobra.core.metadata.custom import CustomAnnotation, CustomAnnotationList
+from cobra.core.metadata.custom import CustomAnnotation, CustomAnnotationStore
 
 
 def test_keyvalueentry():
@@ -41,7 +41,7 @@ def test_keyvaluepairs():
         }
     )
 
-    kvp = CustomAnnotationList(entries=[entry1, entry2])
+    kvp = CustomAnnotationStore(entries=[entry1, entry2])
     print(kvp)
     assert len(kvp) == 2
     for key in ["key1", "key2"]:

@@ -117,7 +117,7 @@ class Object:
         else:
             raise TypeError(
                 f"The data passed for annotation must be inside "
-                f"a dictionary or MetaData: {annotations}"
+                f"a dictionary or MetaData: {metadata}"
             )
 
     @property
@@ -151,7 +151,6 @@ class Object:
         from cobra.core.metadata import (
             CustomAnnotation,
             Identifier,
-            MetaData,
             StandardizedAnnotation,
         )
 

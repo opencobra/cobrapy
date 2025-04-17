@@ -8,8 +8,8 @@ from cobra.core.metadata.identifier import (
 )
 from cobra.core.metadata.standardized import (
     StandardizedAnnotation,
-    StandardizedAnnotationList,
+    StandardizedAnnotationStore,
 )
 from cobra.core.metadata.history import Creator, History
-from cobra.core.metadata.custom import CustomAnnotation, CustomAnnotationList
+from cobra.core.metadata.custom import CustomAnnotation, CustomAnnotationStore
 from cobra.core.metadata.metadata import MetaData

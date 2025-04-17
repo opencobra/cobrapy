@@ -7,8 +7,6 @@ from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Tuple, Union
 
 import numpy as np
 
-from cobra.core.metadata.standardized import SimplifiedAnnotationInterface
-
 from ..core import Gene, Group, Metabolite, Model, Reaction
 from ..core.metadata import MetaData
 from ..core.metadata.identifier import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri

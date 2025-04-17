@@ -17,16 +17,23 @@ from typing import (
     FrozenSet,
     Generator,
     Iterable,
+    Iterator,
     List,
     Optional,
     Pattern,
     Tuple,
+    TypeAlias,
     Union,
 )
 
 from cobra.core.metadata import Identifier, Qualifier
 from cobra.core.metadata.identifier import get_default_qualifier
 from cobra.core.metadata.metadata import MetaData
+
+
+StandardizedAnnotationInput: TypeAlias = Union[
+    "StandardizedAnnotation", dict, str, Identifier
+]
 
 
 class StandardizedAnnotation:
@@ -90,7 +97,7 @@ class StandardizedAnnotation:
         """
         self._identifiers = self.check_identifier_type(identifiers)
         self._qualifier = self.check_qualifier_type(qualifier)
-        self._annotations = StandardizedAnnotationList.from_data(annotations)
+        self._annotations = StandardizedAnnotationStore.from_data(annotations)
         self._parent = None
 
     def _set_parent(self, parent):
@@ -103,7 +110,7 @@ class StandardizedAnnotation:
             )
 
     def remove_from_parent(self) -> None:
-        """Remove annotation from parent (`StandardizedAnnotationList`).
+        """Remove annotation from parent (`StandardizedAnnotationStore`).
 
         Raises
         ------
@@ -111,11 +118,11 @@ class StandardizedAnnotation:
 
         See Also
         --------
-        StandardizedAnnotationList.remove
+        StandardizedAnnotationStore.remove
         """
         if self._parent is None:
             raise ValueError(
-                "Cannot remove annotation, since no object is associated with annotation."
+                "Cannot remove annotation, since no object is associated with it."
             )
         self._parent.remove(self)
         self._parent = None
@@ -201,13 +208,13 @@ class StandardizedAnnotation:
         --------
         Identifier.uri
         """
-        l = {entry.uri for entry in self.identifiers}
+        resources = {entry.uri for entry in self.identifiers}
         for entry in self.annotations:
-            l.update(entry.uris)
-        return frozenset(l)
+            resources.update(entry.uris)
+        return frozenset(resources)
 
     @property
-    def annotations(self) -> "StandardizedAnnotationList":
+    def annotations(self) -> "StandardizedAnnotationStore":
         """Get the nested annotations.
 
         Returns
@@ -224,7 +231,7 @@ class StandardizedAnnotation:
         ----------
         annotations - list of StandardizedAnnotation objects.
         """
-        self._annotations = StandardizedAnnotationList.from_data(annotations)
+        self._annotations = StandardizedAnnotationStore.from_data(annotations)
 
     @staticmethod
     def check_identifier_type(
@@ -257,7 +264,6 @@ class StandardizedAnnotation:
         --------
         Identifier.from_dict
         """
-        # TODO: Fix doc
         if identifiers is None:
             return []
         elif isinstance(identifiers, (Identifier, str, dict)):
@@ -356,7 +362,7 @@ class StandardizedAnnotation:
 
         See Also
         --------
-        StandardizedAnnotationList.to_records
+        StandardizedAnnotationStore.to_records
         """
         records, _ = self._to_records()
         return records
@@ -443,7 +449,7 @@ class StandardizedAnnotation:
             if len(self.identifiers) != len(other.identifiers):
                 return False
             for idf in self.identifiers:
-                if not idf in other.identifiers:
+                if idf not in other.identifiers:
                     return False
             if self.annotations != other.annotations:
                 return False
@@ -451,8 +457,7 @@ class StandardizedAnnotation:
         return False
 
     def __repr__(self) -> str:
-        """Return the StandardizedAnnotation as str with module, class, and code to
-        recreate it.
+        """Return the StandardizedAnnotation as str with module and class.
 
         Returns
         -------
@@ -464,8 +469,7 @@ class StandardizedAnnotation:
         )
 
     def _repr_html_(self) -> str:
-        """Return the StandardizedAnnotation as HTML string with qualifier, resources
-        and address.
+        """Return the StandardizedAnnotation as HTML string.
 
         Returns
         -------
@@ -483,30 +487,15 @@ class StandardizedAnnotation:
                 """
 
 
-class StandardizedAnnotationList(UserList):
-    """A list of CVTerm objects.
+class StandardizedAnnotationStore(UserList):
+    """A list-like object that stores a collection of `StandardizedAnnotation` objects.
 
-    Representation of multiple CVTerm objects in a list.  It is list that contains
-    CVTerm objects. As a list, it means that objects can repeat, and that the order is
-    maintained.
-
-    CVTermList is built using UserList, which means that the actual list can be
-    accessed using CVTermList.data. As a list, the order is kept, items may repeat.
-    __init__, __setitem__, __append__, __extend__ will check the data to make sure it
-    is a CVTerm or can be transformed to CVTerm using _check_CVTerm().
-    All list functions that are not overloaded will behave like standard lists.
-
-    Parameters
-    ----------
-    data : list
-        a list containing qualifier and external resources in CVTerm format
-
-    1. The only way to add annotation data via old format is by
-       using the method "add_simple_annotations()". This will set all qualifiers as
-       "bqb_is". If you want to use other qualifiers and/or nested data, use
-       add_cvterms() or extend().
-    2. Multiple CVTerm data can be added by using add_cvterms() or extend(). Both
-       accept iterables, including CVTermList.
+    Stores a collection of standardized annotations that define the relation  of
+    MIRIAM-compliant resources to a cobra modelling object. In practice, this class is
+    automatically instantiated as the `standardized` attribute of the `MetaData` class,
+    which can be accessed through `object.metadata.standardized`. In addition, nested
+    annotations in a `StandardizedAnnotation` object also make use of the
+    `StandardizedAnnotationStore` class.
     """
 
     def __init__(
@@ -515,17 +504,16 @@ class StandardizedAnnotationList(UserList):
             Iterable[Union[StandardizedAnnotation, Dict, Identifier, str]]
         ] = None,
     ):
-        """Initialize CVTermList object.
+        """Initialize a standardized annotation store.
 
         Parameters
         ----------
-        data: Iterable of dict or CVTerm
-            Dicts will be transformed to CVTerm via _check_CVTerm.
-
-        Notes
-        -----
-        _check_CVTerm will raise TypeError if given a class other than dict or CVTerm,
-        so initialization of CVTermList may raise TypeError.
+        data: list of StandardizedAnnotation, dict, str or Identifier objects
+            List of standardized annotations to initialize the store with. Dictionaries
+            are converted to standarized annotations using
+            `StandardizedAnnotation.from_dict`. Strings are interpreted as identifier
+            URIs and together with other Identifier objects stored in a new
+            `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
         """
         if data is None:
             data = []
@@ -551,13 +539,13 @@ class StandardizedAnnotationList(UserList):
 
     @staticmethod
     def _check_standardized_annotation(
-        ann: Optional[Union[StandardizedAnnotation, Dict, str]],
+        ann: Optional[Union[StandardizedAnnotation, Dict, str, Identifier]],
     ) -> Optional["StandardizedAnnotation"]:
         if ann is None:
             return None
         if isinstance(ann, StandardizedAnnotation):
             return ann
-        elif isinstance(ann, str):
+        elif isinstance(ann, (str, Identifier)):
             return StandardizedAnnotation(ann)
         elif isinstance(ann, dict):
             return StandardizedAnnotation.from_dict(ann)
@@ -566,7 +554,6 @@ class StandardizedAnnotationList(UserList):
                 f"Allowed types for StandardizedAnnotation are str and"
                 f"StandardizedAnnotation, not {type(ann)}: {ann}"
             )
-        # TODO: Handle dict
 
     @staticmethod
     def from_data(
@@ -576,71 +563,94 @@ class StandardizedAnnotationList(UserList):
                 str,
                 Dict,
                 "StandardizedAnnotation",
-                "StandardizedAnnotationList",
+                "StandardizedAnnotationStore",
             ]
         ],
-    ) -> "StandardizedAnnotationList":
-        """Parse a CVTermList object from given data.
+    ) -> "StandardizedAnnotationStore":
+        """Create a StandardizedAnnotationStore object from given data.
 
         Parameters
         ----------
-        data: list, dict, CVTerm or CVTermList or None, optional
-            This will be transformed to CVTermList class.
-            None will result in an empty CVTermList.
-            CVTerm and dict will be placed in a list and become a CVTermList.
-            If given CVTermList, will return the data untransformed.
+        data: StandardizedAnnotation, dict, str or Identifier, or list thereof, or
+        StandardizedAnnotationStore or None
+            A standardized annotation or a list of standardized annotations to use to
+            create a store with. Dictionaries are converted to standarized annotations
+            using `StandardizedAnnotation.from_dict`. Strings are interpreted as
+            identifier URIs and together with other Identifier objects stored in a new
+            `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
+            If data is already a StandardizedAnnotationStore, this object will simply be
+            returned.
 
         Returns
         -------
-        CVTermList
+        StandardizedAnnotationStore
 
         Raises
         ------
         TypeError
-            If not given None, dict, CVTerm or CVTermList.
         """
         if data is None:
-            return StandardizedAnnotationList()
-        elif isinstance(data, StandardizedAnnotationList):
+            return StandardizedAnnotationStore()
+        elif isinstance(data, StandardizedAnnotationStore):
             return data
         elif isinstance(data, (StandardizedAnnotation, dict, str)):
             if not data:
-                return StandardizedAnnotationList()
-            return StandardizedAnnotationList([data])
+                return StandardizedAnnotationStore()
+            return StandardizedAnnotationStore([data])
         elif isinstance(data, ABCIterable):
-            return StandardizedAnnotationList(data)
+            return StandardizedAnnotationStore(data)
         else:
-            raise TypeError(f"Invalid format for StandardizedAnnotationList: '{data}'")
+            raise TypeError(f"Invalid format for StandardizedAnnotationStore: '{data}'")
 
     def to_list_of_dicts(self) -> List[dict]:
-        """Represent a CVTermList object as a list of python dicts.
+        """Convert the StandardizedAnnotationStore to a list of python dicts.
 
         Returns:
         -------
         list:
-            a list where each item is a dict, made by CVTerm.to_dict(). Used for JSON
+            a list where each item is a dict representing a standardized annotation
+            object, as created by StandardizedAnnotation.to_dict(). Mainly used for JSON
             and YAML export.
 
         See Also
         --------
-        CVTerm.to_dict()
+        StandardizedAnnotation.to_dict
         """
         return [cvterm.to_dict() for cvterm in self.data]
 
     def to_records(self):
-        l, _ = self._to_records()
-        return l
+        """Convert the store to a list of dictionaries that represent identifiers.
+
+        Each entry in the list represents an identifiers associated with one of the
+        standardized annotation in this object, either directly or as nested annotation.
+        The resulting list is thus a flattened representation of all identifiers.
+        The hierarchical information is included using the "annotation_group" and
+        "parent_group" entries in the dictionaries. Each annotation group represents a
+        single StandardizedAnnotation object (without its nested annotations). If an
+        identifier is found in a nested annotation, the "parent_group" value will be set
+        to the "annotation_group" value of its parent StandardizedAnnotation object.
+
+        Returns
+        -------
+        List of dictionaries representing Identifier records
+
+        See Also
+        --------
+        StandardizedAnnotation.to_records
+        """
+        records, _ = self._to_records()
+        return records
 
     def _to_records(
         self, group_counter: int = 1, parent_group: int = 0
     ) -> Tuple[List[Dict], int]:
-        l = []
+        records = []
         for entry in self.data:
             new_l, group_counter = entry._to_records(
                 group_counter=group_counter, parent_group=parent_group
             )
-            l.extend(new_l)
-        return l, group_counter
+            records.extend(new_l)
+        return records, group_counter
 
     def _find_first_by_qualifier(
         self,
@@ -661,183 +671,194 @@ class StandardizedAnnotationList(UserList):
             self.data.insert(0, entry)
         return entry
 
-    def add(self, ann: Iterable[Union[StandardizedAnnotation, Dict, str]]) -> None:
-        """Add multiple CVTerm to CVTermList.
+    def add(
+        self,
+        annotations: Union[
+            "StandardizedAnnotationStore",
+            StandardizedAnnotation,
+            Dict,
+            str,
+            Identifier,
+            List[Union[StandardizedAnnotation, Dict, str, Identifier]],
+        ],
+    ) -> None:
+        """Add one or multiple standardized annotations to the store.
+
+        Dictionaries are converted to standarized annotations using
+        `StandardizedAnnotation.from_dict`. Strings are interpreted as identifier
+        URIs and together with other Identifier objects stored in a new
+        `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
+
+        If a list is passed, this method is equivalent to
+        `StandardizedAnnotationStore.extend` and if a single annotation is passed, this
+        method is equivalent to `StandardizedAnnotationStore.append`.
 
         Parameters
         ----------
-        cvterms : Iterable
-            CVTermList list of CVTerms or CVTerm dicts to be added to the CVTermList
-        """
-        checked_ann = [
-            filtered_entry
-            for entry in ann
-            if (filtered_entry := self._check_standardized_annotation(entry))
-            is not None
-        ]
-        self.extend(checked_ann)
+        annotations : StandardizedAnnotation, dict, str or Identifier, or list thereof
+            Single or multiple annotations to add to the store.
 
-    # def delete_annotation(self, resource: Union[str, Pattern]) -> None:
-    #     r"""Delete annotation - the converse of add_simple_annotation.
-    #
-    #     This will go over the CVTerms, and delete all resources that match the pattern.
-    #     It will call the funciton recursively for ExternalResources that have
-    #     nested_data.
-    #     CVTerms that end with neither resources nor nested data are removed.
-    #
-    #     Parameters
-    #     ----------
-    #     resource: str or Pattern
-    #
-    #     Examples
-    #     --------
-    #     >>> from cobra.io import load_model
-    #     >>> e_coli = load_model('iJO1366')
-    #     >>> e_coli.annotation
-    #     >>> e_coli.annotation.standardized.delete_annotation('bigg')
-    #     >>> e_coli.annotation
-    #     >>> e_coli.annotation.annotations
-    #     >>> e_coli.metabolites[0].annotation.standardized
-    #     >>> e_coli.metabolites[0].annotation.standardized.delete_annotation(r'/bi\S+')
-    #     """
-    #     regex_searcher = re.compile(resource)
-    #     tmp_cvterm_list = []
-    #     for cvterm in self.data:
-    #         cvterm.external_resources.resources = [
-    #             res
-    #             for res in cvterm.external_resources.resources
-    #             if not regex_searcher.findall(res)
-    #         ]
-    #         if cvterm.external_resources.nested_data:
-    #             cvterm.external_resources.nested_data.delete_annotation(resource)
-    #         if (
-    #             cvterm.external_resources.resources
-    #             or cvterm.external_resources.nested_data
-    #         ):
-    #             tmp_cvterm_list.append(cvterm)
-    #     self.data = tmp_cvterm_list
-    #
-    # @property
-    # def annotations(self) -> Dict:
-    #     """Return CVTermList as annotation dictionary.
-    #
-    #     This function will return the CVTermList as a sorted annotation dictionary in
-    #     the older annotation format. In the dictionary, the keys are the namespaces,
-    #     while the values are lists of annotation identifiers.
-    #
-    #     Qualifiers are not present in the annotation dictionary. This function will
-    #     use CVTermList.resources(), which will get all resources of all CVTerm objects,
-    #     including nested resources.
-    #
-    #     Different CVTerms will be unified by namespace. Namespaces and values are
-    #     sorted in the dictionary, to avoid shifting caused by usage of sets.
-    #
-    #     For example, a CVTermList that looks like
-    #
-    #     [
-    #         {
-    #             "external_resources": {
-    #                 "resources": [
-    #                     "https://identifiers.org/uniprot/P69906",
-    #                     "https://identifiers.org/uniprot/P68871",
-    #                     "https://identifiers.org/kegg.compound/C00032",
-    #                 ]
-    #             },
-    #             "qualifier": "bqb_hasPart",
-    #         },
-    #         {
-    #             "qualifier": "bqb_hasPart",
-    #             "external_resources": {
-    #                 "resources": [
-    #                     "https://identifiers.org/uniprot/P69905",
-    #                     "https://www.uniprot.org/uniprot/P68871",
-    #                     "https://identifiers.org/chebi/CHEBI:17627",
-    #                 ],
-    #             "nested_data": {
-    #                 "qualifier": "bqb_isDescribedBy",
-    #                 "external_resources": {
-    #                     "resources": [
-    #                         "https://identifiers.org/eco/000000",
-    #                     ]
-    #                 },
-    #             },
-    #         },
-    #     ]
-    #
-    #     Will be outputted as a dictionary that looks like
-    #     {
-    #         "chebi": ["CHEBI:17627"],
-    #         "eco": ["000000"],
-    #         "kegg.compound": ["C00032"],
-    #         "uniprot": ["P68871", "P69905", "P69906"],
-    #     }
-    #
-    #     Returns
-    #     -------
-    #     dict
-    #         Dictionary where keys are namespaces, sorted in ascending order. Values
-    #         are lists of identifiers, also sorted in ascentding order.
-    #
-    #     """
-    #     annotation_dict = {}
-    #     resources = self.resources
-    #     for res in resources:
-    #         if re.match(URL_IDENTIFIERS_PATTERN, res):
-    #             identifier_match = parse_identifiers_uri(res)
-    #             if identifier_match is None:
-    #                 continue
-    #             namespace, identifier = identifier_match
-    #             if namespace in annotation_dict.keys():
-    #                 annotation_dict[namespace].append(identifier)
-    #             else:
-    #                 annotation_dict[namespace] = [identifier]
-    #     return {k: sorted(annotation_dict[k]) for k in sorted(annotation_dict.keys())}
-    #
+        See Also
+        --------
+        append
+        extend
+        """
+        if isinstance(annotations, (StandardizedAnnotation, dict, str, Identifier)):
+            self.append(annotations)
+        else:
+            self.extend(annotations)
+
+    def append(
+        self, item: Union[StandardizedAnnotation, Dict, str, Identifier]
+    ) -> None:
+        """Append a single annotation to the end of the store.
+
+        Parameters
+        ----------
+        item: StandardizedAnnotation, dict, str or Identifier
+            Annotation to append to the standardized annotation store.
+        """
+        self.extend([item])
+
+    def extend(
+        self,
+        other: Union[
+            "StandardizedAnnotationStore",
+            Iterable[Union[StandardizedAnnotation, Dict, str, Identifier]],
+        ],
+    ) -> None:
+        """Extend store by appending elements from the iterable.
+
+        Parameters
+        ----------
+        iterable : Iterable
+            Annotations to add to the store.
+        """
+        if isinstance(other, StandardizedAnnotationStore):
+            self.extend(other.data)
+        elif isinstance(other, Iterable):
+            checked_data = [
+                checked_item
+                for item in other
+                if (checked_item := self._check_standardized_annotation(item))
+                is not None
+            ]
+            for d in checked_data:
+                d._set_parent(self)
+            self.data.extend(checked_data)
+
     @property
     def identifiers(self) -> FrozenSet[Identifier]:
-        """Get all Identifiers.
+        """Get identifiers.
 
-        Returns:
+        Returns
         -------
-        FrozenSet:
-            a set of all external resources in the original self.data list of CVTerms
-            including external resources of nested data. The Set contains the URIs as
-            strings, not in the ExternalResources format.
+        FrozenSet
+            a set of identifiers in the standardized annotation store, not including
+            identifiers of nested annotations.
+        """
+        resources = set()
+        for entry in self.data:
+            resources.update(entry.identifiers)
+        return frozenset(resources)
+
+    @property
+    def all_identifiers(self) -> FrozenSet[Identifier]:
+        """Get all identifiers, including identifiers in nested annotations.
+
+        Returns
+        -------
+        FrozenSet
+            a set of all identifiers in the standardized annotation store, including
+            identifiers of nested annotations.
         """
         resources = set()
         for entry in self.data:
             resources.update(entry.identifiers)
             if entry.annotations:
-                resources.update(entry.annotations.identifiers)
+                resources.update(entry.annotations.all_identifiers)
         return frozenset(resources)
 
     @property
     def uris(self) -> FrozenSet[str]:
-        l = set()
+        """Get URIs.
+
+        Returns
+        -------
+        FrozenSet
+            A set of URIs in the standardized annotation store, not including URIs of
+            nested annotations.
+        """
+        resources = set()
         for entry in self.data:
-            l.update(entry.uris)
-        return frozenset(l)
+            resources.update(entry.uris)
+        return frozenset(resources)
+
+    @property
+    def all_uris(self) -> FrozenSet[str]:
+        """Get all URIs, including URIs of nested annotations.
+
+        Returns
+        -------
+        FrozenSet
+            A set of URIs in the standardized annotation store, including URIs of
+            nested annotations.
+        """
+        resources = set()
+        for entry in self.data:
+            resources.update(entry.uris)
+            if entry.annotations:
+                resources.update(entry.annotations.all_uris)
+        return frozenset(resources)
 
     @property
     def qualifiers(self) -> FrozenSet[Qualifier]:
-        """Get all qualifiers used by CVTerm objects in the CVTermList.
+        """Get qualifiers of annotations in the store, not including nested annotations.
 
-        Note it does not return nested qualifiers.
-
-        Returns:
+        Returns
         -------
-        FrozenSet:
-            a frozen set of all qualifiers in the original self.data list of CVTerms
+        FrozenSet
+            A set of qualifiers in the standardized annotation store, not including
+            qualifiers of nested annotations.
         """
         qualifier_set = set()
         for entry in self.data:
             qualifier_set.add(entry.qualifier)
         return frozenset(qualifier_set)
 
-    def __iter__(self):
+    @property
+    def all_qualifiers(self) -> FrozenSet[Qualifier]:
+        """Get all qualifiers of annotations in the store, including nested annotations.
+
+        Returns
+        -------
+        FrozenSet
+            A set of qualifiers in the standardized annotation store, including
+            qualifiers of nested annotations.
+        """
+        qualifier_set = set()
+        for entry in self.data:
+            qualifier_set.add(entry.qualifier)
+            if entry.annotations:
+                qualifier_set.update(entry.annotations.all_qualifiers)
+        return frozenset(qualifier_set)
+
+    def __iter__(self) -> Iterator[StandardizedAnnotation]:
+        """Get an iterator for the standardized annotations in the store.
+
+        Returns
+        -------
+        Iterator
+        """
         return iter(self.data)
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """Get the number of standardized annotations in the store.
+
+        Returns
+        -------
+        int
+        """
         return len(self.data)
 
     def query(
@@ -845,12 +866,12 @@ class StandardizedAnnotationList(UserList):
         search_function: Union[str, Pattern, Callable],
         attribute: Union[str, None] = None,
     ) -> List[StandardizedAnnotation]:
-        """Query the CVTermList and return a list of CVTerm objects.
+        """Query the annotation store for matchin StandardizedAnnotation objects.
 
         Parameters
         ----------
         search_function : a string, regular expression or function
-            Used to find the matching elements in the list.
+            Used to find the matching elements in the store.
             - a regular expression (possibly compiled), in which case the
             given attribute of the object should match the regular expression.
             - a function which takes one argument and returns True for
@@ -863,16 +884,16 @@ class StandardizedAnnotationList(UserList):
 
         Returns
         -------
-        CVTermList
-            a new list of CVTerm objects which match the query
+        list of StandardizedAnnotation objects
+            a new list of StandardizedAnnotation objects which match the query
 
         Examples
         --------
         >>> from cobra.io import load_model
         >>> model = load_model('iJO1366')
-        >>> model.annotation.standardized.query('bqb', 'qualifier')
+        >>> model.metadata.standardized.query('Biological_', 'qualifier')
         >>> import re
-        >>> regex = re.compile('^bqm')
+        >>> regex = re.compile('^Modelling')
         >>> model.annotation.standardized.query(regex, 'qualifier')
         """
 
@@ -930,97 +951,54 @@ class StandardizedAnnotationList(UserList):
 
         return matches
 
-    def __setitem__(self, key: int, value: Union[StandardizedAnnotation, str]) -> None:
-        """Set item in CVTermList.
+    def __setitem__(self, key: int, value: StandardizedAnnotationInput) -> None:
+        """Set item in the store at the provided index.
 
-        This function will check that it is a valid item, converting it to CVTerm if
-        necessary (see _check_CVTerm).
+        Removes the current annotation at the provided index and replaces it with the
+        provided annotation.
 
         Parameters
         ----------
         key: int
-        value: CVTerm or dict
-            dict will be converted to CVTerm
+        value: StandardizedAnnotation, dict, str or Identifier
         """
         checked_value = self._check_standardized_annotation(value)
         if checked_value is None:
-            raise TypeError(f"Value cannot be None.")
+            raise TypeError("Value cannot be None.")
             # TODO: Elaborate (or automatically delete when None)
         checked_value._set_parent(self)
         UserList.__setitem__(self, key, checked_value)
 
-    def append(self, item: Union[StandardizedAnnotation, str]) -> None:
-        """Append CVTerm to end.
+    def __eq__(self, other: Any) -> bool:
+        """Compare two standardized annotation stores and determine equality.
+
+        Equality is defined as them having the same data, but not necessarily being the
+        same object. If the given item is not a StandardizedAnnotationStore, list or
+        dict, this function will return False.
 
         Parameters
         ----------
-        item: CVTerm or dict
-            dict will be converted to CVTerm.
-        """
-        checked_item = self._check_standardized_annotation(item)
-        if checked_item is None:
-            raise TypeError(f"Item cannot be None.")
-            # TODO: Elaborate (or do nothing when None)
-        checked_item._set_parent(self)
-        UserList.append(self, checked_item)
-
-    def extend(
-        self,
-        iterable: Union[
-            "StandardizedAnnotationList", Iterable[Union[StandardizedAnnotation, str]]
-        ],
-    ) -> None:
-        """Extend data list by appending elements from the iterable.
-
-        Parameters
-        ----------
-        iterable : Iterable
-        """
-        if isinstance(iterable, StandardizedAnnotationList):
-            self.extend(iterable.data)
-        elif isinstance(iterable, Iterable):
-            checked_data = [
-                checked_item
-                for item in iterable
-                if (checked_item := self._check_standardized_annotation(item))
-                is not None
-            ]
-            for d in checked_data:
-                d._set_parent(self)
-            self.data.extend(checked_data)
-
-    def __eq__(
-        self, other: Union[dict, Iterable, "StandardizedAnnotationList"]
-    ) -> bool:
-        """Compare two CVTermList objects to find out whether they are the same.
-
-        Equality is defined as them having the same data, but not necessarily the same
-        objects. If the given item is not a CVTermList or list, this function will
-        return False.
-
-        Parameters
-        ----------
-        other: CVTermList or list
+        other
 
         Returns
         -------
         bool: True if the data matches, False otherwise
         """
         if isinstance(other, (ABCIterable, dict)) and not isinstance(
-            other, StandardizedAnnotationList
+            other, StandardizedAnnotationStore
         ):
-            return self.__eq__(StandardizedAnnotationList.from_data(other))
-        if not isinstance(other, StandardizedAnnotationList):
+            return self.__eq__(StandardizedAnnotationStore.from_data(other))
+        if not isinstance(other, StandardizedAnnotationStore):
             return False
         if len(self.data) != len(other.data):
             return False
         for other_entry in other.data:
-            if not other_entry in self.data:
+            if other_entry not in self.data:
                 return False
         return True
 
     def _repr_html_(self) -> str:
-        """Generate CVTermList as HTML.
+        """Convert StandardizedAnnotationStore to HTML.
 
         Returns
         -------
@@ -1028,11 +1006,39 @@ class StandardizedAnnotationList(UserList):
             HTML representation of the list of CVTerm resources.
         """
         entries = [cvterm._repr_html_() for cvterm in self.data]
-        return f"""StandardizedAnnotationList{"<p>".join(entries)}"""
+        return f"""StandardizedAnnotationStore{"<p>".join(entries)}"""
 
 
 class SimplifiedAnnotationInterface(MutableMapping):
-    def __init__(self, metadata: MetaData):
+    """Class to interface with metadata using a dict-like interface.
+
+    This class is used to maintain compatability with older cobrapy versions. It is
+    typically accessed through an objects annotation attribute. It allows a user to get
+    and set standardized annotations through a dict-like interface. When reading
+    existing annotations, qualifiers are ignored and identifiers are pooled. When
+    setting new annotations, qualifiers are set based on defaults (typically
+    `Qualifiers.Biological_is`).
+    This class is automatically instantiated as the `annotation` attribute of cobrapy
+    objects.
+
+    Warnings
+    --------
+    * This is not the preferred method to access annotations, since information and
+        hierarchy is lost in this interface.
+    * This interface was added to not break existing code, for new code
+        `object.metadata.standardized` should be preferred.
+    * Editing existing annotations using this interface can cause the annotations to
+        become less organized.
+    """
+
+    def __init__(self, metadata: MetaData) -> None:
+        """Initialize the simplified annotation interface using a `MetaData` object.
+
+        Parameters
+        ----------
+        metadata: MetaData
+            MetaData object where annotations wil be stored and retreived from.
+        """
         self._metadata = metadata
 
     def add(
@@ -1042,11 +1048,28 @@ class SimplifiedAnnotationInterface(MutableMapping):
                 Dict,
                 str,
                 "SimplifiedAnnotationInterface",
-                Tuple[str, str],
-                List[Union[str, Identifier, Tuple[str, str]]],
+                Tuple[str, Union[str, List[str]]],
+                Identifier,
+                List[Union[str, Identifier, Tuple[str, Union[str, List[str]]]]],
             ]
         ] = None,
     ) -> None:
+        """Add an annotation.
+
+        Parameters
+        ----------
+        data: str, tuple, Identifier or list thereof, or dict or
+        SimplifiedAnnotationInterface
+            Add identifiers as annotations, using default qualifiers. Tuples are
+            interpreted as namespace-identifiers pairs, strings should be valid URIs and
+            if a dictionary is provided, its keys should represent namespaces and its
+            values identifiers.
+
+        Raises
+        ------
+        TypeError if values could not be converted to Identifier objects.
+        ValueError if tuples of lengths other than 2 were provided.
+        """
         if data is None:
             data = []
 
@@ -1070,14 +1093,14 @@ class SimplifiedAnnotationInterface(MutableMapping):
             if isinstance(entry, tuple):
                 if len(entry) != 2:
                     raise ValueError(
-                        f"Only tuples of length 2 can be converted to annotations."
+                        "Only tuples of length 2 can be converted to annotations."
                     )
-                l = []
+                expanded_entries = []
                 if isinstance(entry[1], list):
-                    l.extend([(entry[0], v) for v in entry[1]])
+                    expanded_entries.extend([(entry[0], v) for v in entry[1]])
                 else:
-                    l.append(entry)
-                entry = l
+                    expanded_entries.append(entry)
+                entry = expanded_entries
             elif isinstance(entry, str):
                 entry = [entry]
             else:
@@ -1093,7 +1116,7 @@ class SimplifiedAnnotationInterface(MutableMapping):
                     )
 
                 qualifier = get_default_qualifier(x.namespace)
-                if not qualifier in cvterms:
+                if qualifier not in cvterms:
                     cvterms[qualifier] = []
                 cvterms[qualifier].append(x)
 
@@ -1104,14 +1127,53 @@ class SimplifiedAnnotationInterface(MutableMapping):
             ann.add_identifiers(identifiers)
 
     @property
-    def sbo(self):
+    def sbo(self) -> str:
+        """Get the SBO term of the annotations.
+
+        Returns
+        -------
+        str
+
+        See Also
+        --------
+        MetaData.sbo
+        """
         return self._metadata.sbo
 
     @sbo.setter
-    def sbo(self, value):
+    def sbo(self, value: str) -> None:
+        """Set the SBO term of the annotations.
+
+        Parameters
+        ----------
+        value: str
+
+        See Also
+        --------
+        MetaData.sbo
+        """
         self._metadata.sbo = value
 
-    def __getitem__(self, key: str) -> Optional[List[str]]:
+    def __getitem__(self, key: str) -> List[str]:
+        """Get identifiers for a given namespace.
+
+        Collects all standardized annotations for namespace `key` and returns a list of
+        all identifiers as strings, or raise IndexError if none were found.
+
+        Parameters
+        ----------
+        key: str
+            Namespace of the identifiers.
+
+        Returns
+        -------
+        list of str
+            List of identifiers as strings.
+
+        Raises
+        ------
+        IndexError if no identifiers were found for the given namespace.
+        """
         if not isinstance(key, str):
             raise TypeError("Index should be of type str.")
         key = key.lower()
@@ -1125,11 +1187,27 @@ class SimplifiedAnnotationInterface(MutableMapping):
                     results.append(v)
 
         if results:
+            # Deduplicate and ort results to have consistent results and make
+            # comparisons easier. E.g. __eq__(...) relies on this.
             return list(sorted(set(results)))
         else:
-            return None
+            raise IndexError(f"No identifiers found for namespace '{key}'")
 
     def __delitem__(self, key: str) -> None:
+        """Delete all identifiers for a given namespace.
+
+        Deletes all identifiers for namespace `key` from their `StandardizedAnnotation`
+        objects or raise IndexError if none were found.
+
+        Parameters
+        ----------
+        key: str
+            Namespace of the identifiers.
+
+        Raises
+        ------
+        IndexError if no identifiers were found for the given namespace.
+        """
         if not isinstance(key, str):
             raise TypeError("Index should be of type str.")
 
@@ -1148,7 +1226,19 @@ class SimplifiedAnnotationInterface(MutableMapping):
         if not deleted_any:
             raise IndexError(f"Could not find annotations for f'{key}')")
 
-    def __setitem__(self, key: str, value) -> None:
+    def __setitem__(self, key: str, value: Union[str, List[str]]) -> None:
+        """Set identifiers for a given namespace.
+
+        Removes all existing identifiers with namespace `key` and inserts
+        the provided identifiers.
+
+        Parameters
+        ----------
+        key: str
+            Namespace of the identifiers.
+        value: str or list of str
+            Identifiers to set for the provided namespace.
+        """
         if not isinstance(key, str):
             raise TypeError("Index should be of type str.")
         key = key.lower()
@@ -1160,15 +1250,47 @@ class SimplifiedAnnotationInterface(MutableMapping):
 
         self.add({key: value})
 
-    def __eq__(self, other: Union[dict, "SimplifiedAnnotationInterface"]) -> bool:
+    def __eq__(self, other: Any) -> bool:
+        """Determine equality between the simplified annotations and another object.
+
+        If the other object is of a type other than dict or
+        `StandardizedAnnotationInterface`, the objects are considered not equal.
+        Otherwise, objects are equal if there dictionary representation is equal.
+
+        Parameters
+        ----------
+        other
+
+        Returns
+        -------
+        bool
+        """
         self_dict = self.to_dict()
         if isinstance(other, dict):
             other_dict = other
-        else:
+        elif isinstance(other, SimplifiedAnnotationInterface):
             other_dict = other.to_dict()
+        else:
+            return False
         return self_dict == other_dict
 
     def objects(self) -> Generator[Tuple[str, List[Identifier]], None, None]:
+        """Get a generator for all pairs of namespace and Identifier objects.
+
+        Creates a generator that can be used to iterate over the data as pairs (tuples)
+        of a namespace and a list of its corresponding Identifier objects. This method
+        is very similar to the `items` method, except that it yields Identifier objects
+        instead of strings.
+
+        Returns
+        -------
+        generator
+            Yields pairs of namespace and a list of Identifier objects.
+
+        See Also
+        --------
+        items
+        """
         visited_namespaces = set("sbo")
         while True:
             current_namespace = None
@@ -1195,41 +1317,138 @@ class SimplifiedAnnotationInterface(MutableMapping):
         if sbo_term := self._metadata.sbo:
             yield ("sbo", [Identifier.from_data(("sbo", sbo_term))])
 
-    def items(self):
+    def items(self) -> Iterator[Tuple[str, List[str]]]:
+        """Get a generator for all pairs of namespace and identifiers.
+
+        Creates a generator that can be used to iterate over the data as pairs (tuples)
+        of a namespace and a list of its corresponding identifiers. This method is very
+        similar to the `objects` method, except that it yields strings instead of
+        Identifier objects.
+
+        Returns
+        -------
+        generator
+            Yields pairs of namespace and a list of identifiers.
+
+        See Also
+        --------
+        objects
+        """
         for k, v in self.objects():
             yield (k, [x.identifier for x in v])
 
     def __iter__(self):
+        """Get an iterator for the namespaces (keys) of the annotations.
+
+        Returns
+        -------
+        Iterator
+        """
+
         for k, _ in self.objects():
             yield k
 
     def keys(self):
+        """Get a view of the namespaces (keys) of the annotations.
+
+        Returns
+        -------
+        Iterator
+        """
+
         return KeysView(self)
-        # for k in self:
-        #     yield k
 
     def values(self):
+        """Get a generator for the values of the annotations.
+
+        The values are lists of identifiers with the same namespace.
+
+        Returns
+        -------
+        Generator
+
+        See Also
+        --------
+        identifiers
+        tuples
+        """
         for _, v in self.items():
             yield v
 
     def identifiers(self):
+        """Get a generator for the individual identifiers of the annotations.
+
+        Returns
+        -------
+        Generator
+
+        See Also
+        --------
+        values
+        tuples
+        """
         for _, v in self.items():
             for identifier in v:
                 yield identifier
 
     def tuples(self):
+        """Get a generator for the individual identifiers as namespace-identifier pairs.
+
+        Returns
+        -------
+        Generator
+
+        See Also
+        --------
+        values
+        identifiers
+        """
         for k, v in self.items():
             for identifier in v:
                 yield (k, identifier)
 
     @property
-    def number_of_identifiers(self):
+    def number_of_identifiers(self) -> int:
+        """The number of individual identifiers.
+
+        Is different from the length of the object, since a single namespace can have
+        multiple identifiers associated with it.
+
+        Returns
+        -------
+        int
+
+        See Also
+        --------
+        __len__
+        """
         return sum(1 for _ in self.identifiers())
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """Get the length of the object, which corresponds to the number of namespaces.
+
+        Returns
+        -------
+        int
+
+        See Also
+        --------
+        number_of_identifiers
+        """
         return sum(1 for _ in self)
 
-    def delete_annotation(self, value):
+    def delete_annotation(self, value: str) -> None:
+        """Delete an identifier based on its identifier value.
+
+        Parameters
+        ----------
+        value: str
+            Value of the identifier to delete.
+
+        Raises
+        ------
+        ValueError if no idenfier was found for the provided value.
+        """
         for _, entries in self.objects():
             for entry in entries:
                 if entry.identifier == value:
@@ -1237,9 +1456,21 @@ class SimplifiedAnnotationInterface(MutableMapping):
                     return
         raise ValueError(f"No annotation found for '{value}'")
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, List[str]]:
+        """Convert the simplified annotations to a dictionary.
+
+        The keys of the dictionary represent namespaces and the values are lists of
+        corresponding identifiers.
+
+        Returns
+        -------
+        dict
+        """
         return dict(self)
 
-    def clear(self):
+    def clear(self) -> None:
+        """Remove all annotations."""
+        # Could probably handle this better by directly removing all standardized
+        # annotations. Currently, empty StandardizedAnnotation objects will remain.
         for k in self:
             del self[k]

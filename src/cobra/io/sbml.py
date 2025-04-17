@@ -32,7 +32,6 @@ import logging
 import re
 from ast import And, BoolOp, Module, Name, Or
 from collections import defaultdict, namedtuple
-from copy import deepcopy
 from io import StringIO
 from pathlib import Path
 from sys import platform
@@ -53,9 +52,9 @@ from ..core import (
     Model,
     Reaction,
     StandardizedAnnotation,
-    StandardizedAnnotationList,
 )
 from ..core.metadata.history import STRTIME_FORMAT
+from ..core.metadata.standardized import StandardizedAnnotationStore
 from ..manipulation.validate import check_metabolite_compartment_formula
 from ..util.solver import linear_reaction_coefficients, set_objective
 
@@ -1895,7 +1894,7 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
     return provider, identifier
 
 
-def _cvterms_to_sbml(cvterms: StandardizedAnnotationList) -> List["libsbml.CVTerm"]:
+def _cvterms_to_sbml(cvterms: StandardizedAnnotationStore) -> List["libsbml.CVTerm"]:
     """Convert cobra CVTerms to libsbml.CVTerm list.
 
     Parameters

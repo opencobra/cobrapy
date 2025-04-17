@@ -9,7 +9,7 @@ from cobra import Model
 from cobra.core.metadata import Identifier, MetaData, Qualifier, StandardizedAnnotation
 from cobra.core.metadata.standardized import (
     SimplifiedAnnotationInterface,
-    StandardizedAnnotationList,
+    StandardizedAnnotationStore,
 )
 from cobra.core.species import Species
 from cobra.io import load_json_model, read_sbml_model, save_json_model, write_sbml_model
@@ -81,7 +81,7 @@ def test_annotation() -> None:
     # a cobra component
     s = Species()
     # assert s.metadata == {}  # nothing set for annotation, so empty dict
-    assert s.metadata.standardized == StandardizedAnnotationList()
+    assert s.metadata.standardized == StandardizedAnnotationStore()
     # assert not s.annotation.keys()
     # assert s.metadata.custom == {}
     assert s.metadata.history.creators == []
@@ -94,7 +94,7 @@ def test_annotation() -> None:
     assert set(s.annotation["chebi"]) == CHEBI_SET
     # assert set(s.metadata.standardized[Qualifier.Biological_is]["chebi"]) == CHEBI_SET
 
-    s.metadata.standardized = StandardizedAnnotationList()
+    s.metadata.standardized = StandardizedAnnotationStore()
 
     s.add_annotations(
         [
@@ -111,7 +111,7 @@ def test_annotation() -> None:
     assert s.annotation == {"chebi": list(sorted(["CHEBI:43215", "CHEBI:11881"]))}
 
     # checking new standardized
-    cvt = StandardizedAnnotationList(
+    cvt = StandardizedAnnotationStore(
         [
             StandardizedAnnotation(
                 qualifier=Qualifier.Biological_is,
@@ -128,7 +128,7 @@ def test_annotation() -> None:
     # etc. when only strings are supplied.
     # assert s.metadata.standardized == cvt
     s.metadata.standardized = []
-    assert s.metadata.standardized == StandardizedAnnotationList()
+    assert s.metadata.standardized == StandardizedAnnotationStore()
     assert s.metadata.standardized.identifiers == frozenset()
     assert s.metadata.standardized == {}
 
@@ -147,14 +147,13 @@ def test_annotation() -> None:
 
     # adding an SBO term
     s.metadata.sbo = ["SBO:0000123"]
-    assert "chebi" in s.annotation
-    # assert "sbo" in s.annotation
+    assert "sbo" in s.annotation
     # assert s.annotation == {
     #     "chebi": ["CHEBI:43215", "CHEBI:11881"],
     #     "sbo": ["SBO:0000123"],
     # }
 
-    cvt2 = StandardizedAnnotationList(
+    cvt2 = StandardizedAnnotationStore(
         [
             StandardizedAnnotation(
                 qualifier="bqb_is",
@@ -329,7 +328,7 @@ def test_cvterms_from_ecoli_xml(annotation_model: Model) -> None:
             "identifiers": [ECO_EXAMPLE],
         },
     ]
-    ecoli_model_cvterm = StandardizedAnnotationList.from_data(ECOLI_MODEL_ANNOTATIONS)
+    ecoli_model_cvterm = StandardizedAnnotationStore.from_data(ECOLI_MODEL_ANNOTATIONS)
     print(ecoli_model_cvterm.to_list_of_dicts())
     print(annotation_model.metadata.standardized.to_list_of_dicts())
     xml_model_cvterms = annotation_model.metadata.standardized
@@ -397,7 +396,7 @@ def test_read_write_json(annotation_model: Model, tmp_path: Path):
     #     "pubmed": ["1111111"],
     #     "taxonomy": ["511145"],
     # }
-    assert model.metadata.standardized == StandardizedAnnotationList.from_data(
+    assert model.metadata.standardized == StandardizedAnnotationStore.from_data(
         ECOLI_MODEL_ANNOTATIONS
     )
     assert model.metadata.standardized == ECOLI_MODEL_ANNOTATIONS
@@ -430,7 +429,7 @@ def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
     #     "pubmed": ["1111111"],
     #     "taxonomy": ["511145"],
     # }
-    assert model.metadata.standardized == StandardizedAnnotationList.from_data(
+    assert model.metadata.standardized == StandardizedAnnotationStore.from_data(
         ECOLI_MODEL_ANNOTATIONS
     )
     assert model.metadata.standardized == ECOLI_MODEL_ANNOTATIONS
@@ -483,7 +482,7 @@ def test_read_old_json_model(data_directory):
 #     # }
 #
 #     # testing standardized
-#     expected_cvterms = StandardizedAnnotationList.from_data(
+#     expected_cvterms = StandardizedAnnotationStore.from_data(
 #         [{"qualifier": "bqb_is", "identifiers": RESOURCE_LIST}]
 #     )
 #     assert meta.metadata.standardized == expected_cvterms
@@ -506,7 +505,7 @@ def test_cvtermlist_query():
             "https://identifiers.org/CHebi/CHEBI:11881",
         ]
     )
-    cvtermlist = StandardizedAnnotationList()
+    cvtermlist = StandardizedAnnotationStore()
     for i, res in enumerate(resources):
         cvtermlist.extend(
             [StandardizedAnnotation(qualifier=list(Qualifier._map)[i], identifiers=res)]
@@ -527,11 +526,11 @@ def test_cvtermlist_query():
     print(cvtermlist)
     # assert isinstance(
     #     cvtermlist.query(search_function="bqm", attribute="qualifier"),
-    #     StandardizedAnnotationList,
+    #     StandardizedAnnotationStore,
     # )
-    # The result type is now just a list, since a StandardizedAnnotationList should be
+    # The result type is now just a list, since a StandardizedAnnotationStore should be
     # used only for actual sets of annotations. This should maybe be a frozen variant of
-    # the StandardizedAnnotationList, but for now it is a list.
+    # the StandardizedAnnotationStore, but for now it is a list.
     assert isinstance(
         cvtermlist.query(search_function="bqm", attribute="qualifier"),
         list,
