@@ -1,6 +1,6 @@
 """Define base Object class in Cobra."""
 
-from typing import TYPE_CHECKING, Iterable, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple, Union
 
 
 if TYPE_CHECKING:
@@ -81,30 +81,24 @@ class Object:
 
     @property
     def metadata(self) -> "Metadata":
-        """Get annotation dictionary.
+        """Get objects metadata.
 
         Returns
         -------
-        _annotation: dict
-            Returns _annotation as a dictionary.
+        Metadata
+            Metadata object containing annotations and object creator and history.
         """
-        # TODO: Fix doc
         return self._metadata
 
     @metadata.setter
     def metadata(self, metadata: Optional["Metadata"]):
-        """Set annotations.
+        """Set the metadata of the object.
 
         Parameters
         ----------
-        annotation: dict
-            Annotation dictionary to set _annotation to. Will raise error if not dict.
-
-        Raises
-        ------
-        TypeError if annotation not a dict.
+        metadata: Metadata
+            Metadata object containing annotations and object history.
         """
-        # TODO: Fix doc
         from cobra.core.metadata import Metadata
         from cobra.core.metadata.standardized import SimplifiedAnnotationInterface
 
@@ -122,10 +116,60 @@ class Object:
 
     @property
     def annotation(self) -> "SimplifiedAnnotationInterface":
+        """Access standardized annotations through a dict-like interface.
+
+        Warnings
+        --------
+        This attribute is in place to retain compatibility with older cobrapy versions.
+        For new code, it is recommended to directly use the methods of
+        StandardizedAnnotationStore, which can be accessed through
+        `object.metadata.standardized`.
+
+        Returns
+        -------
+        SimplifiedAnnotationInterface
+
+        See Also
+        --------
+        StandardizedAnnotationStore
+        SimplifiedAnnotationInterface
+        """
         return self._annotation
 
     @annotation.setter
-    def annotation(self, value):
+    def annotation(
+        self,
+        value: Union[
+            Dict,
+            "SimplifiedAnnotationInterface",
+            List[Union[str, "Resource", Tuple[str, Union[str, List[str]]]]],
+        ],
+    ):
+        """Set the standardized annotations using a dict-like object.
+
+        This method removes all standardized annotations and adds the ones provided as
+        argument.
+
+        Warnings
+        --------
+        This attribute is in place to retain compatibility with older cobrapy versions.
+        For new code, it is recommended to directly use the methods of
+        StandardizedAnnotationStore, which can be accessed through
+        `object.metadata.standardized`.
+
+        Parameters
+        ----------
+        value: dict, SimplifiedAnnotationInterface, list of str, Resource or tuples.
+            Sets resources as annotations, using default qualifiers. Tuples are
+            interpreted as namespace-identifiers pairs, strings should be valid URIs and
+            if a dictionary is provided, its keys should represent namespaces and its
+            values identifiers.
+
+        See Also
+        --------
+        SimplifiedAnnotationInterface.clear
+        SimplifiedAnnotationInterface.add
+        """
         self._annotation.clear()
         self._annotation.add(value)
 
@@ -148,6 +192,25 @@ class Object:
             ],
         ],
     ):
+        """Add annotations to the metadata object by inferring the annotation type.
+
+        If a StandardizedAnnotation or CustomAnnotation object is present, it is added
+        to the `standardized` or `custom` attribute, respectively. Strings, tuples, and
+        Resource objects are added using the `SimplifiedAnnotationInterface`, which
+        means that they are added to the `standardized` attribute using a default
+        qualifier (typically Qualifier.Biological_is).
+
+        Parameters
+        ----------
+        annotations: (list of) StandardizedAnnotation, CustomAnnotation, str, tuple
+            Annotations to add to the metadata.
+
+        See Also
+        --------
+        StandardizedAnnotationStore.add
+        CustomAnnotationStore.add
+        SimplifiedAnnotationInterface.add
+        """
         from cobra.core.metadata import (
             CustomAnnotation,
             Resource,
@@ -163,10 +226,15 @@ class Object:
         for annotation in annotations:
             if isinstance(annotation, (str, tuple, Resource)):
                 self.annotation.add(annotation)
-            if isinstance(annotation, StandardizedAnnotation):
+            elif isinstance(annotation, StandardizedAnnotation):
                 self.metadata.standardized.add([annotation])
             elif isinstance(annotation, CustomAnnotation):
                 self.metadata.custom.add(annotation)
+            else:
+                raise TypeError(
+                    "Could not convert object to annotation: "
+                    f"{annotation} ({type(annotation)})"
+                )
 
     def remove_annotations(
         self,
@@ -176,6 +244,22 @@ class Object:
             Iterable[Union["StandardizedAnnotation", "CustomAnnotation"]],
         ],
     ):
+        """Remove an annotation from the Metadata object.
+
+        This method only accepts StandardAnnotation and CustomAnnotation objects, or a
+        list thereof, and removes them from the corresponding annotation stores at
+        Metadata.standardized and Metadata.custom.
+
+        Parameters
+        ----------
+        annotations: (list of) StandardAnnotation or CustomAnnotation objects
+            Annotations to remove from metadata.
+
+        See Also
+        --------
+        StandardizedAnnotationStore.remove
+        CustomAnnotationStore.remove
+        """
         from cobra.core.metadata import CustomAnnotation, StandardizedAnnotation
 
         if isinstance(annotations, StandardizedAnnotation) or isinstance(
@@ -188,6 +272,11 @@ class Object:
                 self.metadata.standardized.remove(annotation)
             elif isinstance(annotation, CustomAnnotation):
                 self.metadata.custom.remove(annotation)
+            else:
+                raise TypeError(
+                    "All annotations should be of type StandardizedAnnotation "
+                    f"or CustomAnnotation, not: {type(annotation)}."
+                )
 
     def __getstate__(self) -> dict:
         """Get state of annotation.

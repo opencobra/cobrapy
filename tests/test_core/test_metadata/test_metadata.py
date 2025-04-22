@@ -446,6 +446,7 @@ def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
 
 
 def test_read_old_json_model(data_directory):
+    """Test reading a schema v1 json model with old-style annotations."""
     model = load_json_model(Path(data_directory / "valid_annotation_format.json"))
     meta = model.metabolites[0]
 
@@ -569,7 +570,8 @@ def test_cvtermlist_query():
     # assert (
     #     len(
     #         cvtermlist.query(
-    #             search_function=lambda x: x.nested_data, attribute="external_resources"
+    #             search_function=lambda x: x.nested_data,
+    #             attribute="external_resources"
     #         )
     #     )
     #     == 1

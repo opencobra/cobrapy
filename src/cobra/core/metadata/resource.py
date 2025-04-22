@@ -1,3 +1,9 @@
+"""Classes and functions to handle standardized annotation resources and qualifiers.
+
+Resources represent a piece of information that relates to a cobrapy object through a
+Qualifier, as captured in the  StandardizedAnnotation class.
+"""
+
 import logging
 import re
 from enum import Enum
