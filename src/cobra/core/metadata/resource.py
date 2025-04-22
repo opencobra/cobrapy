@@ -25,7 +25,7 @@ URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")
 
 
 class Qualifier(Enum):
-    """The possible qualifiers inside a CVTerm.
+    """The possible qualifiers of a standardized annotation.
 
     The qualifiers and their detailed description are present in:
     https://co.mbine.org/author/biomodels.net-qualifiers/
@@ -36,6 +36,10 @@ class Qualifier(Enum):
                         annotation.
     Modelling (bqm)     These kinds of qualifiers define the relationship between a
                         modelling object and its annotation.
+
+    See Also
+    --------
+    StandardizedAnnotation
     """
 
     def __init__(self, value):
@@ -156,10 +160,20 @@ class Resource:
         )
 
     def _repr_html(self) -> str:
-        s = f"Resource: {self.uri}"
-        if self.namespace is not None:
-            s = f"{s} ({self.namespace}: {self.identifier})"
-        return s
+        """Return the resource as an HTML string."""
+        return f"""
+        <table>
+            <tr>
+                <td><strong>URI</strong></td><td>{self.uri}</td>
+            </tr><tr>
+                <td><strong>Namespace</strong></td><td>{self.namespace}</td>
+            </tr><tr>
+                <td><strong>Identifier</strong></td><td>{self.identifier}</td>
+            </tr><tr>
+                <td><strong>Memory address</strong></td>
+                <td>{id(self):#x}</td>
+            </tr>
+        </table>"""
 
     def __eq__(self, other: Any):
         if isinstance(other, str):

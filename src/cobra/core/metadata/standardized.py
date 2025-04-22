@@ -477,14 +477,38 @@ class StandardizedAnnotation:
             HTML formatted string
         """
         # TODO: Fix this HTML
-        return f"""
-                    {self.qualifier.name}:
-                    <p><strong>Resource</strong>
-                    {"</p><p>".join([res._repr_html() for res in self.resources])}
-                    <p><strong>Annotations</strong></p>
-                    <p>{self.annotations._repr_html_()}</p>
-                    <strong>Memory address</strong>{id(self):#x}
-                """
+        cols = {
+            "uri": "<td><strong>URI</strong></td>",
+            "namespace": "<td><strong>Namespace</strong></td>",
+            "identifier": "<td><strong>Identifier</strong></td>",
+            "address": "<td><strong>Memory address</strong></td>",
+        }
+        n = len(self.resources)
+        s = f"""<table>
+            <tr>
+                <td><strong>Qualifier</strong></td>
+                <td colspan='{n}'
+                    style='border-bottom: solid black 1px; text-align: center;'>
+                    {self.qualifier}
+                </td>
+            </tr>"""
+        for resource in self.resources:
+            cols["uri"] += f"<td>{resource.uri}</td>"
+            cols["namespace"] += f"<td>{resource.namespace}</td>"
+            cols["identifier"] += f"<td>{resource.identifier}</td>"
+            cols["address"] += f"<td>{id(resource):#x}</td>"
+        for v in cols.values():
+            s += f"<tr>{v}</tr>"
+        if self.annotations:
+            s += f"""<tr>
+                <td><strong>Nested<br />annotations</strong></td>
+                <td colspan='{n}'>"""
+            for annotation in self.annotations:
+                s += annotation._repr_html_()
+            s += "</td></tr>"
+
+        s += "</table>"
+        return s
 
 
 class StandardizedAnnotationStore(UserList):
@@ -999,7 +1023,7 @@ class StandardizedAnnotationStore(UserList):
         str
             HTML representation of the list of CVTerm resources.
         """
-        entries = [cvterm._repr_html_() for cvterm in self.data]
+        entries = [annotation._repr_html_() for annotation in self]
         return f"""StandardizedAnnotationStore{"<p>".join(entries)}"""
 
 
