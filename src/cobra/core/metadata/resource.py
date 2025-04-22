@@ -59,7 +59,7 @@ class Qualifier(Enum):
     Modelling_unknown = "bqm_unknown"
 
 
-class Identifier:
+class Resource:
     def __init__(self, uri: str) -> None:
         self._namespace = None
         self._identifier = None
@@ -72,32 +72,32 @@ class Identifier:
             self._parent = parent
         else:
             raise ValueError(
-                "Identifier already has a different parent. Create a new "
-                "identifier if you would like to add an identifier to a second object."
+                "Resource already has a different parent. Create a new "
+                "resource if you would like to add a resource to a second object."
             )
 
     def remove_from_parent(self):
         if self._parent is None:
             raise ValueError(
-                "Cannot remove identifier, since no parent is associated with identifier."
+                "Cannot remove resource, since no parent is associated with resource."
             )
-        self._parent._remove_identifier(self)
+        self._parent._remove_resource(self)
         self._parent = None
 
     @classmethod
-    def from_data(cls, data: Union[Dict[str, str], Tuple[str, str], str, "Identifier"]):
-        if isinstance(data, Identifier):
+    def from_data(cls, data: Union[Dict[str, str], Tuple[str, str], str, "Resource"]):
+        if isinstance(data, Resource):
             return data
         if isinstance(data, str):
-            return Identifier(data)
+            return Resource(data)
         if not isinstance(data, (dict, tuple)):
             raise TypeError(
-                f"Identifiers can be created from str, tuple, dict, or Identifier"
+                f"Resources can be created from str, tuple, dict, or Resource"
                 f"types, not {type(data)}."
             )
         if isinstance(data, dict):
             if (uri := data.get("uri", None)) is not None:
-                return Identifier(uri)
+                return Resource(uri)
             namespace = data["namespace"].lower()
             identifier = data["identifier"]
         else:
@@ -105,7 +105,7 @@ class Identifier:
         if not isinstance(namespace, str) or not isinstance(identifier, str):
             raise TypeError("Namespace and identifier should be of type str.")
         uri = f"https://identifiers.org/{namespace}/{identifier}"
-        return Identifier(uri)
+        return Resource(uri)
 
     @property
     def uri(self) -> str:
@@ -150,7 +150,7 @@ class Identifier:
         )
 
     def _repr_html(self) -> str:
-        s = f"Identifier: {self.uri}"
+        s = f"Resource: {self.uri}"
         if self.namespace is not None:
             s = f"{s} ({self.namespace}: {self.identifier})"
         return s
@@ -158,7 +158,7 @@ class Identifier:
     def __eq__(self, other: Any):
         if isinstance(other, str):
             return self.uri == other
-        if isinstance(other, Identifier):
+        if isinstance(other, Resource):
             return self.uri == other.uri
         if isinstance(other, dict):
             return self.uri == other.get("uri")

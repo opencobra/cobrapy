@@ -17,7 +17,7 @@
               "qualifiers": {
                 "type": "string"
               },
-              "identifiers": {
+              "resources": {
                 "type": "array",
                 "items": {
                   "type": "string"

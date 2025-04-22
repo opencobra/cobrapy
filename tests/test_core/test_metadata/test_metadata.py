@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from cobra import Model
-from cobra.core.metadata import Identifier, MetaData, Qualifier, StandardizedAnnotation
+from cobra.core.metadata import Metadata, Qualifier, StandardizedAnnotation
 from cobra.core.metadata.standardized import (
     SimplifiedAnnotationInterface,
     StandardizedAnnotationStore,
@@ -35,29 +35,29 @@ RESOURCE_LIST = [
 ECOLI_MODEL_ANNOTATIONS = [
     {
         "qualifier": "bqb_hasTaxon",
-        "identifiers": ["http://identifiers.org/taxonomy/511145"],
+        "resources": ["http://identifiers.org/taxonomy/511145"],
     },
     {
         "qualifier": "bqm_is",
-        "identifiers": ["http://identifiers.org/bigg.model/e_coli_core"],
+        "resources": ["http://identifiers.org/bigg.model/e_coli_core"],
         "annotations": [
             {
                 "qualifier": "bqb_isDescribedBy",
-                "identifiers": [PUBMED_EXAMPLE],
+                "resources": [PUBMED_EXAMPLE],
             },
             {
                 "qualifier": "bqb_isDescribedBy",
-                "identifiers": [ECO_EXAMPLE],
+                "resources": [ECO_EXAMPLE],
             },
         ],
     },
     {
         "qualifier": "bqm_isDescribedBy",
-        "identifiers": ["http://identifiers.org/doi/10.1128/ecosalplus.10.2.1"],
+        "resources": ["http://identifiers.org/doi/10.1128/ecosalplus.10.2.1"],
     },
     {
         "qualifier": "bqm_isDescribedBy",
-        "identifiers": ["http://identifiers.org/ncbiprotein/16128336"],
+        "resources": ["http://identifiers.org/ncbiprotein/16128336"],
     },
 ]
 COBRA_URL = "https://cobrapy.readthedocs.io/"
@@ -115,7 +115,7 @@ def test_annotation() -> None:
         [
             StandardizedAnnotation(
                 qualifier=Qualifier.Biological_is,
-                identifiers=[
+                resources=[
                     "https://identifiers.org/chebi/CHEBI:43215",
                     "https://identifiers.org/chebi/CHEBI:11881",
                 ],
@@ -129,12 +129,12 @@ def test_annotation() -> None:
     # assert s.metadata.standardized == cvt
     s.metadata.standardized = []
     assert s.metadata.standardized == StandardizedAnnotationStore()
-    assert s.metadata.standardized.identifiers == frozenset()
+    assert s.metadata.standardized.resources == frozenset()
     assert s.metadata.standardized == {}
 
     s.metadata.standardized = cvt
 
-    assert s.metadata.standardized.identifiers == {
+    assert s.metadata.standardized.resources == {
         "https://identifiers.org/chebi/CHEBI:43215",
         "https://identifiers.org/chebi/CHEBI:11881",
     }
@@ -157,7 +157,7 @@ def test_annotation() -> None:
         [
             StandardizedAnnotation(
                 qualifier="bqb_is",
-                identifiers=["https://identifiers.org/chebi/CHEBI:11881"],
+                resources=["https://identifiers.org/chebi/CHEBI:11881"],
             ),
             StandardizedAnnotation("https://identifiers.org/chebi/CHEBI:43215"),
         ]
@@ -190,11 +190,11 @@ def test_old_style_annotation() -> None:
     with pytest.raises(TypeError):
         s.annotation.add({"chebi": [["CHEBI:123", "CHEBI:1234"]]})
     assert len(s.annotation) == 1
-    assert s.annotation.number_of_identifiers == 3
+    assert s.annotation.number_of_resources == 3
     s.annotation["eco"] = "123"
     assert len(s.annotation) == 2
-    assert s.annotation.number_of_identifiers == 4
-    ref_ann = MetaData()
+    assert s.annotation.number_of_resources == 4
+    ref_ann = Metadata()
     simpl_ann = SimplifiedAnnotationInterface(ref_ann)
     simpl_ann.add(
         {
@@ -206,8 +206,8 @@ def test_old_style_annotation() -> None:
 
     s.annotation.delete_annotation("CHEBI:172345")
     assert len(s.annotation) == 2
-    assert s.annotation.number_of_identifiers == 3
-    ref_ann = MetaData()
+    assert s.annotation.number_of_resources == 3
+    ref_ann = Metadata()
     simpl_ann = SimplifiedAnnotationInterface(ref_ann)
     simpl_ann.add(
         {
@@ -221,16 +221,16 @@ def test_old_style_annotation() -> None:
     del s.annotation["chebi"]
     print(s.annotation.to_dict())
     assert len(s.annotation) == 1
-    assert s.annotation.number_of_identifiers == 1
+    assert s.annotation.number_of_resources == 1
 
     s.annotation.add({"chebi": "CHEBI:17234"})
     s.annotation.add({"chebi": ["CHBEI:1723456", "CHEBI:172345"]})
     assert len(s.annotation) == 2
-    assert s.annotation.number_of_identifiers == 4
+    assert s.annotation.number_of_resources == 4
     s.annotation["chebi"] = ["CHEBI:123", "CHEBI:1234"]
     assert len(s.annotation) == 2
-    assert s.annotation.number_of_identifiers == 3
-    ref_ann = MetaData()
+    assert s.annotation.number_of_resources == 3
+    ref_ann = Metadata()
     simpl_ann = SimplifiedAnnotationInterface(ref_ann)
     simpl_ann.add({"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"]})
     assert s.metadata == ref_ann
@@ -238,20 +238,20 @@ def test_old_style_annotation() -> None:
     assert len(s.annotation.keys()) == 2
 
     s.annotation["chebi"] = []
-    assert s.annotation.number_of_identifiers == 1
+    assert s.annotation.number_of_resources == 1
 
     s.annotation.clear()
 
     assert len(s.annotation.keys()) == 0
 
     s.annotation = {"chebi": ["CHEBI:123", "CHEBI:1234"], "eco": ["123"]}
-    assert s.annotation.number_of_identifiers == 3
+    assert s.annotation.number_of_resources == 3
     s.annotation = {
         "chebi": ["CHEBI:123", "CHEBI:1234"],
         "eco": ["123"],
         "sbo": ["SBO:0000123"],
     }
-    assert s.annotation.number_of_identifiers == 4
+    assert s.annotation.number_of_resources == 4
 
 
 def test_nested_annotation(data_directory: Path) -> None:
@@ -277,7 +277,7 @@ def test_nested_annotation(data_directory: Path) -> None:
     # check standardized
     main_cvt = [
         {
-            "identifiers": [
+            "resources": [
                 "https://identifiers.org/uniprot/P69905",
                 "https://identifiers.org/uniprot/P68871",
                 "https://identifiers.org/kegg.compound/C00032",
@@ -286,7 +286,7 @@ def test_nested_annotation(data_directory: Path) -> None:
         },
         {
             "qualifier": "bqb_hasPart",
-            "identifiers": [
+            "resources": [
                 "https://identifiers.org/uniprot/P69905",
                 "https://www.uniprot.org/uniprot/P68871",
                 "https://identifiers.org/chebi/CHEBI:17627",
@@ -294,7 +294,7 @@ def test_nested_annotation(data_directory: Path) -> None:
             "annotations": [
                 {
                     "qualifier": "bqb_isDescribedBy",
-                    "identifiers": [
+                    "resources": [
                         PUBMED_EXAMPLE,
                         "https://identifiers.org/eco/000000",
                     ],
@@ -305,7 +305,7 @@ def test_nested_annotation(data_directory: Path) -> None:
     nested_cvt = [
         {
             "qualifier": "bqb_isDescribedBy",
-            "identifiers": [PUBMED_EXAMPLE, "https://identifiers.org/eco/000000"],
+            "resources": [PUBMED_EXAMPLE, "https://identifiers.org/eco/000000"],
         }
     ]
     assert s.metadata.standardized == main_cvt
@@ -321,11 +321,11 @@ def test_cvterms_from_ecoli_xml(annotation_model: Model) -> None:
     nested_cvt = [
         {
             "qualifier": "bqb_isDescribedBy",
-            "identifiers": [PUBMED_EXAMPLE],
+            "resources": [PUBMED_EXAMPLE],
         },
         {
             "qualifier": "bqb_isDescribedBy",
-            "identifiers": [ECO_EXAMPLE],
+            "resources": [ECO_EXAMPLE],
         },
     ]
     ecoli_model_cvterm = StandardizedAnnotationStore.from_data(ECOLI_MODEL_ANNOTATIONS)
@@ -483,7 +483,7 @@ def test_read_old_json_model(data_directory):
 #
 #     # testing standardized
 #     expected_cvterms = StandardizedAnnotationStore.from_data(
-#         [{"qualifier": "bqb_is", "identifiers": RESOURCE_LIST}]
+#         [{"qualifier": "bqb_is", "resources": RESOURCE_LIST}]
 #     )
 #     assert meta.metadata.standardized == expected_cvterms
 #     assert meta.metadata.standardized == [
@@ -508,16 +508,16 @@ def test_cvtermlist_query():
     cvtermlist = StandardizedAnnotationStore()
     for i, res in enumerate(resources):
         cvtermlist.extend(
-            [StandardizedAnnotation(qualifier=list(Qualifier._map)[i], identifiers=res)]
+            [StandardizedAnnotation(qualifier=list(Qualifier._map)[i], resources=res)]
         )
 
     cvtermlist.append(
         StandardizedAnnotation(
-            identifiers=ECO_EXAMPLE,
+            resources=ECO_EXAMPLE,
             annotations=[
                 StandardizedAnnotation(
                     qualifier=Qualifier.Biological_isDescribedBy,
-                    identifiers=PUBMED_EXAMPLE,
+                    resources=PUBMED_EXAMPLE,
                 )
             ],
             qualifier=list(Qualifier._map)[19],

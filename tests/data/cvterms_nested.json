@@ -1,6 +1,6 @@
 [
   {
-    "identifiers": [
+    "resources": [
       "https://identifiers.org/uniprot/P69905",
       "https://identifiers.org/uniprot/P68871",
       "https://identifiers.org/kegg.compound/C00032"
@@ -9,7 +9,7 @@
   },
   {
     "qualifier": "bqb_hasPart",
-    "identifiers": [
+    "resources": [
       "https://identifiers.org/uniprot/P69905",
       "https://www.uniprot.org/uniprot/P68871",
       "https://identifiers.org/chebi/CHEBI:17627"
@@ -17,7 +17,7 @@
     "annotations": [
       {
         "qualifier": "bqb_isDescribedBy",
-        "identifiers": [
+        "resources": [
           "https://identifiers.org/pubmed/1111111",
           "https://identifiers.org/eco/000000"
         ]

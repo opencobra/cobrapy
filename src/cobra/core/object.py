@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Iterable, Optional, Tuple, Union
 if TYPE_CHECKING:
     from cobra.core.metadata import (
         CustomAnnotation,
-        Identifier,
-        MetaData,
+        Metadata,
+        Resource,
         StandardizedAnnotation,
     )
     from cobra.core.metadata.standardized import SimplifiedAnnotationInterface
@@ -80,7 +80,7 @@ class Object:
         self._id = value
 
     @property
-    def metadata(self) -> "MetaData":
+    def metadata(self) -> "Metadata":
         """Get annotation dictionary.
 
         Returns
@@ -92,7 +92,7 @@ class Object:
         return self._metadata
 
     @metadata.setter
-    def metadata(self, metadata: Optional["MetaData"]):
+    def metadata(self, metadata: Optional["Metadata"]):
         """Set annotations.
 
         Parameters
@@ -105,19 +105,19 @@ class Object:
         TypeError if annotation not a dict.
         """
         # TODO: Fix doc
-        from cobra.core.metadata import MetaData
+        from cobra.core.metadata import Metadata
         from cobra.core.metadata.standardized import SimplifiedAnnotationInterface
 
         if metadata is None:
-            self._metadata = MetaData()
+            self._metadata = Metadata()
             self._annotation = SimplifiedAnnotationInterface(self._metadata)
-        elif isinstance(metadata, MetaData):
+        elif isinstance(metadata, Metadata):
             self._metadata = metadata
             self._annotation = SimplifiedAnnotationInterface(self._metadata)
         else:
             raise TypeError(
                 f"The data passed for annotation must be inside "
-                f"a dictionary or MetaData: {metadata}"
+                f"a dictionary or Metadata: {metadata}"
             )
 
     @property
@@ -133,14 +133,14 @@ class Object:
         self,
         annotations: Union[
             str,
-            "Identifier",
+            "Resource",
             Tuple[str, str],
             "StandardizedAnnotation",
             "CustomAnnotation",
             Iterable[
                 Union[
                     str,
-                    "Identifier",
+                    "Resource",
                     Tuple[str, str],
                     "StandardizedAnnotation",
                     "CustomAnnotation",
@@ -150,18 +150,18 @@ class Object:
     ):
         from cobra.core.metadata import (
             CustomAnnotation,
-            Identifier,
+            Resource,
             StandardizedAnnotation,
         )
 
         if isinstance(
             annotations,
-            (str, tuple, Identifier, StandardizedAnnotation, CustomAnnotation),
+            (str, tuple, Resource, StandardizedAnnotation, CustomAnnotation),
         ):
             annotations = [annotations]
 
         for annotation in annotations:
-            if isinstance(annotation, (str, tuple, Identifier)):
+            if isinstance(annotation, (str, tuple, Resource)):
                 self.annotation.add(annotation)
             if isinstance(annotation, StandardizedAnnotation):
                 self.metadata.standardized.add([annotation])

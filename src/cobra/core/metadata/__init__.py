@@ -1,7 +1,7 @@
 """Provide functions for loading, saving and modifying metadata annotations."""
 
-from cobra.core.metadata.identifier import (
-    Identifier,
+from cobra.core.metadata.resource import (
+    Resource,
     Qualifier,
     URL_IDENTIFIERS_PATTERN,
     parse_identifiers_uri,
@@ -12,4 +12,4 @@ from cobra.core.metadata.standardized import (
 )
 from cobra.core.metadata.history import Creator, History
 from cobra.core.metadata.custom import CustomAnnotation, CustomAnnotationStore
-from cobra.core.metadata.metadata import MetaData
+from cobra.core.metadata.metadata import Metadata

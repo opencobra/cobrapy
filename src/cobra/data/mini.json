@@ -29,11 +29,11 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "https://identifiers.org/ncbiprotein/1208453",
                             "https://identifiers.org/ncbiprotein/1652654"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -92,10 +92,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "https://identifiers.org/ncbiprotein/1653839"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -110,10 +110,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "https://identifiers.org/ncbiprotein/1653609"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -136,11 +136,11 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "https://identifiers.org/ncbiprotein/1006614",
                             "https://identifiers.org/ncbiprotein/1651919"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -155,10 +155,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "https://identifiers.org/ncbiprotein/1653253"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -184,7 +184,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/13dpg",
                             "http://identifiers.org/biocyc/DPG",
                             "http://identifiers.org/chebi/CHEBI:16001",
@@ -198,8 +199,7 @@
                             "http://identifiers.org/reactome/REACT_29800",
                             "http://identifiers.org/seed.compound/cpd00203",
                             "http://identifiers.org/unipathway.compound/UPC00236"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -213,7 +213,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/2pg",
                             "http://identifiers.org/biocyc/2-PG",
                             "http://identifiers.org/chebi/CHEBI:1267",
@@ -231,8 +232,7 @@
                             "http://identifiers.org/reactome/REACT_30485",
                             "http://identifiers.org/seed.compound/cpd00482",
                             "http://identifiers.org/unipathway.compound/UPC00631"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -246,7 +246,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/3pg",
                             "http://identifiers.org/biocyc/G3P",
                             "http://identifiers.org/chebi/CHEBI:40016",
@@ -270,8 +271,7 @@
                             "http://identifiers.org/seed.compound/cpd00169",
                             "http://identifiers.org/unipathway.compound/UPC00597",
                             "http://identifiers.org/unipathway.compound/UPC00197"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -285,7 +285,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/adp",
                             "http://identifiers.org/biocyc/ADP",
                             "http://identifiers.org/biocyc/ADP-GROUP",
@@ -314,8 +315,7 @@
                             "http://identifiers.org/reactome/REACT_429153",
                             "http://identifiers.org/seed.compound/cpd00008",
                             "http://identifiers.org/unipathway.compound/UPC00008"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -329,7 +329,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/atp",
                             "http://identifiers.org/biocyc/ATP",
                             "http://identifiers.org/cas/56-65-5",
@@ -357,8 +358,7 @@
                             "http://identifiers.org/reactome/REACT_211579",
                             "http://identifiers.org/seed.compound/cpd00002",
                             "http://identifiers.org/unipathway.compound/UPC00002"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -372,7 +372,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/dhap",
                             "http://identifiers.org/biocyc/DIHYDROXY-ACETONE-PHOSPHATE",
                             "http://identifiers.org/cas/57-04-5",
@@ -393,8 +394,7 @@
                             "http://identifiers.org/reactome/REACT_390404",
                             "http://identifiers.org/seed.compound/cpd00095",
                             "http://identifiers.org/unipathway.compound/UPC00111"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -408,7 +408,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/f6p",
                             "http://identifiers.org/biocyc/FRUCTOSE-6P",
                             "http://identifiers.org/cas/643-13-0",
@@ -429,8 +430,7 @@
                             "http://identifiers.org/seed.compound/cpd00072",
                             "http://identifiers.org/unipathway.compound/UPC05345",
                             "http://identifiers.org/unipathway.compound/UPC00085"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -444,7 +444,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/fdp",
                             "http://identifiers.org/biocyc/FRUCTOSE-16-DIPHOSPHATE",
                             "http://identifiers.org/cas/488-69-7",
@@ -466,8 +467,7 @@
                             "http://identifiers.org/pubchem.substance/3647",
                             "http://identifiers.org/seed.compound/cpd00290",
                             "http://identifiers.org/unipathway.compound/UPC00354"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -481,7 +481,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/g3p",
                             "http://identifiers.org/cas/142-10-9",
                             "http://identifiers.org/cas/142-10-9",
@@ -496,8 +497,7 @@
                             "http://identifiers.org/seed.compound/cpd00102",
                             "http://identifiers.org/unipathway.compound/UPC00661",
                             "http://identifiers.org/unipathway.compound/UPC00118"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -511,7 +511,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/g6p",
                             "http://identifiers.org/biocyc/D-glucose-6-phosphate",
                             "http://identifiers.org/biocyc/GLC-6-P",
@@ -535,8 +536,7 @@
                             "http://identifiers.org/reactome/REACT_1629756",
                             "http://identifiers.org/seed.compound/cpd00079",
                             "http://identifiers.org/unipathway.compound/UPC00092"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -550,14 +550,14 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/glc__D",
                             "http://identifiers.org/cas/50-99-7",
                             "http://identifiers.org/cas/50-99-7",
                             "http://identifiers.org/kegg.compound/C00031",
                             "http://identifiers.org/pubchem.substance/3333"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -571,7 +571,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/h2o",
                             "http://identifiers.org/biocyc/WATER",
                             "http://identifiers.org/biocyc/OH",
@@ -631,8 +632,7 @@
                             "http://identifiers.org/seed.compound/cpd00001",
                             "http://identifiers.org/unipathway.compound/UPC00001",
                             "http://identifiers.org/unipathway.compound/UPC01328"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -646,7 +646,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/h2o",
                             "http://identifiers.org/biocyc/WATER",
                             "http://identifiers.org/biocyc/OH",
@@ -706,8 +707,7 @@
                             "http://identifiers.org/seed.compound/cpd00001",
                             "http://identifiers.org/unipathway.compound/UPC00001",
                             "http://identifiers.org/unipathway.compound/UPC01328"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -721,7 +721,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/h",
                             "http://identifiers.org/biocyc/PROTON",
                             "http://identifiers.org/cas/12408-02-5",
@@ -754,8 +755,7 @@
                             "http://identifiers.org/reactome/REACT_427899",
                             "http://identifiers.org/seed.compound/cpd00067",
                             "http://identifiers.org/unipathway.compound/UPC00080"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -769,7 +769,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/h",
                             "http://identifiers.org/biocyc/PROTON",
                             "http://identifiers.org/cas/12408-02-5",
@@ -802,8 +803,7 @@
                             "http://identifiers.org/reactome/REACT_427899",
                             "http://identifiers.org/seed.compound/cpd00067",
                             "http://identifiers.org/unipathway.compound/UPC00080"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -817,7 +817,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/lac__D",
                             "http://identifiers.org/biocyc/META:D-LACTATE",
                             "http://identifiers.org/chebi/CHEBI:11001",
@@ -832,8 +833,7 @@
                             "http://identifiers.org/kegg.compound/C00256",
                             "http://identifiers.org/metanetx.chemical/MNXM285",
                             "http://identifiers.org/seed.compound/cpd00221"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -847,7 +847,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/lac__D",
                             "http://identifiers.org/biocyc/META:D-LACTATE",
                             "http://identifiers.org/chebi/CHEBI:11001",
@@ -862,8 +863,7 @@
                             "http://identifiers.org/kegg.compound/C00256",
                             "http://identifiers.org/metanetx.chemical/MNXM285",
                             "http://identifiers.org/seed.compound/cpd00221"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -877,7 +877,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/nad",
                             "http://identifiers.org/biocyc/NAD",
                             "http://identifiers.org/cas/53-84-9",
@@ -903,8 +904,7 @@
                             "http://identifiers.org/reactome/REACT_113526",
                             "http://identifiers.org/seed.compound/cpd00003",
                             "http://identifiers.org/unipathway.compound/UPC00003"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -918,7 +918,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/nadh",
                             "http://identifiers.org/biocyc/NADH",
                             "http://identifiers.org/cas/58-68-4",
@@ -939,8 +940,7 @@
                             "http://identifiers.org/reactome/REACT_29362",
                             "http://identifiers.org/seed.compound/cpd00004",
                             "http://identifiers.org/unipathway.compound/UPC00004"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -954,7 +954,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/pep",
                             "http://identifiers.org/biocyc/PHOSPHO-ENOL-PYRUVATE",
                             "http://identifiers.org/cas/138-08-9",
@@ -974,8 +975,7 @@
                             "http://identifiers.org/reactome/REACT_372364",
                             "http://identifiers.org/seed.compound/cpd00061",
                             "http://identifiers.org/unipathway.compound/UPC00074"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -989,7 +989,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/pi",
                             "http://identifiers.org/biocyc/Pi",
                             "http://identifiers.org/biocyc/PHOSPHATE-GROUP",
@@ -1037,8 +1038,7 @@
                             "http://identifiers.org/seed.compound/cpd09463",
                             "http://identifiers.org/seed.compound/cpd00009",
                             "http://identifiers.org/unipathway.compound/UPC00009"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1052,7 +1052,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/pi",
                             "http://identifiers.org/biocyc/Pi",
                             "http://identifiers.org/biocyc/PHOSPHATE-GROUP",
@@ -1100,8 +1101,7 @@
                             "http://identifiers.org/seed.compound/cpd09463",
                             "http://identifiers.org/seed.compound/cpd00009",
                             "http://identifiers.org/unipathway.compound/UPC00009"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1115,7 +1115,8 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.metabolite/pyr",
                             "http://identifiers.org/biocyc/PYRUVATE",
                             "http://identifiers.org/cas/127-17-3",
@@ -1136,8 +1137,7 @@
                             "http://identifiers.org/reactome/REACT_29398",
                             "http://identifiers.org/seed.compound/cpd00020",
                             "http://identifiers.org/unipathway.compound/UPC00022"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1159,10 +1159,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/ATPM"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1190,10 +1190,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/ENO"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1211,10 +1211,10 @@
                 "sbo": "SBO:0000627",
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/glc"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1232,10 +1232,10 @@
                 "sbo": "SBO:0000627",
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/h"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1253,10 +1253,10 @@
                 "sbo": "SBO:0000627",
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/lac__D"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1275,10 +1275,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/FBA"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1300,10 +1300,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/GAPD"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1323,10 +1323,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/GLCpts"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1344,10 +1344,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/H2Ot"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1369,7 +1369,8 @@
                 "sbo": "SBO:0000375",
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/LDH_D",
                             "http://identifiers.org/biocyc/META:DLACTDEHYDROGNAD-RXN",
                             "http://identifiers.org/ec-code/1.1.1.28",
@@ -1379,8 +1380,7 @@
                             "http://identifiers.org/rhea/16370",
                             "http://identifiers.org/rhea/16371",
                             "http://identifiers.org/rhea/16372"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1402,10 +1402,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/PFK"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1424,10 +1424,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/PGI"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1447,10 +1447,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/PGK"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1468,10 +1468,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/PGM"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1491,10 +1491,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/PIt2r"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1515,10 +1515,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/PYK"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },
@@ -1536,10 +1536,10 @@
             "metadata": {
                 "standardized": [
                     {
-                        "identifiers": [
+                        "qualifier": "bqb_is",
+                        "resources": [
                             "http://identifiers.org/bigg.reaction/TPI"
-                        ],
-                        "qualifier": "bqb_is"
+                        ]
                     }
                 ]
             },

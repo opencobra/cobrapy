@@ -26,18 +26,18 @@ from typing import (
     Union,
 )
 
-from cobra.core.metadata import Identifier, Qualifier
-from cobra.core.metadata.identifier import get_default_qualifier
-from cobra.core.metadata.metadata import MetaData
+from cobra.core.metadata import Qualifier, Resource
+from cobra.core.metadata.metadata import Metadata
+from cobra.core.metadata.resource import get_default_qualifier
 
 
 StandardizedAnnotationInput: TypeAlias = Union[
-    "StandardizedAnnotation", dict, str, Identifier
+    "StandardizedAnnotation", dict, str, Resource
 ]
 
 
 class StandardizedAnnotation:
-    """Standardized annotation entry that defines a relation to MIRIAM identifiers.
+    """Standardized annotation entry that defines a relation to MIRIAM resources.
 
     `StandardizedAnnotation` can be used to annotate cobra objects in a structural and
     standardized manner. This improves interoperability with other tools and neatly
@@ -45,7 +45,7 @@ class StandardizedAnnotation:
     custom annotations (`CustomAnnotation), whenever possible.
 
     A StandardizedAnnotation object defines a set of MIRIAM (identifiers.org)
-    identifiers and their relation to a modelling object. Relations are defined using
+    resources and their relation to a modelling object. Relations are defined using
     the `Qualifier` enum, which defines a predefined set of qualifiers that either
     relate to the modelling object (e.g. `Qualifier.Modelling_is`) or relate to the
     biological object represented by the modelling object (e.g.
@@ -53,10 +53,10 @@ class StandardizedAnnotation:
 
     For example, the a cobra reaction representing a
     cytosolic transketolase reaction in Homo sapiens can be annotated with the
-    identifier "https://identifiers.org/reactome/R-HSA-163751" using the qualifier
+    resource "https://identifiers.org/reactome/R-HSA-163751" using the qualifier
     `Qualifier.Biological_is`, since the reactome entry R-HSA-163751 represents the
     biological reaction entity which is represented by the reaction object. Similarly,
-    the RHEA identifier "https://identifiers.org/rhea/RHEA:27628" can be added to the
+    the RHEA resource "https://identifiers.org/rhea/RHEA:27628" can be added to the
     same `StandardizedAnnotation` object, since it relates to the same information about
     the cobra reaction and `Qualifier.Biological_is` is also applicable. The EC code
     ("https://identifiers.org/ec-code/2.2.1.1") for the same reaction should however be
@@ -64,7 +64,7 @@ class StandardizedAnnotation:
     seen as a version of the enzymatic acivity represented by EC 2.2.1.1. Optionally, a
     standardized annotation object can have nested annotations. In the transketolase
     example, this could include a StandardizedAnnotation object with the qualifier
-    `Qualifier.Biological_isDescribedBy` and the identifier
+    `Qualifier.Biological_isDescribedBy` and the resource
     "https://identifiers.org/pubmed/9357955". This nested annotation adds additional
     information to the parent annotation, without changing its meaning.
 
@@ -76,8 +76,8 @@ class StandardizedAnnotation:
 
     def __init__(
         self,
-        identifiers: Optional[
-            Union["Identifier", str, Iterable[Union["Identifier", str]]]
+        resources: Optional[
+            Union["Resource", str, Iterable[Union["Resource", str]]]
         ] = None,
         qualifier: Union[Qualifier, str] = Qualifier.Biological_is,
         annotations: Optional[Iterable["StandardizedAnnotation"]] = None,
@@ -86,8 +86,8 @@ class StandardizedAnnotation:
 
         Parameters
         ----------
-        identifiers: Identifier, str, list or None, optional
-            The identifiers as `Identifier` objects or strings (URI format:
+        resources: Resource, str, list or None, optional
+            The resources as `Resource` objects or strings (URI format:
             https://identifiers.org/<namespace>/<id>). Default None.
         qualifier: Qualifier or str
             The qualifier for the relationship. Default `Qualifier.Biological_is`.
@@ -95,7 +95,7 @@ class StandardizedAnnotation:
             List of StandardizedAnnotation objects that represent addional (nested)
             annotations of this object.
         """
-        self._identifiers = self.check_identifier_type(identifiers)
+        self._resources = self.check_resource_type(resources)
         self._qualifier = self.check_qualifier_type(qualifier)
         self._annotations = StandardizedAnnotationStore.from_data(annotations)
         self._parent = None
@@ -127,8 +127,8 @@ class StandardizedAnnotation:
         self._parent.remove(self)
         self._parent = None
 
-    def _remove_identifier(self, identifier):
-        self.identifiers.remove(identifier)
+    def _remove_resource(self, resource):
+        self.resources.remove(resource)
 
     @property
     def qualifier(self) -> Qualifier:
@@ -155,50 +155,50 @@ class StandardizedAnnotation:
         self._qualifier = self.check_qualifier_type(qualifier)
 
     @property
-    def identifiers(self) -> List["Identifier"]:
-        """Get the list of identifiers.
+    def resources(self) -> List["Resource"]:
+        """Get the list of resources.
 
         Returns
         -------
-        list of Identifier objects
+        list of Resource objects
         """
-        return self._identifiers
+        return self._resources
 
-    @identifiers.setter
-    def identifiers(self, identifiers: Iterable[Union[str, "Identifier"]]) -> None:
-        """Set the identifiers.
+    @resources.setter
+    def resources(self, resources: Iterable[Union[str, "Resource"]]) -> None:
+        """Set the resources.
 
         Parameters
         ----------
-        identifiers: list of str or Identifier
+        resources: list of str or Resource
 
         See Also
         --------
-        StandardizedAnnotation.check_identifier_type()
+        StandardizedAnnotation.check_resource_type()
         """
-        if getattr(self, "_identifiers", None) is not None:
-            for idf in self._identifiers:
+        if getattr(self, "_resources", None) is not None:
+            for idf in self._resources:
                 idf._set_parent(None)
-        self._identifiers = self.check_identifier_type(identifiers)
-        for idf in self._identifiers:
+        self._resources = self.check_resource_type(resources)
+        for idf in self._resources:
             idf._set_parent(self)
 
-    def add_identifiers(self, identifiers: Iterable[Union[str, "Identifier"]]) -> None:
-        """Add identifiers to the standardized annotation.
+    def add_resources(self, resources: Iterable[Union[str, "Resource"]]) -> None:
+        """Add resources to the standardized annotation.
 
         Parameters
         ----------
-        identifiers: list of str or Identifier objects
-            List of identifiers to append to the existing ones.
+        resources: list of str or Resource objects
+            List of resources to append to the existing ones.
         """
-        identifiers = self.check_identifier_type(identifiers)
-        for idf in identifiers:
-            idf._set_parent(self)
-        self.identifiers.extend(identifiers)
+        resources = self.check_resource_type(resources)
+        for resource in resources:
+            resource._set_parent(self)
+        self.resources.extend(resources)
 
     @property
     def uris(self) -> FrozenSet[str]:
-        """Get the set of URIs represented by the identifiers of this annotation.
+        """Get the set of URIs represented by the resources of this annotation.
 
         Returns
         -------
@@ -206,9 +206,9 @@ class StandardizedAnnotation:
 
         See Also
         --------
-        Identifier.uri
+        Resource.uri
         """
-        resources = {entry.uri for entry in self.identifiers}
+        resources = {entry.uri for entry in self.resources}
         for entry in self.annotations:
             resources.update(entry.uris)
         return frozenset(resources)
@@ -234,23 +234,23 @@ class StandardizedAnnotation:
         self._annotations = StandardizedAnnotationStore.from_data(annotations)
 
     @staticmethod
-    def check_identifier_type(
-        identifiers: Optional[
+    def check_resource_type(
+        resources: Optional[
             Union[
-                "Identifier",
+                "Resource",
                 str,
                 Dict[str, str],
                 Tuple[str, str],
-                Iterable[Union["Identifier", str, Dict[str, str], Tuple[str, str]]],
+                Iterable[Union["Resource", str, Dict[str, str], Tuple[str, str]]],
             ]
         ],
-    ) -> List["Identifier"]:
-        """Check and parse identifiers.
+    ) -> List["Resource"]:
+        """Check and parse resources.
 
         Parameters
         ----------
-        identifiers: Identifier, str, dict, tuple, or list thereof, optional
-            Input data to check if it is or can be transformed to Identifier objects.
+        resources: Resource, str, dict, tuple, or list thereof, optional
+            Input data to check if it is or can be transformed to Resource objects.
             String must start with http:// or https:// to be acceptable.
             Dictionary must match the format required by from_data.
             If None is given, an empty StandardizedAnnotation object is returned.
@@ -258,22 +258,22 @@ class StandardizedAnnotation:
 
         Returns
         -------
-        list of Identifier objects
+        list of Resource objects
 
         See Also
         --------
-        Identifier.from_dict
+        Resource.from_dict
         """
-        if identifiers is None:
+        if resources is None:
             return []
-        elif isinstance(identifiers, (Identifier, str, dict)):
-            return [Identifier.from_data(identifiers)]
-        elif isinstance(identifiers, ABCIterable):
-            return [x for y in identifiers for x in __class__.check_identifier_type(y)]
+        elif isinstance(resources, (Resource, str, dict)):
+            return [Resource.from_data(resources)]
+        elif isinstance(resources, ABCIterable):
+            return [x for y in resources for x in __class__.check_resource_type(y)]
         else:
             raise TypeError(
-                f"Allowed types for identifiers are Identifier, str, or a list thereof,"
-                f"not {type(identifiers)}: {identifiers}"
+                f"Allowed types for resources are Resource, str, or a list thereof,"
+                f"not {type(resources)}: {resources}"
             )
 
     @staticmethod
@@ -318,12 +318,12 @@ class StandardizedAnnotation:
         dict:
             A dict that has up to three keys
             "qualifier" - the qualifier as a string
-            "identifiers" - the identifiers as list
+            "resources" - the resources as list
             "annotations" (optionally) - the nested annotations as a list
         """
         d = {
             "qualifier": self.qualifier.value,
-            "identifiers": [identifier.uri for identifier in self.identifiers],
+            "resources": [resource.uri for resource in self.resources],
         }
         if self.annotations:
             d["annotations"] = self.annotations.to_list_of_dicts()
@@ -339,26 +339,26 @@ class StandardizedAnnotation:
         List of namespace-identifier pairs as tuples
         """
         return [
-            (idf.namespace, idf.identifier)
-            for idf in self.identifiers
-            if idf.namespace is not None and idf.identifier is not None
+            (resource.namespace, resource.identifier)
+            for resource in self.resources
+            if resource.namespace is not None and resource.identifier is not None
         ]
 
     def to_records(self) -> List[Dict[str, Any]]:
-        """Convert the annotation to a list of dictionaries that represent identifiers.
+        """Convert the annotation to a list of dictionaries that represent resources.
 
-        Each entry in the list represents an identifiers associated with this object,
+        Each entry in the list represents a resource associated with this object,
         either directly or as nested annotation. The resulting list is thus a flattened
-        representation of all identifiers. The hierarchical information is included
+        representation of all resources. The hierarchical information is included
         using the "annotation_group" and "parent_group" entries in the dictionaries.
         Each annotation group represents a single StandardizedAnnotation object (without
-        its nested annotations). If an identifier is found in a nested annotation, the
+        its nested annotations). If a resource is found in a nested annotation, the
         "parent_group" value will be set to the "annotation_group" value of its parent
         StandardizedAnnotation object.
 
         Returns
         -------
-        List of dictionaries representing Identifier records
+        List of dictionaries representing Resource records
 
         See Also
         --------
@@ -371,12 +371,12 @@ class StandardizedAnnotation:
         self, group_counter: int = 1, parent_group: int = 0
     ) -> Tuple[List[Dict[str, Any]], int]:
         records = []
-        for identifier in self.identifiers:
+        for resource in self.resources:
             entry = {
                 "qualifier": self.qualifier.value,
-                "uri": identifier.uri,
-                "namespace": identifier.namespace,
-                "identifier": identifier.identifier,
+                "uri": resource.uri,
+                "namespace": resource.namespace,
+                "identifier": resource.identifier,
                 "annotation_group": group_counter,
                 "parent_group": parent_group,
             }
@@ -400,7 +400,7 @@ class StandardizedAnnotation:
             A dict that has up to three keys
             "qualifier" - the qualifier as a string, optional. If not present, the
             qualifier is set to `Qualifier.Biological_is`.
-            "identifiers" - the identifiers as a list of strings, optional.
+            "resources" - the resources as a list of strings, optional.
             "annotations" - the nested annotations as a list of dicts, optional.
 
         Returns
@@ -413,7 +413,7 @@ class StandardizedAnnotation:
 
         """
         return cls(
-            identifiers=data_dict.get("identifiers", None),
+            resources=data_dict.get("resources", None),
             qualifier=data_dict.get("qualifier", Qualifier.Biological_is),
             annotations=data_dict.get("annotations", None),
         )
@@ -422,7 +422,7 @@ class StandardizedAnnotation:
         """Compare StandardizedAnnotation to another object and determine equality.
 
         If a dict is given, it is transformed to `StandardizedAnnotation` before
-        comparison. Will return False for any other type. The order of the identifiers
+        comparison. Will return False for any other type. The order of the resources
         is ignored.
 
         Parameters
@@ -433,7 +433,7 @@ class StandardizedAnnotation:
         -------
         bool
             False if other is not StandardizedAnnotation or dict.
-            False if qualifiers, identifiers or nested annotations are different.
+            False if qualifiers, resources or nested annotations are different.
             True otherwise.
 
         See Also
@@ -446,10 +446,10 @@ class StandardizedAnnotation:
         if isinstance(other, StandardizedAnnotation):
             if self.qualifier != other.qualifier:
                 return False
-            if len(self.identifiers) != len(other.identifiers):
+            if len(self.resources) != len(other.resources):
                 return False
-            for idf in self.identifiers:
-                if idf not in other.identifiers:
+            for idf in self.resources:
+                if idf not in other.resources:
                     return False
             if self.annotations != other.annotations:
                 return False
@@ -479,8 +479,8 @@ class StandardizedAnnotation:
         # TODO: Fix this HTML
         return f"""
                     {self.qualifier.name}:
-                    <p><strong>Identifiers</strong>
-                    {"</p><p>".join([res._repr_html() for res in self.identifiers])}
+                    <p><strong>Resource</strong>
+                    {"</p><p>".join([res._repr_html() for res in self.resources])}
                     <p><strong>Annotations</strong></p>
                     <p>{self.annotations._repr_html_()}</p>
                     <strong>Memory address</strong>{id(self):#x}
@@ -492,7 +492,7 @@ class StandardizedAnnotationStore(UserList):
 
     Stores a collection of standardized annotations that define the relation  of
     MIRIAM-compliant resources to a cobra modelling object. In practice, this class is
-    automatically instantiated as the `standardized` attribute of the `MetaData` class,
+    automatically instantiated as the `standardized` attribute of the `Metadata` class,
     which can be accessed through `object.metadata.standardized`. In addition, nested
     annotations in a `StandardizedAnnotation` object also make use of the
     `StandardizedAnnotationStore` class.
@@ -501,18 +501,18 @@ class StandardizedAnnotationStore(UserList):
     def __init__(
         self,
         data: Optional[
-            Iterable[Union[StandardizedAnnotation, Dict, Identifier, str]]
+            Iterable[Union[StandardizedAnnotation, Dict, Resource, str]]
         ] = None,
     ):
         """Initialize a standardized annotation store.
 
         Parameters
         ----------
-        data: list of StandardizedAnnotation, dict, str or Identifier objects
+        data: list of StandardizedAnnotation, dict, str or Resource objects
             List of standardized annotations to initialize the store with. Dictionaries
             are converted to standarized annotations using
             `StandardizedAnnotation.from_dict`. Strings are interpreted as identifier
-            URIs and together with other Identifier objects stored in a new
+            URIs and together with other Resource objects stored in a new
             `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
         """
         if data is None:
@@ -521,31 +521,29 @@ class StandardizedAnnotationStore(UserList):
         checked_data = [
             filtered_entry
             for entry in data
-            if (not isinstance(entry, (str, Identifier)))
+            if (not isinstance(entry, (str, Resource)))
             and (filtered_entry := self._check_standardized_annotation(entry))
             is not None
         ]
-        # str and Identifier instances are handled separately and added as one
+        # str and Resource instances are handled separately and added as one
         # Standardized annotation instance with the default qualifier (Biological_is).
         if no_qualifier_data := [
-            entry for entry in data if isinstance(entry, (str, Identifier))
+            entry for entry in data if isinstance(entry, (str, Resource))
         ]:
-            checked_data.insert(
-                0, StandardizedAnnotation(identifiers=no_qualifier_data)
-            )
+            checked_data.insert(0, StandardizedAnnotation(resources=no_qualifier_data))
         for entry in checked_data:
             entry._set_parent(self)
         super().__init__(checked_data)
 
     @staticmethod
     def _check_standardized_annotation(
-        ann: Optional[Union[StandardizedAnnotation, Dict, str, Identifier]],
+        ann: Optional[Union[StandardizedAnnotation, Dict, str, Resource]],
     ) -> Optional["StandardizedAnnotation"]:
         if ann is None:
             return None
         if isinstance(ann, StandardizedAnnotation):
             return ann
-        elif isinstance(ann, (str, Identifier)):
+        elif isinstance(ann, (str, Resource)):
             return StandardizedAnnotation(ann)
         elif isinstance(ann, dict):
             return StandardizedAnnotation.from_dict(ann)
@@ -571,12 +569,12 @@ class StandardizedAnnotationStore(UserList):
 
         Parameters
         ----------
-        data: StandardizedAnnotation, dict, str or Identifier, or list thereof, or
+        data: StandardizedAnnotation, dict, str or Resource, or list thereof, or
         StandardizedAnnotationStore or None
             A standardized annotation or a list of standardized annotations to use to
             create a store with. Dictionaries are converted to standarized annotations
             using `StandardizedAnnotation.from_dict`. Strings are interpreted as
-            identifier URIs and together with other Identifier objects stored in a new
+            identifier URIs and together with other Resource objects stored in a new
             `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
             If data is already a StandardizedAnnotationStore, this object will simply be
             returned.
@@ -619,20 +617,20 @@ class StandardizedAnnotationStore(UserList):
         return [cvterm.to_dict() for cvterm in self.data]
 
     def to_records(self):
-        """Convert the store to a list of dictionaries that represent identifiers.
+        """Convert the store to a list of dictionaries that represent resources.
 
-        Each entry in the list represents an identifiers associated with one of the
+        Each entry in the list represents an resources associated with one of the
         standardized annotation in this object, either directly or as nested annotation.
-        The resulting list is thus a flattened representation of all identifiers.
+        The resulting list is thus a flattened representation of all resources.
         The hierarchical information is included using the "annotation_group" and
         "parent_group" entries in the dictionaries. Each annotation group represents a
-        single StandardizedAnnotation object (without its nested annotations). If an
-        identifier is found in a nested annotation, the "parent_group" value will be set
+        single StandardizedAnnotation object (without its nested annotations). If a
+        resource is found in a nested annotation, the "parent_group" value will be set
         to the "annotation_group" value of its parent StandardizedAnnotation object.
 
         Returns
         -------
-        List of dictionaries representing Identifier records
+        List of dictionaries representing Resource records
 
         See Also
         --------
@@ -666,7 +664,7 @@ class StandardizedAnnotationStore(UserList):
     ) -> StandardizedAnnotation:
         entry = self._find_first_by_qualifier(qualifier)
         if entry is None:
-            entry = StandardizedAnnotation(qualifier=qualifier, identifiers=[])
+            entry = StandardizedAnnotation(qualifier=qualifier, resources=[])
             entry._set_parent(self)
             self.data.insert(0, entry)
         return entry
@@ -678,15 +676,15 @@ class StandardizedAnnotationStore(UserList):
             StandardizedAnnotation,
             Dict,
             str,
-            Identifier,
-            List[Union[StandardizedAnnotation, Dict, str, Identifier]],
+            Resource,
+            List[Union[StandardizedAnnotation, Dict, str, Resource]],
         ],
     ) -> None:
         """Add one or multiple standardized annotations to the store.
 
         Dictionaries are converted to standarized annotations using
         `StandardizedAnnotation.from_dict`. Strings are interpreted as identifier
-        URIs and together with other Identifier objects stored in a new
+        URIs and together with other Resource objects stored in a new
         `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
 
         If a list is passed, this method is equivalent to
@@ -695,7 +693,7 @@ class StandardizedAnnotationStore(UserList):
 
         Parameters
         ----------
-        annotations : StandardizedAnnotation, dict, str or Identifier, or list thereof
+        annotations : StandardizedAnnotation, dict, str or Resource, or list thereof
             Single or multiple annotations to add to the store.
 
         See Also
@@ -703,19 +701,17 @@ class StandardizedAnnotationStore(UserList):
         append
         extend
         """
-        if isinstance(annotations, (StandardizedAnnotation, dict, str, Identifier)):
+        if isinstance(annotations, (StandardizedAnnotation, dict, str, Resource)):
             self.append(annotations)
         else:
             self.extend(annotations)
 
-    def append(
-        self, item: Union[StandardizedAnnotation, Dict, str, Identifier]
-    ) -> None:
+    def append(self, item: Union[StandardizedAnnotation, Dict, str, Resource]) -> None:
         """Append a single annotation to the end of the store.
 
         Parameters
         ----------
-        item: StandardizedAnnotation, dict, str or Identifier
+        item: StandardizedAnnotation, dict, str or Resource
             Annotation to append to the standardized annotation store.
         """
         self.extend([item])
@@ -724,7 +720,7 @@ class StandardizedAnnotationStore(UserList):
         self,
         other: Union[
             "StandardizedAnnotationStore",
-            Iterable[Union[StandardizedAnnotation, Dict, str, Identifier]],
+            Iterable[Union[StandardizedAnnotation, Dict, str, Resource]],
         ],
     ) -> None:
         """Extend store by appending elements from the iterable.
@@ -748,35 +744,35 @@ class StandardizedAnnotationStore(UserList):
             self.data.extend(checked_data)
 
     @property
-    def identifiers(self) -> FrozenSet[Identifier]:
-        """Get identifiers.
+    def resources(self) -> FrozenSet[Resource]:
+        """Get resources.
 
         Returns
         -------
         FrozenSet
-            a set of identifiers in the standardized annotation store, not including
-            identifiers of nested annotations.
+            a set of resources in the standardized annotation store, not including
+            resources of nested annotations.
         """
         resources = set()
         for entry in self.data:
-            resources.update(entry.identifiers)
+            resources.update(entry.resources)
         return frozenset(resources)
 
     @property
-    def all_identifiers(self) -> FrozenSet[Identifier]:
-        """Get all identifiers, including identifiers in nested annotations.
+    def all_resources(self) -> FrozenSet[Resource]:
+        """Get all resources, including resources in nested annotations.
 
         Returns
         -------
         FrozenSet
-            a set of all identifiers in the standardized annotation store, including
-            identifiers of nested annotations.
+            a set of all resources in the standardized annotation store, including
+            resources of nested annotations.
         """
         resources = set()
         for entry in self.data:
-            resources.update(entry.identifiers)
+            resources.update(entry.resources)
             if entry.annotations:
-                resources.update(entry.annotations.all_identifiers)
+                resources.update(entry.annotations.all_resources)
         return frozenset(resources)
 
     @property
@@ -900,7 +896,7 @@ class StandardizedAnnotationStore(UserList):
         # TODO: Clean up this whole method.
         def select_attribute(
             x: StandardizedAnnotation,
-        ) -> Union[StandardizedAnnotation, Identifier, Qualifier, set]:
+        ) -> Union[StandardizedAnnotation, Resource, Qualifier, set]:
             if attribute is None:
                 return x
             else:
@@ -922,7 +918,7 @@ class StandardizedAnnotationStore(UserList):
                         or regex_searcher.findall(select_attribute(cvterm).value) != []
                     )
                 ]
-            elif attribute == "identifiers":
+            elif attribute == "resources":
                 matches = [
                     cvterm
                     for cvterm in self.data
@@ -937,9 +933,7 @@ class StandardizedAnnotationStore(UserList):
                     for cvterm in self.data
                     if regex_searcher.findall(cvterm.qualifier.name) != []
                     or regex_searcher.findall(cvterm.qualifier.value) != []
-                    or any(
-                        regex_searcher.findall(res.uri) for res in cvterm.identifiers
-                    )
+                    or any(regex_searcher.findall(res.uri) for res in cvterm.resources)
                 ]
         except TypeError as err:
             print(err)
@@ -960,7 +954,7 @@ class StandardizedAnnotationStore(UserList):
         Parameters
         ----------
         key: int
-        value: StandardizedAnnotation, dict, str or Identifier
+        value: StandardizedAnnotation, dict, str or Resource
         """
         checked_value = self._check_standardized_annotation(value)
         if checked_value is None:
@@ -1015,7 +1009,7 @@ class SimplifiedAnnotationInterface(MutableMapping):
     This class is used to maintain compatability with older cobrapy versions. It is
     typically accessed through an objects annotation attribute. It allows a user to get
     and set standardized annotations through a dict-like interface. When reading
-    existing annotations, qualifiers are ignored and identifiers are pooled. When
+    existing annotations, qualifiers are ignored and resources are pooled. When
     setting new annotations, qualifiers are set based on defaults (typically
     `Qualifiers.Biological_is`).
     This class is automatically instantiated as the `annotation` attribute of cobrapy
@@ -1031,13 +1025,13 @@ class SimplifiedAnnotationInterface(MutableMapping):
         become less organized.
     """
 
-    def __init__(self, metadata: MetaData) -> None:
-        """Initialize the simplified annotation interface using a `MetaData` object.
+    def __init__(self, metadata: Metadata) -> None:
+        """Initialize the simplified annotation interface using a `Metadata` object.
 
         Parameters
         ----------
-        metadata: MetaData
-            MetaData object where annotations wil be stored and retreived from.
+        metadata: Metadata
+            Metadata object where annotations wil be stored and retreived from.
         """
         self._metadata = metadata
 
@@ -1049,8 +1043,8 @@ class SimplifiedAnnotationInterface(MutableMapping):
                 str,
                 "SimplifiedAnnotationInterface",
                 Tuple[str, Union[str, List[str]]],
-                Identifier,
-                List[Union[str, Identifier, Tuple[str, Union[str, List[str]]]]],
+                Resource,
+                List[Union[str, Resource, Tuple[str, Union[str, List[str]]]]],
             ]
         ] = None,
     ) -> None:
@@ -1058,16 +1052,16 @@ class SimplifiedAnnotationInterface(MutableMapping):
 
         Parameters
         ----------
-        data: str, tuple, Identifier or list thereof, or dict or
+        data: str, tuple, Resource or list thereof, or dict or
         SimplifiedAnnotationInterface
-            Add identifiers as annotations, using default qualifiers. Tuples are
+            Add resources as annotations, using default qualifiers. Tuples are
             interpreted as namespace-identifiers pairs, strings should be valid URIs and
             if a dictionary is provided, its keys should represent namespaces and its
             values identifiers.
 
         Raises
         ------
-        TypeError if values could not be converted to Identifier objects.
+        TypeError if values could not be converted to Resource objects.
         ValueError if tuples of lengths other than 2 were provided.
         """
         if data is None:
@@ -1104,27 +1098,25 @@ class SimplifiedAnnotationInterface(MutableMapping):
             elif isinstance(entry, str):
                 entry = [entry]
             else:
-                raise TypeError("Entry could could not be converted to an Identifier.")
+                raise TypeError("Entry could could not be converted to an Resource.")
             for x in entry:
                 if isinstance(x, tuple) and x[0].lower() == "sbo":
                     self._metadata.sbo = x[1]
                     continue
-                x = Identifier.from_data(x)
+                x = Resource.from_data(x)
                 if x.namespace is None:
-                    raise ValueError(
-                        f"Could not determine namespace of identifier {x}."
-                    )
+                    raise ValueError(f"Could not determine namespace of resource {x}.")
 
                 qualifier = get_default_qualifier(x.namespace)
                 if qualifier not in cvterms:
                     cvterms[qualifier] = []
                 cvterms[qualifier].append(x)
 
-        for qualifier, identifiers in cvterms.items():
+        for qualifier, resources in cvterms.items():
             ann = self._metadata.standardized._find_first_or_create_by_qualifier(
                 qualifier
             )
-            ann.add_identifiers(identifiers)
+            ann.add_resources(resources)
 
     @property
     def sbo(self) -> str:
@@ -1136,7 +1128,7 @@ class SimplifiedAnnotationInterface(MutableMapping):
 
         See Also
         --------
-        MetaData.sbo
+        Metadata.sbo
         """
         return self._metadata.sbo
 
@@ -1150,29 +1142,29 @@ class SimplifiedAnnotationInterface(MutableMapping):
 
         See Also
         --------
-        MetaData.sbo
+        Metadata.sbo
         """
         self._metadata.sbo = value
 
     def __getitem__(self, key: str) -> List[str]:
-        """Get identifiers for a given namespace.
+        """Get resources for a given namespace.
 
         Collects all standardized annotations for namespace `key` and returns a list of
-        all identifiers as strings, or raise IndexError if none were found.
+        all resources as strings, or raise IndexError if none were found.
 
         Parameters
         ----------
         key: str
-            Namespace of the identifiers.
+            Namespace of the resources.
 
         Returns
         -------
         list of str
-            List of identifiers as strings.
+            List of resources as strings.
 
         Raises
         ------
-        IndexError if no identifiers were found for the given namespace.
+        IndexError if no resources were found for the given namespace.
         """
         if not isinstance(key, str):
             raise TypeError("Index should be of type str.")
@@ -1182,8 +1174,8 @@ class SimplifiedAnnotationInterface(MutableMapping):
 
         results = []
         for ann in self._metadata.standardized:
-            for idf in ann.identifiers:
-                if (v := idf.identifier) is not None and idf.namespace == key:
+            for resource in ann.resources:
+                if (v := resource.identifier) is not None and resource.namespace == key:
                     results.append(v)
 
         if results:
@@ -1191,22 +1183,22 @@ class SimplifiedAnnotationInterface(MutableMapping):
             # comparisons easier. E.g. __eq__(...) relies on this.
             return list(sorted(set(results)))
         else:
-            raise IndexError(f"No identifiers found for namespace '{key}'")
+            raise IndexError(f"No resources found for namespace '{key}'")
 
     def __delitem__(self, key: str) -> None:
-        """Delete all identifiers for a given namespace.
+        """Delete all resources for a given namespace.
 
-        Deletes all identifiers for namespace `key` from their `StandardizedAnnotation`
+        Deletes all resources for namespace `key` from their `StandardizedAnnotation`
         objects or raise IndexError if none were found.
 
         Parameters
         ----------
         key: str
-            Namespace of the identifiers.
+            Namespace of the resources.
 
         Raises
         ------
-        IndexError if no identifiers were found for the given namespace.
+        IndexError if no resources were found for the given namespace.
         """
         if not isinstance(key, str):
             raise TypeError("Index should be of type str.")
@@ -1219,25 +1211,25 @@ class SimplifiedAnnotationInterface(MutableMapping):
 
         deleted_any = False
         for ann in self._metadata.standardized:
-            for idf in list(ann.identifiers):
-                if idf.namespace is not None and idf.namespace == key:
-                    idf.remove_from_parent()
+            for resource in list(ann.resources):
+                if resource.namespace is not None and resource.namespace == key:
+                    resource.remove_from_parent()
                     deleted_any = True
         if not deleted_any:
             raise IndexError(f"Could not find annotations for f'{key}')")
 
     def __setitem__(self, key: str, value: Union[str, List[str]]) -> None:
-        """Set identifiers for a given namespace.
+        """Set resources for a given namespace.
 
-        Removes all existing identifiers with namespace `key` and inserts
-        the provided identifiers.
+        Removes all existing resources with namespace `key` and inserts
+        the provided resources.
 
         Parameters
         ----------
         key: str
-            Namespace of the identifiers.
+            Namespace of the resources.
         value: str or list of str
-            Identifiers to set for the provided namespace.
+            Resources to set for the provided namespace.
         """
         if not isinstance(key, str):
             raise TypeError("Index should be of type str.")
@@ -1274,18 +1266,18 @@ class SimplifiedAnnotationInterface(MutableMapping):
             return False
         return self_dict == other_dict
 
-    def objects(self) -> Generator[Tuple[str, List[Identifier]], None, None]:
-        """Get a generator for all pairs of namespace and Identifier objects.
+    def objects(self) -> Generator[Tuple[str, List[Resource]], None, None]:
+        """Get a generator for all pairs of namespace and Resource objects.
 
         Creates a generator that can be used to iterate over the data as pairs (tuples)
-        of a namespace and a list of its corresponding Identifier objects. This method
-        is very similar to the `items` method, except that it yields Identifier objects
+        of a namespace and a list of its corresponding Resource objects. This method
+        is very similar to the `items` method, except that it yields Resource objects
         instead of strings.
 
         Returns
         -------
         generator
-            Yields pairs of namespace and a list of Identifier objects.
+            Yields pairs of namespace and a list of Resource objects.
 
         See Also
         --------
@@ -1294,28 +1286,28 @@ class SimplifiedAnnotationInterface(MutableMapping):
         visited_namespaces = set("sbo")
         while True:
             current_namespace = None
-            identifiers = []
+            resources = []
             for entry in self._metadata.standardized:
-                for identifier in entry.identifiers:
-                    if identifier.namespace is None:
+                for resource in entry.resources:
+                    if resource.namespace is None:
                         continue
-                    if identifier.namespace in visited_namespaces:
+                    if resource.namespace in visited_namespaces:
                         continue
                     if current_namespace is None:
-                        current_namespace = identifier.namespace
-                        identifiers.append(identifier)
+                        current_namespace = resource.namespace
+                        resources.append(resource)
                     else:
-                        if identifier.namespace == current_namespace:
-                            identifiers.append(identifier)
+                        if resource.namespace == current_namespace:
+                            resources.append(resource)
             if current_namespace is not None:
                 visited_namespaces.add(current_namespace)
-            identifiers = list(sorted(set(identifiers), key=lambda x: x.identifier))
-            if identifiers:
-                yield (current_namespace, identifiers)
+            resources = list(sorted(set(resources), key=lambda x: x.identifier))
+            if resources:
+                yield (current_namespace, resources)
             else:
                 break
         if sbo_term := self._metadata.sbo:
-            yield ("sbo", [Identifier.from_data(("sbo", sbo_term))])
+            yield ("sbo", [Resource.from_data(("sbo", sbo_term))])
 
     def items(self) -> Iterator[Tuple[str, List[str]]]:
         """Get a generator for all pairs of namespace and identifiers.
@@ -1323,7 +1315,7 @@ class SimplifiedAnnotationInterface(MutableMapping):
         Creates a generator that can be used to iterate over the data as pairs (tuples)
         of a namespace and a list of its corresponding identifiers. This method is very
         similar to the `objects` method, except that it yields strings instead of
-        Identifier objects.
+        Resource objects.
 
         Returns
         -------
@@ -1408,11 +1400,11 @@ class SimplifiedAnnotationInterface(MutableMapping):
                 yield (k, identifier)
 
     @property
-    def number_of_identifiers(self) -> int:
-        """The number of individual identifiers.
+    def number_of_resources(self) -> int:
+        """The number of individual resources.
 
         Is different from the length of the object, since a single namespace can have
-        multiple identifiers associated with it.
+        multiple resources associated with it.
 
         Returns
         -------
@@ -1433,21 +1425,21 @@ class SimplifiedAnnotationInterface(MutableMapping):
 
         See Also
         --------
-        number_of_identifiers
+        number_of_resources
         """
         return sum(1 for _ in self)
 
     def delete_annotation(self, value: str) -> None:
-        """Delete an identifier based on its identifier value.
+        """Delete a resource based on its identifier value.
 
         Parameters
         ----------
         value: str
-            Value of the identifier to delete.
+            Identifier value of the resource to delete.
 
         Raises
         ------
-        ValueError if no idenfier was found for the provided value.
+        ValueError if no resource was found for the provided value.
         """
         for _, entries in self.objects():
             for entry in entries:

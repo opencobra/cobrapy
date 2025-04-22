@@ -5,10 +5,11 @@ from cobra.core.gene import GPR, Gene
 from cobra.core.group import Group
 from cobra.core.metabolite import Metabolite
 from cobra.core.metadata import (
-    MetaData,
-    Identifier,
+    Metadata,
+    Resource,
     Qualifier,
     StandardizedAnnotation,
+    CustomAnnotation,
 )
 from cobra.core.metadata.history import Creator, History
 from cobra.core.model import Model

@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Tuple, Union
 import numpy as np
 
 from ..core import Gene, Group, Metabolite, Model, Reaction
-from ..core.metadata import MetaData
-from ..core.metadata.identifier import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
+from ..core.metadata import Metadata
+from ..core.metadata.resource import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
 from ..io.sbml import (
     F_GENE,
     F_GENE_REV,
@@ -144,7 +144,7 @@ def _fix_type(
         return list(value)
     if isinstance(value, dict):
         return OrderedDict((key, value[key]) for key in sorted(value))
-    if isinstance(value, MetaData):
+    if isinstance(value, Metadata):
         return OrderedDict(value.to_dict())
     # handle legacy Formula type
     if value.__class__.__name__ == "Formula":
@@ -212,7 +212,7 @@ def _fix_value_from_dict(_key: str, _value_to_fix: Union[List, str]):
     if _key == "metadata":
         # New style annotations for json v2.
         anno_dict = defaultdict(list)
-        _value_to_fix = MetaData.from_dict(_value_to_fix)
+        _value_to_fix = Metadata.from_dict(_value_to_fix)
     elif _key == "annotation":
         # Old style annotations for json v1.
         # if annotation is in the form of list of list, modify the format
@@ -226,7 +226,7 @@ def _fix_value_from_dict(_key: str, _value_to_fix: Union[List, str]):
                     provider, identifier = parse_identifiers_uri(item)
                     anno_dict[provider].append(identifier)
             _value_to_fix = anno_dict
-        # metadata = MetaData()
+        # metadata = Metadata()
         # old_style_interface = SimplifiedAnnotationInterface(metadata)
         # old_style_interface.add(_value_to_fix)
         # _value_to_fix = metadata

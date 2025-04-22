@@ -10,7 +10,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/13dpg",
               "http://identifiers.org/biocyc/META:DPG",
               "http://identifiers.org/chebi/CHEBI:11881",
@@ -37,7 +37,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/2pg",
               "http://identifiers.org/biocyc/META:2-PG",
               "http://identifiers.org/chebi/CHEBI:11651",
@@ -69,7 +69,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/3pg",
               "http://identifiers.org/biocyc/META:G3P",
               "http://identifiers.org/chebi/CHEBI:11879",
@@ -97,7 +97,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/6pgc",
               "http://identifiers.org/biocyc/META:CPD-2961",
               "http://identifiers.org/chebi/CHEBI:12232",
@@ -127,7 +127,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/6pgl",
               "http://identifiers.org/biocyc/META:D-6-P-GLUCONO-DELTA-LACTONE",
               "http://identifiers.org/chebi/CHEBI:12233",
@@ -155,7 +155,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/ac",
               "http://identifiers.org/biocyc/META:ACET",
               "http://identifiers.org/chebi/CHEBI:13704",
@@ -187,7 +187,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/ac",
               "http://identifiers.org/biocyc/META:ACET",
               "http://identifiers.org/chebi/CHEBI:13704",
@@ -219,7 +219,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/acald",
               "http://identifiers.org/biocyc/META:ACETALD",
               "http://identifiers.org/chebi/CHEBI:13703",
@@ -246,7 +246,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/acald",
               "http://identifiers.org/biocyc/META:ACETALD",
               "http://identifiers.org/chebi/CHEBI:13703",
@@ -273,7 +273,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/accoa",
               "http://identifiers.org/biocyc/META:ACETYL-COA",
               "http://identifiers.org/chebi/CHEBI:13712",
@@ -303,7 +303,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/acon_C",
               "http://identifiers.org/biocyc/META:CIS-ACONITATE",
               "http://identifiers.org/chebi/CHEBI:10482",
@@ -332,7 +332,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/actp",
               "http://identifiers.org/biocyc/META:ACETYL-P",
               "http://identifiers.org/chebi/CHEBI:13711",
@@ -359,7 +359,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/adp",
               "http://identifiers.org/biocyc/META:ADP",
               "http://identifiers.org/biocyc/META:CPD0-1651",
@@ -390,7 +390,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/akg",
               "http://identifiers.org/biocyc/META:2-KETOGLUTARATE",
               "http://identifiers.org/biocyc/META:CPD-16852",
@@ -421,7 +421,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/akg",
               "http://identifiers.org/biocyc/META:2-KETOGLUTARATE",
               "http://identifiers.org/biocyc/META:CPD-16852",
@@ -452,7 +452,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/amp",
               "http://identifiers.org/biocyc/META:AMP",
               "http://identifiers.org/biocyc/META:AMP-GROUP",
@@ -492,7 +492,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/atp",
               "http://identifiers.org/biocyc/META:ATP",
               "http://identifiers.org/biocyc/META:CPD0-1634",
@@ -525,7 +525,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/cit",
               "http://identifiers.org/biocyc/META:CIT",
               "http://identifiers.org/chebi/CHEBI:132362",
@@ -567,7 +567,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/co2",
               "http://identifiers.org/biocyc/META:CARBON-DIOXIDE",
               "http://identifiers.org/chebi/CHEBI:13282",
@@ -598,7 +598,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/co2",
               "http://identifiers.org/biocyc/META:CARBON-DIOXIDE",
               "http://identifiers.org/chebi/CHEBI:13282",
@@ -629,7 +629,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/coa",
               "http://identifiers.org/biocyc/META:CO-A",
               "http://identifiers.org/biocyc/META:COA-GROUP",
@@ -663,7 +663,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/dhap",
               "http://identifiers.org/biocyc/META:DIHYDROXY-ACETONE-PHOSPHATE",
               "http://identifiers.org/chebi/CHEBI:14341",
@@ -693,7 +693,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/e4p",
               "http://identifiers.org/biocyc/META:ERYTHROSE-4P",
               "http://identifiers.org/chebi/CHEBI:12921",
@@ -721,7 +721,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/etoh",
               "http://identifiers.org/biocyc/META:ETOH",
               "http://identifiers.org/chebi/CHEBI:14222",
@@ -756,7 +756,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/etoh",
               "http://identifiers.org/biocyc/META:ETOH",
               "http://identifiers.org/chebi/CHEBI:14222",
@@ -791,7 +791,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/f6p",
               "http://identifiers.org/biocyc/META:FRUCTOSE-6P",
               "http://identifiers.org/chebi/CHEBI:10375",
@@ -819,7 +819,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/fdp",
               "http://identifiers.org/chebi/CHEBI:37736",
               "http://identifiers.org/chebi/CHEBI:49299",
@@ -841,7 +841,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/for",
               "http://identifiers.org/biocyc/META:CARBOXYL-GROUP",
               "http://identifiers.org/biocyc/META:CPD-9845",
@@ -877,7 +877,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/for",
               "http://identifiers.org/biocyc/META:CARBOXYL-GROUP",
               "http://identifiers.org/biocyc/META:CPD-9845",
@@ -913,7 +913,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/fru",
               "http://identifiers.org/biocyc/META:CPD-15382",
               "http://identifiers.org/biocyc/META:D-Fructopyranose",
@@ -957,7 +957,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/fum",
               "http://identifiers.org/biocyc/META:FUM",
               "http://identifiers.org/chebi/CHEBI:14284",
@@ -994,7 +994,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/fum",
               "http://identifiers.org/biocyc/META:FUM",
               "http://identifiers.org/chebi/CHEBI:14284",
@@ -1031,7 +1031,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/g3p",
               "http://identifiers.org/biocyc/META:GAP",
               "http://identifiers.org/chebi/CHEBI:12983",
@@ -1066,7 +1066,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/g6p",
               "http://identifiers.org/biocyc/META:D-glucopyranose-6-phosphate",
               "http://identifiers.org/chebi/CHEBI:14314",
@@ -1094,7 +1094,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/glc__D",
               "http://identifiers.org/biocyc/META:Glucopyranose",
               "http://identifiers.org/chebi/CHEBI:12965",
@@ -1123,7 +1123,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/gln__L",
               "http://identifiers.org/biocyc/META:GLN",
               "http://identifiers.org/chebi/CHEBI:13110",
@@ -1164,7 +1164,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/gln__L",
               "http://identifiers.org/biocyc/META:GLN",
               "http://identifiers.org/chebi/CHEBI:13110",
@@ -1205,7 +1205,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/glu__L",
               "http://identifiers.org/biocyc/META:GLT",
               "http://identifiers.org/biocyc/META:Glutamates",
@@ -1248,7 +1248,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/glu__L",
               "http://identifiers.org/biocyc/META:GLT",
               "http://identifiers.org/biocyc/META:Glutamates",
@@ -1291,7 +1291,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/glx",
               "http://identifiers.org/biocyc/META:GLYOX",
               "http://identifiers.org/chebi/CHEBI:14368",
@@ -1321,7 +1321,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/h2o",
               "http://identifiers.org/biocyc/META:CPD-15815",
               "http://identifiers.org/biocyc/META:HYDROXYL-GROUP",
@@ -1381,7 +1381,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/h2o",
               "http://identifiers.org/biocyc/META:CPD-15815",
               "http://identifiers.org/biocyc/META:HYDROXYL-GROUP",
@@ -1441,7 +1441,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/h",
               "http://identifiers.org/biocyc/META:PROTON",
               "http://identifiers.org/chebi/CHEBI:10744",
@@ -1470,7 +1470,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/h",
               "http://identifiers.org/biocyc/META:PROTON",
               "http://identifiers.org/chebi/CHEBI:10744",
@@ -1499,7 +1499,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/icit",
               "http://identifiers.org/chebi/CHEBI:14465",
               "http://identifiers.org/chebi/CHEBI:16087",
@@ -1528,7 +1528,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/lac__D",
               "http://identifiers.org/biocyc/META:D-LACTATE",
               "http://identifiers.org/chebi/CHEBI:11001",
@@ -1558,7 +1558,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/lac__D",
               "http://identifiers.org/biocyc/META:D-LACTATE",
               "http://identifiers.org/chebi/CHEBI:11001",
@@ -1588,7 +1588,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/mal__L",
               "http://identifiers.org/biocyc/META:MAL",
               "http://identifiers.org/chebi/CHEBI:11066",
@@ -1617,7 +1617,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/mal__L",
               "http://identifiers.org/biocyc/META:MAL",
               "http://identifiers.org/chebi/CHEBI:11066",
@@ -1646,7 +1646,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/nad",
               "http://identifiers.org/biocyc/META:NAD",
               "http://identifiers.org/chebi/CHEBI:13393",
@@ -1678,7 +1678,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/nadh",
               "http://identifiers.org/biocyc/META:NADH",
               "http://identifiers.org/chebi/CHEBI:13395",
@@ -1707,7 +1707,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/nadp",
               "http://identifiers.org/biocyc/META:NADP",
               "http://identifiers.org/chebi/CHEBI:13397",
@@ -1738,7 +1738,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/nadph",
               "http://identifiers.org/biocyc/META:NADPH",
               "http://identifiers.org/chebi/CHEBI:13399",
@@ -1769,7 +1769,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/nh4",
               "http://identifiers.org/biocyc/META:AMMONIA",
               "http://identifiers.org/biocyc/META:AMMONIUM",
@@ -1814,7 +1814,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/nh4",
               "http://identifiers.org/biocyc/META:AMMONIA",
               "http://identifiers.org/biocyc/META:AMMONIUM",
@@ -1859,7 +1859,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/o2",
               "http://identifiers.org/biocyc/META:OXYGEN-MOLECULE",
               "http://identifiers.org/chebi/CHEBI:10745",
@@ -1894,7 +1894,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/o2",
               "http://identifiers.org/biocyc/META:OXYGEN-MOLECULE",
               "http://identifiers.org/chebi/CHEBI:10745",
@@ -1929,7 +1929,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/oaa",
               "http://identifiers.org/biocyc/META:ENOL-OXALOACETATE",
               "http://identifiers.org/biocyc/META:OXALACETIC_ACID",
@@ -1966,7 +1966,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/pep",
               "http://identifiers.org/biocyc/META:PHOSPHO-ENOL-PYRUVATE",
               "http://identifiers.org/chebi/CHEBI:14812",
@@ -1996,7 +1996,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/pi",
               "http://identifiers.org/biocyc/META:CPD-16459",
               "http://identifiers.org/biocyc/META:CPD-9010",
@@ -2040,7 +2040,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/pi",
               "http://identifiers.org/biocyc/META:CPD-16459",
               "http://identifiers.org/biocyc/META:CPD-9010",
@@ -2084,7 +2084,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/pyr",
               "http://identifiers.org/biocyc/META:PYRUVATE",
               "http://identifiers.org/chebi/CHEBI:14987",
@@ -2116,7 +2116,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/pyr",
               "http://identifiers.org/biocyc/META:PYRUVATE",
               "http://identifiers.org/chebi/CHEBI:14987",
@@ -2148,7 +2148,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/q8",
               "http://identifiers.org/biocyc/META:UBIQUINONE-8",
               "http://identifiers.org/chebi/CHEBI:61683",
@@ -2171,7 +2171,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/q8h2",
               "http://identifiers.org/biocyc/META:CPD-9956",
               "http://identifiers.org/chebi/CHEBI:61682",
@@ -2194,7 +2194,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/r5p",
               "http://identifiers.org/biocyc/META:CPD-15318",
               "http://identifiers.org/chebi/CHEBI:10270",
@@ -2219,7 +2219,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/ru5p__D",
               "http://identifiers.org/biocyc/META:RIBULOSE-5P",
               "http://identifiers.org/chebi/CHEBI:13018",
@@ -2252,7 +2252,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/s7p",
               "http://identifiers.org/biocyc/META:D-SEDOHEPTULOSE-7-P",
               "http://identifiers.org/chebi/CHEBI:15073",
@@ -2282,7 +2282,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/succ",
               "http://identifiers.org/biocyc/META:SUC",
               "http://identifiers.org/chebi/CHEBI:132287",
@@ -2317,7 +2317,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/succ",
               "http://identifiers.org/biocyc/META:SUC",
               "http://identifiers.org/chebi/CHEBI:132287",
@@ -2352,7 +2352,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/succoa",
               "http://identifiers.org/biocyc/META:SUC-COA",
               "http://identifiers.org/chebi/CHEBI:10746",
@@ -2382,7 +2382,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.metabolite/xu5p__D",
               "http://identifiers.org/biocyc/META:XYLULOSE-5-PHOSPHATE",
               "http://identifiers.org/chebi/CHEBI:13036",
@@ -2423,7 +2423,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ACALD",
               "http://identifiers.org/biocyc/META:ACETALD-DEHYDROG-RXN",
               "http://identifiers.org/ec-code/1.2.1.10",
@@ -2454,7 +2454,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ACALDt",
               "http://identifiers.org/metanetx.reaction/MNXR95212"
             ]
@@ -2480,7 +2480,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ACKr",
               "http://identifiers.org/biocyc/META:ACETATEKIN-RXN",
               "http://identifiers.org/ec-code/2.7.2.1",
@@ -2513,7 +2513,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ACONTa",
               "http://identifiers.org/biocyc/META:ACONITATEDEHYDR-RXN",
               "http://identifiers.org/ec-code/4.2.1.3",
@@ -2545,7 +2545,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ACONTb",
               "http://identifiers.org/ec-code/4.2.1.3",
               "http://identifiers.org/kegg.reaction/R01900",
@@ -2577,7 +2577,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ACt2r",
               "http://identifiers.org/biocyc/META:TRANS-RXN0-571",
               "http://identifiers.org/metanetx.reaction/MNXR95429"
@@ -2603,7 +2603,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ADK1",
               "http://identifiers.org/biocyc/META:ADENYL-KIN-RXN",
               "http://identifiers.org/ec-code/2.7.4.3",
@@ -2638,7 +2638,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/AKGDH",
               "http://identifiers.org/biocyc/META:2OXOGLUTARATEDEH-RXN",
               "http://identifiers.org/ec-code/1.2.1.52",
@@ -2674,7 +2674,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/AKGt2r",
               "http://identifiers.org/biocyc/META:TRANS-RXN-23",
               "http://identifiers.org/metanetx.reaction/MNXR95661",
@@ -2706,7 +2706,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ALCD2x",
               "http://identifiers.org/biocyc/META:ALCOHOL-DEHYDROG-RXN",
               "http://identifiers.org/ec-code/1.1.1.1",
@@ -2741,7 +2741,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ATPM",
               "http://identifiers.org/biocyc/META:ATPASE-RXN",
               "http://identifiers.org/ec-code/3.6.1.15",
@@ -2844,7 +2844,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ATPS4r",
               "http://identifiers.org/biocyc/META:ATPSYN-RXN",
               "http://identifiers.org/ec-code/3.6.3.14",
@@ -2891,7 +2891,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/Ecoli_core_w_GAM"]
+            "resources": ["http://identifiers.org/bigg.reaction/Ecoli_core_w_GAM"]
           }
         ]
       }
@@ -2912,7 +2912,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/CO2t",
               "http://identifiers.org/biocyc/META:TRANS-RXN0-545",
               "http://identifiers.org/metanetx.reaction/MNXR96810"
@@ -2941,7 +2941,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/CS",
               "http://identifiers.org/biocyc/META:CITSYN-RXN",
               "http://identifiers.org/biocyc/META:RXN-14905",
@@ -2979,7 +2979,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/CYTBD",
               "http://identifiers.org/metanetx.reaction/MNXR97031"
             ]
@@ -3005,7 +3005,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/D_LACt2",
               "http://identifiers.org/biocyc/META:TRANS-RXN0-515",
               "http://identifiers.org/metanetx.reaction/MNXR97838"
@@ -3031,7 +3031,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ENO",
               "http://identifiers.org/biocyc/META:2PGADEHYDRAT-RXN",
               "http://identifiers.org/ec-code/4.2.1.11",
@@ -3064,7 +3064,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ETOHt2r",
               "http://identifiers.org/metanetx.reaction/MNXR97981"
             ]
@@ -3086,7 +3086,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_ac_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_ac_e"]
           }
         ]
       }
@@ -3105,7 +3105,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_acald_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_acald_e"]
           }
         ]
       }
@@ -3124,7 +3124,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_akg_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_akg_e"]
           }
         ]
       }
@@ -3143,7 +3143,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_co2_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_co2_e"]
           }
         ]
       }
@@ -3162,7 +3162,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_etoh_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_etoh_e"]
           }
         ]
       }
@@ -3181,7 +3181,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_for_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_for_e"]
           }
         ]
       }
@@ -3200,7 +3200,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_fru_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_fru_e"]
           }
         ]
       }
@@ -3219,7 +3219,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_fum_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_fum_e"]
           }
         ]
       }
@@ -3238,7 +3238,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_glc__D_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_glc__D_e"]
           }
         ]
       }
@@ -3257,7 +3257,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_gln__L_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_gln__L_e"]
           }
         ]
       }
@@ -3276,7 +3276,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_glu__L_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_glu__L_e"]
           }
         ]
       }
@@ -3295,7 +3295,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/h"]
+            "resources": ["http://identifiers.org/bigg.reaction/h"]
           }
         ]
       }
@@ -3314,7 +3314,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_h2o_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_h2o_e"]
           }
         ]
       }
@@ -3333,7 +3333,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_lac__D_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_lac__D_e"]
           }
         ]
       }
@@ -3352,7 +3352,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_mal__L_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_mal__L_e"]
           }
         ]
       }
@@ -3371,7 +3371,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_nh4_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_nh4_e"]
           }
         ]
       }
@@ -3390,7 +3390,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_o2_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_o2_e"]
           }
         ]
       }
@@ -3409,7 +3409,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_pi_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_pi_e"]
           }
         ]
       }
@@ -3428,7 +3428,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_pyr_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_pyr_e"]
           }
         ]
       }
@@ -3447,7 +3447,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/bigg.reaction/EX_succ_e"]
+            "resources": ["http://identifiers.org/bigg.reaction/EX_succ_e"]
           }
         ]
       }
@@ -3469,7 +3469,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/FBA",
               "http://identifiers.org/ec-code/4.1.2.13",
               "http://identifiers.org/kegg.reaction/R01068",
@@ -3501,7 +3501,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/FBP",
               "http://identifiers.org/ec-code/3.1.3.11",
               "http://identifiers.org/metanetx.reaction/MNXR99465",
@@ -3532,7 +3532,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/FORt2",
               "http://identifiers.org/metanetx.reaction/MNXR99621"
             ]
@@ -3556,7 +3556,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/FORt",
               "http://identifiers.org/biocyc/META:TRANS-RXN-1",
               "http://identifiers.org/metanetx.reaction/MNXR99620",
@@ -3587,7 +3587,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/FRD7",
               "http://identifiers.org/metanetx.reaction/MNXR99641",
               "http://identifiers.org/rhea/29187",
@@ -3617,7 +3617,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/FRUpts2",
               "http://identifiers.org/metanetx.reaction/MNXR99662"
             ]
@@ -3642,7 +3642,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/FUM",
               "http://identifiers.org/biocyc/META:FUMHYDR-RXN",
               "http://identifiers.org/ec-code/4.2.1.2",
@@ -3675,7 +3675,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/FUMt2_2",
               "http://identifiers.org/biocyc/META:TRANS-RXN-121B",
               "http://identifiers.org/metanetx.reaction/MNXR99711",
@@ -3707,7 +3707,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/G6PDH2r",
               "http://identifiers.org/biocyc/META:GLU6PDEHYDROG-RXN",
               "http://identifiers.org/ec-code/1.1.1.363",
@@ -3743,7 +3743,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/GAPD",
               "http://identifiers.org/biocyc/META:GAPOXNPHOSPHN-RXN",
               "http://identifiers.org/ec-code/1.2.1.12",
@@ -3777,7 +3777,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/GLCpts",
               "http://identifiers.org/metanetx.reaction/MNXR100237"
             ]
@@ -3806,7 +3806,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/GLNS",
               "http://identifiers.org/biocyc/META:GLUTAMINESYN-RXN",
               "http://identifiers.org/ec-code/6.3.1.2",
@@ -3842,7 +3842,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/GLNabc",
               "http://identifiers.org/biocyc/META:ABC-12-RXN",
               "http://identifiers.org/ec-code/3.6.3.21",
@@ -3877,7 +3877,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/GLUDy",
               "http://identifiers.org/biocyc/META:GLUTDEHYD-RXN",
               "http://identifiers.org/ec-code/1.4.1.13",
@@ -3912,7 +3912,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/GLUN",
               "http://identifiers.org/biocyc/META:GLUTAMIN-RXN",
               "http://identifiers.org/ec-code/1.4.1.13",
@@ -3955,7 +3955,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/GLUSy",
               "http://identifiers.org/biocyc/META:GLUTAMATESYN-RXN",
               "http://identifiers.org/ec-code/1.4.1.13",
@@ -3988,7 +3988,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/GLUt2r",
               "http://identifiers.org/metanetx.reaction/MNXR100300"
             ]
@@ -4015,7 +4015,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/GND",
               "http://identifiers.org/biocyc/META:RXN-9952",
               "http://identifiers.org/ec-code/1.1.1.351",
@@ -4047,7 +4047,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/H2Ot",
               "http://identifiers.org/biocyc/META:TRANS-RXN-145",
               "http://identifiers.org/biocyc/META:TRANS-RXN0-547",
@@ -4080,7 +4080,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ICDHyr",
               "http://identifiers.org/ec-code/1.1.1.42",
               "http://identifiers.org/kegg.reaction/R00267",
@@ -4111,7 +4111,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ICL",
               "http://identifiers.org/ec-code/4.1.3.1",
               "http://identifiers.org/kegg.reaction/R00479",
@@ -4144,7 +4144,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/LDH_D",
               "http://identifiers.org/biocyc/META:DLACTDEHYDROGNAD-RXN",
               "http://identifiers.org/ec-code/1.1.1.28",
@@ -4179,7 +4179,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/MALS",
               "http://identifiers.org/biocyc/META:MALSYN-RXN",
               "http://identifiers.org/ec-code/2.3.3.9",
@@ -4212,7 +4212,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/MALt2_2",
               "http://identifiers.org/biocyc/META:TRANS-RXN-121A",
               "http://identifiers.org/metanetx.reaction/MNXR101370",
@@ -4244,7 +4244,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/MDH",
               "http://identifiers.org/biocyc/META:MALATE-DEH-RXN",
               "http://identifiers.org/ec-code/1.1.1.299",
@@ -4279,7 +4279,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ME1",
               "http://identifiers.org/biocyc/META:1.1.1.39-RXN",
               "http://identifiers.org/ec-code/1.1.1.38",
@@ -4314,7 +4314,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/ME2",
               "http://identifiers.org/biocyc/META:MALIC-NADP-RXN",
               "http://identifiers.org/ec-code/1.1.1.40",
@@ -4349,7 +4349,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/NADH16",
               "http://identifiers.org/ec-code/1.6.5.3",
               "http://identifiers.org/metanetx.reaction/MNXR101864"
@@ -4376,7 +4376,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/NADTRHD",
               "http://identifiers.org/biocyc/META:PYRNUTRANSHYDROGEN-RXN",
               "http://identifiers.org/ec-code/1.6.1.1",
@@ -4409,7 +4409,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/NH4t",
               "http://identifiers.org/biocyc/META:RXN-9615",
               "http://identifiers.org/biocyc/META:TRANS-RXN0-206",
@@ -4440,7 +4440,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/O2t",
               "http://identifiers.org/biocyc/META:TRANS-RXN0-474",
               "http://identifiers.org/metanetx.reaction/MNXR102090"
@@ -4469,7 +4469,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/PDH",
               "http://identifiers.org/biocyc/META:PYRUVDEH-RXN",
               "http://identifiers.org/ec-code/1.2.1.-",
@@ -4507,7 +4507,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/PFK",
               "http://identifiers.org/ec-code/2.7.1.11",
               "http://identifiers.org/metanetx.reaction/MNXR102507",
@@ -4538,7 +4538,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/PFL",
               "http://identifiers.org/biocyc/META:PYRUVFORMLY-RXN",
               "http://identifiers.org/ec-code/2.3.1.54",
@@ -4569,7 +4569,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/PGI",
               "http://identifiers.org/biocyc/META:PGLUCISOM-RXN",
               "http://identifiers.org/ec-code/5.3.1.9",
@@ -4597,7 +4597,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/PGK",
               "http://identifiers.org/biocyc/META:PHOSGLYPHOS-RXN",
               "http://identifiers.org/ec-code/2.7.2.3",
@@ -4630,7 +4630,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/PGL",
               "http://identifiers.org/biocyc/META:6PGLUCONOLACT-RXN",
               "http://identifiers.org/ec-code/3.1.1.31",
@@ -4661,7 +4661,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/PGM",
               "http://identifiers.org/biocyc/META:3PGAREARR-RXN",
               "http://identifiers.org/biocyc/META:RXN-15513",
@@ -4697,7 +4697,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/PIt2r",
               "http://identifiers.org/biocyc/META:TRANS-RXN-114",
               "http://identifiers.org/metanetx.reaction/MNXR102872",
@@ -4730,7 +4730,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/PPC",
               "http://identifiers.org/ec-code/4.1.1.31",
               "http://identifiers.org/kegg.reaction/R00345",
@@ -4763,7 +4763,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/PPCK",
               "http://identifiers.org/biocyc/META:PEPCARBOXYKIN-RXN",
               "http://identifiers.org/ec-code/4.1.1.49",
@@ -4799,7 +4799,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/PPS",
               "http://identifiers.org/biocyc/META:PEPSYNTH-RXN",
               "http://identifiers.org/ec-code/2.7.9.2",
@@ -4832,7 +4832,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/PTAr",
               "http://identifiers.org/biocyc/META:PHOSACETYLTRANS-RXN",
               "http://identifiers.org/ec-code/2.3.1.8",
@@ -4866,7 +4866,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/PYK",
               "http://identifiers.org/biocyc/META:PEPDEPHOS-RXN",
               "http://identifiers.org/ec-code/2.7.1.40",
@@ -4899,7 +4899,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/PYRt2",
               "http://identifiers.org/metanetx.reaction/MNXR103385"
             ]
@@ -4923,7 +4923,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/RPE",
               "http://identifiers.org/biocyc/META:RIBULP3EPIM-RXN",
               "http://identifiers.org/ec-code/5.1.3.1",
@@ -4954,7 +4954,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/RPI",
               "http://identifiers.org/ec-code/5.3.1.6",
               "http://identifiers.org/metanetx.reaction/MNXR104084"
@@ -4981,7 +4981,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/SUCCt2_2",
               "http://identifiers.org/biocyc/META:TRANS-RXN-121",
               "http://identifiers.org/metanetx.reaction/MNXR104620",
@@ -5012,7 +5012,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/SUCCt3",
               "http://identifiers.org/metanetx.reaction/MNXR104623"
             ]
@@ -5038,7 +5038,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/SUCDi",
               "http://identifiers.org/metanetx.reaction/MNXR99641",
               "http://identifiers.org/rhea/29187",
@@ -5070,7 +5070,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/SUCOAS",
               "http://identifiers.org/biocyc/META:SUCCCOASYN-RXN",
               "http://identifiers.org/ec-code/6.2.1.5",
@@ -5103,7 +5103,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/TALA",
               "http://identifiers.org/biocyc/META:TRANSALDOL-RXN",
               "http://identifiers.org/ec-code/2.2.1.2",
@@ -5138,7 +5138,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/THD2",
               "http://identifiers.org/ec-code/1.6.1.1",
               "http://identifiers.org/metanetx.reaction/MNXR104805"
@@ -5165,7 +5165,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/TKT1",
               "http://identifiers.org/ec-code/2.2.1.1",
               "http://identifiers.org/metanetx.reaction/MNXR104868"
@@ -5192,7 +5192,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/TKT2",
               "http://identifiers.org/biocyc/META:2TRANSKETO-RXN",
               "http://identifiers.org/ec-code/2.2.1.1",
@@ -5223,7 +5223,7 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/bigg.reaction/TPI",
               "http://identifiers.org/biocyc/META:TRIOSEPISOMERIZATION-RXN",
               "http://identifiers.org/ec-code/5.3.1.1",
@@ -5247,11 +5247,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P77580"]
+            "resources": ["http://identifiers.org/uniprot/P77580"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0001207",
               "http://identifiers.org/ecogene/EG13625",
               "http://identifiers.org/ncbigene/945008",
@@ -5268,11 +5268,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A9Q7"]
+            "resources": ["http://identifiers.org/uniprot/P0A9Q7"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0004164",
               "http://identifiers.org/ecogene/EG10031",
               "http://identifiers.org/ncbigene/945837",
@@ -5293,11 +5293,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A6A3"]
+            "resources": ["http://identifiers.org/uniprot/P0A6A3"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007579",
               "http://identifiers.org/ecogene/EG10027",
               "http://identifiers.org/ncbigene/946775",
@@ -5314,11 +5314,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P11868"]
+            "resources": ["http://identifiers.org/uniprot/P11868"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0010245",
               "http://identifiers.org/ecogene/EG11172",
               "http://identifiers.org/ncbigene/947635",
@@ -5335,11 +5335,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P33221"]
+            "resources": ["http://identifiers.org/uniprot/P33221"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0006162",
               "http://identifiers.org/ecogene/EG11809",
               "http://identifiers.org/ncbigene/946368",
@@ -5356,11 +5356,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P25516"]
+            "resources": ["http://identifiers.org/uniprot/P25516"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0004283",
               "http://identifiers.org/ecogene/EG11325",
               "http://identifiers.org/ncbigene/946724",
@@ -5377,11 +5377,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P36683"]
+            "resources": ["http://identifiers.org/uniprot/P36683"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0000411",
               "http://identifiers.org/ecogene/EG12316",
               "http://identifiers.org/ncbigene/944864",
@@ -5398,11 +5398,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P69441"]
+            "resources": ["http://identifiers.org/uniprot/P69441"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0001645",
               "http://identifiers.org/ecogene/EG10032",
               "http://identifiers.org/ncbigene/945097",
@@ -5419,11 +5419,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AFG3"]
+            "resources": ["http://identifiers.org/uniprot/P0AFG3"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002478",
               "http://identifiers.org/ecogene/EG10979",
               "http://identifiers.org/ncbigene/945303",
@@ -5440,11 +5440,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A9P0"]
+            "resources": ["http://identifiers.org/uniprot/P0A9P0"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0000404",
               "http://identifiers.org/ecogene/EG10543",
               "http://identifiers.org/ncbigene/944854",
@@ -5461,11 +5461,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AFG6"]
+            "resources": ["http://identifiers.org/uniprot/P0AFG6"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002480",
               "http://identifiers.org/ecogene/EG10980",
               "http://identifiers.org/ncbigene/945307",
@@ -5482,11 +5482,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AEX3"]
+            "resources": ["http://identifiers.org/uniprot/P0AEX3"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0008515",
               "http://identifiers.org/ecogene/EG10522",
               "http://identifiers.org/ncbigene/947069",
@@ -5503,11 +5503,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P25437"]
+            "resources": ["http://identifiers.org/uniprot/P25437"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0001221",
               "http://identifiers.org/ecogene/EG50010",
               "http://identifiers.org/ncbigene/944988",
@@ -5524,11 +5524,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P39451"]
+            "resources": ["http://identifiers.org/uniprot/P39451"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0004928",
               "http://identifiers.org/ecogene/EG12622",
               "http://identifiers.org/ncbigene/946036",
@@ -5545,11 +5545,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0ABA0"]
+            "resources": ["http://identifiers.org/uniprot/P0ABA0"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012217",
               "http://identifiers.org/ecogene/EG10103",
               "http://identifiers.org/ncbigene/948247",
@@ -5566,11 +5566,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A6E6"]
+            "resources": ["http://identifiers.org/uniprot/P0A6E6"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012206",
               "http://identifiers.org/ecogene/EG10100",
               "http://identifiers.org/ncbigene/948245",
@@ -5587,11 +5587,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0ABB4"]
+            "resources": ["http://identifiers.org/uniprot/P0ABB4"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012208",
               "http://identifiers.org/ecogene/EG10101",
               "http://identifiers.org/ncbigene/948244",
@@ -5608,11 +5608,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P68699"]
+            "resources": ["http://identifiers.org/uniprot/P68699"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012220",
               "http://identifiers.org/ecogene/EG10102",
               "http://identifiers.org/ncbigene/948253",
@@ -5629,11 +5629,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0ABB0"]
+            "resources": ["http://identifiers.org/uniprot/P0ABB0"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012213",
               "http://identifiers.org/ecogene/EG10098",
               "http://identifiers.org/ncbigene/948242",
@@ -5650,11 +5650,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0ABA4"]
+            "resources": ["http://identifiers.org/uniprot/P0ABA4"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012215",
               "http://identifiers.org/ecogene/EG10105",
               "http://identifiers.org/ncbigene/948254",
@@ -5671,11 +5671,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AB98"]
+            "resources": ["http://identifiers.org/uniprot/P0AB98"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012222",
               "http://identifiers.org/ecogene/EG10099",
               "http://identifiers.org/ncbigene/948252",
@@ -5692,11 +5692,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0ABC0"]
+            "resources": ["http://identifiers.org/uniprot/P0ABC0"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012224",
               "http://identifiers.org/ecogene/EG10106",
               "http://identifiers.org/ncbigene/948251",
@@ -5713,11 +5713,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0ABA6"]
+            "resources": ["http://identifiers.org/uniprot/P0ABA6"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012211",
               "http://identifiers.org/ecogene/EG10104",
               "http://identifiers.org/ncbigene/948243",
@@ -5734,11 +5734,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0ABH7"]
+            "resources": ["http://identifiers.org/uniprot/P0ABH7"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002451",
               "http://identifiers.org/ecogene/EG10402",
               "http://identifiers.org/ncbigene/945323",
@@ -5755,11 +5755,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P26458"]
+            "resources": ["http://identifiers.org/uniprot/P26458"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0003302",
               "http://identifiers.org/ecogene/EG11379",
               "http://identifiers.org/ncbigene/947547",
@@ -5776,11 +5776,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P26459"]
+            "resources": ["http://identifiers.org/uniprot/P26459"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0003300",
               "http://identifiers.org/ecogene/EG11380",
               "http://identifiers.org/ncbigene/945585",
@@ -5797,11 +5797,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0ABJ9"]
+            "resources": ["http://identifiers.org/uniprot/P0ABJ9"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002499",
               "http://identifiers.org/ecogene/EG10173",
               "http://identifiers.org/ncbigene/945341",
@@ -5818,11 +5818,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0ABK2"]
+            "resources": ["http://identifiers.org/uniprot/P0ABK2"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002501",
               "http://identifiers.org/ecogene/EG10174",
               "http://identifiers.org/ncbigene/945347",
@@ -5839,11 +5839,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/Q46839"]
+            "resources": ["http://identifiers.org/uniprot/Q46839"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0009763",
               "http://identifiers.org/ecogene/EG12995",
               "http://identifiers.org/ncbigene/947259",
@@ -5860,11 +5860,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P33231"]
+            "resources": ["http://identifiers.org/uniprot/P33231"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0011777",
               "http://identifiers.org/ecogene/EG11961",
               "http://identifiers.org/ncbigene/948114",
@@ -5881,11 +5881,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A6P9"]
+            "resources": ["http://identifiers.org/uniprot/P0A6P9"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0009110",
               "http://identifiers.org/ecogene/EG10258",
               "http://identifiers.org/ncbigene/945032",
@@ -5902,11 +5902,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A991"]
+            "resources": ["http://identifiers.org/uniprot/P0A991"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0006941",
               "http://identifiers.org/ecogene/EG14062",
               "http://identifiers.org/ncbigene/946632",
@@ -5923,11 +5923,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P77704"]
+            "resources": ["http://identifiers.org/uniprot/P77704"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0005906",
               "http://identifiers.org/ecogene/EG13485",
               "http://identifiers.org/ncbigene/946291",
@@ -5944,11 +5944,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AB71"]
+            "resources": ["http://identifiers.org/uniprot/P0AB71"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0009600",
               "http://identifiers.org/ecogene/EG10282",
               "http://identifiers.org/ncbigene/947415",
@@ -5965,11 +5965,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A993"]
+            "resources": ["http://identifiers.org/uniprot/P0A993"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0013842",
               "http://identifiers.org/ecogene/EG10283",
               "http://identifiers.org/ncbigene/948753",
@@ -5986,11 +5986,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A9C9"]
+            "resources": ["http://identifiers.org/uniprot/P0A9C9"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012821",
               "http://identifiers.org/ecogene/EG11517",
               "http://identifiers.org/ncbigene/948424",
@@ -6007,11 +6007,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P77733"]
+            "resources": ["http://identifiers.org/uniprot/P77733"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0008206",
               "http://identifiers.org/ecogene/EG14220",
               "http://identifiers.org/ncbigene/949032",
@@ -6028,11 +6028,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AC23"]
+            "resources": ["http://identifiers.org/uniprot/P0AC23"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0003073",
               "http://identifiers.org/ecogene/EG11258",
               "http://identifiers.org/ncbigene/945513",
@@ -6049,11 +6049,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A8Q3"]
+            "resources": ["http://identifiers.org/uniprot/P0A8Q3"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0013595",
               "http://identifiers.org/ecogene/EG10333",
               "http://identifiers.org/ncbigene/948668",
@@ -6070,11 +6070,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A8Q0"]
+            "resources": ["http://identifiers.org/uniprot/P0A8Q0"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0013598",
               "http://identifiers.org/ecogene/EG10332",
               "http://identifiers.org/ncbigene/948680",
@@ -6091,11 +6091,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P00363"]
+            "resources": ["http://identifiers.org/uniprot/P00363"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0013604",
               "http://identifiers.org/ecogene/EG10330",
               "http://identifiers.org/ncbigene/948667",
@@ -6112,11 +6112,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AC47"]
+            "resources": ["http://identifiers.org/uniprot/P0AC47"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0013602",
               "http://identifiers.org/ecogene/EG10331",
               "http://identifiers.org/ncbigene/948666",
@@ -6133,11 +6133,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P08839"]
+            "resources": ["http://identifiers.org/uniprot/P08839"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007967",
               "http://identifiers.org/ecogene/EG10789",
               "http://identifiers.org/ncbigene/946879",
@@ -6154,11 +6154,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AA04"]
+            "resources": ["http://identifiers.org/uniprot/P0AA04"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007962",
               "http://identifiers.org/ecogene/EG10788",
               "http://identifiers.org/ncbigene/946886",
@@ -6175,11 +6175,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P69797"]
+            "resources": ["http://identifiers.org/uniprot/P69797"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0006054",
               "http://identifiers.org/ecogene/EG10567",
               "http://identifiers.org/ncbigene/946334",
@@ -6196,11 +6196,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P69801"]
+            "resources": ["http://identifiers.org/uniprot/P69801"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0006056",
               "http://identifiers.org/ecogene/EG10568",
               "http://identifiers.org/ncbigene/946332",
@@ -6217,11 +6217,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P69805"]
+            "resources": ["http://identifiers.org/uniprot/P69805"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0006058",
               "http://identifiers.org/ecogene/EG10569",
               "http://identifiers.org/ncbigene/946342",
@@ -6238,11 +6238,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P05042"]
+            "resources": ["http://identifiers.org/uniprot/P05042"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0005380",
               "http://identifiers.org/ecogene/EG10358",
               "http://identifiers.org/ncbigene/946147",
@@ -6259,11 +6259,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P14407"]
+            "resources": ["http://identifiers.org/uniprot/P14407"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0013501",
               "http://identifiers.org/ecogene/EG10357",
               "http://identifiers.org/ncbigene/948642",
@@ -6280,11 +6280,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AC33"]
+            "resources": ["http://identifiers.org/uniprot/P0AC33"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0005392",
               "http://identifiers.org/ecogene/EG10356",
               "http://identifiers.org/ncbigene/946826",
@@ -6301,11 +6301,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A830"]
+            "resources": ["http://identifiers.org/uniprot/P0A830"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0011527",
               "http://identifiers.org/ecogene/EG20044",
               "http://identifiers.org/ncbigene/948039",
@@ -6322,11 +6322,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AC53"]
+            "resources": ["http://identifiers.org/uniprot/P0AC53"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0006171",
               "http://identifiers.org/ecogene/EG11221",
               "http://identifiers.org/ncbigene/946370",
@@ -6343,11 +6343,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A9B2"]
+            "resources": ["http://identifiers.org/uniprot/P0A9B2"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0005920",
               "http://identifiers.org/ecogene/EG10367",
               "http://identifiers.org/ncbigene/947679",
@@ -6364,11 +6364,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P69786"]
+            "resources": ["http://identifiers.org/uniprot/P69786"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0003722",
               "http://identifiers.org/ecogene/EG10787",
               "http://identifiers.org/ncbigene/945651",
@@ -6385,11 +6385,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P69783"]
+            "resources": ["http://identifiers.org/uniprot/P69783"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007971",
               "http://identifiers.org/ecogene/EG10165",
               "http://identifiers.org/ncbigene/946880",
@@ -6406,11 +6406,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P19642"]
+            "resources": ["http://identifiers.org/uniprot/P19642"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0005429",
               "http://identifiers.org/ecogene/EG10563",
               "http://identifiers.org/ncbigene/946009",
@@ -6427,11 +6427,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P78061"]
+            "resources": ["http://identifiers.org/uniprot/P78061"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0004365",
               "http://identifiers.org/ecogene/EG13908",
               "http://identifiers.org/ncbigene/946202",
@@ -6448,11 +6448,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A9C5"]
+            "resources": ["http://identifiers.org/uniprot/P0A9C5"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012640",
               "http://identifiers.org/ecogene/EG10383",
               "http://identifiers.org/ncbigene/948370",
@@ -6469,11 +6469,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AEQ3"]
+            "resources": ["http://identifiers.org/uniprot/P0AEQ3"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002771",
               "http://identifiers.org/ecogene/EG10386",
               "http://identifiers.org/ncbigene/944872",
@@ -6490,11 +6490,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AEQ6"]
+            "resources": ["http://identifiers.org/uniprot/P0AEQ6"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002766",
               "http://identifiers.org/ecogene/EG10388",
               "http://identifiers.org/ncbigene/945621",
@@ -6511,11 +6511,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P10346"]
+            "resources": ["http://identifiers.org/uniprot/P10346"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002764",
               "http://identifiers.org/ecogene/EG10389",
               "http://identifiers.org/ncbigene/945435",
@@ -6532,11 +6532,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P00370"]
+            "resources": ["http://identifiers.org/uniprot/P00370"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0005865",
               "http://identifiers.org/ecogene/EG10372",
               "http://identifiers.org/ncbigene/946802",
@@ -6553,11 +6553,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P77454"]
+            "resources": ["http://identifiers.org/uniprot/P77454"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0001688",
               "http://identifiers.org/ecogene/EG13247",
               "http://identifiers.org/ncbigene/946187",
@@ -6574,11 +6574,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A6W0"]
+            "resources": ["http://identifiers.org/uniprot/P0A6W0"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0005086",
               "http://identifiers.org/ecogene/EG13816",
               "http://identifiers.org/ncbigene/944973",
@@ -6595,11 +6595,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P05041"]
+            "resources": ["http://identifiers.org/uniprot/P05041"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0006031",
               "http://identifiers.org/ecogene/EG10683",
               "http://identifiers.org/ncbigene/946337",
@@ -6616,11 +6616,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P09831"]
+            "resources": ["http://identifiers.org/uniprot/P09831"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0010545",
               "http://identifiers.org/ecogene/EG10403",
               "http://identifiers.org/ncbigene/947724",
@@ -6637,11 +6637,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P09832"]
+            "resources": ["http://identifiers.org/uniprot/P09832"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0010547",
               "http://identifiers.org/ecogene/EG10404",
               "http://identifiers.org/ncbigene/947723",
@@ -6658,11 +6658,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P21345"]
+            "resources": ["http://identifiers.org/uniprot/P21345"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0013357",
               "http://identifiers.org/ecogene/EG10405",
               "http://identifiers.org/ncbigene/948591",
@@ -6679,11 +6679,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P00350"]
+            "resources": ["http://identifiers.org/uniprot/P00350"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0006737",
               "http://identifiers.org/ecogene/EG10411",
               "http://identifiers.org/ncbigene/946554",
@@ -6700,11 +6700,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P60844"]
+            "resources": ["http://identifiers.org/uniprot/P60844"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002976",
               "http://identifiers.org/ecogene/EG13270",
               "http://identifiers.org/ncbigene/945497",
@@ -6721,11 +6721,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P08200"]
+            "resources": ["http://identifiers.org/uniprot/P08200"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0003823",
               "http://identifiers.org/ecogene/EG10489",
               "http://identifiers.org/ncbigene/945702",
@@ -6742,11 +6742,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A9G6"]
+            "resources": ["http://identifiers.org/uniprot/P0A9G6"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0013128",
               "http://identifiers.org/ecogene/EG10022",
               "http://identifiers.org/ncbigene/948517",
@@ -6763,11 +6763,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P06149"]
+            "resources": ["http://identifiers.org/uniprot/P06149"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007048",
               "http://identifiers.org/ecogene/EG10231",
               "http://identifiers.org/ncbigene/946653",
@@ -6784,11 +6784,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P52643"]
+            "resources": ["http://identifiers.org/uniprot/P52643"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0004619",
               "http://identifiers.org/ecogene/EG13186",
               "http://identifiers.org/ncbigene/946315",
@@ -6805,11 +6805,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P37330"]
+            "resources": ["http://identifiers.org/uniprot/P37330"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0009767",
               "http://identifiers.org/ecogene/EG20080",
               "http://identifiers.org/ncbigene/948857",
@@ -6826,11 +6826,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P08997"]
+            "resources": ["http://identifiers.org/uniprot/P08997"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0013125",
               "http://identifiers.org/ecogene/EG10023",
               "http://identifiers.org/ncbigene/948512",
@@ -6847,11 +6847,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P61889"]
+            "resources": ["http://identifiers.org/uniprot/P61889"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0010613",
               "http://identifiers.org/ecogene/EG10576",
               "http://identifiers.org/ncbigene/947854",
@@ -6868,11 +6868,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P26616"]
+            "resources": ["http://identifiers.org/uniprot/P26616"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0004931",
               "http://identifiers.org/ecogene/EG10948",
               "http://identifiers.org/ncbigene/946031",
@@ -6889,11 +6889,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P76558"]
+            "resources": ["http://identifiers.org/uniprot/P76558"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0008111",
               "http://identifiers.org/ecogene/EG14193",
               "http://identifiers.org/ncbigene/946947",
@@ -6910,11 +6910,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AFF0"]
+            "resources": ["http://identifiers.org/uniprot/P0AFF0"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007526",
               "http://identifiers.org/ecogene/EG12093",
               "http://identifiers.org/ncbigene/945136",
@@ -6931,11 +6931,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AFE4"]
+            "resources": ["http://identifiers.org/uniprot/P0AFE4"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007534",
               "http://identifiers.org/ecogene/EG12091",
               "http://identifiers.org/ncbigene/947580",
@@ -6952,11 +6952,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AFC3"]
+            "resources": ["http://identifiers.org/uniprot/P0AFC3"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007553",
               "http://identifiers.org/ecogene/EG12082",
               "http://identifiers.org/ncbigene/946764",
@@ -6973,11 +6973,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P33607"]
+            "resources": ["http://identifiers.org/uniprot/P33607"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007532",
               "http://identifiers.org/ecogene/EG12092",
               "http://identifiers.org/ncbigene/945540",
@@ -6994,11 +6994,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P33599"]
+            "resources": ["http://identifiers.org/uniprot/P33599"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007549",
               "http://identifiers.org/ecogene/EG12084",
               "http://identifiers.org/ncbigene/946759",
@@ -7015,11 +7015,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AFD1"]
+            "resources": ["http://identifiers.org/uniprot/P0AFD1"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007547",
               "http://identifiers.org/ecogene/EG12086",
               "http://identifiers.org/ncbigene/946746",
@@ -7036,11 +7036,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P33602"]
+            "resources": ["http://identifiers.org/uniprot/P33602"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007543",
               "http://identifiers.org/ecogene/EG12087",
               "http://identifiers.org/ncbigene/946762",
@@ -7057,11 +7057,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AFC7"]
+            "resources": ["http://identifiers.org/uniprot/P0AFC7"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007551",
               "http://identifiers.org/ecogene/EG12083",
               "http://identifiers.org/ncbigene/946738",
@@ -7078,11 +7078,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P31979"]
+            "resources": ["http://identifiers.org/uniprot/P31979"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007545",
               "http://identifiers.org/ecogene/EG11774",
               "http://identifiers.org/ncbigene/946753",
@@ -7099,11 +7099,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AFD6"]
+            "resources": ["http://identifiers.org/uniprot/P0AFD6"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007539",
               "http://identifiers.org/ecogene/EG12089",
               "http://identifiers.org/ncbigene/946757",
@@ -7120,11 +7120,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AFE8"]
+            "resources": ["http://identifiers.org/uniprot/P0AFE8"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007529",
               "http://identifiers.org/ecogene/EG11773",
               "http://identifiers.org/ncbigene/947731",
@@ -7141,11 +7141,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AFD4"]
+            "resources": ["http://identifiers.org/uniprot/P0AFD4"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007541",
               "http://identifiers.org/ecogene/EG12088",
               "http://identifiers.org/ncbigene/946761",
@@ -7162,11 +7162,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AFE0"]
+            "resources": ["http://identifiers.org/uniprot/P0AFE0"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007536",
               "http://identifiers.org/ecogene/EG12090",
               "http://identifiers.org/ncbigene/946756",
@@ -7183,11 +7183,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P07001"]
+            "resources": ["http://identifiers.org/uniprot/P07001"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0005354",
               "http://identifiers.org/ecogene/EG10744",
               "http://identifiers.org/ncbigene/946628",
@@ -7204,11 +7204,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AB67"]
+            "resources": ["http://identifiers.org/uniprot/P0AB67"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0005352",
               "http://identifiers.org/ecogene/EG10745",
               "http://identifiers.org/ncbigene/946144",
@@ -7225,11 +7225,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P27306"]
+            "resources": ["http://identifiers.org/uniprot/P27306"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012975",
               "http://identifiers.org/ecogene/EG11428",
               "http://identifiers.org/ncbigene/948461",
@@ -7246,11 +7246,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P69681"]
+            "resources": ["http://identifiers.org/uniprot/P69681"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0001564",
               "http://identifiers.org/ecogene/EG11821",
               "http://identifiers.org/ncbigene/945084",
@@ -7267,11 +7267,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AFG8"]
+            "resources": ["http://identifiers.org/uniprot/P0AFG8"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0000397",
               "http://identifiers.org/ecogene/EG10024",
               "http://identifiers.org/ncbigene/944834",
@@ -7288,11 +7288,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P06959"]
+            "resources": ["http://identifiers.org/uniprot/P06959"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0000400",
               "http://identifiers.org/ecogene/EG10025",
               "http://identifiers.org/ncbigene/944794",
@@ -7309,11 +7309,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P06999"]
+            "resources": ["http://identifiers.org/uniprot/P06999"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0005748",
               "http://identifiers.org/ecogene/EG10700",
               "http://identifiers.org/ncbigene/946230",
@@ -7330,11 +7330,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A796"]
+            "resources": ["http://identifiers.org/uniprot/P0A796"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012789",
               "http://identifiers.org/ecogene/EG10699",
               "http://identifiers.org/ncbigene/948412",
@@ -7351,11 +7351,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P42632"]
+            "resources": ["http://identifiers.org/uniprot/P42632"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0010242",
               "http://identifiers.org/ecogene/EG12758",
               "http://identifiers.org/ncbigene/947623",
@@ -7372,11 +7372,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P32675"]
+            "resources": ["http://identifiers.org/uniprot/P32675"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012937",
               "http://identifiers.org/ecogene/EG11911",
               "http://identifiers.org/ncbigene/948453",
@@ -7393,11 +7393,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P32674"]
+            "resources": ["http://identifiers.org/uniprot/P32674"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012934",
               "http://identifiers.org/ecogene/EG11910",
               "http://identifiers.org/ncbigene/948454",
@@ -7414,11 +7414,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A9N4"]
+            "resources": ["http://identifiers.org/uniprot/P0A9N4"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0003068",
               "http://identifiers.org/ecogene/EG10028",
               "http://identifiers.org/ncbigene/945517",
@@ -7435,11 +7435,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P09373"]
+            "resources": ["http://identifiers.org/uniprot/P09373"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0003071",
               "http://identifiers.org/ecogene/EG10701",
               "http://identifiers.org/ncbigene/945514",
@@ -7456,11 +7456,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P68066"]
+            "resources": ["http://identifiers.org/uniprot/P68066"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0008489",
               "http://identifiers.org/ecogene/EG11784",
               "http://identifiers.org/ncbigene/947068",
@@ -7477,11 +7477,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A6T1"]
+            "resources": ["http://identifiers.org/uniprot/P0A6T1"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0013163",
               "http://identifiers.org/ecogene/EG10702",
               "http://identifiers.org/ncbigene/948535",
@@ -7498,11 +7498,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A799"]
+            "resources": ["http://identifiers.org/uniprot/P0A799"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0009605",
               "http://identifiers.org/ecogene/EG10703",
               "http://identifiers.org/ncbigene/947414",
@@ -7519,11 +7519,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P52697"]
+            "resources": ["http://identifiers.org/uniprot/P52697"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002611",
               "http://identifiers.org/ecogene/EG13231",
               "http://identifiers.org/ncbigene/946398",
@@ -7540,11 +7540,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P62707"]
+            "resources": ["http://identifiers.org/uniprot/P62707"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002563",
               "http://identifiers.org/ecogene/EG11699",
               "http://identifiers.org/ncbigene/945068",
@@ -7561,11 +7561,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A7A2"]
+            "resources": ["http://identifiers.org/uniprot/P0A7A2"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0014416",
               "http://identifiers.org/ecogene/EG12164",
               "http://identifiers.org/ncbigene/948918",
@@ -7582,11 +7582,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P37689"]
+            "resources": ["http://identifiers.org/uniprot/P37689"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0011818",
               "http://identifiers.org/ecogene/EG12296",
               "http://identifiers.org/ncbigene/948130",
@@ -7603,11 +7603,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P43676"]
+            "resources": ["http://identifiers.org/uniprot/P43676"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0009800",
               "http://identifiers.org/ecogene/EG12883",
               "http://identifiers.org/ncbigene/947475",
@@ -7624,11 +7624,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AFJ7"]
+            "resources": ["http://identifiers.org/uniprot/P0AFJ7"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0011407",
               "http://identifiers.org/ecogene/EG12230",
               "http://identifiers.org/ncbigene/948009",
@@ -7645,11 +7645,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P00864"]
+            "resources": ["http://identifiers.org/uniprot/P00864"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012950",
               "http://identifiers.org/ecogene/EG10756",
               "http://identifiers.org/ncbigene/948457",
@@ -7666,11 +7666,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P22259"]
+            "resources": ["http://identifiers.org/uniprot/P22259"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0011106",
               "http://identifiers.org/ecogene/EG10688",
               "http://identifiers.org/ncbigene/945667",
@@ -7687,11 +7687,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P23538"]
+            "resources": ["http://identifiers.org/uniprot/P23538"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0005678",
               "http://identifiers.org/ecogene/EG10759",
               "http://identifiers.org/ncbigene/946209",
@@ -7708,11 +7708,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A9M8"]
+            "resources": ["http://identifiers.org/uniprot/P0A9M8"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0007582",
               "http://identifiers.org/ecogene/EG20173",
               "http://identifiers.org/ncbigene/946778",
@@ -7729,11 +7729,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P77218"]
+            "resources": ["http://identifiers.org/uniprot/P77218"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0008097",
               "http://identifiers.org/ecogene/EG14188",
               "http://identifiers.org/ncbigene/946940",
@@ -7750,11 +7750,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AD61"]
+            "resources": ["http://identifiers.org/uniprot/P0AD61"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0005600",
               "http://identifiers.org/ecogene/EG10804",
               "http://identifiers.org/ncbigene/946179",
@@ -7771,11 +7771,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P21599"]
+            "resources": ["http://identifiers.org/uniprot/P21599"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0006182",
               "http://identifiers.org/ecogene/EG10803",
               "http://identifiers.org/ncbigene/946527",
@@ -7792,11 +7792,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P39362"]
+            "resources": ["http://identifiers.org/uniprot/P39362"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0014097",
               "http://identifiers.org/ecogene/EG12553",
               "http://identifiers.org/ncbigene/948829",
@@ -7813,11 +7813,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AG07"]
+            "resources": ["http://identifiers.org/uniprot/P0AG07"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0011061",
               "http://identifiers.org/ecogene/EG11960",
               "http://identifiers.org/ncbigene/947896",
@@ -7834,11 +7834,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A7Z0"]
+            "resources": ["http://identifiers.org/uniprot/P0A7Z0"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0009567",
               "http://identifiers.org/ecogene/EG11443",
               "http://identifiers.org/ncbigene/947407",
@@ -7855,11 +7855,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P37351"]
+            "resources": ["http://identifiers.org/uniprot/P37351"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0013405",
               "http://identifiers.org/ecogene/EG11827",
               "http://identifiers.org/ncbigene/948602",
@@ -7876,11 +7876,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AC41"]
+            "resources": ["http://identifiers.org/uniprot/P0AC41"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002466",
               "http://identifiers.org/ecogene/EG10931",
               "http://identifiers.org/ncbigene/945402",
@@ -7897,11 +7897,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P07014"]
+            "resources": ["http://identifiers.org/uniprot/P07014"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002468",
               "http://identifiers.org/ecogene/EG10932",
               "http://identifiers.org/ncbigene/945300",
@@ -7918,11 +7918,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AC44"]
+            "resources": ["http://identifiers.org/uniprot/P0AC44"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002464",
               "http://identifiers.org/ecogene/EG10934",
               "http://identifiers.org/ncbigene/945322",
@@ -7939,11 +7939,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P69054"]
+            "resources": ["http://identifiers.org/uniprot/P69054"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002460",
               "http://identifiers.org/ecogene/EG10933",
               "http://identifiers.org/ncbigene/945316",
@@ -7960,11 +7960,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0AGE9"]
+            "resources": ["http://identifiers.org/uniprot/P0AGE9"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002485",
               "http://identifiers.org/ecogene/EG10982",
               "http://identifiers.org/ncbigene/945314",
@@ -7981,11 +7981,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A836"]
+            "resources": ["http://identifiers.org/uniprot/P0A836"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0002483",
               "http://identifiers.org/ecogene/EG10981",
               "http://identifiers.org/ncbigene/945312",
@@ -8002,11 +8002,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A870"]
+            "resources": ["http://identifiers.org/uniprot/P0A870"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0000027",
               "http://identifiers.org/ecogene/EG11556",
               "http://identifiers.org/ncbigene/944748",
@@ -8023,11 +8023,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A867"]
+            "resources": ["http://identifiers.org/uniprot/P0A867"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0008115",
               "http://identifiers.org/ecogene/EG11797",
               "http://identifiers.org/ncbigene/947006",
@@ -8044,11 +8044,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P27302"]
+            "resources": ["http://identifiers.org/uniprot/P27302"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0009625",
               "http://identifiers.org/ecogene/EG11427",
               "http://identifiers.org/ncbigene/947420",
@@ -8065,11 +8065,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P33570"]
+            "resources": ["http://identifiers.org/uniprot/P33570"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0008117",
               "http://identifiers.org/ecogene/EG12100",
               "http://identifiers.org/ncbigene/945865",
@@ -8086,11 +8086,11 @@
         "standardized": [
           {
             "qualifier": "bqb_is",
-            "identifiers": ["http://identifiers.org/uniprot/P0A858"]
+            "resources": ["http://identifiers.org/uniprot/P0A858"]
           },
           {
             "qualifier": "bqb_isEncodedBy",
-            "identifiers": [
+            "resources": [
               "http://identifiers.org/asap/ABE-0012799",
               "http://identifiers.org/ecogene/EG11015",
               "http://identifiers.org/ncbigene/948409",
@@ -8500,15 +8500,15 @@
     "standardized": [
       {
         "qualifier": "bqb_hasTaxon",
-        "identifiers": ["http://identifiers.org/taxonomy/511145"]
+        "resources": ["http://identifiers.org/taxonomy/511145"]
       },
       {
         "qualifier": "bqm_is",
-        "identifiers": ["http://identifiers.org/bigg.model/e_coli_core"]
+        "resources": ["http://identifiers.org/bigg.model/e_coli_core"]
       },
       {
         "qualifier": "bqm_isDescribedBy",
-        "identifiers": ["http://identifiers.org/doi/10.1128/ecosalplus.10.2.1"]
+        "resources": ["http://identifiers.org/doi/10.1128/ecosalplus.10.2.1"]
       }
     ]
   },

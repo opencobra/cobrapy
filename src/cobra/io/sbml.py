@@ -48,7 +48,7 @@ from ..core import (
     Gene,
     Group,
     Metabolite,
-    MetaData,
+    Metadata,
     Model,
     Reaction,
     StandardizedAnnotation,
@@ -1730,7 +1730,7 @@ MODEL_QUALIFIER_TYPES_TO_COBRA_DICT = {
 }
 
 
-def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
+def _parse_annotations(sbase: libsbml.SBase) -> Metadata:
     """Parse cobra annotations from a given SBase object.
 
     The annotation format has been changed. We no longer have
@@ -1753,10 +1753,10 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
 
     Returns
     -------
-    MetaData
+    Metadata
         a metadata object storing COBRA annotation
     """
-    annotations = MetaData()
+    annotations = Metadata()
 
     # SBO term
     if sbase.isSetSBOTerm():
@@ -1793,7 +1793,7 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
         else:
             LOGGER.warning(f"The cvterm {_cvterm} has an unkown qualifier. Ignoring it")
             return None
-        identifiers = [
+        resources = [
             _cvterm.getResourceURI(k) for k in range(_cvterm.getNumResources())
         ]
 
@@ -1810,7 +1810,7 @@ def _parse_annotations(sbase: libsbml.SBase) -> MetaData:
             and (cobra_cvterm := _cvterm_to_cobra(_nested_cvterm)) is not None
         ]
         return StandardizedAnnotation(
-            identifiers=identifiers, qualifier=qualifier, annotations=nested_data
+            resources=resources, qualifier=qualifier, annotations=nested_data
         )
 
     annotations.add_standardized(
@@ -1870,11 +1870,11 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
     (provider, identifier) if resolvable, None otherwise
 
     .. deprecated ::
-    Use cobra.core.metadata.identifier.parse_identifiers_uri()
+    Use cobra.core.metadata.resource.parse_identifiers_uri()
     """
     warn(
         "_parse_annotation_info() is being replaced by "
-        "cobra.core.metadata.identifier.parse_identifiers_uri()",
+        "cobra.core.metadata.resource.parse_identifiers_uri()",
         DeprecationWarning,
     )
     match = URL_IDENTIFIERS_PATTERN.match(uri)
@@ -1927,7 +1927,7 @@ def _cvterms_to_sbml(cvterms: StandardizedAnnotationStore) -> List["libsbml.CVTe
             cv.setModelQualifierType(QUALIFIER_TYPES_COBRA_SBML_DICT[qualifier.value])
         else:
             raise CobraSBMLError(f"Unsupported qualifier: {qualifier}")
-        for uri in sorted(x.uri for x in cvterm.identifiers):
+        for uri in sorted(x.uri for x in cvterm.resources):
             cv.addResource(uri)
 
         for _cv in _cvterms_to_sbml(cvterm.annotations):
@@ -1938,7 +1938,7 @@ def _cvterms_to_sbml(cvterms: StandardizedAnnotationStore) -> List["libsbml.CVTe
     return cv_list
 
 
-def _sbase_annotations(sbase: libsbml.SBase, annotations: MetaData) -> None:
+def _sbase_annotations(sbase: libsbml.SBase, annotations: Metadata) -> None:
     """Set SBase annotations based on cobra annotations.
 
     Parameters
@@ -1953,7 +1953,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotations: MetaData) -> None:
     CobraSBMLError for unsupported qualifier
     """
 
-    if not isinstance(annotations, MetaData):
+    if not isinstance(annotations, Metadata):
         raise TypeError(
             f"The annotations object must be of type 'Metadata': {annotations}"
         )

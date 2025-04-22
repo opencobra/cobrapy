@@ -34,29 +34,29 @@ RESOURCE_LIST = [
 ECOLI_MODEL_ANNOTATIONS = [
     {
         "qualifier": "bqb_hasTaxon",
-        "identifiers": ["http://identifiers.org/tanomy/511145"],
+        "resources": ["http://identifiers.org/tanomy/511145"],
     },
     {
         "qualifier": "bqm_is",
-        "identifiers": ["http://identifiers.org/bigg.model/e_coli_core"],
+        "resources": ["http://identifiers.org/bigg.model/e_coli_core"],
         "annotations": [
             {
                 "qualifier": "bqb_isDescribedBy",
-                "identifiers": [PUBMED_EXAMPLE],
+                "resources": [PUBMED_EXAMPLE],
             },
             {
                 "qualifier": "bqb_isDescribedBy",
-                "identifiers": [ECO_EXAMPLE],
+                "resources": [ECO_EXAMPLE],
             },
         ],
     },
     {
         "qualifier": "bqm_isDescribedBy",
-        "identifiers": ["http://identifiers.org/doi/10.1128/ecosalplus.10.2.1"],
+        "resources": ["http://identifiers.org/doi/10.1128/ecosalplus.10.2.1"],
     },
     {
         "qualifier": "bqm_isDescribedBy",
-        "identifiers": ["http://identifiers.org/ncbiprotein/16128336"],
+        "resources": ["http://identifiers.org/ncbiprotein/16128336"],
     },
 ]
 COBRA_URL = "https://cobrapy.readthedocs.io/"
@@ -77,7 +77,7 @@ def test_annotation() -> None:
         ],
         qualifier=Qualifier.Biological_isVersionOf,
     )
-    assert len(annotation_2.identifiers) == 2
+    assert len(annotation_2.resources) == 2
     nested_annotations = [
         StandardizedAnnotation(
             "https://identifiers.org/pubmed/1111111",
@@ -91,7 +91,7 @@ def test_annotation() -> None:
 
     annotation_3 = StandardizedAnnotation(
         qualifier=Qualifier.Biological_occursIn,
-        identifiers=["https://identifiers.org/go/GO:0005764"],
+        resources=["https://identifiers.org/go/GO:0005764"],
         annotations=nested_annotations,
     )
     assert len(annotation_3.annotations) == 2
@@ -109,7 +109,7 @@ def test_annotation() -> None:
     #     len(
     #         s.annotations.standardized.by_qualifier(Qualifier.Biological_is)[
     #             0
-    #         ].identifiers
+    #         ].resources
     #     )
     #     == 2
     # )
@@ -132,13 +132,13 @@ def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
     print(model.metadata.standardized)
     for ann in model.metadata.standardized:
         print(ann)
-    print(model.metadata.standardized.identifiers)
+    print(model.metadata.standardized.resources)
     pprint(model.metadata.standardized.to_records())
     pprint(model.metadata.standardized.to_list_of_dicts())
     assert len(model.metadata.standardized) == 4
     ann_dict = [
         {
-            "identifiers": [
+            "resources": [
                 "http://identifiers.org/taxonomy/511145",
             ],
             "qualifier": "bqb_hasTaxon",
@@ -146,31 +146,31 @@ def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
         {
             "annotations": [
                 {
-                    "identifiers": [
+                    "resources": [
                         "https://identifiers.org/pubmed/1111111",
                     ],
                     "qualifier": "bqb_isDescribedBy",
                 },
                 {
-                    "identifiers": [
+                    "resources": [
                         "https://identifiers.org/eco/ECO:0000004",
                     ],
                     "qualifier": "bqb_isDescribedBy",
                 },
             ],
-            "identifiers": [
+            "resources": [
                 "http://identifiers.org/bigg.model/e_coli_core",
             ],
             "qualifier": "bqm_is",
         },
         {
-            "identifiers": [
+            "resources": [
                 "http://identifiers.org/doi/10.1128/ecosalplus.10.2.1",
             ],
             "qualifier": "bqm_isDescribedBy",
         },
         {
-            "identifiers": [
+            "resources": [
                 "http://identifiers.org/ncbiprotein/16128336",
             ],
             "qualifier": "bqm_isDescribedBy",

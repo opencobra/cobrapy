@@ -1,4 +1,4 @@
-"""Define the cobra MetaData class."""
+"""Define the cobra Metadata class."""
 
 from collections import OrderedDict
 from datetime import datetime
@@ -6,12 +6,12 @@ from typing import Dict, Iterable, List, Optional, Union
 
 import cobra.core.metadata.custom as CA
 import cobra.core.metadata.standardized as SA
-from cobra.core.metadata.identifier import Qualifier
+from cobra.core.metadata.resource import Qualifier
 
 from ..metadata.history import Creator, History
 
 
-class MetaData:
+class Metadata:
     """Meta-data of a cobrapy object.
 
     Meta-data encodes additional information on an object such as annotations
@@ -22,7 +22,7 @@ class MetaData:
     - standardized: storing resource:identifier annotation information in a CVTermList
       object. The annotation information is exposed via the dict interface for
       full backwards compatibility to the earlier object.annotation field. See
-      CVTermList.annotations() and MetaData.annotations()
+      CVTermList.annotations() and Metadata.annotations()
     - sbo - a single SBO term for the object. Can theoretically be placed in
       standardized, but the most descriptive term should be kept in sbo. Right now,
       cobrapy doesn't allow multiple sbo terms.
@@ -38,13 +38,13 @@ class MetaData:
     history : dict, History
         The history stores information about the creator,
         created and modified dates.
-    sbo: str
-        The sbo term to use for the entity. If you want to use more than one SBO term
-        (not recommended), use SBO in identifers.org format and put it in standardized.
     custompairs : list
         Key-value pairs which are not suitable to be
         represented anywhere else in the model.
         Data is represented as an OrderedDict.
+    sbo: str
+        The sbo term to use for the entity. If you want to use more than one SBO term
+        (not recommended), use SBO in identifers.org format and put it in standardized.
     """
 
     def __init__(
@@ -53,10 +53,10 @@ class MetaData:
             Union[Dict, List["SA.StandardizedAnnotation"], "SA.StandardizedAnnotation"]
         ] = None,
         history: Optional[Union[Dict, History]] = None,
-        sbo: str = "",
         custom: Optional[List] = None,
+        sbo: str = "",
     ):
-        """Initialize the MetaData class.
+        """Initialize the Metadata class.
 
         Parameters
         ---------
@@ -78,7 +78,7 @@ class MetaData:
 
     @property
     def standardized(self) -> "SA.StandardizedAnnotationStore":
-        """Get standardized field of MetaData.
+        """Get standardized field of Metadata.
 
         Returns
         -------
@@ -97,7 +97,7 @@ class MetaData:
             ]
         ],
     ) -> None:
-        """Set standardized field of MetaData with controlled vocabulary (CVTerm).
+        """Set standardized field of Metadata with controlled vocabulary (CVTerm).
 
         Parameters
         ----------
@@ -190,7 +190,7 @@ class MetaData:
 
     @property
     def sbo(self) -> str:
-        """Return the SBO term of the MetaData.
+        """Return the SBO term of the Metadata.
 
         Returns
         -------
@@ -303,10 +303,10 @@ class MetaData:
     #     else:
     #         self._standardized.delete_annotation(key)
     #
-    def __eq__(self, other: Union["MetaData", Dict]) -> bool:
-        """Compare two MetaData objects to find out whether they are the same.
+    def __eq__(self, other: Union["Metadata", Dict]) -> bool:
+        """Compare two Metadata objects to find out whether they are the same.
 
-        If given a dict, the dictionary is converted to MetaData and then compared.
+        If given a dict, the dictionary is converted to Metadata and then compared.
 
         Equality is defined in two ways, depending if history and custompairs exist.
         1) If history or custompairs exist and are not empty/None, the two objects are
@@ -322,14 +322,14 @@ class MetaData:
 
         Parameters
         ----------
-        other: MetaData or dict
+        other: Metadata or dict
 
         Returns
         -------
         bool: True if equal, False otherwise.
         """
         if isinstance(other, dict):
-            return self == MetaData.from_dict(other)
+            return self == Metadata.from_dict(other)
         return (
             (self.standardized == other.standardized)
             and (self.history == other.history)
@@ -341,7 +341,7 @@ class MetaData:
 
         Parameters
         ----------
-        other: MetaData or dict
+        other: Metadata or dict
 
         Returns
         -------
@@ -349,13 +349,13 @@ class MetaData:
 
         See Also
         --------
-        MetaData.__eq__()
+        Metadata.__eq__()
         """
         return not self.__eq__(other)
 
     #
     # def __iter__(self) -> Iterator:
-    #     """Iterate over the MetaData annotations dict.
+    #     """Iterate over the Metadata annotations dict.
     #
     #     This function will iterate over the annotations (old-style) dictionary.
     #
@@ -366,7 +366,7 @@ class MetaData:
     #     return iter(self.annotations)
     #
     # def __len__(self) -> int:
-    #     """Return the length of the MetaData annotations dict.
+    #     """Return the length of the Metadata annotations dict.
     #
     #     The length of the annotations dict will be returned as a int.
     #
@@ -378,10 +378,10 @@ class MetaData:
     #     return len(self.annotations)
     #
     # def __str__(self) -> str:
-    #     """Return the MetaData as str.
+    #     """Return the Metadata as str.
     #
     #     The annotations dict will be returned as a string. This does not include all
-    #     of the possible MetaData fields.
+    #     of the possible Metadata fields.
     #
     #     Returns
     #     -------
@@ -390,9 +390,9 @@ class MetaData:
     #     return str(dict(self.annotations))
     #
     # def __repr__(self) -> str:
-    #     """Return the MetaData as str with module, class, and code to recreate it.
+    #     """Return the Metadata as str with module, class, and code to recreate it.
     #
-    #     If MetaData has standardized, history or custompairs, the dictionary will
+    #     If Metadata has standardized, history or custompairs, the dictionary will
     #     contain them as keys.
     #     If not, the dictionary will have only the annotations dictionary.
     #     In either case, if sbo field is set, it will be outputted in the dictionary.
@@ -403,7 +403,7 @@ class MetaData:
     #
     #     See Also
     #     --------
-    #     MetaData.from_dict()
+    #     Metadata.from_dict()
     #     """
     #     repr_str = (
     #         f"{self.__class__.__module__}.{self.__class__.__qualname__}.from_dict("
@@ -451,37 +451,39 @@ class MetaData:
         return d
 
     @staticmethod
-    def from_dict(data: Dict) -> "MetaData":
-        """Generate MetaData from dictionary.
+    def from_dict(data: Dict) -> "Metadata":
+        """Generate Metadata from dictionary.
 
         This function has two options
         1) If the dictionary has standardized, history, or custompairs, it uses
-           the relevant fields to create MetaData.
+           the relevant fields to create Metadata.
         2) If the dictionary has none of the above fields, it creates an empty
-           MetaData object, and then fills it using CVTermList.add_simple_annotation()
+           Metadata object, and then fills it using CVTermList.add_simple_annotation()
            where the keys are namespaces and the values are identifiers.
            In this case, all qualifiers will be "bqb_is".
 
         In either case, if "sbo" is present as one of the keys, this will fill the sbo
-        field of the MetaData using the value of "sbo" key.
+        field of the Metadata using the value of "sbo" key.
 
         Parameters
         ----------
         data: dict
-            Dictionary to transform into MetaData.
+            Dictionary to transform into Metadata.
 
         Returns
         -------
-        MetaData
+        Metadata
         """
         standardized = data.get("standardized", None)
         history = data.get("history", None)
         custom = data.get("custom", None)
 
         if standardized or history or custom:
-            annotation = MetaData(standardized, history, custom)
+            annotation = Metadata(
+                standardized=standardized, history=history, custom=custom
+            )
         else:
-            annotation = MetaData()
+            annotation = Metadata()
             # annotation.standardized.add_simple_annotations(data)
             # raise ValueError()
             # TODO: Fix

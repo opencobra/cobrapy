@@ -13,7 +13,7 @@ from _pytest.fixtures import SubRequest
 
 import cobra
 from cobra import Model
-from cobra.core.metadata import MetaData
+from cobra.core.metadata import Metadata
 from cobra.io import read_sbml_model, validate_sbml_model, write_sbml_model
 
 
@@ -337,7 +337,7 @@ def test_document_history(tmp_path: Path) -> None:
         "created_date": "2019-10-20T12:34:32Z",
         "modified_dates": ["2019-10-20T12:35:32Z"],
     }
-    metadata = MetaData(history=history)
+    metadata = Metadata(history=history)
     model._sbml = {"metadata": metadata}
 
     sbml_path = join(str(tmp_path), "test.xml")
@@ -394,7 +394,7 @@ def test_model_history(tmp_path: Path) -> None:
         "created_date": "2019-10-20T12:34:32Z",
         "modified_dates": ["2019-10-20T12:35:32Z"],
     }
-    model.metadata = MetaData(history=history)
+    model.metadata = Metadata(history=history)
     assert len(model.metadata.history.creators) == 1
 
     sbml_path = tmp_path / "test.xml"
@@ -650,7 +650,7 @@ def test_gprs(large_model: Model, tmp_path: Path) -> None:
 
 def test_identifiers_annotation() -> None:
     """Test annotation with identifiers."""
-    from cobra.core.metadata.identifier import parse_identifiers_uri
+    from cobra.core.metadata.resource import parse_identifiers_uri
 
     for uri in [
         "http://identifiers.org/chebi/CHEBI:000123",

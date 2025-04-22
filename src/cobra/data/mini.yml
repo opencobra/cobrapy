@@ -9,7 +9,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/13dpg
           - http://identifiers.org/biocyc/DPG
           - http://identifiers.org/chebi/CHEBI:16001
@@ -32,7 +32,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/2pg
           - http://identifiers.org/biocyc/2-PG
           - http://identifiers.org/chebi/CHEBI:1267
@@ -59,7 +59,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/3pg
           - http://identifiers.org/biocyc/G3P
           - http://identifiers.org/chebi/CHEBI:40016
@@ -92,7 +92,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/adp
           - http://identifiers.org/biocyc/ADP
           - http://identifiers.org/biocyc/ADP-GROUP
@@ -130,7 +130,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/atp
           - http://identifiers.org/biocyc/ATP
           - http://identifiers.org/cas/56-65-5
@@ -167,7 +167,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/dhap
           - http://identifiers.org/biocyc/DIHYDROXY-ACETONE-PHOSPHATE
           - http://identifiers.org/cas/57-04-5
@@ -197,7 +197,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/f6p
           - http://identifiers.org/biocyc/FRUCTOSE-6P
           - http://identifiers.org/cas/643-13-0
@@ -227,7 +227,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/fdp
           - http://identifiers.org/biocyc/FRUCTOSE-16-DIPHOSPHATE
           - http://identifiers.org/cas/488-69-7
@@ -258,7 +258,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/g3p
           - http://identifiers.org/cas/142-10-9
           - http://identifiers.org/cas/142-10-9
@@ -282,7 +282,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/g6p
           - http://identifiers.org/biocyc/D-glucose-6-phosphate
           - http://identifiers.org/biocyc/GLC-6-P
@@ -315,7 +315,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/glc__D
           - http://identifiers.org/cas/50-99-7
           - http://identifiers.org/cas/50-99-7
@@ -330,7 +330,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/h2o
           - http://identifiers.org/biocyc/WATER
           - http://identifiers.org/biocyc/OH
@@ -399,7 +399,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/h2o
           - http://identifiers.org/biocyc/WATER
           - http://identifiers.org/biocyc/OH
@@ -468,7 +468,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/h
           - http://identifiers.org/biocyc/PROTON
           - http://identifiers.org/cas/12408-02-5
@@ -510,7 +510,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/h
           - http://identifiers.org/biocyc/PROTON
           - http://identifiers.org/cas/12408-02-5
@@ -552,7 +552,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/lac__D
           - http://identifiers.org/biocyc/META:D-LACTATE
           - http://identifiers.org/chebi/CHEBI:11001
@@ -576,7 +576,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/lac__D
           - http://identifiers.org/biocyc/META:D-LACTATE
           - http://identifiers.org/chebi/CHEBI:11001
@@ -600,7 +600,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/nad
           - http://identifiers.org/biocyc/NAD
           - http://identifiers.org/cas/53-84-9
@@ -635,7 +635,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/nadh
           - http://identifiers.org/biocyc/NADH
           - http://identifiers.org/cas/58-68-4
@@ -665,7 +665,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/pep
           - http://identifiers.org/biocyc/PHOSPHO-ENOL-PYRUVATE
           - http://identifiers.org/cas/138-08-9
@@ -694,7 +694,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/pi
           - http://identifiers.org/biocyc/Pi
           - http://identifiers.org/biocyc/PHOSPHATE-GROUP
@@ -751,7 +751,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/pi
           - http://identifiers.org/biocyc/Pi
           - http://identifiers.org/biocyc/PHOSPHATE-GROUP
@@ -808,7 +808,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.metabolite/pyr
           - http://identifiers.org/biocyc/PYRUVATE
           - http://identifiers.org/cas/127-17-3
@@ -846,7 +846,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/ATPM
   - !!omap
     - id: R_D_LACt2
@@ -868,7 +868,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/ENO
   - !!omap
     - id: R_EX_glc__D_e
@@ -882,7 +882,7 @@
       - sbo: SBO:0000627
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/glc
   - !!omap
     - id: R_EX_h_e
@@ -896,7 +896,7 @@
       - sbo: SBO:0000627
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/h
   - !!omap
     - id: R_EX_lac__D_e
@@ -910,7 +910,7 @@
       - sbo: SBO:0000627
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/lac__D
   - !!omap
     - id: R_FBA
@@ -925,7 +925,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/FBA
   - !!omap
     - id: R_GAPD
@@ -943,7 +943,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/GAPD
   - !!omap
     - id: R_GLCpts
@@ -960,7 +960,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/GLCpts
   - !!omap
     - id: R_H2Ot
@@ -974,7 +974,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/H2Ot
   - !!omap
     - id: R_LDH_D
@@ -993,7 +993,7 @@
       - sbo: SBO:0000375
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/LDH_D
           - http://identifiers.org/biocyc/META:DLACTDEHYDROGNAD-RXN
           - http://identifiers.org/ec-code/1.1.1.28
@@ -1019,7 +1019,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/PFK
   - !!omap
     - id: R_PGI
@@ -1033,7 +1033,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/PGI
   - !!omap
     - id: R_PGK
@@ -1049,7 +1049,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/PGK
   - !!omap
     - id: R_PGM
@@ -1063,7 +1063,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/PGM
   - !!omap
     - id: R_PIt2r
@@ -1079,7 +1079,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/PIt2r
   - !!omap
     - id: R_PYK
@@ -1096,7 +1096,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/PYK
   - !!omap
     - id: R_TPI
@@ -1110,7 +1110,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - http://identifiers.org/bigg.reaction/TPI
 - genes:
   - !!omap
@@ -1134,7 +1134,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - https://identifiers.org/ncbiprotein/1208453
           - https://identifiers.org/ncbiprotein/1652654
   - !!omap
@@ -1179,7 +1179,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - https://identifiers.org/ncbiprotein/1653839
   - !!omap
     - id: G_b2925
@@ -1190,7 +1190,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - https://identifiers.org/ncbiprotein/1653609
   - !!omap
     - id: G_b2987
@@ -1207,7 +1207,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - https://identifiers.org/ncbiprotein/1006614
           - https://identifiers.org/ncbiprotein/1651919
   - !!omap
@@ -1219,7 +1219,7 @@
     - metadata: !!omap
       - standardized:
         - qualifier: bqb_is
-          identifiers:
+          resources:
           - https://identifiers.org/ncbiprotein/1653253
   - !!omap
     - id: G_b4395
