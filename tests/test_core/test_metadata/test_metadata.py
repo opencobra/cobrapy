@@ -9,6 +9,7 @@ from cobra import Model
 from cobra.core.metadata import Metadata, Qualifier, StandardizedAnnotation
 from cobra.core.metadata.standardized import (
     SimplifiedAnnotationInterface,
+    StandardizedAnnotationList,
     StandardizedAnnotationStore,
 )
 from cobra.core.species import Species
@@ -173,7 +174,15 @@ def test_annotation() -> None:
     # print(s.annotation[0])
     print(s.annotation["chebi"])
 
-    print(s.metadata.standardized[0])
+    assert (
+        s.metadata.standardized[0].resources[0].uri
+        == "https://identifiers.org/chebi/CHEBI:11881"
+    )
+
+    assert set(s.metadata.standardized[Qualifier.Biological_is].uris) == {
+        "https://identifiers.org/chebi/CHEBI:43215",
+        "https://identifiers.org/chebi/CHEBI:11881",
+    }
 
     # assert 0 == 1
     # s.annotation.__delitem__("sbo")
@@ -538,7 +547,7 @@ def test_cvtermlist_query():
     # the StandardizedAnnotationStore, but for now it is a list.
     assert isinstance(
         cvtermlist.query(search_function="bqm", attribute="qualifier"),
-        list,
+        StandardizedAnnotationList,
     )
     assert len(cvtermlist.query(search_function="bqm", attribute="qualifier")) == 6
     assert (

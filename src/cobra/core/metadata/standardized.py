@@ -28,7 +28,7 @@ from typing import (
 
 from cobra.core.metadata import Qualifier, Resource
 from cobra.core.metadata.metadata import Metadata
-from cobra.core.metadata.resource import get_default_qualifier
+from cobra.core.metadata.resource import QualifiersAlias, get_default_qualifier
 
 
 StandardizedAnnotationInput: TypeAlias = Union[
@@ -893,7 +893,7 @@ class StandardizedAnnotationStore(UserList):
         self,
         search_function: Union[str, Pattern, Callable],
         attribute: Union[str, None] = None,
-    ) -> List[StandardizedAnnotation]:
+    ) -> "StandardizedAnnotationList":
         """Query the annotation store for matchin StandardizedAnnotation objects.
 
         Parameters
@@ -912,8 +912,9 @@ class StandardizedAnnotationStore(UserList):
 
         Returns
         -------
-        list of StandardizedAnnotation objects
-            a new list of StandardizedAnnotation objects which match the query
+        StandardizedAnnotationList
+            A list-like collection of StandardizedAnnotation objects which match the
+            query.
 
         Examples
         --------
@@ -975,7 +976,7 @@ class StandardizedAnnotationStore(UserList):
                 if search_function(select_attribute(cvterm))
             ]
 
-        return matches
+        return StandardizedAnnotationList(matches)
 
     def __setitem__(self, key: int, value: StandardizedAnnotationInput) -> None:
         """Set item in the store at the provided index.
@@ -996,6 +997,49 @@ class StandardizedAnnotationStore(UserList):
             self.data[key]._set_parent(None)
             checked_value._set_parent(self)
         UserList.__setitem__(self, key, checked_value)
+
+    def __getitem__(
+        self,
+        key: Union[
+            int,
+            Qualifier,
+            QualifiersAlias,
+            List[Union[int, Qualifier, QualifiersAlias]],
+        ],
+    ) -> Union[StandardizedAnnotation, "StandardizedAnnotationList"]:
+        """Access standardized annotations by integer index or qualifier.
+
+        Parameters
+        ----------
+        key: int, Qualifier or list of int or Qualifier
+            If `key` is an integer, the `StandardizeAnnotation` at that position in the
+            list will be returned. When a list of integers is provided, a
+            `StandardizedAnnotationList` with the corresponding annotations is returned.
+            When one or more Qualifier objects are provided, a
+            `StandardizedAnnotationList` of all annotations (not nested) with any of
+            those qualifiers is returned.
+        """
+        if isinstance(key, int):
+            return self.data[key]
+        if isinstance(key, (Qualifier, QualifiersAlias)):
+            key = [key]
+        if not isinstance(key, list):
+            raise TypeError(f"Indexed using key of wrong type: {type(key)}")
+        selection = []
+        for k in key:
+            if isinstance(k, int):
+                selection.append(self.data[k])
+            elif isinstance(k, Qualifier):
+                selection.extend(
+                    annotation for annotation in self if annotation.qualifier == k
+                )
+            elif isinstance(k, QualifiersAlias):
+                selection.extend(
+                    annotation for annotation in self if annotation.qualifier in k
+                )
+            else:
+                raise TypeError(f"Indexed using a key of wrong type: {type(key)}")
+        return StandardizedAnnotationList(selection)
 
     def __eq__(self, other: Any) -> bool:
         """Compare two standardized annotation stores and determine equality.

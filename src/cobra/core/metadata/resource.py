@@ -117,6 +117,73 @@ class Qualifier(Enum):
     sparingly, since this qualifier does not provide much information."""
 
 
+class QualifiersAlias(set, Enum):
+    Any_is = {Qualifier.Biological_is, Qualifier.Modelling_is}
+    Any_isDescribedBy = {
+        Qualifier.Biological_isDescribedBy,
+        Qualifier.Modelling_isDescribedBy,
+    }
+    Any_unknown = {Qualifier.Biological_unknown, Qualifier.Modelling_unknown}
+    Roughly_equals = {
+        Qualifier.Biological_is,
+        Qualifier.Biological_encodes,
+        Qualifier.Biological_isEncodedBy,
+        Qualifier.Biological_isVersionOf,
+        Qualifier.Modelling_isInstanceOf,
+    }
+    Biological_any = {
+        Qualifier.Biological_is,
+        Qualifier.Biological_hasPart,
+        Qualifier.Biological_isPartOf,
+        Qualifier.Biological_isVersionOf,
+        Qualifier.Biological_hasVersion,
+        Qualifier.Biological_isHomologTo,
+        Qualifier.Biological_isEncodedBy,
+        Qualifier.Biological_encodes,
+        Qualifier.Biological_isDescribedBy,
+        Qualifier.Biological_hasTaxon,
+        Qualifier.Biological_hasProperty,
+        Qualifier.Biological_isPropertyOf,
+        Qualifier.Biological_occursIn,
+        Qualifier.Biological_unknown,
+    }
+    Biological_known = {
+        Qualifier.Biological_is,
+        Qualifier.Biological_hasPart,
+        Qualifier.Biological_isPartOf,
+        Qualifier.Biological_isVersionOf,
+        Qualifier.Biological_hasVersion,
+        Qualifier.Biological_isHomologTo,
+        Qualifier.Biological_isEncodedBy,
+        Qualifier.Biological_encodes,
+        Qualifier.Biological_isDescribedBy,
+        Qualifier.Biological_hasTaxon,
+        Qualifier.Biological_hasProperty,
+        Qualifier.Biological_isPropertyOf,
+        Qualifier.Biological_occursIn,
+    }
+    Modelling_any = {
+        Qualifier.Modelling_is,
+        Qualifier.Modelling_isInstanceOf,
+        Qualifier.Modelling_hasInstance,
+        Qualifier.Modelling_isDescribedBy,
+        Qualifier.Modelling_isDerivedFrom,
+        Qualifier.Modelling_unknown,
+    }
+    Modelling_known = {
+        Qualifier.Modelling_is,
+        Qualifier.Modelling_isInstanceOf,
+        Qualifier.Modelling_hasInstance,
+        Qualifier.Modelling_isDescribedBy,
+        Qualifier.Modelling_isDerivedFrom,
+    }
+    Roughly_instanceOf = {
+        Qualifier.Modelling_isInstanceOf,
+        Qualifier.Modelling_isDerivedFrom,
+        Qualifier.Biological_isVersionOf,
+    }
+
+
 class Resource:
     """Defines a standardized annotation resource.
 
