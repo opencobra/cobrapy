@@ -509,7 +509,11 @@ def test_cvtermlist_query():
     cvtermlist = StandardizedAnnotationStore()
     for i, res in enumerate(resources):
         cvtermlist.extend(
-            [StandardizedAnnotation(qualifier=list(Qualifier._map)[i], resources=res)]
+            [
+                StandardizedAnnotation(
+                    qualifier=list(Qualifier._value2member_map_)[i], resources=res
+                )
+            ]
         )
 
     cvtermlist.append(
@@ -521,7 +525,7 @@ def test_cvtermlist_query():
                     resources=PUBMED_EXAMPLE,
                 )
             ],
-            qualifier=list(Qualifier._map)[19],
+            qualifier=list(Qualifier._value2member_map_)[19],
         )
     )
     print(cvtermlist)
@@ -560,7 +564,10 @@ def test_cvtermlist_query():
     assert (
         len(
             cvtermlist.query(
-                search_function=lambda x: list(Qualifier._map).index(x.value) > 18,
+                search_function=lambda x: list(Qualifier._value2member_map_).index(
+                    x.value
+                )
+                > 18,
                 attribute="qualifier",
             )
         )

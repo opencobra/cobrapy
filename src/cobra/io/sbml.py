@@ -51,6 +51,7 @@ from ..core import (
     Metadata,
     Model,
     Reaction,
+    Resource,
     StandardizedAnnotation,
 )
 from ..core.metadata.history import STRTIME_FORMAT
@@ -1794,7 +1795,9 @@ def _parse_annotations(sbase: libsbml.SBase) -> Metadata:
             LOGGER.warning(f"The cvterm {_cvterm} has an unkown qualifier. Ignoring it")
             return None
         resources = [
-            _cvterm.getResourceURI(k) for k in range(_cvterm.getNumResources())
+            # Prefer loading models over having strictly correct annotations
+            Resource(_cvterm.getResourceURI(k), strict=False)
+            for k in range(_cvterm.getNumResources())
         ]
 
         nested_cv_terms = [

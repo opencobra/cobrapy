@@ -12,6 +12,10 @@ from cobra.core import (
     Reaction,
     Solution,
     Species,
+    StandardizedAnnotation,
+    CustomAnnotation,
+    Qualifier,
+    Resource,
 )
 from cobra import flux_analysis
 from cobra import io

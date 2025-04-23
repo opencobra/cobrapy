@@ -42,9 +42,9 @@ class StandardizedAnnotation:
     `StandardizedAnnotation` can be used to annotate cobra objects in a structural and
     standardized manner. This improves interoperability with other tools and neatly
     structures annotations. Therefore, standardized annotations should be preferred over
-    custom annotations (`CustomAnnotation), whenever possible.
+    custom annotations (`CustomAnnotation`), whenever possible.
 
-    A StandardizedAnnotation object defines a set of MIRIAM (identifiers.org)
+    A `StandardizedAnnotation` object defines a set of MIRIAM (identifiers.org)
     resources and their relation to a modelling object. Relations are defined using
     the `Qualifier` enum, which defines a predefined set of qualifiers that either
     relate to the modelling object (e.g. `Qualifier.Modelling_is`) or relate to the
@@ -114,7 +114,8 @@ class StandardizedAnnotation:
 
         Raises
         ------
-        ValueError if there is no known parent object.
+        ValueError
+            If there is no known parent object.
 
         See Also
         --------
@@ -267,7 +268,7 @@ class StandardizedAnnotation:
         if resources is None:
             return []
         elif isinstance(resources, (Resource, str, dict)):
-            return [Resource.from_data(resources)]
+            return [Resource.from_data(resources, strict=False)]
         elif isinstance(resources, ABCIterable):
             return [x for y in resources for x in __class__.check_resource_type(y)]
         else:
@@ -298,12 +299,12 @@ class StandardizedAnnotation:
             Will raise this error if given a string that does not match the defined
             Qualifier members.
         """
-        if isinstance(qual, str) and qual not in Qualifier._map:
+        if isinstance(qual, str) and qual not in Qualifier._value2member_map_:
             raise TypeError(f"{qual} is not a supported enum Qualifier")
         elif isinstance(qual, Qualifier):
             return qual
         elif isinstance(qual, str):
-            return Qualifier._map[qual]
+            return Qualifier._value2member_map_[qual]
         else:
             raise TypeError(
                 f"Allowed types for StandardAnnotation qualifiers are Qualifier or"
@@ -358,7 +359,8 @@ class StandardizedAnnotation:
 
         Returns
         -------
-        List of dictionaries representing Resource records
+        list of dict objects
+            Each dict represents a Resource records.
 
         See Also
         --------
@@ -539,6 +541,9 @@ class StandardizedAnnotationStore(UserList):
             URIs and together with other Resource objects stored in a new
             `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
         """
+        self._take_ownership_of_resources = getattr(
+            self, "_take_ownership_of_resources", True
+        )
         if data is None:
             data = []
 
@@ -555,8 +560,9 @@ class StandardizedAnnotationStore(UserList):
             entry for entry in data if isinstance(entry, (str, Resource))
         ]:
             checked_data.insert(0, StandardizedAnnotation(resources=no_qualifier_data))
-        for entry in checked_data:
-            entry._set_parent(self)
+        if self._take_ownership_of_resources:
+            for entry in checked_data:
+                entry._set_parent(self)
         super().__init__(checked_data)
 
     @staticmethod
@@ -689,7 +695,8 @@ class StandardizedAnnotationStore(UserList):
         entry = self._find_first_by_qualifier(qualifier)
         if entry is None:
             entry = StandardizedAnnotation(qualifier=qualifier, resources=[])
-            entry._set_parent(self)
+            if self._take_ownership_of_resources:
+                entry._set_parent(self)
             self.data.insert(0, entry)
         return entry
 
@@ -763,8 +770,9 @@ class StandardizedAnnotationStore(UserList):
                 if (checked_item := self._check_standardized_annotation(item))
                 is not None
             ]
-            for d in checked_data:
-                d._set_parent(self)
+            if self._take_ownership_of_resources:
+                for d in checked_data:
+                    d._set_parent(self)
             self.data.extend(checked_data)
 
     @property
@@ -984,7 +992,9 @@ class StandardizedAnnotationStore(UserList):
         if checked_value is None:
             raise TypeError("Value cannot be None.")
             # TODO: Elaborate (or automatically delete when None)
-        checked_value._set_parent(self)
+        if self._take_ownership_of_resources:
+            self.data[key]._set_parent(None)
+            checked_value._set_parent(self)
         UserList.__setitem__(self, key, checked_value)
 
     def __eq__(self, other: Any) -> bool:
@@ -1025,6 +1035,38 @@ class StandardizedAnnotationStore(UserList):
         """
         entries = [annotation._repr_html_() for annotation in self]
         return f"""StandardizedAnnotationStore{"<p>".join(entries)}"""
+
+
+class StandardizedAnnotationList(StandardizedAnnotationStore):
+    """Class to create lists of StandardizedAnnotation objects.
+
+    This class is very similar to the StandardizedAnnotationStore class, which stores
+    all standardized annotation objects of a cobrapy object. The difference is that this
+    class does not take ownership (becomes parent of) its resources. It can therefore be
+    used to create lists of StandardizedAnnotation objects of different cobrapy objects,
+    or create views of a subset of the annotations of a single object.
+    """
+
+    def __init__(
+        self,
+        data: Optional[
+            Iterable[Union[StandardizedAnnotation, Dict, Resource, str]]
+        ] = None,
+    ):
+        """Initialize a standardized annotation store.
+
+        Parameters
+        ----------
+        data: list of StandardizedAnnotation, dict, str or Resource objects
+            List of standardized annotations to initialize the store with. Dictionaries
+            are converted to standarized annotations using
+            `StandardizedAnnotation.from_dict`. Strings are interpreted as identifier
+            URIs and together with other Resource objects stored in a new
+            `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
+        """
+
+        self._take_ownership_of_resources = False
+        super(StandardizedAnnotationList, self).__init__(data)
 
 
 class SimplifiedAnnotationInterface(MutableMapping):
@@ -1085,8 +1127,10 @@ class SimplifiedAnnotationInterface(MutableMapping):
 
         Raises
         ------
-        TypeError if values could not be converted to Resource objects.
-        ValueError if tuples of lengths other than 2 were provided.
+        TypeError
+            If values could not be converted to Resource objects.
+        ValueError
+            If tuples of lengths other than 2 were provided.
         """
         if data is None:
             data = []
@@ -1188,7 +1232,8 @@ class SimplifiedAnnotationInterface(MutableMapping):
 
         Raises
         ------
-        IndexError if no resources were found for the given namespace.
+        IndexError
+            If no resources were found for the given namespace.
         """
         if not isinstance(key, str):
             raise TypeError("Index should be of type str.")
@@ -1222,7 +1267,8 @@ class SimplifiedAnnotationInterface(MutableMapping):
 
         Raises
         ------
-        IndexError if no resources were found for the given namespace.
+        IndexError
+            If no resources were found for the given namespace.
         """
         if not isinstance(key, str):
             raise TypeError("Index should be of type str.")
@@ -1463,7 +1509,8 @@ class SimplifiedAnnotationInterface(MutableMapping):
 
         Raises
         ------
-        ValueError if no resource was found for the provided value.
+        ValueError
+            If no resource was found for the provided value.
         """
         for _, entries in self.objects():
             for entry in entries:
