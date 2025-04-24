@@ -10,7 +10,7 @@ import re
 from collections import UserList
 from collections.abc import Iterable as ABCIterable
 from collections.abc import KeysView, MutableMapping
-from typing import (
+from typing import (  # TypeAlias, # Not supported in older python versions
     Any,
     Callable,
     Dict,
@@ -22,7 +22,6 @@ from typing import (
     Optional,
     Pattern,
     Tuple,
-    TypeAlias,
     Union,
 )
 
@@ -31,9 +30,8 @@ from cobra.core.metadata.metadata import Metadata
 from cobra.core.metadata.resource import QualifiersAlias, get_default_qualifier
 
 
-StandardizedAnnotationInput: TypeAlias = Union[
-    "StandardizedAnnotation", dict, str, Resource
-]
+# TypeAlias
+StandardizedAnnotationInput = Union["StandardizedAnnotation", dict, str, Resource]
 
 
 class StandardizedAnnotation:
@@ -101,7 +99,7 @@ class StandardizedAnnotation:
         self._parent = None
 
     def _set_parent(self, parent):
-        if self._parent is None or self._parent is parent:
+        if self._parent is None or self._parent is parent or parent is None:
             self._parent = parent
         else:
             raise ValueError(
@@ -207,6 +205,22 @@ class StandardizedAnnotation:
 
         See Also
         --------
+        all_uris
+        Resource.uri
+        """
+        return frozenset({entry.uri for entry in self.resources})
+
+    @property
+    def all_uris(self) -> FrozenSet[str]:
+        """Get all the URIs in this annotation, including nested annotations.
+
+        Returns
+        -------
+        Set of URIs
+
+        See Also
+        --------
+        uris
         Resource.uri
         """
         resources = {entry.uri for entry in self.resources}
@@ -832,16 +846,16 @@ class StandardizedAnnotationStore(UserList):
             its namespace matches any of the provided namespaces. If it is set to None,
             no filtering based on the namespace will be performed. Default None.
         qualifier: None, Qualifier, QualifiersAlias or list of Qualifier/QualifiersAlias
-            One or multiple qualifiers to filter annotations with. Selects an annoation when
-            its qualifier matches any of the provided qualifiers. If it is set to None,
-            no filtering based on qualifiers will be performed. Nested annotations are
-            never filtered based on their qualifier. Default None.
+            One or multiple qualifiers to filter annotations with. Selects an annoation
+            when its qualifier matches any of the provided qualifiers. If it is set to
+            None, no filtering based on qualifiers will be performed. Nested annotations
+            are never filtered based on their qualifier. Default None.
         nested: bool
             Whether to return resources from nested annotations. Nested annotations are
             selected when `nested` is True and the top-level annotation is selected
-            based on its qualifier. I.e. nested annotations are not filtered on their own
-            qualifier. Conversely, resources in nested annotations are selected based on
-            their namespace. Default False.
+            based on its qualifier. I.e. nested annotations are not filtered on their
+            own qualifier. Conversely, resources in nested annotations are selected
+            based on their namespace. Default False.
 
         Returns
         -------

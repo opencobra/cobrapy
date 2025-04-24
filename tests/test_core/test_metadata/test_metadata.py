@@ -3,11 +3,11 @@
 import json
 from pathlib import Path
 
-from cobra.core.metadata.resource import QualifiersAlias
 import pytest
 
 from cobra import Model
 from cobra.core.metadata import Metadata, Qualifier, StandardizedAnnotation
+from cobra.core.metadata.resource import QualifiersAlias, Resource
 from cobra.core.metadata.standardized import (
     SimplifiedAnnotationInterface,
     StandardizedAnnotationList,
@@ -67,19 +67,7 @@ CHEBI_SET = {"CHEBI:43215", "CHEBI:11881"}
 
 
 def test_annotation() -> None:
-    """Test creating an annotation manually.
-
-    This function will test the basic functionality of creating an annotation,
-    including:
-    - creating an empty annotation
-    - assigning via dictionary assingment (like the old annotation format)
-    - checking that this assigned annotation can match identifiers.org
-    - chekcing that the annotation can be transformed to CVTermsList
-    - zeroing out annotation, and chekcing it is empty
-    - assigning via CVTermList()
-    - adding an SBO term
-
-    """
+    """Test creating an annotation manually."""
     # a cobra component
     s = Species()
     # assert s.metadata == {}  # nothing set for annotation, so empty dict
@@ -190,6 +178,180 @@ def test_annotation() -> None:
 
     # checking old (fixed) annotation format
     # assert s.annotation == {"chebi": sorted(["CHEBI:43215", "CHEBI:11881"])}
+
+
+def test_standardized_annotation() -> None:
+    """Test creating and manipulating standardized annotations."""
+
+    s = Species()
+    s.metadata.add_standardized(ECOLI_MODEL_ANNOTATIONS)
+    assert s.metadata.standardized == ECOLI_MODEL_ANNOTATIONS
+
+    s_other = Species()
+    with pytest.raises(ValueError):
+        s_other.add_annotations(s.metadata.standardized[0])
+
+    ann = StandardizedAnnotation("https://identifiers.org/chebi/CHEBI:43215")
+    s_other.add_annotations([ann])
+
+    assert (
+        s_other.metadata.standardized.resources_for("chebi")[0].identifier
+        == "CHEBI:43215"
+    )
+
+    ann.remove_from_parent()
+    assert len(s_other.metadata.standardized.resources_for("chebi")) == 0
+    with pytest.raises(ValueError):
+        ann.remove_from_parent()
+
+    ann.qualifier = Qualifier.Biological_hasPart
+    assert ann.qualifier == Qualifier.Biological_hasPart
+    assert ann.qualifier in QualifiersAlias.Biological_any
+
+    ann.qualifier = "bqm_is"
+    assert ann.qualifier == Qualifier.Modelling_is
+    assert ann.qualifier not in QualifiersAlias.Biological_known
+
+    ann.resources = [
+        "https://identifiers.org/chebi/CHEBI:43215",
+        "https://identifiers.org/chebi/CHEBI:11881",
+    ]
+    assert next(iter(ann.resources)).identifier == "CHEBI:43215"
+
+    ann.annotations = [
+        StandardizedAnnotation(["http://identifiers.org/taxonomy/511145"])
+    ]
+    assert len(ann.uris) == 2
+    assert len(ann.all_uris) == 3
+
+    assert all(resource.namespace == "chebi" for resource in ann.resources)
+    assert all(namespace == "chebi" for (namespace, _) in ann.to_tuples())
+
+    records = ann.to_records()
+    assert len(records) == 3
+    main_group = next(x["annotation_group"] for x in records if x["parent_group"] == 0)
+    assert (
+        next(x["namespace"] for x in records if x["parent_group"] == main_group)
+        == "taxonomy"
+    )
+
+    ann_dict = ann.to_dict()
+    assert ann_dict == ann
+    del ann_dict["annotations"]
+    assert not ann_dict == ann
+    ann_dict = ann.to_dict()
+    ann_dict["resources"].pop()
+    assert not ann_dict == ann
+
+    ann.resources = None
+    assert len(ann.resources) == 0
+
+    with pytest.raises(TypeError):
+        ann.resources = [1, 2]
+
+    with pytest.raises(TypeError):
+        ann.qualifier = "unknown"
+
+    with pytest.raises(TypeError):
+        ann.qualifier = 1
+
+    assert isinstance(ann._repr_html_(), str)
+
+
+def test_standardized_annotation_store() -> None:
+    """Test creating and manipulating standardized stores."""
+
+    s = Species()
+    s.metadata.add_standardized(ECOLI_MODEL_ANNOTATIONS)
+    assert s.metadata.standardized == ECOLI_MODEL_ANNOTATIONS
+    assert isinstance(s.metadata.standardized, StandardizedAnnotationStore)
+    s_other = Species()
+    s_other.metadata.add_standardized(ECOLI_MODEL_ANNOTATIONS)
+    assert s.metadata.standardized == s_other.metadata.standardized
+    assert s.metadata == s_other.metadata
+
+    new_store = StandardizedAnnotationStore()
+    assert not new_store
+    with pytest.raises(ValueError):
+        new_store.add(s.metadata.standardized[0])
+    new_list = StandardizedAnnotationList()
+    assert not new_list
+    new_list.add(s.metadata.standardized[0])
+    assert len(new_list) == 1
+
+    new_store = StandardizedAnnotationStore(
+        [
+            StandardizedAnnotation("https://identifiers.org/chebi/CHEBI:43215"),
+            "https://identifiers.org/chebi/CHEBI:11881",
+            Resource("https://identifiers.org/chebi/CHEBI:16001"),
+            {
+                "qualifier": Qualifier.Biological_hasTaxon,
+                "resources": ["http://identifiers.org/taxonomy/511145"],
+            },
+        ]
+    )
+    assert len(new_store) == 3
+    assert len(new_store.resources) == 4
+
+    with pytest.raises(TypeError):
+        StandardizedAnnotationStore(1)
+    with pytest.raises(TypeError):
+        StandardizedAnnotationStore([1])
+
+    assert len(s.metadata.standardized.resources) == 4
+    assert len(s.metadata.standardized.all_resources) == 6
+    assert len(s.metadata.standardized.uris) == 4
+    assert len(s.metadata.standardized.all_uris) == 6
+    assert len(s.metadata.standardized.qualifiers) == 3
+    assert len(s.metadata.standardized.all_qualifiers) == 4
+
+    assert len(s.metadata.standardized[Qualifier.Modelling_isDescribedBy]) == 2
+    assert len(s.metadata.standardized[QualifiersAlias.Modelling_any]) == 3
+    assert (
+        len(
+            s.metadata.standardized[
+                [Qualifier.Biological_hasTaxon, Qualifier.Modelling_is]
+            ]
+        )
+        == 2
+    )
+    with pytest.raises(TypeError):
+        s.metadata.standardized["a"]
+
+    assert (
+        s.metadata.standardized.resources_for(
+            qualifier=Qualifier.Modelling_isDescribedBy, namespace="doi"
+        )[0].identifier
+        == "10.1128/ecosalplus.10.2.1"
+    )
+    assert (
+        s.metadata.standardized.resources_for(
+            qualifier=QualifiersAlias.Modelling_known,
+            namespace=["eco", "taxonomy"],
+            nested=True,
+        )[0].uri
+        == ECO_EXAMPLE
+    )
+    with pytest.raises(TypeError):
+        assert (
+            s.metadata.standardized.resources_for(
+                qualifier=[QualifiersAlias.Modelling_known, 1],
+                namespace=["eco", "taxonomy"],
+                nested=True,
+            )[0].uri
+            == ECO_EXAMPLE
+        )
+    ann = new_store[0]
+    ann.remove_from_parent()
+
+    s.metadata.standardized[0] = ann
+    assert s.metadata.standardized[0] == ann
+
+    assert not (s.metadata.standardized == "string")
+    assert s.metadata.standardized != s_other.metadata.standardized
+    assert s.metadata != s_other.metadata
+
+    assert isinstance(s.metadata.standardized._repr_html_(), str)
 
 
 def test_old_style_annotation() -> None:
