@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+from cobra.core.metadata.resource import QualifiersAlias
 import pytest
 
 from cobra import Model
@@ -320,6 +321,56 @@ def test_nested_annotation(data_directory: Path) -> None:
     assert s.metadata.standardized == main_cvt
     nested_data = s.metadata.standardized[1].annotations
     assert nested_data == nested_cvt
+
+    additional_cvt = {
+        "qualifier": "bqm_is",
+        "resources": ["https://identifiers.org/bigg.metabolite/hemoglobin"],
+    }
+    s.metadata.standardized.add(additional_cvt)
+    assert (
+        len(
+            s.metadata.standardized.resources_for(
+                qualifier=Qualifier.Biological_hasPart,
+            )
+        )
+        == 6
+    )
+    assert (
+        len(
+            s.metadata.standardized.resources_for(
+                qualifier=Qualifier.Biological_hasPart, namespace=["uniprot"]
+            )
+        )
+        == 3
+    )
+    assert (
+        len(
+            s.metadata.standardized.resources_for(
+                qualifier=[Qualifier.Biological_hasPart],
+                nested=True,
+            )
+        )
+        == 8
+    )
+    assert (
+        len(
+            s.metadata.standardized.resources_for(
+                qualifier=Qualifier.Biological_hasPart,
+                namespace="pubmed",
+                nested=True,
+            )
+        )
+        == 1
+    )
+    assert (
+        len(
+            s.metadata.standardized.resources_for(
+                qualifier=QualifiersAlias.Any_is,
+                nested=True,
+            )
+        )
+        == 1
+    )
 
 
 def test_cvterms_from_ecoli_xml(annotation_model: Model) -> None:

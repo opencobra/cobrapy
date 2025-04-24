@@ -383,10 +383,7 @@ class Resource:
         -------
         str
         """
-        return (
-            f"{self.__class__.__module__}.{self.__class__.__qualname__}"
-            f"({self.to_dict()})"
-        )
+        return f"Resource({self.uri})"
 
     def _repr_html(self) -> str:
         """Return the resource as an HTML string.

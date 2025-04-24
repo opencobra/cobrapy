@@ -807,6 +807,96 @@ class StandardizedAnnotationStore(UserList):
                 resources.update(entry.annotations.all_resources)
         return frozenset(resources)
 
+    def resources_for(
+        self,
+        namespace: Optional[Union[str, List[str]]] = None,
+        qualifier: Optional[
+            Union[
+                Qualifier,
+                QualifiersAlias,
+                List[Union[Qualifier, QualifiersAlias]],
+            ]
+        ] = None,
+        nested: bool = False,
+    ) -> List[Resource]:
+        """Get resources for a namespace or qualifier.
+
+        Filter annotations based on their qualifier and its resources on their
+        namespace. Optionally also return and filter nested resources on their
+        namespace.
+
+        Parameters
+        ----------
+        namespace: None, str or list of str, optional
+            One or multiple namespaces to filter resources with. Selects a resource when
+            its namespace matches any of the provided namespaces. If it is set to None,
+            no filtering based on the namespace will be performed. Default None.
+        qualifier: None, Qualifier, QualifiersAlias or list of Qualifier/QualifiersAlias
+            One or multiple qualifiers to filter annotations with. Selects an annoation when
+            its qualifier matches any of the provided qualifiers. If it is set to None,
+            no filtering based on qualifiers will be performed. Nested annotations are
+            never filtered based on their qualifier. Default None.
+        nested: bool
+            Whether to return resources from nested annotations. Nested annotations are
+            selected when `nested` is True and the top-level annotation is selected
+            based on its qualifier. I.e. nested annotations are not filtered on their own
+            qualifier. Conversely, resources in nested annotations are selected based on
+            their namespace. Default False.
+
+        Returns
+        -------
+        list of Resource objects
+        """
+        # TODO: Examples
+        namespace_sel, qualifier_sel = True, True
+        if namespace is None:
+            namespace_sel = False
+            namespace = []
+        if not isinstance(namespace, list):
+            namespace = [namespace]
+
+        if qualifier is None:
+            qualifier_sel = False
+            qualifier = []
+        if not isinstance(qualifier, list):
+            qualifier = [qualifier]
+        qualifiers_and_aliases = qualifier
+        qualifier = []
+        for q in qualifiers_and_aliases:
+            if isinstance(q, Qualifier):
+                qualifier.append(q)
+            elif isinstance(q, QualifiersAlias):
+                qualifier.extend(q)
+            else:
+                raise TypeError(
+                    "Qualifiers should have type Qualifier or QualifiersAlias,"
+                    f"not {type(q)}"
+                )
+
+        qualifier_set = set(qualifier)
+        namespace_set = set(namespace)
+        resources = []
+        for annotation in self:
+            if qualifier_sel and annotation.qualifier not in qualifier_set:
+                continue
+            if not namespace_sel:
+                resources.extend(annotation.resources)
+            else:
+                for resource in annotation.resources:
+                    if resource.namespace is None:
+                        continue
+                    if resource.namespace in namespace_set:
+                        resources.append(resource)
+            if nested and annotation.annotations:
+                # Do not select for qualifiers in nested annotations
+                resources.extend(
+                    annotation.annotations.resources_for(
+                        namespace=list(namespace_set) if namespace_sel else None,
+                        nested=nested,
+                    )
+                )
+        return resources
+
     @property
     def uris(self) -> FrozenSet[str]:
         """Get URIs.
@@ -1011,11 +1101,11 @@ class StandardizedAnnotationStore(UserList):
 
         Parameters
         ----------
-        key: int, Qualifier or list of int or Qualifier
+        key: int, Qualifier, QualifiersAlias or list thereof
             If `key` is an integer, the `StandardizeAnnotation` at that position in the
             list will be returned. When a list of integers is provided, a
             `StandardizedAnnotationList` with the corresponding annotations is returned.
-            When one or more Qualifier objects are provided, a
+            When one or more Qualifier or QualifiersAlias enums are provided, a
             `StandardizedAnnotationList` of all annotations (not nested) with any of
             those qualifiers is returned.
         """
