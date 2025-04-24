@@ -203,9 +203,8 @@ class CustomAnnotation(cobject.Object):
         str
         """
         return (
-            f"{self.__class__.__module__}.{self.__class__.__qualname__}"
-            f"({repr(self.key)}, {repr(self.id)}, {repr(self.name)}, {repr(self.value)}"
-            f", {repr(self.uri)})"
+            f"CustomAnnotation({repr(self.key)}: {repr(self.value)}"
+            f" ({repr(self.uri)}))"
         )
 
 
