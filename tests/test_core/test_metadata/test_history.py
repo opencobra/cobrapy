@@ -3,6 +3,7 @@
 import os
 from datetime import datetime, timedelta, timezone
 
+from cobra.core import Species
 import pytest
 
 from cobra.core.metadata.history import Creator, History
@@ -49,6 +50,13 @@ def test_create_history():
     assert history.creators[0].name == "Matthias Koenig"
     assert history.creators[1].name == "Andreas Draeger"
     assert len(history.modified_dates) == 2
+
+    with pytest.raises(TypeError):
+        _ = History.from_data(1)
+    assert history == History.from_data(history)
+
+    history = History()
+    assert history.is_empty()
 
 
 def test_history_from_ecoli_xml(data_directory):
@@ -232,3 +240,13 @@ def test_historydatetime():
 
     with pytest.raises(TypeError):
         datetime_obj.created_date = {"date": "June 26th"}
+
+
+def test_object_history() -> None:
+    """Test history and creators for a cobrapy object."""
+    s = Species()
+    s.metadata.add_creators([Creator(name="Pascal A. Pieters")])
+    assert s.metadata.history.creators[0].name == "Pascal A. Pieters"
+
+    s.metadata.add_modification_dates(JUNE_26TH)
+    assert s.metadata.history.modified_dates[0].isoformat() == JUNE_26TH

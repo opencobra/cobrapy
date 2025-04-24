@@ -385,7 +385,7 @@ class Resource:
         """
         return f"Resource({self.uri})"
 
-    def _repr_html(self) -> str:
+    def _repr_html_(self) -> str:
         """Return the resource as an HTML string.
 
         Returns

@@ -3,6 +3,8 @@
 from pathlib import Path
 from pprint import pprint
 
+import pytest
+
 from cobra import Model
 from cobra.core.metadata import Qualifier, StandardizedAnnotation
 from cobra.core.metadata.custom import CustomAnnotation
@@ -99,6 +101,12 @@ def test_annotation() -> None:
     assert len(s.metadata.standardized) == 2
     s.add_annotations(annotation_2)
     assert len(s.metadata.standardized) == 3
+    with pytest.raises(TypeError):
+        s.add_annotations([10])
+    with pytest.raises(TypeError):
+        s.remove_annotations([10])
+    with pytest.raises(TypeError):
+        s.metadata = 10
     annotation_2.remove_from_parent()
     assert len(s.metadata.standardized) == 2
     # assert s.annotations.custom is None

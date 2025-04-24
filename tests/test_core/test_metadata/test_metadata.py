@@ -240,11 +240,48 @@ def test_standardized_annotation() -> None:
     del ann_dict["annotations"]
     assert not ann_dict == ann
     ann_dict = ann.to_dict()
-    ann_dict["resources"].pop()
+    resource = ann.resources[0]
+    resource.remove_from_parent()
     assert not ann_dict == ann
+    with pytest.raises(ValueError):
+        resource.remove_from_parent()
+    ann.add_resources([resource])
+    assert ann_dict == ann
+    with pytest.raises(ValueError):
+        new_ann = StandardizedAnnotation()
+        new_ann.add_resources([resource])
 
     ann.resources = None
     assert len(ann.resources) == 0
+
+    ann.add_resources(
+        [Resource.from_data({"uri": "http://identifiers.org/taxonomy/51114"})]
+    )
+    assert len(ann.resources) == 1
+    ann.add_resources(
+        [Resource.from_data({"namespace": "chebi", "identifier": "CHEBI:43215"})]
+    )
+    assert len(ann.resources) == 2
+    with pytest.raises(TypeError):
+        ann.add_resources([Resource.from_data(None)])
+
+    resource = Resource(uri="https://identifiers.org/uniprot/A0PK11")
+
+    assert resource.namespace == "uniprot"
+    assert (
+        Resource(uri="https://www.uniprot.org/uniprotkb/A0PK11", strict=False).namespace
+        is None
+    )
+    with pytest.raises(ValueError):
+        Resource(uri="https://www.uniprot.org/uniprotkb/A0PK11")
+
+    assert resource.to_dict()["namespace"] == "uniprot"
+    assert resource == Resource(resource.uri)
+    assert resource == {"uri": resource.uri}
+    assert resource == ("uniprot", "A0PK11")
+
+    assert resource != ("uniprot",)
+    assert resource != 1
 
     with pytest.raises(TypeError):
         ann.resources = [1, 2]
@@ -256,6 +293,7 @@ def test_standardized_annotation() -> None:
         ann.qualifier = 1
 
     assert isinstance(ann._repr_html_(), str)
+    assert isinstance(resource._repr_html_(), str)
 
 
 def test_standardized_annotation_store() -> None:
@@ -269,6 +307,8 @@ def test_standardized_annotation_store() -> None:
     s_other.metadata.add_standardized(ECOLI_MODEL_ANNOTATIONS)
     assert s.metadata.standardized == s_other.metadata.standardized
     assert s.metadata == s_other.metadata
+    with pytest.raises(TypeError):
+        _ = s.metadata == 1
 
     new_store = StandardizedAnnotationStore()
     assert not new_store

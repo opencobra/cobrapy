@@ -48,7 +48,7 @@ class CustomAnnotation(cobject.Object):
     def _set_parent(self, parent: Optional["CustomAnnotationStore"]) -> None:
         self._parent = parent
 
-    def remove_from_object(self):
+    def remove_from_parent(self):
         """Remove this CustomAnnotation object from its `CustomAnnotationStore`.
 
         This method only removes and disassociates this object from its associated
@@ -57,7 +57,8 @@ class CustomAnnotation(cobject.Object):
 
         Raises
         ------
-        ValueError if the object is not associated with a `CustomAnnotationStore`.
+        ValueError
+            If the object is not associated with a `CustomAnnotationStore`.
 
         See Also
         --------
@@ -360,6 +361,7 @@ class CustomAnnotationStore(UserDict):
             item = CustomAnnotation.from_data(item)
             if not overwrite and item.key in self.data:
                 raise IndexError(f"Key '{item.key}' already exists in store.")
+            item._set_parent(self)
             self.data[item.key] = item
 
     def remove(
@@ -383,6 +385,8 @@ class CustomAnnotationStore(UserDict):
 
         for item in items:
             if isinstance(item, CustomAnnotation):
+                if item.key not in self.data:
+                    raise ValueError("The provided key was not found in the store.")
                 ann = self.data[item.key]
                 if ann is not item:
                     raise ValueError(
@@ -390,6 +394,8 @@ class CustomAnnotationStore(UserDict):
                         "custom annotation in the store."
                     )
                 item = ann.key
+            if item not in self.data:
+                raise ValueError("The provided key was not found in the store.")
             # If CustomAnnotation object is removed from CustomAnnotationStore, it will
             # also not belong to the parent object anymore.
             self.data[item]._set_parent(None)
