@@ -415,7 +415,7 @@ def test_old_style_annotation() -> None:
     assert set(s.annotation.get("eco", ["456"])) == {"123"}
     with pytest.raises(IndexError):
         _ = s.annotation["invalid"]
-    assert s.annotation.get("invalid") == None
+    assert s.annotation.get("invalid") is None
     assert set(s.annotation.get("invalid", ["456"])) == {"456"}
 
     s.annotation.update({"bigg.metabolite": "glc__D"})

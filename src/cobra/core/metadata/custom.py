@@ -8,7 +8,7 @@ https://github.com/sbmlteam/sbml-specifications/blob/develop/sbml-level-3/versio
 # TODO: Update docstring with final release, when available.
 import uuid
 from collections import UserDict
-from typing import Dict, Iterable, Optional, Union
+from typing import Any, Dict, Iterable, Optional, Union
 
 from ...util import format_long_string
 from .. import object as cobject
@@ -161,6 +161,8 @@ class CustomAnnotation(cobject.Object):
         --------
         to_dict
         """
+        from cobra.core.metadata.metadata import Metadata
+
         if isinstance(data, CustomAnnotation):
             return data
         elif isinstance(data, dict):
@@ -173,13 +175,24 @@ class CustomAnnotation(cobject.Object):
                 ann.id = data["id"]
             if "name" in data:
                 ann.name = data["name"]
-            # TODO: Handle annotations
+            if "metadata" in data:
+                ann.metadata = Metadata.from_dict(data["metadata"])
             return ann
         else:
             raise TypeError(f"Invalid format for CustomAnnotation: '{data}'")
 
-    def to_dict(self) -> dict:
+    def to_dict(self, include_key: bool = True, include_metadata: bool = False) -> dict:
         """Create a dictionary with the data of the `CustomAnnotation` object.
+
+        Parameters
+        ----------
+        include_key: bool
+            Whether to include the key of the CustomAnnotation in the dict. Default
+            True.
+        include_metadata: bool
+            Whether to include the nested metadata of the CustomAnnotation in the dict.
+            Default True.
+
 
         Returns
         -------
@@ -187,11 +200,13 @@ class CustomAnnotation(cobject.Object):
             Dictionary containing all the `CustomAnnotation` data. Dictionary will
             contain the key "key" and optionally "value", "uri", "id" and "name".
         """
-        return {
-            k: v
-            for k in ["key", "value", "uri", "id", "name"]
-            if (v := getattr(self, k, None)) is not None and v != ""
-        }
+        out_dict: Dict[str, Any] = {"key": self.key} if include_key else {}
+        for k in ["value", "uri", "id", "name"]:
+            if (v := getattr(self, k, None)) is not None and v != "":
+                out_dict[k] = v
+        if self.metadata:
+            out_dict["metadata"] = self.metadata.to_dict()
+        return out_dict
 
     def __str__(self) -> str:
         """Get string representation of the CustomAnnotation as dictionary.
@@ -228,7 +243,9 @@ class CustomAnnotationStore(UserDict):
     def __init__(
         self,
         entries: Optional[
-            Union[Iterable[Union[Dict, CustomAnnotation]], "CustomAnnotationStore"]
+            Union[
+                Dict, Iterable[Union[Dict, CustomAnnotation]], "CustomAnnotationStore"
+            ]
         ] = None,
     ):
         """Initialize the dict-like CustomAnnotationStore class.
@@ -242,6 +259,10 @@ class CustomAnnotationStore(UserDict):
         super().__init__()
         if entries is None:
             return
+        elif isinstance(entries, dict):
+            for k, item in entries.items():
+                entry = CustomAnnotation.from_data(item | {"key": k})
+                self[entry.key] = entry
         else:
             for item in entries:
                 entry = CustomAnnotation.from_data(item)
@@ -334,7 +355,7 @@ class CustomAnnotationStore(UserDict):
             keys are the keys, and each value is the CustomAnnotation represented as
             a dict.
         """
-        return {k: v.to_dict() for k, v in self.data.items()}
+        return {k: v.to_dict(include_key=False) for k, v in self.data.items()}
 
     def add(
         self,

@@ -38,7 +38,7 @@ class Metadata:
             ]
         ] = None,
         history: Optional[Union[Dict, History]] = None,
-        custom: Optional[List] = None,
+        custom: Optional[Union[List, Dict]] = None,
         sbo: str = "",
     ):
         """Initialize the Metadata class.
@@ -58,7 +58,7 @@ class Metadata:
         """
         self.standardized = standardized
         self.history = history
-        self.custom = CA.CustomAnnotationStore(custom)
+        self.custom = custom
         self.sbo = sbo
 
     @property

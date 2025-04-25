@@ -51,6 +51,9 @@ def create_test_model(model_name: str = "salmonella") -> Model:
             (data_dir / "e_coli_core_for_annotation.xml").resolve()
         )
         return read_sbml_model(ecoli_annotation_sbml)
+    elif model_name == "complex_annotation":
+        complex_annotation_sbml = str((data_dir / "annotation_complex.xml").resolve())
+        return read_sbml_model(complex_annotation_sbml)
     elif model_name == "salmonella":
         salmonella_pickle = str((data_dir / "salmonella.pickle").resolve())
         model_name = salmonella_pickle
@@ -128,6 +131,18 @@ def ecoli_annotation_model() -> Model:
 def annotation_model(ecoli_annotation_model: Model) -> Model:
     """Provide function-level fixture for ecoli_annotation model."""
     return ecoli_annotation_model.copy()
+
+
+@pytest.fixture(scope="session")
+def complex_annotation_model() -> Model:
+    """Provide session-level fixture for complex_annotation model."""
+    return create_test_model("complex_annotation")
+
+
+@pytest.fixture(scope="function")
+def complex_model(complex_annotation_model: Model) -> Model:
+    """Provide function-level fixture for complex_annotation model."""
+    return complex_annotation_model.copy()
 
 
 @pytest.fixture(scope="function")

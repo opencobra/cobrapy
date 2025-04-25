@@ -1,9 +1,20 @@
 """Test functions of custom.py."""
 
+from pathlib import Path
+
 import pytest
 
+from cobra.core import Model, Species
 from cobra.core.metadata.custom import CustomAnnotation, CustomAnnotationStore
-from cobra.core.species import Species
+from cobra.core.metadata.resource import Qualifier
+from cobra.io import (
+    load_json_model,
+    load_yaml_model,
+    read_sbml_model,
+    save_json_model,
+    save_yaml_model,
+    write_sbml_model,
+)
 
 
 def test_customannotation():
@@ -135,3 +146,55 @@ def test_customannotation_for_object() -> None:
     assert s.metadata.custom["key2"].uri == "https://cobrapy.readthedocs.io/"
 
     assert s.metadata.to_dict()["custom"]["key2"]["value"] == "value2"
+
+
+@pytest.mark.parametrize("model_type", ["direct", "sbml", "json", "yaml"])
+def test_read_write_model(complex_model: Model, tmp_path: Path, model_type: str):
+    """Test annotation consistency when writing and reading an SBML file."""
+    model = None
+    if model_type == "sbml":
+        out_path = tmp_path / "complex_model_writing.sbml"
+        assert write_sbml_model(complex_model, str(out_path)) is None
+
+        model = read_sbml_model(str(out_path))
+    elif model_type == "json":
+        out_path = tmp_path / "complex_model_writing.json"
+        assert save_json_model(complex_model, str(out_path)) is None
+
+        model = load_json_model(str(out_path))
+    elif model_type == "yaml":
+        out_path = tmp_path / "complex_model_writing.yaml"
+        assert save_yaml_model(complex_model, str(out_path)) is None
+
+        model = load_yaml_model(str(out_path))
+    else:
+        model = complex_model
+    assert model
+
+    assert (
+        model.metadata.standardized[Qualifier.Biological_hasTaxon][0]
+        .resources[0]
+        .identifier
+        == "511145"
+    )
+
+    assert model.metadata.custom
+    assert model.metadata.custom["trusted_source"].value == "42"
+
+    metabolite = model.metabolites.get_by_id("2pg_c")
+    assert metabolite.metadata.custom
+    assert metabolite.metadata.custom["toolset"].value == "expert"
+    assert (
+        metabolite.metadata.custom["toolset"].uri == "urn:awesometool.com:keyvaluepair"
+    )
+
+    assert metabolite.metadata.custom["nested"].value == "yes"
+    # This will currently fail for SBML files written using cobrapy, since libsbml does
+    # not implement 'nested' metadata for KeyValuePairs yet.
+    assert (
+        metabolite.metadata.custom["nested"]
+        .metadata.standardized[Qualifier.Modelling_isDescribedBy][0]
+        .resources[0]
+        .identifier
+        == "e_coli_core"
+    )

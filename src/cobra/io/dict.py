@@ -208,10 +208,9 @@ def _fix_id_from_dict(
         return F_REPLACE[F_GROUP](_id_to_fix)
 
 
-def _fix_value_from_dict(_key: str, _value_to_fix: Union[List, str]):
+def _fix_value_from_dict(_key: str, _value_to_fix: Union[Dict, List, str]):
     if _key == "metadata":
         # New style annotations for json v2.
-        anno_dict = defaultdict(list)
         _value_to_fix = Metadata.from_dict(_value_to_fix)
     elif _key == "annotation":
         # Old style annotations for json v1.

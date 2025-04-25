@@ -1718,7 +1718,7 @@ class SimplifiedAnnotationInterface(MutableMapping):
         return dict(self)
 
     def copy(self) -> Dict[str, List[str]]:
-        """Converts the simplified annotations to a dictionary.
+        """Convert the simplified annotations to a dictionary.
 
         This method returns a dictionary and not a new `SimplifiedAnnotationInterface`,
         since the interface is in place for compatibility purposes. Existing code will

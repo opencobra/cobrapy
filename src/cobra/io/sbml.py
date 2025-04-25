@@ -41,6 +41,7 @@ from warnings import warn
 import libsbml
 
 import cobra
+from cobra.core.metadata.custom import CustomAnnotation, CustomAnnotationStore
 
 from ..core import (
     GPR,
@@ -597,6 +598,7 @@ def _sbml_to_model(
             result = doc.convert(conversion_properties)
             if result != libsbml.LIBSBML_OPERATION_SUCCESS:
                 raise Exception("Conversion of SBML fbc v1 to fbc v2 failed")
+        # TODO: Convert v2 to v3 if necessary
 
     # Model
     model_id = model.getIdAttribute()
@@ -1189,8 +1191,8 @@ def _model_to_sbml(
     if f_replace is None:
         f_replace = {}
 
-    sbml_ns = libsbml.SBMLNamespaces(3, 2)  # SBML L3V2
-    sbml_ns.addPackageNamespace("fbc", 2)  # fbc-v2
+    sbml_ns = libsbml.SBMLNamespaces(3, 2)  # SBML L3V1
+    sbml_ns.addPackageNamespace("fbc", 3)  # fbc-v2
 
     doc: "libsbml.SBMLDocument" = libsbml.SBMLDocument(sbml_ns)
     doc.setPackageRequired("fbc", False)
@@ -1763,13 +1765,49 @@ def _parse_annotations(sbase: libsbml.SBase) -> Metadata:
     if sbase.isSetSBOTerm():
         annotations.sbo = sbase.getSBOTermID()
 
-    # RDF annotation
-    cvterms = sbase.getCVTerms()
-    if cvterms is None:
-        return annotations
+    def _kvpair_to_cobra(_kvpair: "libsbml.KeyValuePair") -> Optional[CustomAnnotation]:
+        """Parse the libsbml.KeyValuePair object to a cobra CustomAnnotation.
+
+        Parameters
+        ----------
+        _kvpair : libsbml.KeyValuePair
+            The libsbml.KeyValuePair object from which data is to be parsed.
+
+        Returns
+        -------
+        CustomAnnotation or None
+            The parsed data of the given libsbml.KeyValuePair object as
+            CustomAnnotation. If no key is set in the key-value pair, this function will
+            return None.
+        """
+        if not _kvpair.isSetKey():
+            return None
+        ca = CustomAnnotation(
+            key=_kvpair.getKey(),
+            value=(_kvpair.getValue() if _kvpair.isSetValue() else None),
+            uri=(_kvpair.getUri() if _kvpair.isSetUri() else None),
+        )
+        if _kvpair.isSetName():
+            ca.name = _kvpair.getName()
+        if _kvpair.isSetId():
+            ca.id = _kvpair.getId()
+
+        ca.metadata = _parse_annotations(_kvpair)
+        return ca
+
+    # Custom key-value pair annotations.
+    if not isinstance(sbase, libsbml.SBMLDocument):
+        sbase_fbc: "libsbml.FbcSBasePlugin" = sbase.getPlugin("fbc")
+        if sbase_fbc:
+            # We should probably do a FBC version check. But right now the version seems
+            # stuck at 2, even though it is defined as 3 in a SBML file.
+            if sbase_fbc.getNumKeyValuePairs() > 0:
+                for kvp in sbase_fbc.getListOfKeyValuePairs():
+                    if (ca := _kvpair_to_cobra(kvp)) is not None:
+                        annotations.custom.add(ca)
 
     def _cvterm_to_cobra(_cvterm: "libsbml.CVTerm") -> Optional[StandardizedAnnotation]:
-        """Parse the libsbml.CVTerm object to cobra CVTerm.
+        """Parse the libsbml.CVTerm object to cobra StandardizedAnnotation.
 
         Parameters
         ----------
@@ -1778,9 +1816,10 @@ def _parse_annotations(sbase: libsbml.SBase) -> Metadata:
 
         Returns
         -------
-        CVTerm or None
-            The parsed data of the given libsbml.CVTerm object as CVTerm.
-            If the qualifier is unknown, this function will return None.
+        StandardizedAnnotation or None
+            The parsed data of the given libsbml.CVTerm object as
+            StandardizedAnnotation. If the qualifier is unknown, this function will
+            return None.
         """
         qualifier_type = _cvterm.getQualifierType()
         if qualifier_type == libsbml.BIOLOGICAL_QUALIFIER:
@@ -1816,14 +1855,17 @@ def _parse_annotations(sbase: libsbml.SBase) -> Metadata:
             resources=resources, qualifier=qualifier, annotations=nested_data
         )
 
-    annotations.add_standardized(
-        [
-            cobra_cvterm
-            for cvterm in cvterms
-            if cvterm is not None
-            and (cobra_cvterm := _cvterm_to_cobra(cvterm)) is not None
-        ]
-    )
+    # RDF annotation
+    cvterms = sbase.getCVTerms()
+    if cvterms is not None:
+        annotations.add_standardized(
+            [
+                cobra_cvterm
+                for cvterm in cvterms
+                if cvterm is not None
+                and (cobra_cvterm := _cvterm_to_cobra(cvterm)) is not None
+            ]
+        )
 
     # history of the component
     # TODO: Should we maybe keep track of the creators and reference the same object
@@ -1897,18 +1939,46 @@ def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
     return provider, identifier
 
 
-def _cvterms_to_sbml(cvterms: StandardizedAnnotationStore) -> List["libsbml.CVTerm"]:
-    """Convert cobra CVTerms to libsbml.CVTerm list.
+def _add_custom_annotations_to_sbase_fbc(
+    sbase_fbc: "libsbml.FbcSBasePlugin",
+    custom_ann: CustomAnnotationStore,
+) -> None:
+    """Convert cobra CustomAnnotations to libsbml.KeyValuePair and add to SBase object.
 
     Parameters
     ----------
-    cvterms: CVTermList
-        cobra CVTerms object
+    sbase_fbc: libsbml.FbcSBasePlugin
+    custom_ann: CustomAnnotationStore
+        cobra CustomAnnotationStore object
+    """
+    for ca in custom_ann.values():
+        kvp: "libsbml.KeyValuePair" = sbase_fbc.createKeyValuePair()
+        kvp.setKey(ca.key)
+        if ca.value is not None:
+            kvp.setValue(ca.value)
+        if ca.uri is not None:
+            kvp.setUri(ca.uri)
+        if ca.id is not None:
+            kvp.setId(ca.id)
+        if ca.name is not None:
+            kvp.setName(ca.name)
+        _sbase_annotations(kvp, ca.metadata)
+        # FIX: This is currently not written to the file, since libsbml has not
+        # implemented that yet.
+
+
+def _cvterms_to_sbml(cvterms: StandardizedAnnotationStore) -> List["libsbml.CVTerm"]:
+    """Convert cobra StandardizedAnnotationStore to libsbml.CVTerm list.
+
+    Parameters
+    ----------
+    cvterms: StandardizedAnnotationStore
+        cobra StandardizedAnnotationStore object
 
     Returns
     -------
     list
-        List of libsbml.cvTerm objects
+        List of libsbml.CVTerm
     """
     cv_list = []
     for cvterm in cvterms:
@@ -1969,6 +2039,13 @@ def _sbase_annotations(sbase: libsbml.SBase, annotations: Metadata) -> None:
     # set metaId
     meta_id = f"meta_{sbase.getId()}"
     sbase.setMetaId(meta_id)
+
+    # Custom key-value pair annotations.
+    if annotations.custom:
+        if not isinstance(sbase, libsbml.SBMLDocument):
+            sbase_fbc: "libsbml.FbcSBasePlugin" = sbase.getPlugin("fbc")
+            if sbase_fbc:
+                _add_custom_annotations_to_sbase_fbc(sbase_fbc, annotations.custom)
 
     # set standardized
     # Question for @matthiaskoenig - should I be using createCVTerms?
