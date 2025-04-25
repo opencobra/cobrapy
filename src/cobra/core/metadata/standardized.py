@@ -99,11 +99,11 @@ class StandardizedAnnotation:
         self._parent = None
 
     def _set_parent(self, parent):
-        if self._parent is None or self._parent is parent or parent is None:
+        if self._parent is None or parent is None:
             self._parent = parent
         else:
             raise ValueError(
-                "StandardizedAnnotation already has a different parent. Create a new "
+                "StandardizedAnnotation already has a parent. Create a new "
                 "annotation if you would like to add an annotation to a second object."
             )
 
@@ -124,7 +124,6 @@ class StandardizedAnnotation:
                 "Cannot remove annotation, since no object is associated with it."
             )
         self._parent.remove(self)
-        self._parent = None
 
     def _remove_resource(self, resource):
         self.resources.remove(resource)
@@ -788,6 +787,17 @@ class StandardizedAnnotationStore(UserList):
                 for d in checked_data:
                     d._set_parent(self)
             self.data.extend(checked_data)
+
+    def remove(self, item: "StandardizedAnnotation"):
+        """Remove a standardized annotation from the store.
+
+        Parameters
+        ----------
+        item: StandardizedAnnotation
+            Annotation to remove from the store.
+        """
+        self.data.remove(item)
+        item._set_parent(None)
 
     @property
     def resources(self) -> FrozenSet[Resource]:

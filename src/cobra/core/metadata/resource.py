@@ -221,7 +221,7 @@ class Resource:
         self.uri = uri
 
     def _set_parent(self, parent):
-        if self._parent is None or self._parent is parent or parent is None:
+        if self._parent is None or parent is None:
             self._parent = parent
         else:
             raise ValueError(

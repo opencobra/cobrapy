@@ -241,6 +241,8 @@ def test_standardized_annotation() -> None:
     assert not ann_dict == ann
     ann_dict = ann.to_dict()
     resource = ann.resources[0]
+    with pytest.raises(ValueError):
+        ann.add_resources([resource])
     resource.remove_from_parent()
     assert not ann_dict == ann
     with pytest.raises(ValueError):
@@ -310,6 +312,8 @@ def test_standardized_annotation_store() -> None:
     with pytest.raises(TypeError):
         _ = s.metadata == 1
 
+    with pytest.raises(ValueError):
+        s.metadata.standardized.add(s.metadata.standardized[0])
     new_store = StandardizedAnnotationStore()
     assert not new_store
     with pytest.raises(ValueError):

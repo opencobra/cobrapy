@@ -46,7 +46,13 @@ class CustomAnnotation(cobject.Object):
         self._parent = None
 
     def _set_parent(self, parent: Optional["CustomAnnotationStore"]) -> None:
-        self._parent = parent
+        if self._parent is None or parent is None:
+            self._parent = parent
+        else:
+            raise ValueError(
+                "CustomAnnotation already has a parent. Create a new "
+                "annotation if you would like to add an annotation to a second object."
+            )
 
     def remove_from_parent(self):
         """Remove this CustomAnnotation object from its `CustomAnnotationStore`.
@@ -236,12 +242,10 @@ class CustomAnnotationStore(UserDict):
         super().__init__()
         if entries is None:
             return
-        elif isinstance(entries, CustomAnnotationStore):
-            self.data = entries.data.copy()
         else:
             for item in entries:
                 entry = CustomAnnotation.from_data(item)
-                self.data[entry.key] = entry
+                self[entry.key] = entry
 
     def __setitem__(
         self, key: str, item: Optional[Union[Dict, CustomAnnotation, str]]

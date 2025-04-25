@@ -81,6 +81,16 @@ def test_customannotationstore():
     with pytest.raises(ValueError):
         kvp["key2"] = CustomAnnotation(key="key4", value="test")
 
+    with pytest.raises(ValueError):
+        other_store = CustomAnnotationStore(entries=[kvp2])
+    other_store = CustomAnnotationStore()
+    with pytest.raises(ValueError):
+        other_store.add(kvp2)
+    with pytest.raises(ValueError):
+        other_store[kvp2.key] = kvp2
+    with pytest.raises(ValueError):
+        kvp[kvp2.key] = kvp2
+
     kvp["key3"] = "test"
     assert kvp["key3"].value == "test"
     with pytest.raises(TypeError):
