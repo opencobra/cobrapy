@@ -1415,6 +1415,31 @@ class SimplifiedAnnotationInterface(MutableMapping):
         else:
             raise IndexError(f"No resources found for namespace '{key}'")
 
+    def get(self, key: str, default: Any = None):
+        """Get resources for a given namespace.
+
+        Performs indexing in the same manner as `__get__`, except it will not raise
+        IndexError when the index does not exist, but rather returns a default value.
+
+        Parameters
+        ----------
+        key: str
+            Namespace of the resources.
+        default: optional
+            Default value to return when index is not found. Default None.
+
+        Returns
+        -------
+        list of str or `default`
+            List of resources as strings or the `default` value.
+        """
+        # Example of usage:
+        # https://github.com/opencobra/memote/blob/develop/src/memote/support/thermodynamics.py
+        try:
+            return self[key]
+        except IndexError:
+            return default
+
     def __delitem__(self, key: str) -> None:
         """Delete all resources for a given namespace.
 
@@ -1691,6 +1716,26 @@ class SimplifiedAnnotationInterface(MutableMapping):
         dict
         """
         return dict(self)
+
+    def copy(self) -> Dict[str, List[str]]:
+        """Converts the simplified annotations to a dictionary.
+
+        This method returns a dictionary and not a new `SimplifiedAnnotationInterface`,
+        since the interface is in place for compatibility purposes. Existing code will
+        expect a copy of an object's `annotation` attribute to be a dictionary. This
+        method is thus equivalent to `to_dict`.
+
+        Returns
+        -------
+        dict
+
+        See Also
+        --------
+        to_dict
+        """
+        # Example of usage of this method:
+        # https://github.com/draeger-lab/MassChargeCuration/blob/main/MCC/ModelInterface/CobraPyInterface.py
+        return self.to_dict()
 
     def clear(self) -> None:
         """Remove all annotations."""

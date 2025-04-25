@@ -410,6 +410,26 @@ def test_old_style_annotation() -> None:
     s.annotation["eco"] = "123"
     assert len(s.annotation) == 2
     assert s.annotation.number_of_resources == 4
+    assert set(s.annotation["eco"]) == {"123"}
+    assert set(s.annotation.get("eco")) == {"123"}
+    assert set(s.annotation.get("eco", ["456"])) == {"123"}
+    with pytest.raises(IndexError):
+        _ = s.annotation["invalid"]
+    assert s.annotation.get("invalid") == None
+    assert set(s.annotation.get("invalid", ["456"])) == {"456"}
+
+    s.annotation.update({"bigg.metabolite": "glc__D"})
+    assert set(s.annotation["bigg.metabolite"]) == {"glc__D"}
+    del s.annotation["bigg.metabolite"]
+    assert s.annotation.get("bigg.metabolite") is None
+    other_interface = SimplifiedAnnotationInterface(Metadata())
+    other_interface["bigg.metabolite"] = "glc__D"
+    s.annotation.update(other_interface)
+    assert set(s.annotation["bigg.metabolite"]) == {"glc__D"}
+    s.annotation.update({"bigg.metabolite": ["glc__L"]})
+    assert set(s.annotation["bigg.metabolite"]) == {"glc__L"}
+    del s.annotation["bigg.metabolite"]
+
     ref_ann = Metadata()
     simpl_ann = SimplifiedAnnotationInterface(ref_ann)
     simpl_ann.add(
