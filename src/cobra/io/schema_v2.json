@@ -66,7 +66,7 @@
           "required": ["creators", "created_date", "modified_dates"],
           "additionalProperties": false
         },
-        "listofkeyvalue": {
+        "custom": {
           "type": "array",
           "items": {
             "type": "object",
@@ -86,6 +86,9 @@
               },
               "uri": {
                 "type": "string"
+              },
+              "metadata": {
+                "$ref": "#/definitions/metadata"
               }
             },
             "required": ["key"],

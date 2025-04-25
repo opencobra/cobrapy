@@ -112,6 +112,7 @@ def test_customannotationstore():
 
 
 def test_customannotation_for_object() -> None:
+    """Test accessing custom annotations of a cobrapy object."""
     s = Species()
     s.metadata.custom["key1"] = "value1"
     assert s.metadata.custom["key1"].value == "value1"

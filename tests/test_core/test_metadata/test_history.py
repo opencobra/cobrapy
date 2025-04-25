@@ -3,9 +3,9 @@
 import os
 from datetime import datetime, timedelta, timezone
 
-from cobra.core import Species
 import pytest
 
+from cobra.core import Species
 from cobra.core.metadata.history import Creator, History
 from cobra.io import read_sbml_model
 
