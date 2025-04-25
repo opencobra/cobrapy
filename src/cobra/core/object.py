@@ -26,8 +26,7 @@ class Object:
         name: string, optional
             The name to associate with the object. Default "".
 
-        Objects will have notes and _annotation as dicitionaries, initialized as empty
-        dictionaries.
+        Objects will have notes and metadata as empty attributes.
         """
         self._id = id
         self.name = name
@@ -246,13 +245,13 @@ class Object:
     ):
         """Remove an annotation from the Metadata object.
 
-        This method only accepts StandardAnnotation and CustomAnnotation objects, or a
-        list thereof, and removes them from the corresponding annotation stores at
+        This method only accepts StandardizedAnnotation and CustomAnnotation objects,
+        or a list thereof, and removes them from the corresponding annotation stores at
         Metadata.standardized and Metadata.custom.
 
         Parameters
         ----------
-        annotations: (list of) StandardAnnotation or CustomAnnotation objects
+        annotations: (list of) StandardizedAnnotation or CustomAnnotation objects
             Annotations to remove from metadata.
 
         See Also

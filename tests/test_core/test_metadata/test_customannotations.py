@@ -1,4 +1,4 @@
-"""Test functions of keyvaluepairs.py."""
+"""Test functions of custom.py."""
 
 import pytest
 
@@ -48,7 +48,7 @@ def test_customannotation():
 
 
 def test_customannotationstore():
-    """Test creating and manipulating a KeyValuePairs object."""
+    """Test creating and manipulating a CustomAnnotationStore object."""
     entry1 = {
         "key": "key1",
         "value": "45",

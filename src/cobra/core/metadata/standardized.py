@@ -49,7 +49,7 @@ class StandardizedAnnotation:
     biological object represented by the modelling object (e.g.
     `Qualifier.Biological_is`).
 
-    For example, the a cobra reaction representing a
+    For example, the cobra reaction representing a
     cytosolic transketolase reaction in Homo sapiens can be annotated with the
     resource "https://identifiers.org/reactome/R-HSA-163751" using the qualifier
     `Qualifier.Biological_is`, since the reactome entry R-HSA-163751 represents the
@@ -59,7 +59,7 @@ class StandardizedAnnotation:
     the cobra reaction and `Qualifier.Biological_is` is also applicable. The EC code
     ("https://identifiers.org/ec-code/2.2.1.1") for the same reaction should however be
     annotated using the `Biological_isVersionOf` qualifier, since the reaction can be
-    seen as a version of the enzymatic acivity represented by EC 2.2.1.1. Optionally, a
+    seen as a version of the enzymatic activity represented by EC 2.2.1.1. Optionally, a
     standardized annotation object can have nested annotations. In the transketolase
     example, this could include a StandardizedAnnotation object with the qualifier
     `Qualifier.Biological_isDescribedBy` and the resource
@@ -90,7 +90,7 @@ class StandardizedAnnotation:
         qualifier: Qualifier or str
             The qualifier for the relationship. Default `Qualifier.Biological_is`.
         annotations: list or None, optional
-            List of StandardizedAnnotation objects that represent addional (nested)
+            List of StandardizedAnnotation objects that represent additional (nested)
             annotations of this object.
         """
         self._resources = self.check_resource_type(resources)
@@ -549,7 +549,7 @@ class StandardizedAnnotationStore(UserList):
         ----------
         data: list of StandardizedAnnotation, dict, str or Resource objects
             List of standardized annotations to initialize the store with. Dictionaries
-            are converted to standarized annotations using
+            are converted to standardized annotations using
             `StandardizedAnnotation.from_dict`. Strings are interpreted as identifier
             URIs and together with other Resource objects stored in a new
             `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
@@ -615,7 +615,7 @@ class StandardizedAnnotationStore(UserList):
         data: StandardizedAnnotation, dict, str or Resource, or list thereof, or
         StandardizedAnnotationStore or None
             A standardized annotation or a list of standardized annotations to use to
-            create a store with. Dictionaries are converted to standarized annotations
+            create a store with. Dictionaries are converted to standardized annotations
             using `StandardizedAnnotation.from_dict`. Strings are interpreted as
             identifier URIs and together with other Resource objects stored in a new
             `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
@@ -657,7 +657,7 @@ class StandardizedAnnotationStore(UserList):
         --------
         StandardizedAnnotation.to_dict
         """
-        return [cvterm.to_dict() for cvterm in self.data]
+        return [annotation.to_dict() for annotation in self]
 
     def to_records(self):
         """Convert the store to a list of dictionaries that represent resources.
@@ -726,7 +726,7 @@ class StandardizedAnnotationStore(UserList):
     ) -> None:
         """Add one or multiple standardized annotations to the store.
 
-        Dictionaries are converted to standarized annotations using
+        Dictionaries are converted to standardized annotations using
         `StandardizedAnnotation.from_dict`. Strings are interpreted as identifier
         URIs and together with other Resource objects stored in a new
         `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
@@ -856,7 +856,7 @@ class StandardizedAnnotationStore(UserList):
             its namespace matches any of the provided namespaces. If it is set to None,
             no filtering based on the namespace will be performed. Default None.
         qualifier: None, Qualifier, QualifiersAlias or list of Qualifier/QualifiersAlias
-            One or multiple qualifiers to filter annotations with. Selects an annoation
+            One or multiple qualifiers to filter annotations with. Selects an annotation
             when its qualifier matches any of the provided qualifiers. If it is set to
             None, no filtering based on qualifiers will be performed. Nested annotations
             are never filtered based on their qualifier. Default None.
@@ -1008,7 +1008,7 @@ class StandardizedAnnotationStore(UserList):
         search_function: Union[str, Pattern, Callable],
         attribute: Union[str, None] = None,
     ) -> "StandardizedAnnotationList":
-        """Query the annotation store for matchin StandardizedAnnotation objects.
+        """Query the annotation store for matching StandardizedAnnotation objects.
 
         Parameters
         ----------
@@ -1058,36 +1058,39 @@ class StandardizedAnnotationStore(UserList):
 
             if attribute == "qualifier":
                 matches = [
-                    cvterm
-                    for cvterm in self.data
+                    annotation
+                    for annotation in self
                     if (
-                        regex_searcher.findall(select_attribute(cvterm).name) != []
-                        or regex_searcher.findall(select_attribute(cvterm).value) != []
+                        regex_searcher.findall(select_attribute(annotation).name) != []
+                        or regex_searcher.findall(select_attribute(annotation).value)
+                        != []
                     )
                 ]
             elif attribute == "resources":
                 matches = [
-                    cvterm
-                    for cvterm in self.data
+                    annotation
+                    for annotation in self.data
                     if any(
                         regex_searcher.findall(res.uri)
-                        for res in select_attribute(cvterm)
+                        for res in select_attribute(annotation)
                     )
                 ]
             else:
                 matches = [
-                    cvterm
-                    for cvterm in self.data
-                    if regex_searcher.findall(cvterm.qualifier.name) != []
-                    or regex_searcher.findall(cvterm.qualifier.value) != []
-                    or any(regex_searcher.findall(res.uri) for res in cvterm.resources)
+                    annotation
+                    for annotation in self.data
+                    if regex_searcher.findall(annotation.qualifier.name) != []
+                    or regex_searcher.findall(annotation.qualifier.value) != []
+                    or any(
+                        regex_searcher.findall(res.uri) for res in annotation.resources
+                    )
                 ]
         except TypeError as err:
             print(err)
             matches = [
-                cvterm
-                for cvterm in self.data
-                if search_function(select_attribute(cvterm))
+                annotation
+                for annotation in self.data
+                if search_function(select_attribute(annotation))
             ]
 
         return StandardizedAnnotationList(matches)
@@ -1126,10 +1129,10 @@ class StandardizedAnnotationStore(UserList):
         Parameters
         ----------
         key: int, Qualifier, QualifiersAlias or list thereof
-            If `key` is an integer, the `StandardizeAnnotation` at that position in the
+            If `key` is an integer, the `StandardizedAnnotation` at that position in the
             list will be returned. When a list of integers is provided, a
             `StandardizedAnnotationList` with the corresponding annotations is returned.
-            When one or more Qualifier or QualifiersAlias enums are provided, a
+            When one or more Qualifier or `QualifiersAlias` enums are provided, a
             `StandardizedAnnotationList` of all annotations (not nested) with any of
             those qualifiers is returned.
         """
@@ -1189,7 +1192,7 @@ class StandardizedAnnotationStore(UserList):
         Returns
         -------
         str
-            HTML representation of the list of CVTerm resources.
+            HTML representation of the annotation store.
         """
         entries = [annotation._repr_html_() for annotation in self]
         return f"""StandardizedAnnotationStore{"<p>".join(entries)}"""
@@ -1217,7 +1220,7 @@ class StandardizedAnnotationList(StandardizedAnnotationStore):
         ----------
         data: list of StandardizedAnnotation, dict, str or Resource objects
             List of standardized annotations to initialize the store with. Dictionaries
-            are converted to standarized annotations using
+            are converted to standardized annotations using
             `StandardizedAnnotation.from_dict`. Strings are interpreted as identifier
             URIs and together with other Resource objects stored in a new
             `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
@@ -1230,7 +1233,7 @@ class StandardizedAnnotationList(StandardizedAnnotationStore):
 class SimplifiedAnnotationInterface(MutableMapping):
     """Class to interface with metadata using a dict-like interface.
 
-    This class is used to maintain compatability with older cobrapy versions. It is
+    This class is used to maintain compatibility with older cobrapy versions. It is
     typically accessed through an objects annotation attribute. It allows a user to get
     and set standardized annotations through a dict-like interface. When reading
     existing annotations, qualifiers are ignored and resources are pooled. When
@@ -1255,7 +1258,7 @@ class SimplifiedAnnotationInterface(MutableMapping):
         Parameters
         ----------
         metadata: Metadata
-            Metadata object where annotations wil be stored and retreived from.
+            Metadata object where annotations will be stored and retrieved from.
         """
         self._metadata = metadata
 
@@ -1308,7 +1311,7 @@ class SimplifiedAnnotationInterface(MutableMapping):
                 "not be converted to a list."
             )
 
-        cvterms = {}
+        annotations = {}
         for entry in data:
             if isinstance(entry, tuple):
                 if len(entry) != 2:
@@ -1334,11 +1337,11 @@ class SimplifiedAnnotationInterface(MutableMapping):
                     raise ValueError(f"Could not determine namespace of resource {x}.")
 
                 qualifier = get_default_qualifier(x.namespace)
-                if qualifier not in cvterms:
-                    cvterms[qualifier] = []
-                cvterms[qualifier].append(x)
+                if qualifier not in annotations:
+                    annotations[qualifier] = []
+                annotations[qualifier].append(x)
 
-        for qualifier, resources in cvterms.items():
+        for qualifier, resources in annotations.items():
             ann = self._metadata.standardized._find_first_or_create_by_qualifier(
                 qualifier
             )
@@ -1406,7 +1409,7 @@ class SimplifiedAnnotationInterface(MutableMapping):
                     results.append(v)
 
         if results:
-            # Deduplicate and ort results to have consistent results and make
+            # Deduplicate and sort results to have consistent results and make
             # comparisons easier. E.g. __eq__(...) relies on this.
             return list(sorted(set(results)))
         else:

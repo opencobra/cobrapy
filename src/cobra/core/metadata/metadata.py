@@ -86,7 +86,7 @@ class Metadata:
 
         Parameters
         ----------
-        values: dict, list of StandardizedAnnoation or StandardizedAnnotationStore
+        values: dict, list of StandardizedAnnotation or StandardizedAnnotationStore
             Lists and dicts are converted to StandardizedAnnotationStore using
             StandardizedAnnotationStore.from_data().
 
@@ -106,7 +106,7 @@ class Metadata:
          Parameters
          ----------
          annotations: list of dict or StandardizedAnnotation
-            An iterable of CVTerm objects or CVTerm dict compatible objects.
+            A list of standardized annotations to add to the metadata.
 
         See Also
         --------
@@ -220,89 +220,13 @@ class Metadata:
         """
         self._custom = CA.CustomAnnotationStore(annotations)
 
-    # def __setitem__(self, key: str, value: Union[List, str]) -> None:
-    #     """Set the item for accessing metadata as dict (the old style annotation).
-    #
-    #     Parameters
-    #     ----------
-    #     key: str
-    #         provider key word.
-    #     value: List or str
-    #         A str that is one term or a list that will contain multiple terms
-    #
-    #     This function will first delete the existing value for the key, and then set
-    #     it to the new value. Be careful - if you give this function incorrect input,
-    #     the deletion will happen anyway, and the value of the key will be empty!
-    #
-    #     If the key is sbo, sets the self.sbo term to the first item in the list. The
-    #     rest of the items in the list are ignored.
-    #     Cobrapy support for multiple SBO terms is not implemented yet.
-    #
-    #     See Also
-    #     --------
-    #     `CVTermList().add_simple_annotations()`
-    #     """
-    #     if key == "sbo":
-    #         if isinstance(value, list):
-    #             value = value[0]
-    #         self.sbo = value
-    #     else:
-    #         self._standardized[key] = value
-    #
-    # def __getitem__(
-    #     self, key: Union[str, Qualifier]
-    # ) -> Union[List[str], Dict[str, str]]:
-    #     """Get item using old annotation type dictionary.
-    #
-    #     If the key is sbo, will return the sbo field directly.
-    #     Otherwise, will query the annotations (old style) dictionary.
-    #
-    #     Note, that __setitem__, __getitem__ and __delitem__ will ignore custompairs.
-    #     If you want to edit that field, use relevant functions for it.
-    #
-    #     Parameters
-    #     ----------
-    #     key: str
-    #         provider key word.
-    #
-    #     Returns
-    #     -------
-    #     list
-    #     """
-    #     if key == "sbo" or key == "SBO":
-    #         return [self.sbo]
-    #     else:
-    #         return self.standardized[key]
-    #
-    #
-    # def __delitem__(self, key: str) -> None:
-    #     """Delete item using old annotation type dictionary as reference.
-    #
-    #     If the key is sbo, will zero out the sbo field directly to an empty string.
-    #     Otherwise, will delete from the annotations (old style) dictionary, using
-    #     the value as a pattern to search in CVTermList resources.
-    #     See `CVTermList.delete_simple_annotation()`
-    #
-    #     Parameters
-    #     ----------
-    #     key: str
-    #         provider key word.
-    #
-    #     Note, that __setitem__, __getitem__ and __delitem__ will ignore custompairs.
-    #     If you want to edit that field, use relevant functions for it.
-    #     """
-    #     if key == "sbo":
-    #         self.sbo = ""
-    #     else:
-    #         self._standardized.delete_annotation(key)
-    #
     def __eq__(self, other: Union[Dict, "Metadata"]) -> bool:
         """Compare two Metadata objects to find out whether they are equal.
 
         If given a dict, the dictionary is converted to Metadata and then compared.
 
         Two metadata objects are equal (the function will return True) if
-        - standardized annotatios are equal
+        - standardized annotations are equal
         - all attributes of the history are equal
         - custom annotations are equal
         If one of these three conditions is not true, the function will return False.
@@ -332,7 +256,7 @@ class Metadata:
     def __ne__(self, other) -> bool:
         """Compare two Metadata objects to find out whether they are not equal.
 
-        Returns the inverse of `Metatdata.__eq__`.
+        Returns the inverse of `Metadata.__eq__`.
 
         Parameters
         ----------
@@ -348,80 +272,6 @@ class Metadata:
         """
         return not self.__eq__(other)
 
-    #
-    # def __iter__(self) -> Iterator:
-    #     """Iterate over the Metadata annotations dict.
-    #
-    #     This function will iterate over the annotations (old-style) dictionary.
-    #
-    #     Returns
-    #     -------
-    #     Iterator
-    #     """
-    #     return iter(self.annotations)
-    #
-    # def __len__(self) -> int:
-    #     """Return the length of the Metadata annotations dict.
-    #
-    #     The length of the annotations dict will be returned as a int.
-    #
-    #     Returns
-    #     -------
-    #     int
-    #         result of running len on the annotations dict
-    #     """
-    #     return len(self.annotations)
-    #
-    # def __str__(self) -> str:
-    #     """Return the Metadata as str.
-    #
-    #     The annotations dict will be returned as a string. This does not include all
-    #     of the possible Metadata fields.
-    #
-    #     Returns
-    #     -------
-    #     str
-    #     """
-    #     return str(dict(self.annotations))
-    #
-    # def __repr__(self) -> str:
-    #     """Return the Metadata as str with module, class, and code to recreate it.
-    #
-    #     If Metadata has standardized, history or custompairs, the dictionary will
-    #     contain them as keys.
-    #     If not, the dictionary will have only the annotations dictionary.
-    #     In either case, if sbo field is set, it will be outputted in the dictionary.
-    #
-    #     Returns
-    #     -------
-    #     str
-    #
-    #     See Also
-    #     --------
-    #     Metadata.from_dict()
-    #     """
-    #     repr_str = (
-    #         f"{self.__class__.__module__}.{self.__class__.__qualname__}.from_dict("
-    #     )
-    #     cvterms = self.standardized
-    #     history = self.history
-    #     custompairs = self.custompairs
-    #
-    #     if cvterms or not history.is_empty() or custompairs:
-    #         repr_str += (
-    #             f"'standardized': {self.standardized.to_list_of_dicts()},"
-    #             f"'history': {self.history.to_dict()},"
-    #             f"'custompairs': {self.custompairs},"
-    #         )
-    #         if self.sbo:
-    #             repr_str += f"'sbo': {self.sbo})"
-    #     else:
-    #         anno_dict = self.annotations
-    #         if self.sbo:
-    #             anno_dict.update({"sbo": self.sbo})
-    #         repr_str += f"{anno_dict})"
-    #     return repr_str
-    #
     def to_dict(self) -> Dict:
         """Create a dictionary from the Metadata object.
 
@@ -459,7 +309,7 @@ class Metadata:
         """Generate a Metadata instance from dictionary.
 
         The dictionary should have any of the keys 'standardized', 'history', 'sbo', and
-        'custompairs', which will be converted to the corresponding attributes.
+        'custom', which will be converted to the corresponding attributes.
 
         Parameters
         ----------

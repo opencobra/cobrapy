@@ -386,7 +386,7 @@ class Creator:
         elif given_name is not None:
             return given_name
         else:
-            # This also covers the case wher all values are None
+            # This also covers the case where all values are None
             return family_name
 
     @property

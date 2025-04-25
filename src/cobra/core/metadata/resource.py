@@ -253,7 +253,7 @@ class Resource:
             be used to create a Resource object, otherwise the keys 'namespace' and
             'identifier' will be converted an identifiers.org URI. If `data` is a tuple,
             it should be of length 2, where the first element is the namespace and the
-            second the identifier. If `data` is a string, it is intrepreted as the URI
+            second the identifier. If `data` is a string, it is interpreted as the URI
             of the Resource. If a Resource object is provided, this object will simply
             be returned.
         strict: bool, optional
@@ -269,7 +269,7 @@ class Resource:
         Raises
         ------
         TypeError
-            If `data` is not of the correct type to creata a Resource object.
+            If `data` is not of the correct type to create a Resource object.
         ValueError
             If `strict` is set to True and a provided URI does not match the
             identifiers.org pattern.
@@ -415,8 +415,8 @@ class Resource:
             If `other` is a Resource object, the objects are equal if their URIs are
             equal. Similarly, if `other` is a string or a dict with a 'uri' key, these
             values will be compared to the `uri` attribute of this object. If other is a
-            tuple, the first element wil be compared to the `namespace` property of this
-            object and the second element to the `identifier` property.
+            tuple, the first element will be compared to the `namespace` property of
+            this object and the second element to the `identifier` property.
 
         Returns
         -------

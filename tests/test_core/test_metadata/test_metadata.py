@@ -760,7 +760,7 @@ def test_read_old_json_model(data_directory):
 
 
 def test_cvtermlist_query():
-    """Test the query functionality of CVTermList."""
+    """Test the query functionality of StandardizedAnnotationStore."""
     resources = RESOURCE_LIST
     resources.extend(
         [

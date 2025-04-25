@@ -235,7 +235,7 @@ class CustomAnnotationStore(UserDict):
 
         Parameters
         ----------
-        entries: None, CustomAnnontationStore or list of CustomAnnotation or dicts,
+        entries: None, CustomAnnotationStore or list of CustomAnnotation or dicts,
         optional
             Custom annotations to initialize the store with. Default None.
         """
@@ -322,8 +322,8 @@ class CustomAnnotationStore(UserDict):
         str
             HTML formatted string
         """
-        return f"""<p><strong>KeyValuePairs</strong></p><p>{format_long_string(
-            self.__str__(), 100)}</p>"""
+        return f"""<p><strong>{self.__class__.__qualname__}</strong></p>
+            <p>{format_long_string(self.__str__(), 100)}</p>"""
 
     def to_dict(self) -> dict:
         """Get dictionary representation.
@@ -331,7 +331,7 @@ class CustomAnnotationStore(UserDict):
         Returns
         -------
         dict
-            keys are the keys, and each value is the KeyValueEntry represented as
+            keys are the keys, and each value is the CustomAnnotation represented as
             a dict.
         """
         return {k: v.to_dict() for k, v in self.data.items()}

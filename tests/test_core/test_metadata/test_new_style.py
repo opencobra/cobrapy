@@ -193,7 +193,7 @@ def test_read_write_sbml(annotation_model: Model, tmp_path: Path):
     #     "pubmed": ["1111111"],
     #     "taxonomy": ["511145"],
     # }
-    # assert model.annotation.standardized == CVTermList.from_data(
+    # assert model.annotation.standardized == CustomAnnotationStore.from_data(
     #     ECOLI_MODEL_ANNOTATIONS
     # )
     # assert model.annotation.standardized == ECOLI_MODEL_ANNOTATIONS
