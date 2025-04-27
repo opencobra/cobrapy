@@ -40,6 +40,30 @@ IOTrial = namedtuple(
 )
 trials: List[IOTrial] = [
     IOTrial(
+        "fbc3",
+        "mini.pickle",
+        "mini_fbc3.xml",
+        read_sbml_model,
+        write_sbml_model,
+        validate_sbml_model,
+    ),
+    IOTrial(
+        "fbc3Gz",
+        "mini.pickle",
+        "mini_fbc3.xml.gz",
+        read_sbml_model,
+        write_sbml_model,
+        None,  # If None is replaced with validate_sbml_model, it seems to work
+    ),
+    IOTrial(
+        "fbc3Bz2",
+        "mini.pickle",
+        "mini_fbc3.xml.bz2",
+        read_sbml_model,
+        write_sbml_model,
+        None,
+    ),
+    IOTrial(
         "fbc2",
         "mini.pickle",
         "mini_fbc2.xml",
@@ -272,6 +296,7 @@ def io_trial(
     # test writing the model within a context with a non-empty stack
     with test_model:
         test_model.objective = test_model.objective
+        test_model.id = f"{test_model.id}_mod"
         request.param.write_function(test_model, test_output_filename)
     reread_model = request.param.read_function(test_output_filename)
     unlink(test_output_filename)

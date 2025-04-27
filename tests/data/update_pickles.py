@@ -108,9 +108,9 @@ if __name__ == "__main__":
         mini, importlib_resources.files(cobra.data).joinpath("mini.json"), pretty=True
     )
     save_yaml_model(mini, importlib_resources.files(cobra.data).joinpath("mini.yml"))
-    write_sbml_model(mini, "mini_fbc2.xml")
-    write_sbml_model(mini, "mini_fbc2.xml.bz2")
-    write_sbml_model(mini, "mini_fbc2.xml.gz")
+    write_sbml_model(mini, "mini_fbc3.xml")
+    write_sbml_model(mini, "mini_fbc3.xml.bz2")
+    write_sbml_model(mini, "mini_fbc3.xml.gz")
     write_sbml_model(
         mini, importlib_resources.files(cobra.data).joinpath("mini_cobra.xml")
     )

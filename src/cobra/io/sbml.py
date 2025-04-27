@@ -695,7 +695,17 @@ def _sbml_to_model(
 
         specie_fbc: "libsbml.FbcSpeciesPlugin" = specie.getPlugin("fbc")
         if specie_fbc:
-            met.charge = specie_fbc.getCharge()
+            if specie_fbc.isSetCharge():
+                if specie_fbc.getPackageVersion() >= 3:
+                    met.charge = specie_fbc.getChargeAsDouble()
+                else:
+                    met.charge = specie_fbc.getCharge()
+            else:
+                LOGGER.warning(
+                    "The fbc:charge attribute was not set, setting "
+                    f"charge to 0: {specie_fbc}"
+                )
+                met.charge = 0.0
             met.formula = specie_fbc.getChemicalFormula() or None
         else:
             if specie.isSetCharge():
@@ -1308,7 +1318,7 @@ def _model_to_sbml(
         specie.setCompartment(metabolite.compartment)
         s_fbc: "libsbml.FbcSpeciesPlugin" = specie.getPlugin("fbc")
         if metabolite.charge is not None:
-            s_fbc.setCharge(metabolite.charge)
+            s_fbc.setCharge(float(metabolite.charge))
         if metabolite.formula is not None:
             s_fbc.setChemicalFormula(metabolite.formula)
 

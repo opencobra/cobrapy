@@ -182,7 +182,7 @@
             "pattern": "[a-z]{1,2}"
           },
           "charge": {
-            "type": "integer"
+            "type": "number"
           },
           "formula": {
             "type": "string"
