@@ -261,7 +261,7 @@ class CustomAnnotationStore(UserDict):
             return
         elif isinstance(entries, dict):
             for k, item in entries.items():
-                entry = CustomAnnotation.from_data(item | {"key": k})
+                entry = CustomAnnotation.from_data({**item, "key": k})
                 self[entry.key] = entry
         else:
             for item in entries:
@@ -298,7 +298,7 @@ class CustomAnnotationStore(UserDict):
                     "provided in the index."
                 )
             # Make sure the key is also provided to the CustomAnnotation class.
-            item = item | {"key": key}
+            item = {**item, "key": key}
         elif isinstance(item, CustomAnnotation):
             if item.key != key:
                 raise ValueError(

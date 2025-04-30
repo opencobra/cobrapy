@@ -2047,6 +2047,7 @@ def _sbase_annotations(sbase: libsbml.SBase, annotations: Metadata) -> None:
         _check(sbase.setSBOTerm(sbo_term), f"Setting SBOTerm: {sbo_term}")
 
     # set metaId
+    # TODO: Set Id + MetaID when none was set (KeyValuePair)
     meta_id = f"meta_{sbase.getId()}"
     sbase.setMetaId(meta_id)
 
