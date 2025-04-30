@@ -18,10 +18,111 @@ from typing import (
 
 LOGGER = logging.getLogger(__name__)
 
-__all__ = ["URL_IDENTIFIERS_PATTERN", "parse_identifiers_uri"]
+__all__ = ["parse_identifiers_uri", "namespace_and_identifier_to_uri"]
 
 # the URL pattern to parse namespace and identifier
-URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")
+URL_OLD_IDENTIFIERS_PATTERN = re.compile(
+    r"^https?://identifiers.org/(.+?)/(.+)(\?.*)?$"
+)
+URL_COMPACT_IDENTIFIERS_PATTERN = re.compile(
+    r"^https?://identifiers.org/((.+)/)?([^:/]+):(.+)(\?.*)?$"
+)
+# Code to update the following constants can be found in:
+# scripts/parse_identifiers_registry.py
+COMPACT_URL_INTEGRATED_NAMESPACES = [
+    "mge",
+    "ark",
+    "bto",
+    "cco",
+    "cl",
+    "chebi",
+    "cheminf",
+    "did",
+    "envo",
+    "eco",
+    "fma",
+    "foodon",
+    "gsso",
+    "go",
+    "go_ref",
+    "gro",
+    "doid",
+    "hp",
+    "mir",
+    "mp",
+    "ms",
+    "mcro",
+    "mi",
+    "ma",
+    "mgi",
+    "nando",
+    "nmr",
+    "oma.hog",
+    "ocid",
+    "opl",
+    "obcs",
+    "pw",
+    "pato",
+    "eo",
+    "po",
+    "mod",
+    "pr",
+    "rrid",
+    "so",
+    "swh",
+    "stato",
+    "slm",
+    "sbo",
+    "uberon",
+    "uo",
+    "mzspec",
+    "vario",
+]
+COMPACT_URL_IDENTIFIERS_WITH_COLON = [
+    "arraymap",
+    "bgee.family",
+    "bgee.organ",
+    "bgee.stage",
+    "biocyc",
+    "bbkg",
+    "cabri",
+    "dip",
+    "ga4ghdos",
+    "dev.ga4ghdos",
+    "doi",
+    "glyconavi",
+    "gramene.gene",
+    "gramene.taxonomy",
+    "hgnc",
+    "imgt.hla",
+    "isbn",
+    "kegg.environ",
+    "kegg.genes",
+    "kegg",
+    "metacyc.compound",
+    "metacyc.reaction",
+    "miriam.collection",
+    "miriam.resource",
+    "narcis",
+    "nbn",
+    "nmdc",
+    "orphanet.ordo",
+    "panther.family",
+    "ps",
+    "psipar",
+    "sisu",
+    "storedb",
+    "tair.gene",
+    "tair.protein",
+    "treebase",
+    "vgnc",
+]
+# This does not actually fix anything, since these special cases are broken on
+# identifiers.org. However, future cases could need this logic.
+COMPACT_URL_NAMESPACE_EXCEPTIONS = {
+    "hog": "oma.hog",  # This one is weird. Hard to check what works, server is down.
+    "peo": "eo",  # The sampel URL on identifiers.org is wrong and does not work.
+}
 
 
 class Qualifier(Enum):
@@ -200,7 +301,8 @@ class Resource:
         ----------
         uri: str
             URI to use to create the resource. It should be of the format
-            http(s)://identifiers.org/<namespace>/<identifier>.
+            http(s)://identifiers.org/<namespace>/<identifier> or
+            http(s)://identifiers.org/<namespace>:<identifier>.
         strict: bool, optional
             Whether to raise a ValueError when the provided URI does not match the
             identifiers.org pattern. If set to False, it will accept any URI and set
@@ -290,10 +392,16 @@ class Resource:
             namespace = data["namespace"].lower()
             identifier = data["identifier"]
         else:
-            namespace, identifier = data
+            if len(data) != 2:
+                raise TypeError(
+                    "Tuples should have length 2 to be converted to a Resource, "
+                    f"not length {len(data)}: {data}"
+                )
+            namespace = data[0].lower()
+            identifier = data[1]
         if not isinstance(namespace, str) or not isinstance(identifier, str):
             raise TypeError("Namespace and identifier should be of type str.")
-        uri = f"https://identifiers.org/{namespace}/{identifier}"
+        uri = namespace_and_identifier_to_uri(namespace, identifier)
         return Resource(uri, strict=strict)
 
     @property
@@ -314,17 +422,14 @@ class Resource:
         ----------
         value: str
             The URI, typically of the format
-            'https://identifiers.org/<namespace>/<identifier>'.
+            'https://identifiers.org/<namespace>:<identifier>'.
         """
-        if re.match(URL_IDENTIFIERS_PATTERN, value):
-            identifier_match = parse_identifiers_uri(value)
-
-            if identifier_match is not None:
-                namespace, identifier = identifier_match
-                self._namespace = namespace
-                self._identifier = identifier
-                self._uri = value
-                return
+        if (identifier_match := parse_identifiers_uri(value)) is not None:
+            namespace, identifier, _provider = identifier_match
+            self._namespace = namespace
+            self._identifier = identifier
+            self._uri = value
+            return
         if self._strict:
             raise ValueError(
                 f"The provided URI is not a valid identifiers.org address: {value}"
@@ -412,32 +517,36 @@ class Resource:
         Parameters
         ----------
         other: Resource, str, dict or tuple
-            If `other` is a Resource object, the objects are equal if their URIs are
-            equal. Similarly, if `other` is a string or a dict with a 'uri' key, these
-            values will be compared to the `uri` attribute of this object. If other is a
-            tuple, the first element will be compared to the `namespace` property of
-            this object and the second element to the `identifier` property.
-
+            The value of `other` is converted to a Resource object, if it was not
+            already of that type. If the Resource object has a `namespace` and
+            `identifier` that are not None, i.e. the URI was a valid identifiers.org
+            URI, the two objects are equal if their `namespace` and `identifier` are
+            equal. If the `namespace` and `identifier` are None, the resources are equal
+            if their URI is equal.
         Returns
         -------
         bool
-            True if objects are equal, based on their URI (or namespace + identifier
-            combination, in the case of comparison to a tuple). Returns False otherwise,
-            including when `other` could not be interpreted as a Resource.
+            True if objects are equal, based on their `namespace` and `identifier`
+            combination (or URI, if those attributes are None).
         """
-        # TODO: Should we consider https://identifiers.org/... and
-        # http://identifiers.org/... URIs as equal? Maybe we should convert everything
-        # to https upon initialization.
-        if isinstance(other, str):
-            return self.uri == other
-        if isinstance(other, Resource):
-            return self.uri == other.uri
-        if isinstance(other, dict):
-            return self.uri == other.get("uri")
-        if isinstance(other, tuple):
-            if len(other) != 2 or self.namespace is None:
+        if isinstance(other, (dict, tuple, str)):
+            try:
+                other_resource = Resource.from_data(other, strict=False)
+            except TypeError:
                 return False
-            return self.namespace == other[0] and self.identifier == other[1]
+            return self == other_resource
+        if isinstance(other, Resource):
+            if (
+                self.namespace is None
+                or self.identifier is None
+                or other.namespace is None
+                or other.identifier is None
+            ):
+                return self.uri == other.uri
+            return (
+                self.namespace == other.namespace
+                and self.identifier == other.identifier
+            )
         return False
 
     def __hash__(self):
@@ -445,7 +554,7 @@ class Resource:
         return hash(self.uri)
 
 
-def parse_identifiers_uri(uri: str) -> Optional[Tuple[str, str]]:
+def parse_identifiers_uri(uri: str) -> Optional[Tuple[str, str, Optional[str]]]:
     """Parse namespace and term from given identifiers annotation uri.
 
     Parameters
@@ -455,22 +564,67 @@ def parse_identifiers_uri(uri: str) -> Optional[Tuple[str, str]]:
 
     Returns
     -------
-    (namespace, identifier) if resolvable, None otherwise
+    (namespace, identifier, provider) if resolvable, None otherwise
     """
-    match = URL_IDENTIFIERS_PATTERN.match(uri)
+    # Try to match the new format first
+    match = URL_COMPACT_IDENTIFIERS_PATTERN.match(uri)
     if match:
-        namespace, identifier = match.group(1), match.group(2)
-        if namespace.isupper():
-            identifier = f"{namespace}:{identifier}"
-            namespace = namespace.lower()
-    else:
-        LOGGER.warning(
-            f"{uri} does not conform to "
-            f"'http(s)://identifiers.org/collection/id' or"
-            f"'http(s)://identifiers.org/COLLECTION:id"
+        provider, orig_namespace, identifier = (
+            match.group(2),
+            match.group(3),
+            match.group(4),
         )
-        return None
-    return namespace, identifier
+        # For most compact URLs the namespace prefix is simply the lower case
+        # version of what is matched in the URL, but there are some exceptions
+        # that need correcting.
+        namespace = COMPACT_URL_NAMESPACE_EXCEPTIONS.get(
+            orig_namespace.lower(), orig_namespace.lower()
+        )
+        # If what is interpreted as provider is a namespace where identifiers have
+        # colons, the url should be intrepreted as the old format instead.
+        if provider == namespace or provider not in COMPACT_URL_IDENTIFIERS_WITH_COLON:
+            # In the cases where the namespace is integrated in the compact URL, the
+            # identifier should be reconstructed. E.g. in the case of ChEBI, the
+            # namespace is 'chebi' and a identifier can be 'CHEBI:11881'.
+            if namespace in COMPACT_URL_INTEGRATED_NAMESPACES:
+                identifier = f"{orig_namespace}:{identifier}"
+            return namespace, identifier, provider
+    # Otherwise try the old format
+    match = URL_OLD_IDENTIFIERS_PATTERN.match(uri)
+    if match:
+        provider, namespace, identifier = (
+            None,
+            match.group(1),
+            match.group(2),
+        )
+        return namespace, identifier, provider
+
+    LOGGER.warning(
+        f"{uri} does not conform to "
+        f"'http(s)://identifiers.org/namespace/id' or "
+        f"'http(s)://identifiers.org/(provider/)namespace:id"
+    )
+    return None
+
+
+def namespace_and_identifier_to_uri(namespace: str, identifier: str) -> str:
+    """Convert a namespace and identifier pair to a identifiers.org URL.
+
+    Parameters
+    ----------
+    namespace : str
+        Namespace of the entity.
+    identifier : str
+        Identifier of the entity.
+
+    Returns
+    -------
+    str
+        identifiers.org URL
+    """
+    if namespace in COMPACT_URL_INTEGRATED_NAMESPACES:
+        return f"https://identifiers.org/{namespace}/{identifier}"
+    return f"https://identifiers.org/{namespace}:{identifier}"
 
 
 DEFAULT_QUALIFIERS = {
@@ -488,5 +642,5 @@ DEFAULT_QUALIFIERS = {
 
 
 def get_default_qualifier(namespace):
-    return DEFAULT_QUALIFIERS.get(str(namespace).lower(), Qualifier.Biological_is)
+    return DEFAULT_QUALIFIERS.get(str(namespace), Qualifier.Biological_is)
     # return Qualifier.Biological_is

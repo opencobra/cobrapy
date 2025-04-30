@@ -460,7 +460,7 @@ def test_old_style_annotation() -> None:
     assert s.annotation.number_of_resources == 1
 
     s.annotation.add({"chebi": "CHEBI:17234"})
-    s.annotation.add({"chebi": ["CHBEI:1723456", "CHEBI:172345"]})
+    s.annotation.add({"chebi": ["CHEBI:1723456", "CHEBI:172345"]})
     assert len(s.annotation) == 2
     assert s.annotation.number_of_resources == 4
     s.annotation["chebi"] = ["CHEBI:123", "CHEBI:1234"]
@@ -896,3 +896,38 @@ def test_cvtermlist_query():
 
     assert len(cvtermlist.query(search_function="chebi")) == 7
     assert len(cvtermlist.query(search_function=r"bqm_is\S+")) == 3
+
+
+def test_resource():
+    """Test the behaviour of resource objects."""
+    # ChEBI has the namespace integrated in the identifier.
+    resource = Resource("http://identifiers.org/chebi/CHEBI:11881")
+    different_resource = Resource("http://identifiers.org/chebi/CHEBI:16001")
+
+    assert resource != different_resource
+    assert resource == ("chebi", "CHEBI:11881")
+    assert resource != ("chebi",)
+    assert resource == "http://identifiers.org/chebi/CHEBI:11881"
+    assert resource == "http://identifiers.org/CHEBI:11881"
+    assert resource == "https://identifiers.org/chebi/CHEBI:11881"
+    assert resource == "https://identifiers.org/CHEBI:11881"
+    assert resource == {"uri": "http://identifiers.org/chebi/CHEBI:11881"}
+    assert resource == {"namespace": "chebi", "identifier": "CHEBI:11881"}
+    assert resource != "https://identifiers.org/chebi/11881"
+    assert resource == ("CHEBI", "CHEBI:11881")
+
+    # OBI is a standard identifier (no integrated namespace).
+    # It does have different providers that can be specified.
+    resource = Resource("https://identifiers.org/obi:OBI_0000070")
+
+    assert resource != different_resource
+    assert resource == ("obi", "OBI_0000070")
+    assert resource != ("obi", "OBI_0000070", "obi")
+    assert resource == "http://identifiers.org/obi/OBI_0000070"
+    assert resource == "http://identifiers.org/obi:OBI_0000070"
+    assert resource == "https://identifiers.org/obi:OBI_0000070"
+    assert resource == "https://identifiers.org/ols/obi:OBI_0000070"
+    assert resource == {"uri": "https://identifiers.org/obi:OBI_0000070"}
+    assert resource == {"namespace": "obi", "identifier": "OBI_0000070"}
+    assert resource != "https://identifiers.org/ols/OBI_0000070"
+    assert resource == ("OBI", "OBI_0000070")

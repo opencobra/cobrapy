@@ -1,7 +1,6 @@
 """Provide functions for cobrapy objects to generic Python objects and vice-versa."""
 
 import itertools
-import re
 from collections import OrderedDict, defaultdict
 from typing import TYPE_CHECKING, Dict, List, Sequence, Set, Tuple, Union
 
@@ -9,7 +8,7 @@ import numpy as np
 
 from ..core import Gene, Group, Metabolite, Model, Reaction
 from ..core.metadata import Metadata
-from ..core.metadata.resource import URL_IDENTIFIERS_PATTERN, parse_identifiers_uri
+from ..core.metadata.resource import parse_identifiers_uri
 from ..io.sbml import (
     F_GENE,
     F_GENE_REV,
@@ -221,8 +220,8 @@ def _fix_value_from_dict(_key: str, _value_to_fix: Union[Dict, List, str]):
         anno_dict = defaultdict(list)
         if isinstance(_value_to_fix, list):
             for item in _value_to_fix:
-                if re.match(URL_IDENTIFIERS_PATTERN, item):
-                    provider, identifier = parse_identifiers_uri(item)
+                if (identifier_match := parse_identifiers_uri(item)) is not None:
+                    provider, identifier, _provider = identifier_match
                     anno_dict[provider].append(identifier)
             _value_to_fix = anno_dict
         # metadata = Metadata()

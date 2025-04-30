@@ -36,7 +36,6 @@ from io import StringIO
 from pathlib import Path
 from sys import platform
 from typing import IO, List, Match, Optional, Pattern, Tuple, Type, Union
-from warnings import warn
 
 import libsbml
 
@@ -1706,9 +1705,6 @@ https://co.mbine.org/standards/qualifiers
 In the current stage the new annotation format is not completely supported yet.
 """
 
-URL_IDENTIFIERS_PATTERN = re.compile(r"^https?://identifiers.org/(.+?)[:/](.+)")
-
-URL_IDENTIFIERS_PREFIX = "https://identifiers.org"
 QUALIFIER_TYPES_COBRA_SBML_DICT = {
     "bqb_is": libsbml.BQB_IS,
     "bqb_hasPart": libsbml.BQB_HAS_PART,
@@ -1910,43 +1906,6 @@ def _parse_annotations(sbase: libsbml.SBase) -> Metadata:
         ]
 
     return annotations
-
-
-def _parse_annotation_info(uri: str) -> Union[None, Tuple[str, str]]:
-    """Parse provider and term from given identifiers annotation uri.
-
-    Parameters
-    ----------
-    uri : str
-        uri (identifiers.org url)
-
-    Returns
-    -------
-    (provider, identifier) if resolvable, None otherwise
-
-    .. deprecated ::
-    Use cobra.core.metadata.resource.parse_identifiers_uri()
-    """
-    warn(
-        "_parse_annotation_info() is being replaced by "
-        "cobra.core.metadata.resource.parse_identifiers_uri()",
-        DeprecationWarning,
-    )
-    match = URL_IDENTIFIERS_PATTERN.match(uri)
-    if match:
-        provider, identifier = match.group(1), match.group(2)
-        if provider.isupper():
-            identifier = f"{provider}:{identifier}"
-            provider = provider.lower()
-    else:
-        LOGGER.warning(
-            f"{uri} does not conform to "
-            f"'http(s)://identifiers.org/collection/id' or"
-            f"'http(s)://identifiers.org/COLLECTION:id"
-        )
-        return None
-
-    return provider, identifier
 
 
 def _add_custom_annotations_to_sbase_fbc(
