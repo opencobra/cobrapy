@@ -70,6 +70,17 @@ class StandardizedAnnotation:
     <https://co.mbine.org/author/biomodels.net-qualifiers/>`_
     For a definition of all qualifiers, see `SBML Level 3, Version 2 Core, p 104
     <https://identifiers.org/combine.specifications:sbml.level-3.version-2.core.release-2>`_
+
+    Parameters
+    ----------
+    resources: Resource, str, list or None, optional
+        The resources as `Resource` objects or strings (URI format:
+        https://identifiers.org/<namespace>/<id>). Default None.
+    qualifier: Qualifier or str
+        The qualifier for the relationship. Default `Qualifier.Biological_is`.
+    annotations: list or None, optional
+        List of StandardizedAnnotation objects that represent additional (nested)
+        annotations of this object.
     """
 
     def __init__(
@@ -80,23 +91,13 @@ class StandardizedAnnotation:
         qualifier: Union[Qualifier, str] = Qualifier.Biological_is,
         annotations: Optional[Iterable["StandardizedAnnotation"]] = None,
     ):
-        """Initialize a standardized annotation.
-
-        Parameters
-        ----------
-        resources: Resource, str, list or None, optional
-            The resources as `Resource` objects or strings (URI format:
-            https://identifiers.org/<namespace>/<id>). Default None.
-        qualifier: Qualifier or str
-            The qualifier for the relationship. Default `Qualifier.Biological_is`.
-        annotations: list or None, optional
-            List of StandardizedAnnotation objects that represent additional (nested)
-            annotations of this object.
-        """
-        self._resources = self.check_resource_type(resources)
-        self._qualifier = self.check_qualifier_type(qualifier)
-        self._annotations = StandardizedAnnotationStore.from_data(annotations)
-        self._parent = None
+        """Initialize a standardized annotation."""
+        self._resources: List[Resource] = self.check_resource_type(resources)
+        self._qualifier: Qualifier = self.check_qualifier_type(qualifier)
+        self._annotations: StandardizedAnnotationStore = (
+            StandardizedAnnotationStore.from_data(annotations)
+        )
+        self._parent: Optional[StandardizedAnnotationStore] = None
 
     def _set_parent(self, parent):
         if self._parent is None or parent is None:
@@ -535,6 +536,15 @@ class StandardizedAnnotationStore(UserList):
     which can be accessed through `object.metadata.standardized`. In addition, nested
     annotations in a `StandardizedAnnotation` object also make use of the
     `StandardizedAnnotationStore` class.
+
+    Parameters
+    ----------
+    data: list of StandardizedAnnotation, dict, str or Resource objects
+        List of standardized annotations to initialize the store with. Dictionaries
+        are converted to standardized annotations using
+        `StandardizedAnnotation.from_dict`. Strings are interpreted as identifier
+        URIs and together with other Resource objects stored in a new
+        `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
     """
 
     def __init__(
@@ -543,18 +553,8 @@ class StandardizedAnnotationStore(UserList):
             Iterable[Union[StandardizedAnnotation, Dict, Resource, str]]
         ] = None,
     ):
-        """Initialize a standardized annotation store.
-
-        Parameters
-        ----------
-        data: list of StandardizedAnnotation, dict, str or Resource objects
-            List of standardized annotations to initialize the store with. Dictionaries
-            are converted to standardized annotations using
-            `StandardizedAnnotation.from_dict`. Strings are interpreted as identifier
-            URIs and together with other Resource objects stored in a new
-            `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
-        """
-        self._take_ownership_of_resources = getattr(
+        """Initialize a standardized annotation store."""
+        self._take_ownership_of_resources: bool = getattr(
             self, "_take_ownership_of_resources", True
         )
         if data is None:
@@ -1206,6 +1206,16 @@ class StandardizedAnnotationList(StandardizedAnnotationStore):
     class does not take ownership (becomes parent of) its resources. It can therefore be
     used to create lists of StandardizedAnnotation objects of different cobrapy objects,
     or create views of a subset of the annotations of a single object.
+
+    Parameters
+    ----------
+    data: list of StandardizedAnnotation, dict, str or Resource objects
+        List of standardized annotations to initialize the store with. Dictionaries
+        are converted to standardized annotations using
+        `StandardizedAnnotation.from_dict`. Strings are interpreted as identifier
+        URIs and together with other Resource objects stored in a new
+        `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
+
     """
 
     def __init__(
@@ -1214,19 +1224,9 @@ class StandardizedAnnotationList(StandardizedAnnotationStore):
             Iterable[Union[StandardizedAnnotation, Dict, Resource, str]]
         ] = None,
     ):
-        """Initialize a standardized annotation store.
+        """Initialize a standardized annotation store."""
 
-        Parameters
-        ----------
-        data: list of StandardizedAnnotation, dict, str or Resource objects
-            List of standardized annotations to initialize the store with. Dictionaries
-            are converted to standardized annotations using
-            `StandardizedAnnotation.from_dict`. Strings are interpreted as identifier
-            URIs and together with other Resource objects stored in a new
-            `StandardizedAnnotation` with `Qualifier.Biological_is` as qualifier.
-        """
-
-        self._take_ownership_of_resources = False
+        self._take_ownership_of_resources: bool = False
         super(StandardizedAnnotationList, self).__init__(data)
 
 
@@ -1250,17 +1250,16 @@ class SimplifiedAnnotationInterface(MutableMapping):
         `object.metadata.standardized` should be preferred.
     * Editing existing annotations using this interface can cause the annotations to
         become less organized.
+
+    Parameters
+    ----------
+    metadata: Metadata
+        Metadata object where annotations will be stored and retrieved from.
     """
 
     def __init__(self, metadata: Metadata) -> None:
-        """Initialize the simplified annotation interface using a `Metadata` object.
-
-        Parameters
-        ----------
-        metadata: Metadata
-            Metadata object where annotations will be stored and retrieved from.
-        """
-        self._metadata = metadata
+        """Initialize the simplified annotation interface using a `Metadata` object."""
+        self._metadata: Metadata = metadata
 
     def add(
         self,

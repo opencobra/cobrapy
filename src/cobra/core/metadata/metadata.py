@@ -26,6 +26,37 @@ class Metadata:
       modified dates.
     - custom: contains custom annotations as key-value pairs.
     - sbo - a single SBO term for the object.
+
+    Parameters
+    ----------
+    standardized : dict, list of StandardizedAnnotation, StandardizedAnnotationStore
+        Collection of standardized annotations. Dictionaries and lists of
+        StandardizedAnnotations are converted to a StandardizedAnnotationStore and
+        set as the `Metadata.standardized` attribute.
+    history : dict, History
+        The history information as a History object or dictionary.
+    custom: list
+        Custom annotation key-value pairs.
+    sbo: str
+        The sbo term to use for the entity.
+
+    Examples
+    --------
+    >>> from cobra.core import Metabolite, StandardizedAnnotation, Qualifier
+    >>> metabolite = Metabolite(id="ac", name="Acetate")
+    >>> type(metabolite.metadata).__name__
+    Metadata
+    >>> metabolite.metadata.add_standardized(
+            [StandardizedAnnotation(
+                qualifier=Qualifier.Modelling_is,
+                resources=["bigg.metabolite:ac"],
+            )]
+        )
+    >>> metabolite.metadata.standardized.resources_for(
+            qualifier=Qualifier.Modelling_is,
+            namespace="bigg.metabolite"
+        )
+    [Resource(https://identifiers.org/bigg.metabolite:ac)]
     """
 
     def __init__(
@@ -41,21 +72,7 @@ class Metadata:
         custom: Optional[Union[List, Dict]] = None,
         sbo: str = "",
     ):
-        """Initialize the Metadata class.
-
-        Parameters
-        ----------
-        standardized : dict, list of StandardizedAnnotation, StandardizedAnnotationStore
-            Collection of standardized annotations. Dictionaries and lists of
-            StandardizedAnnotations are converted to a StandardizedAnnotationStore and
-            set as the `Metadata.standardized` attribute.
-        history : dict, History
-            The history information as a History object or dictionary.
-        custom: list
-            Custom annotation key-value pairs.
-        sbo: str
-            The sbo term to use for the entity.
-        """
+        """Initialize the Metadata class."""
         self.standardized = standardized
         self.history = history
         self.custom = custom

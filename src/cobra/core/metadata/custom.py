@@ -23,22 +23,21 @@ class CustomAnnotation(cobject.Object):
     with model components. Whenever possible, `StandardizedAnnotation` objects should be
     preferred over CustomAnnotation objects, since they enable better interoperability
     between modelling tools.
+
+    Parameters
+    ----------
+    key: str
+        Mandatory and descriptive string used for accessing the value/URI.
+    value: str, optional
+        Associated value. Default None.
+    uri: str, optional
+        URN or URL that links to the definition of the used key. Default None.
     """
 
     def __init__(
         self, key: str, value: Optional[str] = None, uri: Optional[str] = None
     ):
-        """Initialize a `CustomAnnotation` key-value pair object.
-
-         Parameters
-        ----------
-        key: str
-            Mandatory and descriptive string used for accessing the value/URI.
-        value: str, optional
-            Associated value. Default None.
-        uri: str, optional
-            URN or URL that links to the definition of the used key. Default None.
-        """
+        """Initialize a `CustomAnnotation` key-value pair object."""
         super(__class__, self).__init__()
         self._key = key
         self._value = value
@@ -238,6 +237,12 @@ class CustomAnnotationStore(UserDict):
     MIRIAM-compliant annotations. Whenever possible, standardized annotations are
     preferred over custom annotations, since they enable better interoperability
     between modelling tools.
+
+    Parameters
+    ----------
+    entries: None, CustomAnnotationStore or list of CustomAnnotation or dicts,
+    optional
+        Custom annotations to initialize the store with. Default None.
     """
 
     def __init__(
@@ -248,14 +253,7 @@ class CustomAnnotationStore(UserDict):
             ]
         ] = None,
     ):
-        """Initialize the dict-like CustomAnnotationStore class.
-
-        Parameters
-        ----------
-        entries: None, CustomAnnotationStore or list of CustomAnnotation or dicts,
-        optional
-            Custom annotations to initialize the store with. Default None.
-        """
+        """Initialize the dict-like CustomAnnotationStore class."""
         super().__init__()
         if entries is None:
             return

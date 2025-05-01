@@ -18,12 +18,13 @@ class History:
 
     Parameters
     ----------
-    creators : list
-        A list of Creators
-    created_date : datetime
-        The datetime of creation in W3CDTF ISO 8601 format
-    modified_dates : list
-        A list of datetimes when the object was modified.
+    creators: list
+        list of Creator class. Optional, default None.
+    created_date: datetime
+        Created date. Optional, default None.
+    modified_dates: list
+        Dates when this annotation was modified. List of datetime dates or strings.
+        Optional, default None.
     """
 
     def __init__(
@@ -32,18 +33,7 @@ class History:
         created_date: Optional[Union[datetime, str]] = None,
         modified_dates: Optional[List[Union[datetime, str]]] = None,
     ):
-        """Initialize the class.
-
-        Parameters
-        ----------
-        creators: list
-            list of Creator class. Optional, default None.
-        created_date: datetime
-            Created date. Optional, default None.
-        modified_dates: list
-            Dates when this annotation was modified. List of datetime dates or strings.
-            Optional, default None.
-        """
+        """Initialize the class."""
 
         self._creators: List[Creator] = []
         self._created_date: Optional[datetime] = None
@@ -319,14 +309,21 @@ class History:
 class Creator:
     """Metadata for person who created an object.
 
+    The creator has optional name, email and organisation properties.
+    Separate given and family name values will be combined to a single
+    value for name. (This prevents confusion due to different cultural
+    conventions, see for example:
+    https://uxmovement.com/forms/why-your-form-only-needs-one-name-field/)
+
     Parameters
     ----------
     name: str
-        Optional. Default None.
+        Full name of the creator. Optional, default None.
     email: str
-        Optional. Default None.
+        Email address of the creator. Optional, default None.
     organisation: str
-        Optional. Default None.
+        Name of the organisation of the creator, or the organisation that
+        created the model. Optional, default None.
     """
 
     def __init__(
@@ -337,25 +334,7 @@ class Creator:
         given_name: Optional[str] = None,
         family_name: Optional[str] = None,
     ):
-        """Create an Creator metadata object.
-
-        The creator has optional name, email and organisation properties.
-        Separate given and family name values will be combined to a single
-        value for name. (This prevents confusion due to different cultural
-        conventions, see for example:
-        https://uxmovement.com/forms/why-your-form-only-needs-one-name-field/)
-
-        Parameters
-        ----------
-        name: str
-            Full name of the creator. Optional, default None.
-        email: str
-            Email address of the creator. Optional, default None.
-        organisation: str
-            Name of the organisation of the creator, or the organisation that
-            created the model. Optional, default None.
-
-        """
+        """Create an Creator metadata object."""
         self._name: Optional[str] = None
         self._email: Optional[str] = None
         self._organisation: Optional[str] = None

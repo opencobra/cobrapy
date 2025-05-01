@@ -3,6 +3,7 @@
 from cobra.core.metadata.resource import (
     Resource,
     Qualifier,
+    QualifiersAlias,
     parse_identifiers_uri,
 )
 from cobra.core.metadata.standardized import (

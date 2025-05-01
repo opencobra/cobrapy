@@ -253,6 +253,8 @@ def test_standardized_annotation() -> None:
         new_ann = StandardizedAnnotation()
         new_ann.add_resources([resource])
 
+    assert ann != 1
+
     ann.resources = None
     assert len(ann.resources) == 0
 
@@ -337,10 +339,32 @@ def test_standardized_annotation_store() -> None:
     assert len(new_store) == 3
     assert len(new_store.resources) == 4
 
+    assert new_store != 1
+
+    with pytest.raises(TypeError):
+        new_store[0] = None
+    with pytest.raises(TypeError):
+        _ = new_store[[0.15]]
+
+    assert len(new_store[Qualifier.Biological_hasTaxon]) == 1
+    assert len(new_store[QualifiersAlias.Biological_any]) == 3
+
+    assert len(StandardizedAnnotationStore(None)) == 0
+    assert len(StandardizedAnnotationStore([None])) == 0
+    assert (
+        len(
+            StandardizedAnnotationStore(
+                [Resource("CHEBI:43215"), Resource("CHEBI:11881")]
+            )
+        )
+        == 1
+    )
     with pytest.raises(TypeError):
         StandardizedAnnotationStore(1)
     with pytest.raises(TypeError):
         StandardizedAnnotationStore([1])
+    with pytest.raises(TypeError):
+        StandardizedAnnotationStore.from_data(1)
 
     assert len(s.metadata.standardized.resources) == 4
     assert len(s.metadata.standardized.all_resources) == 6
@@ -406,6 +430,8 @@ def test_old_style_annotation() -> None:
     with pytest.raises(TypeError):
         s.annotation.add({"chebi": [["CHEBI:123", "CHEBI:1234"]]})
     assert len(s.annotation) == 1
+    s.annotation.add(None)
+    assert len(s.annotation) == 1
     assert s.annotation.number_of_resources == 3
     s.annotation["eco"] = "123"
     assert len(s.annotation) == 2
@@ -443,6 +469,8 @@ def test_old_style_annotation() -> None:
     s.annotation.delete_annotation("CHEBI:172345")
     assert len(s.annotation) == 2
     assert s.annotation.number_of_resources == 3
+    with pytest.raises(ValueError):
+        s.annotation.delete_annotation("CHEBI:00000")
     ref_ann = Metadata()
     simpl_ann = SimplifiedAnnotationInterface(ref_ann)
     simpl_ann.add(
@@ -488,6 +516,48 @@ def test_old_style_annotation() -> None:
         "sbo": ["SBO:0000123"],
     }
     assert s.annotation.number_of_resources == 4
+
+    simpl_ann = SimplifiedAnnotationInterface(Metadata())
+    simpl_ann.add(
+        {
+            "chebi": ["CHEBI:17234", "CHEBI:1723456"],
+            "eco": ["123"],
+        }
+    )
+    s.annotation.add(simpl_ann)
+    assert len(s.annotation) == 3
+    assert s.annotation.number_of_resources == 6
+
+    with pytest.raises(TypeError):
+        s.annotation.add(1)
+    with pytest.raises(TypeError):
+        s.annotation.add([1])
+    with pytest.raises(ValueError):
+        s.annotation.add([("chebi",)])
+    with pytest.raises(ValueError):
+        s.annotation.add(
+            ["https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:11881"]
+        )
+    with pytest.raises(TypeError):
+        _ = s.annotation[1]
+    with pytest.raises(TypeError):
+        del s.annotation[1]
+    with pytest.raises(TypeError):
+        s.annotation[1] = "CHEBI:17234"
+    assert s.annotation != 1
+
+    s.metadata.standardized.add(
+        "https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:11881"
+    )
+    assert len(s.annotation) == 3
+    assert s.annotation.number_of_resources == 6
+    assert "CHEBI:1723456" in [idf for v in s.annotation.values() for idf in v]
+    assert ("chebi", "CHEBI:1723456") in s.annotation.tuples()
+
+    ann_copy = s.annotation.copy()
+    assert ann_copy == s.annotation
+    assert ann_copy is not s.annotation
+    assert isinstance(ann_copy, dict)
 
 
 def test_nested_annotation(data_directory: Path) -> None:

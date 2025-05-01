@@ -142,6 +142,7 @@ class Qualifier(Enum):
 
     See Also
     --------
+    QualifiersAlias
     StandardizedAnnotation
     Resource
     """
@@ -220,6 +221,22 @@ class Qualifier(Enum):
 
 
 class QualifiersAlias(set, Enum):
+    """Aliases for common combinations of qualifiers.
+
+    Examples
+    --------
+    >>> from cobra.core.metadata import Qualifier, QualifiersAlias
+    >>> Qualifier.Biological_isPartOf in QualifiersAlias.Biological_any
+    True
+    >>> Qualifier.Modelling_unknown in QualifiersAlias.Modelling_known
+    False
+
+    See Also
+    --------
+    Qualifier
+    StandardizedAnnotationStore.resources_for
+    """
+
     Any_is = {Qualifier.Biological_is, Qualifier.Modelling_is}
     Any_isDescribedBy = {
         Qualifier.Biological_isDescribedBy,
@@ -293,32 +310,59 @@ class Resource:
     StandardizedAnnotation object. Resources are based around perennial URIs that link
     to scientific information and identifiers. A URI provided to the Resource class
     should be an https://identifiers.org URL.
+
+    Parameters
+    ----------
+    uri: str
+        URI to use to create the resource. It should be of the old identifiers.org
+        format 'http(s)://identifiers.org/<namespace>/<identifier>' or the compact
+        identifier URL format
+        http(s)://identifiers.org/<namespace>:<identifier>. Alternatively, a
+        compact identifier can be provided directly, without the preceding
+        'http(s)://identifiers.org/', e.g. 'CHEBI:11881'.
+    strict: bool, optional
+        Whether to raise a ValueError when the provided URI does not match the
+        identifiers.org pattern. If set to False, it will accept any URI and set
+        `namespace` and `identifier` to None if the URI cannot be parsed.
+        Default True.
+
+    Raises
+    ------
+    ValueError
+        If `strict` is set to True and a provided URI does not match the
+        identifiers.org pattern.
+
+    Examples
+    --------
+    >>> from cobra.core import Resource
+    >>> chebi_resource = Resource("https://identifiers.org/chebi/CHEBI:11881")
+    >>> chebi_resource.namespace
+    chebi
+    >>> chebi_resource.identifier
+    CHEBI:11881
+    >>> chebi_resource == Resource("CHEBI:11881")
+    True
+    >>> try:
+            ebi_resource = Resource(
+                "https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:11881",
+            )
+        except ValueError:
+            print("Not an identifiers.org URL.")
+    Not an identifiers.org URL.
+    >>> ebi_resource = Resource(
+            "https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:11881",
+            strict=False,
+        )
+    >>> ebi_resource.uri
+    https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:11881
+    >>> ebi_resource.namespace is None
+    True
+    >>> chebi_resource == ebi_resource
+    False
     """
 
     def __init__(self, uri: str, strict: bool = True) -> None:
-        """Initialize a standardized annotation Resource from a URI.
-
-        Parameters
-        ----------
-        uri: str
-            URI to use to create the resource. It should be of the old identifiers.org
-            format 'http(s)://identifiers.org/<namespace>/<identifier>' or the compact
-            identifier URL format
-            http(s)://identifiers.org/<namespace>:<identifier>. Alternatively, a
-            compact identifier can be provided directly, without the preceding
-            'http(s)://identifiers.org/', e.g. 'CHEBI:11881'.
-        strict: bool, optional
-            Whether to raise a ValueError when the provided URI does not match the
-            identifiers.org pattern. If set to False, it will accept any URI and set
-            `namespace` and `identifier` to None if the URI cannot be parsed.
-            Default True.
-
-        Raises
-        ------
-        ValueError
-            If `strict` is set to True and a provided URI does not match the
-            identifiers.org pattern.
-        """
+        """Initialize a standardized annotation Resource from a URI."""
         self._namespace = None
         self._identifier = None
         self._parent = None
@@ -429,10 +473,10 @@ class Resource:
             'https://identifiers.org/<namespace>:<identifier>'.
         """
         if (identifier_match := parse_identifiers_uri(value)) is not None:
-            namespace, identifier, _provider = identifier_match
+            namespace, identifier, _provider, uri = identifier_match
             self._namespace = namespace
             self._identifier = identifier
-            self._uri = value
+            self._uri = uri
             return
         if self._strict:
             raise ValueError(
@@ -533,7 +577,6 @@ class Resource:
             True if objects are equal, based on their `namespace` and `identifier`
             combination (or URI, if those attributes are None).
         """
-        print(f"self: {type(self)} other: {type(other)}")
         if isinstance(other, (dict, tuple, str)):
             try:
                 other_resource = Resource.from_data(other, strict=False)
@@ -562,7 +605,7 @@ class Resource:
             return hash((self.namespace, self.identifier))
 
 
-def parse_identifiers_uri(uri: str) -> Optional[Tuple[str, str, Optional[str]]]:
+def parse_identifiers_uri(uri: str) -> Optional[Tuple[str, str, Optional[str], str]]:
     """Parse namespace and term from given identifiers annotation uri.
 
     Parameters
@@ -602,7 +645,7 @@ def parse_identifiers_uri(uri: str) -> Optional[Tuple[str, str, Optional[str]]]:
             # namespace is 'chebi' and a identifier can be 'CHEBI:11881'.
             if namespace in COMPACT_URL_INTEGRATED_NAMESPACES:
                 identifier = f"{orig_namespace}:{identifier}"
-            return namespace, identifier, provider
+            return namespace, identifier, provider, uri
     # Otherwise try the old format
     match = URL_OLD_IDENTIFIERS_PATTERN.match(uri)
     if match:
@@ -611,7 +654,7 @@ def parse_identifiers_uri(uri: str) -> Optional[Tuple[str, str, Optional[str]]]:
             match.group(1),
             match.group(2),
         )
-        return namespace, identifier, provider
+        return namespace, identifier, provider, uri
 
     LOGGER.warning(
         f"{uri} does not conform to "

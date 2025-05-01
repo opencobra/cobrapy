@@ -221,7 +221,7 @@ def _fix_value_from_dict(_key: str, _value_to_fix: Union[Dict, List, str]):
         if isinstance(_value_to_fix, list):
             for item in _value_to_fix:
                 if (identifier_match := parse_identifiers_uri(item)) is not None:
-                    provider, identifier, _provider = identifier_match
+                    provider, identifier, _provider, _uri = identifier_match
                     anno_dict[provider].append(identifier)
             _value_to_fix = anno_dict
         # metadata = Metadata()
