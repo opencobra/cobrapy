@@ -125,8 +125,8 @@ def test_annotation() -> None:
     s.metadata.standardized = cvt
 
     assert s.metadata.standardized.resources == {
-        "https://identifiers.org/chebi/CHEBI:43215",
-        "https://identifiers.org/chebi/CHEBI:11881",
+        Resource("CHEBI:43215"),
+        Resource("CHEBI:11881"),
     }
 
     # checking old (fixed) annotation format
