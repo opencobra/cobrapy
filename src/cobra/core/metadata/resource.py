@@ -27,6 +27,7 @@ URL_OLD_IDENTIFIERS_PATTERN = re.compile(
 URL_COMPACT_IDENTIFIERS_PATTERN = re.compile(
     r"^https?://identifiers.org/((.+)/)?([^:/]+):(.+)(\?.*)?$"
 )
+COMPACT_IDENTIFIERS_PATTERN = re.compile(r"^[a-zA-Z0-9_\.\-]+:.+$")
 # Code to update the following constants can be found in:
 # scripts/parse_identifiers_registry.py
 COMPACT_URL_INTEGRATED_NAMESPACES = [
@@ -300,9 +301,12 @@ class Resource:
         Parameters
         ----------
         uri: str
-            URI to use to create the resource. It should be of the format
-            http(s)://identifiers.org/<namespace>/<identifier> or
-            http(s)://identifiers.org/<namespace>:<identifier>.
+            URI to use to create the resource. It should be of the old identifiers.org
+            format 'http(s)://identifiers.org/<namespace>/<identifier>' or the compact
+            identifier URL format
+            http(s)://identifiers.org/<namespace>:<identifier>. Alternatively, a
+            compact identifier can be provided directly, without the preceding
+            'http(s)://identifiers.org/', e.g. 'CHEBI:11881'.
         strict: bool, optional
             Whether to raise a ValueError when the provided URI does not match the
             identifiers.org pattern. If set to False, it will accept any URI and set
@@ -421,7 +425,7 @@ class Resource:
         Parameters
         ----------
         value: str
-            The URI, typically of the format
+            The URI or identifiers.org compact identifier, typically of the format
             'https://identifiers.org/<namespace>:<identifier>'.
         """
         if (identifier_match := parse_identifiers_uri(value)) is not None:
@@ -529,6 +533,7 @@ class Resource:
             True if objects are equal, based on their `namespace` and `identifier`
             combination (or URI, if those attributes are None).
         """
+        print(f"self: {type(self)} other: {type(other)}")
         if isinstance(other, (dict, tuple, str)):
             try:
                 other_resource = Resource.from_data(other, strict=False)
@@ -550,8 +555,11 @@ class Resource:
         return False
 
     def __hash__(self):
-        """Create a hash based on the URI of the resource."""
-        return hash(self.uri)
+        """Create a hash of the namespace and identifier, or URI of the resource."""
+        if self.namespace is None:
+            return hash(self.uri)
+        else:
+            return hash((self.namespace, self.identifier))
 
 
 def parse_identifiers_uri(uri: str) -> Optional[Tuple[str, str, Optional[str]]]:
@@ -560,12 +568,18 @@ def parse_identifiers_uri(uri: str) -> Optional[Tuple[str, str, Optional[str]]]:
     Parameters
     ----------
     uri : str
-        uri (identifiers.org url)
+        uri (identifiers.org url) or identifiers.org compact identifier (e.g.
+        "CHEBI:11881").
 
     Returns
     -------
     (namespace, identifier, provider) if resolvable, None otherwise
     """
+    if not (uri.startswith("http://") or uri.startswith("https://")):
+        # Try to interpret the uri as a identifiers.org compact identifier.
+        if not COMPACT_IDENTIFIERS_PATTERN.match(uri):
+            return None
+        uri = f"https://identifiers.org/{uri}"
     # Try to match the new format first
     match = URL_COMPACT_IDENTIFIERS_PATTERN.match(uri)
     if match:

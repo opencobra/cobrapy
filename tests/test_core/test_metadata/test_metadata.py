@@ -906,6 +906,7 @@ def test_resource():
 
     assert resource != different_resource
     assert resource == ("chebi", "CHEBI:11881")
+    assert resource == "CHEBI:11881"
     assert resource != ("chebi",)
     assert resource == "http://identifiers.org/chebi/CHEBI:11881"
     assert resource == "http://identifiers.org/CHEBI:11881"
@@ -924,10 +925,27 @@ def test_resource():
     assert resource == ("obi", "OBI_0000070")
     assert resource != ("obi", "OBI_0000070", "obi")
     assert resource == "http://identifiers.org/obi/OBI_0000070"
+    assert "http://identifiers.org/obi/OBI_0000070" == resource
     assert resource == "http://identifiers.org/obi:OBI_0000070"
+    assert resource == "obi:OBI_0000070"
     assert resource == "https://identifiers.org/obi:OBI_0000070"
     assert resource == "https://identifiers.org/ols/obi:OBI_0000070"
     assert resource == {"uri": "https://identifiers.org/obi:OBI_0000070"}
+    assert resource == {"uri": "obi:OBI_0000070"}
     assert resource == {"namespace": "obi", "identifier": "OBI_0000070"}
     assert resource != "https://identifiers.org/ols/OBI_0000070"
     assert resource == ("OBI", "OBI_0000070")
+
+    assert (
+        len(
+            set(
+                [
+                    resource,
+                    different_resource,
+                    Resource("obi:OBI_0000070"),
+                    Resource("https://www.uniprot.org/uniprotkb/A0JNW5", strict=False),
+                ]
+            )
+        )
+        == 3
+    )
