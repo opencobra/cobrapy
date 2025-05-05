@@ -76,10 +76,16 @@ class Metadata:
         sbo: str = "",
     ):
         """Initialize the Metadata class."""
-        self.standardized = standardized
+        self._standardized = None
+        self._custom = None
+
         self.history = history
-        self.custom = custom
         self.sbo = sbo
+
+        if standardized is not None:
+            self.standardized = standardized
+        if custom is not None:
+            self.custom = custom
 
     @property
     def standardized(self) -> "SA.StandardizedAnnotationStore":
@@ -90,7 +96,7 @@ class Metadata:
         StandardizedAnnotationStore
         """
         if self._standardized is None:
-            self.standardized = SA.StandardizedAnnotationStore()
+            self._standardized = SA.StandardizedAnnotationStore()
         return self._standardized
 
     @standardized.setter
@@ -227,7 +233,7 @@ class Metadata:
         CustomAnnotationStore: The custom annotations.
         """
         if self._custom is None:
-            self.custom = CA.CustomAnnotationStore()
+            self._custom = CA.CustomAnnotationStore()
         return self._custom
 
     @custom.setter
@@ -387,10 +393,10 @@ class Metadata:
 
         new = Metadata(history=self.history.to_dict(), sbo=self.sbo)
         memo[id(self)] = new
-        new.standardized = (
-            None if self._standardized is None else deepcopy(self.standardized, memo)
-        )
-        new.custom = None if self._custom is None else deepcopy(self.custom, memo)
+        if self._standardized is not None:
+            new._standardized = deepcopy(self._standardized, memo)
+        if self._custom is not None:
+            new.custom = deepcopy(self._custom, memo)
         return new
 
     def copy(self) -> "Metadata":

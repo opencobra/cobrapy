@@ -93,10 +93,12 @@ class StandardizedAnnotation:
         annotations: Optional[Iterable["StandardizedAnnotation"]] = None,
     ):
         """Initialize a standardized annotation."""
-        self._resources: List[Resource] = self.check_resource_type(resources)
+        self.resources = resources
         self._qualifier: Qualifier = self.check_qualifier_type(qualifier)
-        self._annotations: StandardizedAnnotationStore = (
+        self._annotations: Optional[StandardizedAnnotationStore] = (
             StandardizedAnnotationStore.from_data(annotations)
+            if annotations is not None
+            else None
         )
         self._parent: Optional[StandardizedAnnotationStore] = None
 
@@ -237,6 +239,8 @@ class StandardizedAnnotation:
         -------
         List of annotations
         """
+        if self._annotations is None:
+            self._annotations = StandardizedAnnotationStore()
         return self._annotations
 
     @annotations.setter
@@ -285,7 +289,9 @@ class StandardizedAnnotation:
         elif isinstance(resources, (Resource, str, dict)):
             return [Resource.from_data(resources, strict=False)]
         elif isinstance(resources, ABCIterable):
-            return [x for y in resources for x in __class__.check_resource_type(y)]
+            return [
+                Resource.from_data(resource, strict=False) for resource in resources
+            ]
         else:
             raise TypeError(
                 f"Allowed types for resources are Resource, str, or a list thereof,"
@@ -545,8 +551,8 @@ class StandardizedAnnotation:
             qualifier=self.qualifier,
         )
         memo[id(self)] = new
-        new._resources = [deepcopy(r, memo) for r in self.resources]
-        new._annotations = deepcopy(self.annotations, memo)
+        new.resources = [deepcopy(r, memo) for r in self._resources]
+        new._annotations = deepcopy(self._annotations, memo)
         return new
 
     def copy(self) -> "StandardizedAnnotation":
@@ -1247,7 +1253,7 @@ class StandardizedAnnotationStore(UserList):
 
         new = StandardizedAnnotationStore()
         memo[id(self)] = new
-        new.add([deepcopy(ann, memo) for ann in self])
+        new.extend([deepcopy(ann, memo) for ann in self])
         return new
 
     def copy(self) -> "StandardizedAnnotationStore":
@@ -1395,7 +1401,8 @@ class SimplifiedAnnotationInterface(MutableMapping):
                 if isinstance(x, tuple) and x[0].lower() == "sbo":
                     self._metadata.sbo = x[1]
                     continue
-                x = Resource.from_data(x)
+                if not isinstance(x, Resource):
+                    x = Resource.from_data(x, strict=False)
                 if x.namespace is None:
                     raise ValueError(f"Could not determine namespace of resource {x}.")
 

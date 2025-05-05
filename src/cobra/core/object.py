@@ -88,9 +88,11 @@ class Object:
             Metadata object containing annotations and object creator and history.
         """
         from cobra.core.metadata import Metadata
+        from cobra.core.metadata.standardized import SimplifiedAnnotationInterface
 
         if self._metadata is None:
-            self.metadata = Metadata()
+            self._metadata = Metadata()
+            self._annotation = SimplifiedAnnotationInterface(self._metadata)
         return self._metadata
 
     @metadata.setter
