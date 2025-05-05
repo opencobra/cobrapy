@@ -8,13 +8,7 @@ import logging
 import re
 from copy import deepcopy
 from enum import Enum
-from typing import (
-    Any,
-    Dict,
-    Optional,
-    Tuple,
-    Union,
-)
+from typing import Any, Dict, Optional, Tuple, Union
 
 
 LOGGER = logging.getLogger(__name__)
