@@ -189,12 +189,54 @@ def test_read_write_model(complex_model: Model, tmp_path: Path, model_type: str)
     )
 
     assert metabolite.metadata.custom["nested"].value == "yes"
-    # This will currently fail for SBML files written using cobrapy, since libsbml does
-    # not implement 'nested' metadata for KeyValuePairs yet.
+
     assert (
         metabolite.metadata.custom["nested"]
         .metadata.standardized[Qualifier.Modelling_isDescribedBy][0]
         .resources[0]
         .identifier
         == "e_coli_core"
+    )
+
+
+@pytest.mark.parametrize(
+    "model_type",
+    [
+        "direct",
+        pytest.param(
+            "sbml", marks=pytest.mark.xfail(reason="not implemented in libsbml")
+        ),
+        "json",
+        "yaml",
+    ],
+)
+def test_read_write_nested_kvp_model(
+    complex_model: Model, tmp_path: Path, model_type: str
+):
+    """Test nested kvp annotation consistency when writing and reading an SBML file."""
+    model = None
+    if model_type == "sbml":
+        out_path = tmp_path / "complex_model_writing.sbml"
+        assert write_sbml_model(complex_model, str(out_path)) is None
+
+        model = read_sbml_model(str(out_path))
+    elif model_type == "json":
+        out_path = tmp_path / "complex_model_writing.json"
+        assert save_json_model(complex_model, str(out_path)) is None
+
+        model = load_json_model(str(out_path))
+    elif model_type == "yaml":
+        out_path = tmp_path / "complex_model_writing.yaml"
+        assert save_yaml_model(complex_model, str(out_path)) is None
+
+        model = load_yaml_model(str(out_path))
+    else:
+        model = complex_model
+    assert model
+
+    metabolite = model.metabolites.get_by_id("2pg_c")
+
+    assert (
+        metabolite.metadata.custom["nested"].metadata.custom["nested_kvp"].value
+        == "not_recommended"
     )

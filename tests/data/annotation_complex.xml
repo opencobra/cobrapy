@@ -120,6 +120,9 @@
                     </bqmodel:isDescribedBy>
                   </rdf:Description>
                 </rdf:RDF>
+                <listOfKeyValuePairs xmlns="http://sbml.org/fbc/keyvaluepair">
+                  <keyValuePair key="nested_kvp" value="not_recommended"/>
+                </listOfKeyValuePairs>
               </annotation>
             </keyValuePair>
           </listOfKeyValuePairs>
