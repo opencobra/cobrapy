@@ -8,6 +8,7 @@ https://github.com/sbmlteam/sbml-specifications/blob/develop/sbml-level-3/versio
 # TODO: Update docstring with final release, when available.
 import uuid
 from collections import UserDict
+from copy import deepcopy
 from typing import Any, Dict, Iterable, Optional, Union
 
 from ...util import format_long_string
@@ -228,6 +229,38 @@ class CustomAnnotation(cobject.Object):
             f" ({repr(self.uri)}))"
         )
 
+    def __deepcopy__(self, memo: dict):
+        """Copy the CustomAnnotation efficiently with memo.
+
+        Parameters
+        ----------
+        memo: dict
+            Automatically passed parameter, dict of already copied items.
+
+        Returns
+        -------
+        CustomAnnotation
+            A new annotation that is a deep copy of the original.
+        """
+
+        annotation = CustomAnnotation(key=self.key, value=self.value, uri=self.uri)
+        memo[id(self)] = annotation
+        annotation.id = self.id
+        annotation.name = self.name
+        annotation.metadata = deepcopy(self.metadata, memo)
+        return annotation
+
+    def copy(self) -> "CustomAnnotation":
+        """Copy the annotation and all its nested metadata.
+
+        Returns
+        -------
+        CustomAnnotation
+            A new annotation that is a deep copy of the original.
+        """
+
+        return deepcopy(self)
+
 
 class CustomAnnotationStore(UserDict):
     """A dict-like object that stores a collection of `CustomAnnotation` objects.
@@ -260,6 +293,10 @@ class CustomAnnotationStore(UserDict):
         elif isinstance(entries, dict):
             for k, item in entries.items():
                 entry = CustomAnnotation.from_data({**item, "key": k})
+                self[entry.key] = entry
+        elif isinstance(entries, CustomAnnotationStore):
+            for item in entries.values():
+                entry = CustomAnnotation.from_data(deepcopy(item))
                 self[entry.key] = entry
         else:
             for item in entries:
@@ -423,6 +460,34 @@ class CustomAnnotationStore(UserDict):
             # also not belong to the parent object anymore.
             self.data[item]._set_parent(None)
             del self.data[item]
+
+    def __deepcopy__(self, memo: dict):
+        """Copy the CustomAnnotationStore efficiently with memo.
+
+        Parameters
+        ----------
+        memo: dict
+            Automatically passed parameter, dict of already copied items.
+
+        Returns
+        -------
+        CustomAnnotationStore
+            A new store that is a deep copy of the original store.
+        """
+        new = CustomAnnotationStore()
+        memo[id(self)] = new
+        new.add([deepcopy(ann, memo) for ann in self.values()])
+        return new
+
+    def copy(self) -> "CustomAnnotationStore":
+        """Copy the annotation store and all its annotations.
+
+        Returns
+        -------
+        CustomAnnotationStore
+            A new store that is a deep copy of the original store.
+        """
+        return deepcopy(self)
 
     # query
 

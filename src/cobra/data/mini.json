@@ -31,8 +31,8 @@
                     {
                         "qualifier": "bqb_is",
                         "resources": [
-                            "https://identifiers.org/ncbiprotein/1208453",
-                            "https://identifiers.org/ncbiprotein/1652654"
+                            "https://identifiers.org/ncbiprotein:1208453",
+                            "https://identifiers.org/ncbiprotein:1652654"
                         ]
                     }
                 ]
@@ -94,7 +94,7 @@
                     {
                         "qualifier": "bqb_is",
                         "resources": [
-                            "https://identifiers.org/ncbiprotein/1653839"
+                            "https://identifiers.org/ncbiprotein:1653839"
                         ]
                     }
                 ]
@@ -112,7 +112,7 @@
                     {
                         "qualifier": "bqb_is",
                         "resources": [
-                            "https://identifiers.org/ncbiprotein/1653609"
+                            "https://identifiers.org/ncbiprotein:1653609"
                         ]
                     }
                 ]
@@ -138,8 +138,8 @@
                     {
                         "qualifier": "bqb_is",
                         "resources": [
-                            "https://identifiers.org/ncbiprotein/1006614",
-                            "https://identifiers.org/ncbiprotein/1651919"
+                            "https://identifiers.org/ncbiprotein:1006614",
+                            "https://identifiers.org/ncbiprotein:1651919"
                         ]
                     }
                 ]
@@ -157,7 +157,7 @@
                     {
                         "qualifier": "bqb_is",
                         "resources": [
-                            "https://identifiers.org/ncbiprotein/1653253"
+                            "https://identifiers.org/ncbiprotein:1653253"
                         ]
                     }
                 ]

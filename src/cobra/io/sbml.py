@@ -22,7 +22,7 @@ Annotations are read in the Object.annotation fields.
 
 Some SBML related issues are still open, please refer to the respective issue:
 - write compartment annotations and notes (depends on updated first-class
-    compartments; see https://github.com/opencobra/cobrapy/issues/760)
+    compartments; see https://github.com/opencobra/cobrapy/issues/760interface
 - support compression on file handles (depends on solution for
     https://github.com/opencobra/cobrapy/issues/812)
 """

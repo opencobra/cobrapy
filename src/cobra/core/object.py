@@ -87,6 +87,10 @@ class Object:
         Metadata
             Metadata object containing annotations and object creator and history.
         """
+        from cobra.core.metadata import Metadata
+
+        if self._metadata is None:
+            self.metadata = Metadata()
         return self._metadata
 
     @metadata.setter
@@ -102,8 +106,8 @@ class Object:
         from cobra.core.metadata.standardized import SimplifiedAnnotationInterface
 
         if metadata is None:
-            self._metadata = Metadata()
-            self._annotation = SimplifiedAnnotationInterface(self._metadata)
+            self._metadata = None
+            self._annotation = None
         elif isinstance(metadata, Metadata):
             self._metadata = metadata
             self._annotation = SimplifiedAnnotationInterface(self._metadata)
@@ -133,15 +137,21 @@ class Object:
         StandardizedAnnotationStore
         SimplifiedAnnotationInterface
         """
+        from cobra.core.metadata.standardized import SimplifiedAnnotationInterface
+
+        if self._annotation is None:
+            self._annotation = SimplifiedAnnotationInterface(self.metadata)
         return self._annotation
 
     @annotation.setter
     def annotation(
         self,
-        value: Union[
-            Dict,
-            "SimplifiedAnnotationInterface",
-            List[Union[str, "Resource", Tuple[str, Union[str, List[str]]]]],
+        value: Optional[
+            Union[
+                Dict,
+                "SimplifiedAnnotationInterface",
+                List[Union[str, "Resource", Tuple[str, Union[str, List[str]]]]],
+            ]
         ],
     ):
         """Set the standardized annotations using a dict-like object.
@@ -169,8 +179,9 @@ class Object:
         SimplifiedAnnotationInterface.clear
         SimplifiedAnnotationInterface.add
         """
-        self._annotation.clear()
-        self._annotation.add(value)
+        self.annotation.clear()
+        if value is not None:
+            self.annotation.add(value)
 
     def add_annotations(
         self,

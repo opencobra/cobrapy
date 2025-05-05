@@ -1,7 +1,6 @@
 import argparse
 import json
-import re
-from os.path import basename
+from pathlib import Path
 
 import pandas as pd
 
@@ -36,9 +35,8 @@ if __name__ == "__main__":
 
     first = benchmark_to_df(args.first)
     second = benchmark_to_df(args.second)
-    re_name = "^[0-9]+_(.+).json$"
-    first_name = re.findall(re_name, basename(args.first))[0]
-    second_name = re.findall(re_name, basename(args.second))[0]
+    first_name = Path(args.first).stem
+    second_name = Path(args.second).stem
     both = pd.merge(
         first, second, how="inner", on="test", suffixes=(first_name, second_name)
     )

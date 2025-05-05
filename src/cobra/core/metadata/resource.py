@@ -6,6 +6,7 @@ Qualifier, as captured in the  StandardizedAnnotation class.
 
 import logging
 import re
+from copy import deepcopy
 from enum import Enum
 from typing import (
     Any,
@@ -122,7 +123,7 @@ COMPACT_URL_IDENTIFIERS_WITH_COLON = [
 # identifiers.org. However, future cases could need this logic.
 COMPACT_URL_NAMESPACE_EXCEPTIONS = {
     "hog": "oma.hog",  # This one is weird. Hard to check what works, server is down.
-    "peo": "eo",  # The sampel URL on identifiers.org is wrong and does not work.
+    "peo": "eo",  # The sample URL on identifiers.org is wrong and does not work.
 }
 
 
@@ -361,14 +362,42 @@ class Resource:
     False
     """
 
-    def __init__(self, uri: str, strict: bool = True) -> None:
+    def __init__(
+        self,
+        uri: str,
+        namespace: Optional[str] = None,
+        identifier: Optional[str] = None,
+        strict: bool = True,
+    ) -> None:
         """Initialize a standardized annotation Resource from a URI."""
-        self._namespace = None
-        self._identifier = None
-        self._parent = None
         self._strict = strict
+        self._parent = None
 
-        self.uri = uri
+        if not self._strict:
+            if namespace is not None and identifier is not None:
+                self._namespace = namespace
+                self._identifier = identifier
+                self._uri = uri
+            else:
+                self._namespace = None
+                self._identifier = None
+                self.uri = uri
+        else:
+            if namespace is not None or identifier is not None:
+                self._namespace = None
+                self._identifier = None
+                self.uri = uri
+                if self.namespace != namespace or self.identifier != identifier:
+                    raise ValueError(
+                        "The provided namespace and/or identifier did not match the "
+                        f"values determined from the URI. Provided: '{namespace}':"
+                        f"'{identifier}', determined: '{self.namespace}':"
+                        f"'{self.identifier}'"
+                    )
+            else:
+                self._namespace = None
+                self._identifier = None
+                self.uri = uri
 
     def _set_parent(self, parent):
         if self._parent is None or parent is None:
@@ -603,6 +632,39 @@ class Resource:
             return hash(self.uri)
         else:
             return hash((self.namespace, self.identifier))
+
+    def __deepcopy__(self, memo: dict):
+        """Copy the Resource efficiently with memo.
+
+        Parameters
+        ----------
+        memo: dict
+            Automatically passed parameter, dict of already copied items.
+
+        Returns
+        -------
+        Resource
+            A new Resource that is a deep copy of the original.
+        """
+        new = Resource(
+            uri=self.uri,
+            namespace=self.namespace,
+            identifier=self.identifier,
+            strict=False,
+        )
+        new._strict = self._strict
+        memo[id(self)] = new
+        return new
+
+    def copy(self):
+        """Copy the Resource.
+
+        Returns
+        -------
+        Resource
+            A new Resource that is a deep copy of the original.
+        """
+        return deepcopy(self)
 
 
 def parse_identifiers_uri(uri: str) -> Optional[Tuple[str, str, Optional[str], str]]:

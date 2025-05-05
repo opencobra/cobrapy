@@ -1,6 +1,7 @@
 """The Metadata class that provides an interface to all types of cobra metadata."""
 
 from collections import OrderedDict
+from copy import deepcopy
 from datetime import datetime
 from typing import Dict, Iterable, List, Optional, Union
 
@@ -69,7 +70,9 @@ class Metadata:
             ]
         ] = None,
         history: Optional[Union[Dict, History]] = None,
-        custom: Optional[Union[List, Dict]] = None,
+        custom: Optional[
+            Union[Dict, List["CA.CustomAnnotation"], "CA.CustomAnnotationStore"]
+        ] = None,
         sbo: str = "",
     ):
         """Initialize the Metadata class."""
@@ -86,6 +89,8 @@ class Metadata:
         -------
         StandardizedAnnotationStore
         """
+        if self._standardized is None:
+            self.standardized = SA.StandardizedAnnotationStore()
         return self._standardized
 
     @standardized.setter
@@ -111,7 +116,10 @@ class Metadata:
         --------
         StandardizedAnnotationStore.from_data
         """
-        self._standardized = SA.StandardizedAnnotationStore.from_data(values)
+        if values is None:
+            self._standardized = None
+        else:
+            self._standardized = SA.StandardizedAnnotationStore.from_data(values)
 
     def add_standardized(
         self, annotations: List[Union[Dict, "SA.StandardizedAnnotation"]]
@@ -129,7 +137,7 @@ class Metadata:
         --------
         StandardizedAnnotationStore.add
         """
-        self._standardized.add(annotations)
+        self.standardized.add(annotations)
 
     @property
     def history(self) -> History:
@@ -218,13 +226,15 @@ class Metadata:
         -------
         CustomAnnotationStore: The custom annotations.
         """
+        if self._custom is None:
+            self.custom = CA.CustomAnnotationStore()
         return self._custom
 
     @custom.setter
     def custom(
         self,
-        annotations: Union[
-            Dict, List["CA.CustomAnnotation"], "CA.CustomAnnotationStore"
+        annotations: Optional[
+            Union[Dict, List["CA.CustomAnnotation"], "CA.CustomAnnotationStore"]
         ],
     ) -> None:
         """Set the custom key-value pair annotations.
@@ -235,7 +245,12 @@ class Metadata:
             A dictionary or CustomAnnotationStore instance that contains all custom
             annotation key-value pairs.
         """
-        self._custom = CA.CustomAnnotationStore(annotations)
+        if annotations is None:
+            self._custom = None
+        elif isinstance(annotations, CA.CustomAnnotationStore):
+            self._custom = annotations
+        else:
+            self._custom = CA.CustomAnnotationStore(annotations)
 
     def __eq__(self, other: Union[Dict, "Metadata"]) -> bool:
         """Compare two Metadata objects to find out whether they are equal.
@@ -310,13 +325,13 @@ class Metadata:
             # set first SBO term as sbo
             d["sbo"] = self.sbo
 
-        if self.standardized:
+        if self._standardized is not None and self.standardized:
             d["standardized"] = self.standardized.to_list_of_dicts()
 
         if self.history and not self.history.is_empty():
             d["history"] = self.history.to_dict()
 
-        if self.custom:
+        if self._custom is not None and self.custom:
             d["custom"] = self.custom.to_dict()
 
         return d
@@ -355,3 +370,36 @@ class Metadata:
             annotation.sbo = data["sbo"]
 
         return annotation
+
+    def __deepcopy__(self, memo: dict):
+        """Copy the metadata efficiently with memo.
+
+        Parameters
+        ----------
+        memo: dict
+            Automatically passed parameter, dict of already copied items.
+
+        Returns
+        -------
+        Metadata
+            A new metadata instance that is a deep copy of the original.
+        """
+
+        new = Metadata(history=self.history.to_dict(), sbo=self.sbo)
+        memo[id(self)] = new
+        new.standardized = (
+            None if self._standardized is None else deepcopy(self.standardized, memo)
+        )
+        new.custom = None if self._custom is None else deepcopy(self.custom, memo)
+        return new
+
+    def copy(self) -> "Metadata":
+        """Copy the metadata and all its attributes.
+
+        Returns
+        -------
+        Metadata
+            A new Metadata instance that is a deep copy of the original.
+        """
+
+        return deepcopy(self)
