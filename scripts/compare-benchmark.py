@@ -11,12 +11,13 @@ pd.set_option("display.width", 200)
 def benchmark_to_df(json_file):
     with open(json_file) as jf:
         content = json.load(jf)
-        df = pd.DataFrame(columns=("test", "time [ms] "))
+        # df = pd.DataFrame(columns=("test", "time [ms] "))
+        benchmark_data = []
         for b in content["benchmarks"]:
-            df = df.append(
+            benchmark_data.append(
                 {"test": b["name"], "time [ms] ": b["stats"]["mean"] * 1000.0},
-                ignore_index=True,
             )
+        df = pd.DataFrame.from_records(benchmark_data)
         return df
 
 

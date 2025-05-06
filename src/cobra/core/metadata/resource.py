@@ -6,7 +6,6 @@ Qualifier, as captured in the  StandardizedAnnotation class.
 
 import logging
 import re
-from copy import deepcopy
 from enum import Enum
 from typing import Any, Dict, Optional, Tuple, Union
 
@@ -627,7 +626,7 @@ class Resource:
         else:
             return hash((self.namespace, self.identifier))
 
-    def __deepcopy__(self, memo: dict):
+    def __deepcopy__(self, memo: Optional[dict] = None):
         """Copy the Resource efficiently with memo.
 
         Parameters
@@ -641,13 +640,13 @@ class Resource:
             A new Resource that is a deep copy of the original.
         """
         new = Resource(
-            uri=self.uri,
-            namespace=self.namespace,
-            identifier=self.identifier,
+            uri=self._uri,
+            namespace=self._namespace,
+            identifier=self._identifier,
             strict=False,
         )
         new._strict = self._strict
-        memo[id(self)] = new
+        # memo[id(self)] = new
         return new
 
     def copy(self):
@@ -658,7 +657,7 @@ class Resource:
         Resource
             A new Resource that is a deep copy of the original.
         """
-        return deepcopy(self)
+        return self.__deepcopy__()
 
 
 def parse_identifiers_uri(uri: str) -> Optional[Tuple[str, str, Optional[str], str]]:

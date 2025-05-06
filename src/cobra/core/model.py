@@ -395,7 +395,7 @@ class Model(Object):
 
         def copy_metadata(old_obj, new_obj):
             if old_obj._metadata is not None:
-                new_obj.metadata = deepcopy(old_obj.metadata, memo)
+                new_obj.metadata = old_obj._metadata.__deepcopy__(memo)
             # new_obj.metadata.history = old_obj.metadata.history.to_dict()
             # new_obj.metadata.standardized.add(
             #     old_obj.metadata.standardized.to_list_of_dicts()

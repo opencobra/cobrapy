@@ -1,7 +1,6 @@
 """The Metadata class that provides an interface to all types of cobra metadata."""
 
 from collections import OrderedDict
-from copy import deepcopy
 from datetime import datetime
 from typing import Dict, Iterable, List, Optional, Union
 
@@ -391,12 +390,14 @@ class Metadata:
             A new metadata instance that is a deep copy of the original.
         """
 
+        if (new_val := memo.get(own_id := id(self))) is not None:
+            return new_val
         new = Metadata(history=self.history.to_dict(), sbo=self.sbo)
-        memo[id(self)] = new
+        memo[own_id] = new
         if self._standardized is not None:
-            new._standardized = deepcopy(self._standardized, memo)
+            new._standardized = self._standardized.__deepcopy__()
         if self._custom is not None:
-            new.custom = deepcopy(self._custom, memo)
+            new.custom = self._custom.__deepcopy__(memo)
         return new
 
     def copy(self) -> "Metadata":
@@ -408,4 +409,4 @@ class Metadata:
             A new Metadata instance that is a deep copy of the original.
         """
 
-        return deepcopy(self)
+        return self.__deepcopy__({})

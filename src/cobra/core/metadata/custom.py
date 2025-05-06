@@ -8,7 +8,6 @@ https://github.com/sbmlteam/sbml-specifications/blob/develop/sbml-level-3/versio
 # TODO: Update docstring with final release, when available.
 import uuid
 from collections import UserDict
-from copy import deepcopy
 from typing import Any, Dict, Iterable, Optional, Union
 
 from ...util import format_long_string
@@ -244,10 +243,10 @@ class CustomAnnotation(cobject.Object):
         """
 
         annotation = CustomAnnotation(key=self.key, value=self.value, uri=self.uri)
-        memo[id(self)] = annotation
+        # memo[id(self)] = annotation
         annotation.id = self.id
         annotation.name = self.name
-        annotation.metadata = deepcopy(self.metadata, memo)
+        annotation.metadata = self.metadata.__deepcopy__(memo)
         return annotation
 
     def copy(self) -> "CustomAnnotation":
@@ -259,7 +258,7 @@ class CustomAnnotation(cobject.Object):
             A new annotation that is a deep copy of the original.
         """
 
-        return deepcopy(self)
+        return self.__deepcopy__({})
 
 
 class CustomAnnotationStore(UserDict):
@@ -296,7 +295,7 @@ class CustomAnnotationStore(UserDict):
                 self[entry.key] = entry
         elif isinstance(entries, CustomAnnotationStore):
             for item in entries.values():
-                entry = CustomAnnotation.from_data(deepcopy(item))
+                entry = CustomAnnotation.from_data(item.copy())
                 self[entry.key] = entry
         else:
             for item in entries:
@@ -475,8 +474,8 @@ class CustomAnnotationStore(UserDict):
             A new store that is a deep copy of the original store.
         """
         new = CustomAnnotationStore()
-        memo[id(self)] = new
-        new.add([deepcopy(ann, memo) for ann in self.values()])
+        # memo[id(self)] = new
+        new.add([ann.__deepcopy__(memo) for ann in self.values()])
         return new
 
     def copy(self) -> "CustomAnnotationStore":
@@ -487,7 +486,7 @@ class CustomAnnotationStore(UserDict):
         CustomAnnotationStore
             A new store that is a deep copy of the original store.
         """
-        return deepcopy(self)
+        return self.__deepcopy__({})
 
     # query
 

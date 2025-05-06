@@ -10,7 +10,6 @@ import re
 from collections import UserList
 from collections.abc import Iterable as ABCIterable
 from collections.abc import KeysView, MutableMapping
-from copy import deepcopy
 from typing import (  # TypeAlias, # Not supported in older python versions
     Any,
     Callable,
@@ -93,6 +92,7 @@ class StandardizedAnnotation:
         annotations: Optional[Iterable["StandardizedAnnotation"]] = None,
     ):
         """Initialize a standardized annotation."""
+        self._resources = []
         self.resources = resources
         self._qualifier: Qualifier = self.check_qualifier_type(qualifier)
         self._annotations: Optional[StandardizedAnnotationStore] = (
@@ -178,9 +178,8 @@ class StandardizedAnnotation:
         --------
         StandardizedAnnotation.check_resource_type()
         """
-        if getattr(self, "_resources", None) is not None:
-            for idf in self._resources:
-                idf._set_parent(None)
+        for idf in self._resources:
+            idf._set_parent(None)
         self._resources = self.check_resource_type(resources)
         for idf in self._resources:
             idf._set_parent(self)
@@ -533,7 +532,7 @@ class StandardizedAnnotation:
         s += "</table>"
         return s
 
-    def __deepcopy__(self, memo: dict):
+    def __deepcopy__(self, memo: Optional[dict] = None):
         """Copy the StandardizedAnnotation efficiently with memo.
 
         Parameters
@@ -550,9 +549,10 @@ class StandardizedAnnotation:
         new = StandardizedAnnotation(
             qualifier=self.qualifier,
         )
-        memo[id(self)] = new
-        new.resources = [deepcopy(r, memo) for r in self._resources]
-        new._annotations = deepcopy(self._annotations, memo)
+        # memo[id(self)] = new
+        new.resources = [r.__deepcopy__() for r in self._resources]
+        if self._annotations is not None:
+            new._annotations = self._annotations.__deepcopy__()
         return new
 
     def copy(self) -> "StandardizedAnnotation":
@@ -564,7 +564,7 @@ class StandardizedAnnotation:
             A new annotation that is a deep copy of the original.
         """
 
-        return deepcopy(self)
+        return self.__deepcopy__()
 
 
 class StandardizedAnnotationStore(UserList):
@@ -1237,7 +1237,7 @@ class StandardizedAnnotationStore(UserList):
         entries = [annotation._repr_html_() for annotation in self]
         return f"""StandardizedAnnotationStore{"<p>".join(entries)}"""
 
-    def __deepcopy__(self, memo: dict):
+    def __deepcopy__(self, memo: Optional[dict] = None):
         """Copy the StandardizedAnnotationStore efficiently with memo.
 
         Parameters
@@ -1252,8 +1252,8 @@ class StandardizedAnnotationStore(UserList):
         """
 
         new = StandardizedAnnotationStore()
-        memo[id(self)] = new
-        new.extend([deepcopy(ann, memo) for ann in self])
+        # memo[id(self)] = new
+        new.extend([ann.__deepcopy__() for ann in self])
         return new
 
     def copy(self) -> "StandardizedAnnotationStore":
@@ -1265,7 +1265,7 @@ class StandardizedAnnotationStore(UserList):
             A new store that is a deep copy of the original store.
         """
 
-        return deepcopy(self)
+        return self.__deepcopy__()
 
 
 class StandardizedAnnotationList(StandardizedAnnotationStore):
@@ -1827,10 +1827,6 @@ class SimplifiedAnnotationInterface(MutableMapping):
         SimplifiedAnnotationInterface
             A new interface that is a deep copy of the original.
         """
-        metadata_id = id(self._metadata)
-        if metadata_id in memo:
-            new = SimplifiedAnnotationInterface(memo[metadata_id])
-        else:
-            new = SimplifiedAnnotationInterface(deepcopy(self._metadata, memo))
-        memo[id(self)] = new
+        new = SimplifiedAnnotationInterface(self._metadata.__deepcopy__(memo))
+        # memo[id(self)] = new
         return new
