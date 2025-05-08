@@ -5,7 +5,7 @@ import re
 from collections import defaultdict
 from copy import copy, deepcopy
 from functools import partial
-from math import isinf, isclose
+from math import isclose, isinf
 from operator import attrgetter
 from typing import (
     TYPE_CHECKING,
@@ -1451,7 +1451,11 @@ class Reaction(Object):
             for element, amount in metabolite.elements.items():
                 reaction_element_dict[element] += coefficient * amount
         # filter out 0 values
-        return {k: v for k, v in reaction_element_dict.items() if not isclose(v, 0.0, abs_tol=1e-12)}
+        return {
+            k: v
+            for k, v in reaction_element_dict.items()
+            if not isclose(v, 0.0, abs_tol=config.tolerance)
+        }
 
     @property
     def compartments(self) -> Set:
