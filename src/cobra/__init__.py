@@ -5,13 +5,17 @@ __version__ = "0.29.1"
 from cobra.core import (
     Configuration,
     DictList,
+    Object,
     Gene,
     Metabolite,
     Model,
-    Object,
     Reaction,
     Solution,
     Species,
+    StandardizedAnnotation,
+    CustomAnnotation,
+    Qualifier,
+    Resource,
 )
 from cobra import flux_analysis
 from cobra import io

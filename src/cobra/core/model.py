@@ -382,28 +382,43 @@ class Model(Object):
         cobra.Model: new model copy
         """
         new = self.__class__()
+        memo = {id(self): new}
         do_not_copy_by_ref = {
             "metabolites",
             "reactions",
             "genes",
             "notes",
-            "annotation",
+            "_annotation",
+            "_metadata",
             "groups",
         }
+
+        def copy_metadata(old_obj, new_obj):
+            if old_obj._metadata is not None:
+                new_obj.metadata = old_obj._metadata.__deepcopy__(memo)
+            # new_obj.metadata.history = old_obj.metadata.history.to_dict()
+            # new_obj.metadata.standardized.add(
+            #     old_obj.metadata.standardized.to_list_of_dicts()
+            # )
+            # new_obj.metadata.custom = old_obj.metadata.custom.to_dict()
+            # new_obj.metadata.sbo = old_obj.metadata.sbo
+
+        # raise ValueError()
         for attr in self.__dict__:
             if attr not in do_not_copy_by_ref:
                 new.__dict__[attr] = self.__dict__[attr]
         new.notes = deepcopy(self.notes)
-        new.annotation = deepcopy(self.annotation)
+        copy_metadata(self, new)
 
         new.metabolites = DictList()
-        do_not_copy_by_ref = {"_reaction", "_model"}
+        do_not_copy_by_ref = {"_reaction", "_model", "_annotation", "_metadata"}
         for metabolite in self.metabolites:
             new_met = metabolite.__class__()
             for attr, value in metabolite.__dict__.items():
                 if attr not in do_not_copy_by_ref:
                     new_met.__dict__[attr] = copy(value) if attr == "formula" else value
             new_met._model = new
+            copy_metadata(metabolite, new_met)
             new.metabolites.append(new_met)
 
         new.genes = DictList()
@@ -415,16 +430,24 @@ class Model(Object):
                         copy(value) if attr == "formula" else value
                     )
             new_gene._model = new
+            copy_metadata(gene, new_gene)
             new.genes.append(new_gene)
 
         new.reactions = DictList()
-        do_not_copy_by_ref = {"_model", "_metabolites", "_genes"}
+        do_not_copy_by_ref = {
+            "_model",
+            "_metabolites",
+            "_genes",
+            "_annotation",
+            "_metadata",
+        }
         for reaction in self.reactions:
             new_reaction = reaction.__class__()
             for attr, value in reaction.__dict__.items():
                 if attr not in do_not_copy_by_ref:
                     new_reaction.__dict__[attr] = copy(value)
             new_reaction._model = new
+            copy_metadata(reaction, new_reaction)
             new.reactions.append(new_reaction)
             # update awareness
             for metabolite, stoic in reaction._metabolites.items():
@@ -434,7 +457,7 @@ class Model(Object):
             new_reaction.update_genes_from_gpr()
 
         new.groups = DictList()
-        do_not_copy_by_ref = {"_model", "_members"}
+        do_not_copy_by_ref = {"_model", "_members", "_annotation", "_metadata"}
         # Groups can be members of other groups. We initialize them first and
         # then update their members.
         for group in self.groups:
@@ -443,6 +466,7 @@ class Model(Object):
                 if attr not in do_not_copy_by_ref:
                     new_group.__dict__[attr] = copy(value)
             new_group._model = new
+            copy_metadata(group, new_group)
             new.groups.append(new_group)
         for group in self.groups:
             new_group = new.groups.get_by_id(group.id)
@@ -683,7 +707,7 @@ class Model(Object):
         rxn = Reaction(id=reaction_id, name=name, lower_bound=lb, upper_bound=ub)
         rxn.add_metabolites({metabolite: -1})
         if sbo_term:
-            rxn.annotation["sbo"] = sbo_term
+            rxn.metadata.sbo = sbo_term
         self.add_reactions([rxn])
         return rxn
 

@@ -2,8 +2,6 @@
 
 from pathlib import Path
 
-import pytest
-
 from cobra.io import load_json_model, write_sbml_model
 
 
@@ -19,9 +17,9 @@ def test_load_json_model_valid(data_directory: Path, tmp_path: Path) -> None:
     path_to_file = data_directory / "valid_annotation_format.json"
     model = load_json_model(path_to_file)
     expected = {
-        "bigg.reaction": [["is", "PFK26"]],
-        "kegg.reaction": [["is", "R02732"]],
-        "rhea": [["is", "15656"]],
+        "bigg.reaction": ["PFK26"],
+        "kegg.reaction": ["R02732"],
+        "rhea": ["15656"],
     }
     for metabolite in model.metabolites:
         assert metabolite.annotation == expected
@@ -37,5 +35,6 @@ def test_load_json_model_invalid(data_directory: Path) -> None:
 
     """
     path = data_directory / "invalid_annotation_format.json"
-    with pytest.raises(TypeError):
-        load_json_model(path)
+    model = load_json_model(path)
+    anno = model.metabolites[0].annotation
+    assert anno == {"kegg.compound": ["C01468"], "chebi": ["CHEBI:11981"]}

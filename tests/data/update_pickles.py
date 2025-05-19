@@ -67,15 +67,19 @@ if __name__ == "__main__":
             "ATPM",
             "PIt2r",
         ):
-            mini.add_reaction(r.copy())
+            mini.add_reactions([r.copy()])
     mini.reactions.ATPM.upper_bound = mini.reactions.PGI.upper_bound
     mini.objective = ["PFK", "ATPM"]  # No biomass, 2 reactions
 
     # add in some information from iJO1366
-    mini.add_reaction(ecoli_model.reactions.LDH_D.copy())
-    mini.add_reaction(ecoli_model.reactions.EX_lac__D_e.copy())
     r = cobra.Reaction("D_LACt2")
-    mini.add_reaction(r)
+    mini.add_reactions(
+        [
+            ecoli_model.reactions.LDH_D.copy(),
+            ecoli_model.reactions.EX_lac__D_e.copy(),
+            r,
+        ]
+    )
     mini.reactions.GLCpts.gene_reaction_rule = (
         ecoli_model.reactions.GLCptspp.gene_reaction_rule
     )
@@ -104,9 +108,9 @@ if __name__ == "__main__":
         mini, importlib_resources.files(cobra.data).joinpath("mini.json"), pretty=True
     )
     save_yaml_model(mini, importlib_resources.files(cobra.data).joinpath("mini.yml"))
-    write_sbml_model(mini, "mini_fbc2.xml")
-    write_sbml_model(mini, "mini_fbc2.xml.bz2")
-    write_sbml_model(mini, "mini_fbc2.xml.gz")
+    write_sbml_model(mini, "mini_fbc3.xml")
+    write_sbml_model(mini, "mini_fbc3.xml.bz2")
+    write_sbml_model(mini, "mini_fbc3.xml.gz")
     write_sbml_model(
         mini, importlib_resources.files(cobra.data).joinpath("mini_cobra.xml")
     )

@@ -58,13 +58,14 @@ def assess(
         if m.slim_optimize(error_value=0.0) >= flux_coefficient_cutoff:
             return True
         else:
-            results = {}
-            results["precursors"] = assess_component(
-                model, reaction, "reactants", flux_coefficient_cutoff
-            )
-            results["products"] = assess_component(
-                model, reaction, "products", flux_coefficient_cutoff
-            )
+            results = {
+                "precursors": assess_component(
+                    model, reaction, "reactants", flux_coefficient_cutoff
+                ),
+                "products": assess_component(
+                    model, reaction, "products", flux_coefficient_cutoff
+                ),
+            }
             return results
 
 
