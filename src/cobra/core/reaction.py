@@ -1684,10 +1684,10 @@ class Reaction(Object):
         <table>
             <tr>
                 <td><strong>Reaction identifier</strong></td><td>{format_long_string(
-            self.id, 100)}</td>
+                    self.id, 100)}</td>
             </tr><tr>
                 <td><strong>Name</strong></td><td>{format_long_string(
-            self.name, 100)}</td>
+                    self.name, 100)}</td>
             </tr><tr>
                 <td><strong>Memory address</strong></td>
                 <td>{f"{id(self):#x}"}</td>
@@ -1695,13 +1695,13 @@ class Reaction(Object):
                 <td><strong>Stoichiometry</strong></td>
                 <td>
                     <p style='text-align:right'>{format_long_string(
-            self.build_reaction_string(), 200)}</p>
+                        self.build_reaction_string(), 200)}</p>
                     <p style='text-align:right'>{format_long_string(
-            self.build_reaction_string(True), 200)}</p>
+                        self.build_reaction_string(True), 200)}</p>
                 </td>
             </tr><tr>
                 <td><strong>GPR</strong></td><td>{format_long_string(
-            self.gene_reaction_rule, 100)}</td>
+                    self.gene_reaction_rule, 100)}</td>
             </tr><tr>
                 <td><strong>Lower bound</strong></td><td>{self.lower_bound}</td>
             </tr><tr>
