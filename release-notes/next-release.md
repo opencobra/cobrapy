@@ -16,3 +16,6 @@ Fix `reaction.check_mass_balance` giving incorrect results for reactions with fl
 ## Deprecated features
 
 ## Backwards incompatible changes
+
+Following libSBML we now also dropped support for Python 3.8. You can still use cobrapy
+with Python 3.8 by installing version 0.29.1 or earlier.
