@@ -29,11 +29,11 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
-    "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
     "autoapi.extension",
     "nbsphinx",
+    "sphinx.ext.viewcode",
 ]
 # Document Python Code
 autoapi_dirs = [join(SRC_PATH, "cobra")]
@@ -123,8 +123,10 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    "http://docs.python.org/": None,
-    "http://docs.scipy.org/doc/numpy/": None,
-    "http://docs.scipy.org/doc/scipy/reference": None,
+    "python": ("http://docs.python.org/", None),
+    "numpy": ("http://docs.scipy.org/doc/numpy/", None),
+    "scipy": ("http://docs.scipy.org/doc/scipy/reference", None),
 }
 intersphinx_cache_limit = 10  # days to keep the cached inventories
+
+html_theme = "sphinx_book_theme"

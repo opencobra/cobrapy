@@ -1,6 +1,6 @@
-Sphinx~=5.3
+Sphinx>=8.2
 sphinxcontrib-napoleon
-sphinx-autoapi
+sphinx-autoapi>=3.6
 nbsphinx>=0.2.4
+sphinx-book-theme~=1.1
 ipykernel
-matplotlib>=3.6
