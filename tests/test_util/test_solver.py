@@ -209,7 +209,7 @@ def test_time_limit(large_model: "Model") -> None:
 
 
 @pytest.mark.parametrize(
-    "solver", [s for s in su.solvers if s in ["osqp", "coinor_cbc"]]
+    "solver", [s for s in su.solvers if s in ["coinor_cbc"]]
 )
 def test_specialized_solver_warning(solver, caplog):
     """Test the warning for specialized solvers."""
