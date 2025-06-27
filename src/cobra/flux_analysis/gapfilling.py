@@ -67,6 +67,8 @@ class GapFiller:
         The threshold at which a value is considered non-zero (aka
         integrality threshold). If gapfilled models fail to validate,
         you may want to lower this value (default 1E-6).
+    fast_gapfill : bool, optional
+        Whether to use the fast gap filling approach (default False).  
 
     Attributes
     ----------
@@ -110,6 +112,7 @@ class GapFiller:
         exchange_reactions: bool = False,
         demand_reactions: bool = True,
         integer_threshold: float = 1e-6,
+        fast_gapfill: bool = False,
         **kwargs,
     ) -> None:
         """Initialize a new GapFiller object.
@@ -139,6 +142,8 @@ class GapFiller:
         if penalties is not None:
             self.penalties.update(penalties)
         self.indicators = []
+        self.fast_gapfill = fast_gapfill
+        
         self.costs = {}
         self.extend_model(exchange_reactions, demand_reactions)
         fix_objective_as_constraint(self.model, bound=lower_bound)
@@ -226,8 +231,12 @@ class GapFiller:
         for rxn in self.model.reactions:
             if not hasattr(rxn, "gapfilling_type"):
                 continue
+            if self.fast_gapfill:
+                indicator_type = "continuous"
+            else:
+                indicator_type = "binary"
             indicator = prob.Variable(
-                name=f"indicator_{rxn.id}", lb=0, ub=1, type="binary"
+                name=f"indicator_{rxn.id}", lb=0, ub=1, type=indicator_type
             )
             if rxn.id in self.penalties:
                 indicator.cost = self.penalties[rxn.id]
@@ -309,6 +318,8 @@ class GapFiller:
             self.update_costs()
         return used_reactions
 
+
+
     def validate(self, reactions: List["Reaction"]) -> bool:
         """Validate the model.
 
@@ -343,6 +354,7 @@ def gapfill(
     demand_reactions: bool = True,
     exchange_reactions: bool = False,
     iterations: int = 1,
+    fast_gapfill: bool = False,
 ):
     """Perform gap filling on a model.
 
@@ -375,7 +387,11 @@ def gapfill(
         which may include previously used reactions i.e., with enough
         iterations pathways including 10 steps will eventually be reported
         even if the shortest pathway is a single reaction (default 1).
-
+    fast_gapfill : bool, optional
+        Use continuous variables for the indicator variables instead of
+        binary variables. This can speed up the gap filling but may lead to
+        suboptimal solutions. If you want to use this, you should also
+        consider increasing the number of iterations (default False).
     Returns
     -------
     list of list of cobra.Reaction
@@ -402,5 +418,6 @@ def gapfill(
         penalties=penalties,
         demand_reactions=demand_reactions,
         exchange_reactions=exchange_reactions,
+        fast_gapfill=fast_gapfill
     )
     return gapfiller.fill(iterations=iterations)
