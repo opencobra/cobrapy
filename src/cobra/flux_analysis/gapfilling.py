@@ -228,13 +228,14 @@ class GapFiller:
         constraints = []
         big_m = max(max(abs(b) for b in r.bounds) for r in self.model.reactions)
         prob = self.model.problem
+        if self.fast_gapfill:
+            indicator_type = "continuous"
+        else:
+            indicator_type = "binary"
         for rxn in self.model.reactions:
             if not hasattr(rxn, "gapfilling_type"):
                 continue
-            if self.fast_gapfill:
-                indicator_type = "continuous"
-            else:
-                indicator_type = "binary"
+            
             indicator = prob.Variable(
                 name=f"indicator_{rxn.id}", lb=0, ub=1, type=indicator_type
             )
