@@ -1,6 +1,6 @@
 """Provide functions for loading metabolic models from local package data."""
 
-import importlib_resources
+import importlib.resources
 
 import cobra.data
 
@@ -50,7 +50,7 @@ class Cobrapy(AbstractModelRepository):
             A gzip-compressed, UTF-8 encoded SBML document.
         """
         return (
-            importlib_resources.files(cobra.data)
+            importlib.resources.files(cobra.data)
             .joinpath(f"{model_id}.xml.gz")
             .read_bytes()
         )

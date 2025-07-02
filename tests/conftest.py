@@ -1,10 +1,10 @@
 """Define global fixtures."""
 
+import importlib.resources
 from pathlib import Path
 from pickle import load as _load
 from typing import List, Tuple
 
-import importlib_resources
 import pytest
 
 import cobra
@@ -14,7 +14,7 @@ from cobra.util import solver as sutil
 
 
 data_dir = Path(__file__).parent / "data"
-cobra_data_dir = importlib_resources.files(cobra.data)
+cobra_data_dir = importlib.resources.files(cobra.data)
 
 
 def create_test_model(model_name: str = "salmonella") -> Model:

@@ -10,11 +10,10 @@ bugs.
 """
 
 
+import importlib.resources
 from collections import OrderedDict
 from json import dump as json_dump
 from pickle import dump, load
-
-import importlib_resources
 
 import cobra
 from cobra.io import (
@@ -99,16 +98,16 @@ if __name__ == "__main__":
     # output to various formats
     with open("mini.pickle", "wb") as outfile:
         dump(mini, outfile, protocol=2)
-    save_matlab_model(mini, importlib_resources.files(cobra.data).joinpath("mini.mat"))
+    save_matlab_model(mini, importlib.resources.files(cobra.data).joinpath("mini.mat"))
     save_json_model(
-        mini, importlib_resources.files(cobra.data).joinpath("mini.json"), pretty=True
+        mini, importlib.resources.files(cobra.data).joinpath("mini.json"), pretty=True
     )
-    save_yaml_model(mini, importlib_resources.files(cobra.data).joinpath("mini.yml"))
+    save_yaml_model(mini, importlib.resources.files(cobra.data).joinpath("mini.yml"))
     write_sbml_model(mini, "mini_fbc2.xml")
     write_sbml_model(mini, "mini_fbc2.xml.bz2")
     write_sbml_model(mini, "mini_fbc2.xml.gz")
     write_sbml_model(
-        mini, importlib_resources.files(cobra.data).joinpath("mini_cobra.xml")
+        mini, importlib.resources.files(cobra.data).joinpath("mini_cobra.xml")
     )
     raven = load_matlab_model("raven.mat")
     with open("raven.pickle", "wb") as outfile:

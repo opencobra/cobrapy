@@ -1,11 +1,11 @@
 """Test functionalities of I/O in JSON format."""
 
 import json
+from importlib.resources import files
 from pathlib import Path
 from typing import Any, Callable, Dict, Union
 
 import pytest
-from importlib_resources import files
 
 from cobra import Model
 from cobra import io as cio
