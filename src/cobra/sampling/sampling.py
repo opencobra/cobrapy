@@ -3,8 +3,10 @@
 from typing import TYPE_CHECKING, Optional
 
 import pandas as pd
+import hopsy
 
 from .achr import ACHRSampler
+from .hopsy import HopsySampler
 from .optgp import OptGPSampler
 
 
@@ -85,6 +87,14 @@ def sample(
         sampler = OptGPSampler(model, processes=processes, thinning=thinning, seed=seed)
     elif method == "achr":
         sampler = ACHRSampler(model, thinning=thinning, seed=seed)
+    elif method == "uhr":
+        sampler = HopsySampler(model, sampler=hopsy.UniformHitAndRunProposal, processes=processes, thinning=thinning, seed=seed, rounding=False)
+    elif method == "uhrr":
+        sampler = HopsySampler(model, sampler=hopsy.UniformHitAndRunProposal, processes=processes, thinning=thinning, seed=seed, rounding=True)
+    elif method == "uchr":
+        sampler = HopsySampler(model, sampler=hopsy.UniformCoordinateHitAndRunProposal, processes=processes, thinning=thinning, seed=seed, rounding=False)
+    elif method == "uchrr":
+        sampler = HopsySampler(model, sampler=hopsy.UniformCoordinateHitAndRunProposal, processes=processes, thinning=thinning, seed=seed, rounding=True)
     else:
         raise ValueError(
             f'Invalid value: "{method}" for method used. '
