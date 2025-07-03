@@ -20,8 +20,9 @@ def sample(
     method: str = "optgp",
     thinning: int = 100,
     processes: int = 1,
+    chains: int = 1,
     seed: Optional[int] = None,
-) -> pd.DataFrame:
+) -> pd.DataFrame | list[pd.DataFrame]:
     """Sample valid flux distributions from a cobra model.
 
     Currently, two methods are supported:
@@ -50,8 +51,12 @@ def sample(
         in benchmarks gives approximately uncorrelated samples. If set to 1
         will return all iterates (default 100).
     processes : int, optional
-        Only used for 'optgp'. The number of processes used to generate
+        Only used for 'optgp' and the hopsy samplers. The number of processes used to generate
         samples (default 1).
+    chains : int
+        The numer of parallel sampling runs.
+    diagnose : bool, optional
+        Whether to compute common R-hat (a.k.a. PSRF) and effective sample size diagnostics (default False).
     seed : int > 0, optional
         Sets the random number seed. Initialized to the current time stamp
         if None (default None).
@@ -101,6 +106,5 @@ def sample(
             'The value must be "optgp" or "achr".'
         )
 
-    return pd.DataFrame(
-        columns=[rxn.id for rxn in model.reactions], data=sampler.sample(n)
-    )
+    return sampler.sample(n, chains=chains, )
+
