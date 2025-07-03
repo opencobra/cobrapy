@@ -126,7 +126,7 @@ class OptGPSampler(HRSampler):
             (len(self.model.variables),), self.warmup.mean(axis=0)
         )
 
-    def sample(self, n: int, fluxes: bool = True) -> pd.DataFrame:
+    def sample(self, n: int, chains: int = 1, fluxes: bool = True) -> pd.DataFrame | list[pd.DataFrame]:
         """Generate a set of samples.
 
         This is the basic sampling function for all hit-and-run samplers.
@@ -135,6 +135,8 @@ class OptGPSampler(HRSampler):
         ----------
         n : int
             The minimum number of samples that are generated at once.
+        chains : int
+            The numer of parallel sampling runs.
         fluxes : bool, optional
             Whether to return fluxes or the internal solver variables. If
             set to False, will return a variable for each forward and
@@ -143,9 +145,9 @@ class OptGPSampler(HRSampler):
 
         Returns
         -------
-        pandas.DataFrame
+        pandas.DataFrame | list[pandas.DataFrame]
             Returns a pandas DataFrame with `n` rows, each containing a
-            flux sample.
+            flux sample or a list thereof, if `chains > 1`.
 
         Notes
         -----
@@ -159,43 +161,49 @@ class OptGPSampler(HRSampler):
         of samples at once (`n` > 1000).
 
         """
-        if self.processes > 1:
-            n_process = np.ceil(n / self.processes).astype(int)
-            n = n_process * self.processes
+        dfs = []
+        n_chains = chains
+        for c in range(n_chains):
+            if self.processes > 1:
+                n_process = np.ceil(n / self.processes).astype(int)
+                n = n_process * self.processes
 
-            # The cast to list is weird but not doing it gives recursion
-            # limit errors, something weird going on with multiprocessing
-            args = list(zip([n_process] * self.processes, range(self.processes)))
+                # The cast to list is weird but not doing it gives recursion
+                # limit errors, something weird going on with multiprocessing
+                args = list(zip([n_process] * self.processes, range(self.processes)))
 
-            with ProcessPool(
-                self.processes, initializer=mp_init, initargs=(self,)
-            ) as pool:
-                results = pool.map(_sample_chain, args, chunksize=1)
+                with ProcessPool(
+                    self.processes, initializer=mp_init, initargs=(self,)
+                ) as pool:
+                    results = pool.map(_sample_chain, args, chunksize=1)
 
-            chains = np.vstack([r[1] for r in results])
-            self.retries += sum(r[0] for r in results)
-        else:
-            mp_init(self)
-            results = _sample_chain((n, 0))
-            chains = results[1]
+                chains = np.vstack([r[1] for r in results])
+                self.retries += sum(r[0] for r in results)
+            else:
+                mp_init(self)
+                results = _sample_chain((n, 0))
+                chains = results[1]
 
-        # Update the global center
-        self.center = (self.n_samples * self.center + np.atleast_2d(chains).sum(0)) / (
-            self.n_samples + n
-        )
-        self.n_samples += n
-
-        if fluxes:
-            names = [r.id for r in self.model.reactions]
-
-            return pd.DataFrame(
-                chains[:, self.fwd_idx] - chains[:, self.rev_idx],
-                columns=names,
+            # Update the global center
+            self.center = (self.n_samples * self.center + np.atleast_2d(chains).sum(0)) / (
+                self.n_samples + n
             )
-        else:
-            names = [v.name for v in self.model.variables]
+            self.n_samples += n
 
-            return pd.DataFrame(chains, columns=names)
+            if fluxes:
+                names = [r.id for r in self.model.reactions]
+
+                df  = pd.DataFrame(
+                    chains[:, self.fwd_idx] - chains[:, self.rev_idx],
+                    columns=names,
+                )
+            else:
+                names = [v.name for v in self.model.variables]
+
+                df = pd.DataFrame(chains, columns=names)
+
+            dfs.append(df)
+        return dfs if n_chains > 1 else dfs[0]
 
     # Models can be large so don't pass them around during multiprocessing
     def __getstate__(self) -> Dict:
