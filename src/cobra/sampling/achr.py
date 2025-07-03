@@ -149,28 +149,31 @@ class ACHRSampler(HRSampler):
         of reactions in your model and the thinning factor.
 
         """
-        dfs = []
+        samples = []
         for c in range(chains):
-            samples = np.zeros((n, self.warmup.shape[1]))
+            _samples = np.zeros((n, self.warmup.shape[1]))
 
             for i in range(1, self.thinning * n + 1):
                 self.__single_iteration()
 
                 if i % self.thinning == 0:
-                    samples[i // self.thinning - 1, :] = self.prev
+                    _samples[i // self.thinning - 1, :] = self.prev
 
-            if fluxes:
-                names = [r.id for r in self.model.reactions]
+            samples.append(_samples)
 
-                df = pd.DataFrame(
-                    samples[:, self.fwd_idx] - samples[:, self.rev_idx],
-                    columns=names,
-                )
-            else:
-                names = [v.name for v in self.model.variables]
+        samples = np.array(samples)
+        samples = samples.reshape(-1, samples.shape[-1])
 
-                df = pd.DataFrame(samples, columns=names)
+        if fluxes:
+            names = [r.id for r in self.model.reactions]
 
-            dfs.append(df)
-        return dfs if chains > 1 else dfs[0]
+            return pd.DataFrame(
+                samples[:, self.fwd_idx] - samples[:, self.rev_idx],
+                columns=names,
+            )
+        else:
+            names = [v.name for v in self.model.variables]
+
+            return pd.DataFrame(samples, columns=names)
+
 

@@ -6,21 +6,20 @@ import pandas as pd
 import hopsy
 
 from .achr import ACHRSampler
-from .hopsy import HopsySampler
+from .hopsy import hopsy_is_available
+if hopsy_is_available:
+    from .hopsy import HopsySampler
 from .optgp import OptGPSampler
-
 
 if TYPE_CHECKING:
     from cobra import Model
 
-
 def sample(
     model: "Model",
     n: int,
-    method: str = "optgp",
+    method: str = "uchrr",
     thinning: int = 100,
     processes: int = 1,
-    chains: int = 1,
     seed: Optional[int] = None,
 ) -> pd.DataFrame | list[pd.DataFrame]:
     """Sample valid flux distributions from a cobra model.
@@ -53,10 +52,6 @@ def sample(
     processes : int, optional
         Only used for 'optgp' and the hopsy samplers. The number of processes used to generate
         samples (default 1).
-    chains : int
-        The numer of parallel sampling runs.
-    diagnose : bool, optional
-        Whether to compute common R-hat (a.k.a. PSRF) and effective sample size diagnostics (default False).
     seed : int > 0, optional
         Sets the random number seed. Initialized to the current time stamp
         if None (default None).
@@ -88,23 +83,20 @@ def sample(
        https://doi.org/10.1287/opre.46.1.84
 
     """
+    if not hopsy_is_available and method == "uchrr":
+        method = "optgp"
+
     if method == "optgp":
         sampler = OptGPSampler(model, processes=processes, thinning=thinning, seed=seed)
     elif method == "achr":
         sampler = ACHRSampler(model, thinning=thinning, seed=seed)
-    elif method == "uhr":
-        sampler = HopsySampler(model, sampler=hopsy.UniformHitAndRunProposal, processes=processes, thinning=thinning, seed=seed, rounding=False)
-    elif method == "uhrr":
-        sampler = HopsySampler(model, sampler=hopsy.UniformHitAndRunProposal, processes=processes, thinning=thinning, seed=seed, rounding=True)
-    elif method == "uchr":
-        sampler = HopsySampler(model, sampler=hopsy.UniformCoordinateHitAndRunProposal, processes=processes, thinning=thinning, seed=seed, rounding=False)
     elif method == "uchrr":
-        sampler = HopsySampler(model, sampler=hopsy.UniformCoordinateHitAndRunProposal, processes=processes, thinning=thinning, seed=seed, rounding=True)
+        sampler = HopsySampler(model, processes=processes, thinning=thinning, seed=seed, rounding=True)
     else:
         raise ValueError(
             f'Invalid value: "{method}" for method used. '
-            'The value must be "optgp" or "achr".'
+            'The value must be "optgp", "achr" or "uchrr".'
         )
 
-    return sampler.sample(n, chains=chains, )
+    return sampler.sample(n)
 
