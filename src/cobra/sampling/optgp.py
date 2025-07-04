@@ -143,9 +143,9 @@ class OptGPSampler(HRSampler):
 
         Returns
         -------
-        pandas.DataFrame | list[pandas.DataFrame]
+        pandas.DataFrame
             Returns a pandas DataFrame with `n` rows, each containing a
-            flux sample or a list thereof, if `chains > 1`.
+            flux sample.
 
         Notes
         -----
