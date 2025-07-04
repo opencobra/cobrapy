@@ -21,22 +21,30 @@ if TYPE_CHECKING:
 def sample(
     model: "Model",
     n: int,
-    method: str = "uchrr",
+    method: str = "chrr",
     thinning: int = 100,
     processes: int = 1,
     seed: Optional[int] = None,
 ) -> pd.DataFrame:
     """Sample valid flux distributions from a cobra model.
 
-    Currently, two methods are supported:
+    Currently, three methods are supported:
 
-    1. 'optgp' (default) which uses the OptGPSampler that supports parallel
+    1. 'chrr' (default) which uses a the coordinate Hit-and-Run algorithm
+        with rounding ([1]_), which has been shown to often outperform OptGP
+        and ACHR, refer [2]_, [3]_. The rounding transformation is performed
+        in an offline manner which inflicts a certain base cost, however
+        sampling is performed using the C++-based library ``hopsy`` ([4]_)
+        and is, thus, blazingly fast. Moreover, this method supports
+        parallel sampling.
+
+    2. 'optgp'  which uses the OptGPSampler that supports parallel
         sampling. Requires large numbers of samples to be performant
         (`n` > 1000). For smaller samples, 'achr' might be better suited.
-        For details, refer [1]_ .
+        For details, refer [5]_ .
 
-    2. 'achr' which uses artificial centering hit-and-run. This is a single
-       process method with good convergence. For details, refer [2]_ .
+    3. 'achr' which uses artificial centering hit-and-run. This is a single
+       process method with good convergence. For details, refer [6]_ .
 
     Parameters
     ----------
@@ -75,33 +83,58 @@ def sample(
 
     References
     ----------
-    .. [1] Megchelenbrink W, Huynen M, Marchiori E (2014)
+    .. [1] Hulda S Haraldsdóttir, Ben Cousins, Ines Thiele, Ronan M.T Fleming,
+       Santosh Vempala,
+       CHRR: coordinate hit-and-run with rounding for uniform sampling of
+       constraint-based models,
+       Bioinformatics, Volume 33, Issue 11, June 2017, Pages 1741–1743,
+       https://doi.org/10.1093/bioinformatics/btx052
+
+    .. [2] Herrmann, H.A., Dyson, B.C., Vass, L. et al.
+       Flux sampling is a powerful tool to study metabolism under changing
+       environmental conditions.
+       npj Syst Biol Appl 5, 32 (2019).
+       https://doi.org/10.1038/s41540-019-0109-0
+
+    .. [3] Fallahi S, Skaug HJ, Alendal G (2020)
+       A comparison of Monte Carlo sampling methods for
+       metabolic network models.
+       PLoS ONE 15(7): e0235393.
+       https://doi.org/10.1371/journal.pone.0235393
+
+    .. [4] Richard D Paul, Johann F Jadebeck, Anton Stratmann, Wolfgang Wiechert,
+       Katharina Nöh,
+       hopsy — a methods marketplace for convex polytope sampling in Python,
+       Bioinformatics, Volume 40, Issue 7, July 2024, btae430,
+       https://doi.org/10.1093/bioinformatics/btae430
+
+    .. [5] Megchelenbrink W, Huynen M, Marchiori E (2014)
        optGpSampler: An Improved Tool for Uniformly Sampling the Solution-Space
        of Genome-Scale Metabolic Networks.
        PLoS ONE 9(2): e86587.
        https://doi.org/10.1371/journal.pone.0086587
 
-    .. [2] Direction Choice for Accelerated Convergence in Hit-and-Run Sampling
+    .. [6] Direction Choice for Accelerated Convergence in Hit-and-Run Sampling
        David E. Kaufman, Robert L. Smith
        Operations Research 199846:1 , 84-95
        https://doi.org/10.1287/opre.46.1.84
 
     """
-    if not hopsy_is_available and method == "uchrr":
+    if not hopsy_is_available and method == "chrr":
         method = "optgp"
 
     if method == "optgp":
         sampler = OptGPSampler(model, processes=processes, thinning=thinning, seed=seed)
     elif method == "achr":
         sampler = ACHRSampler(model, thinning=thinning, seed=seed)
-    elif method == "uchrr":
+    elif method == "chrr":
         sampler = HopsySampler(
             model, processes=processes, thinning=thinning, seed=seed, rounding=True
         )
     else:
         raise ValueError(
             f'Invalid value: "{method}" for method used. '
-            'The value must be "optgp", "achr" or "uchrr".'
+            'The value must be "optgp", "achr" or "chrr".'
         )
 
     return sampler.sample(n)
