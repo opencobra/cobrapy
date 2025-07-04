@@ -7,7 +7,7 @@ import pytest
 
 from cobra.core import Metabolite, Model, Reaction
 from cobra.flux_analysis.parsimonious import pfba
-from cobra.sampling import ACHRSampler, OptGPSampler, sample
+from cobra.sampling import ACHRSampler, OptGPSampler, hopsy_is_available, sample
 
 
 def test_single_achr(model: Model) -> None:
@@ -16,16 +16,29 @@ def test_single_achr(model: Model) -> None:
     assert s.shape == (10, len(model.reactions))
 
 
+def test_single_uchrr(model: Model) -> None:
+    """Test UCHRR sampling (one sample)."""
+    s = sample(model, 10, processes=1)
+    assert s.shape == (10, len(model.reactions))
+
+
 def test_single_optgp(model: Model) -> None:
     """Test OptGP sampling (one sample)."""
-    s = sample(model, 10, processes=1)
+    s = sample(model, 10, processes=1, method="optgp")
+    assert s.shape == (10, len(model.reactions))
+
+
+@pytest.mark.skipif("SKIP_MP" in os.environ, reason="unsafe for parallel execution")
+def test_multi_uchrr(model: Model) -> None:  # pragma: no cover
+    """Test UCHRR sampling (multi sample)."""
+    s = sample(model, 10, processes=2)
     assert s.shape == (10, len(model.reactions))
 
 
 @pytest.mark.skipif("SKIP_MP" in os.environ, reason="unsafe for parallel execution")
 def test_multi_optgp(model: Model) -> None:  # pragma: no cover
     """Test OptGP sampling (multi sample)."""
-    s = sample(model, 10, processes=2)
+    s = sample(model, 10, processes=2, method="optgp")
     assert s.shape == (10, len(model.reactions))
 
 
@@ -41,6 +54,14 @@ def test_fixed_seed(model: Model) -> None:
     s2 = sample(model, 1, seed=42)
     assert np.isclose(s1.TPI[0], s2.TPI[0])
 
+    s1 = sample(model, 1, seed=42, method="achr")
+    s2 = sample(model, 1, seed=42, method="achr")
+    assert np.isclose(s1.TPI[0], s2.TPI[0])
+
+    s1 = sample(model, 1, seed=42, method="optgp")
+    s2 = sample(model, 1, seed=42, method="optgp")
+    assert np.isclose(s1.TPI[0], s2.TPI[0])
+
 
 def test_equality_constraint(model: Model) -> None:
     """Test equality constraint."""
@@ -50,6 +71,9 @@ def test_equality_constraint(model: Model) -> None:
     assert np.allclose(s.ACALD, -1.5, atol=1e-6, rtol=0)
 
     s = sample(model, 10, method="achr")
+    assert np.allclose(s.ACALD, -1.5, atol=1e-6, rtol=0)
+
+    s = sample(model, 10, method="optgp")
     assert np.allclose(s.ACALD, -1.5, atol=1e-6, rtol=0)
 
 
@@ -62,6 +86,9 @@ def test_inequality_constraint(model: Model) -> None:
     assert all(s.ACALD > -0.5 - 1e-6)
 
     s = sample(model, 10, method="achr")
+    assert all(s.ACALD > -0.5 - 1e-6)
+
+    s = sample(model, 10, method="optgp")
     assert all(s.ACALD > -0.5 - 1e-6)
 
 
@@ -81,6 +108,15 @@ def test_inhomogeneous_sanity(model: Model) -> None:
 
     model.reactions.ACALD.bounds = (-1.5 - 1e-3, -1.5 + 1e-3)
     s_hom = sample(model, 64, method="achr")
+
+    relative_diff = (s_inhom.std() + 1e-12) / (s_hom.std() + 1e-12)
+    assert 0.5 < relative_diff.abs().mean() < 2
+
+    model.reactions.ACALD.bounds = (-1.5, -1.5)
+    s_inhom = sample(model, 64, method="optgp")
+
+    model.reactions.ACALD.bounds = (-1.5 - 1e-3, -1.5 + 1e-3)
+    s_hom = sample(model, 64, method="optgp")
 
     relative_diff = (s_inhom.std() + 1e-12) / (s_hom.std() + 1e-12)
     assert 0.5 < relative_diff.abs().mean() < 2
@@ -122,6 +158,15 @@ def test_complicated_model() -> None:
     # > 95% are valid
     assert sum(optgp.validate(optgp_samples) == "v") > 95
     assert sum(achr.validate(achr_samples) == "v") > 95
+
+    if hopsy_is_available:
+        from cobra.sampling import HopsySampler
+
+        uchrr = HopsySampler(model, seed=42)
+        uchrr_samples = uchrr.sample(100)
+
+        assert any(uchrr_samples.corr().abs() < 1.0)
+        assert sum(uchrr.validate(uchrr_samples) == "v") > 95
 
 
 def test_single_point_space(model: Model) -> None:

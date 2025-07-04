@@ -120,7 +120,7 @@ class ACHRSampler(HRSampler):
         ) + self.prev / (self.n_samples + 1)
         self.n_samples += 1
 
-    def sample(self, n: int, chains : int = 1, fluxes: bool = True) -> pd.DataFrame | list[pd.DataFrame]:
+    def sample(self, n: int, fluxes: bool = True) -> pd.DataFrame:
         """Generate a set of samples.
 
         This is the basic sampling function for all hit-and-run samplers.
@@ -129,8 +129,6 @@ class ACHRSampler(HRSampler):
         ----------
         n : int
             The number of samples that are generated at once.
-        chains : int
-            The numer of parallel sampling runs.
         fluxes : bool, optional
             Whether to return fluxes or the internal solver variables. If
             set to False, will return a variable for each forward and
@@ -149,20 +147,13 @@ class ACHRSampler(HRSampler):
         of reactions in your model and the thinning factor.
 
         """
-        samples = []
-        for c in range(chains):
-            _samples = np.zeros((n, self.warmup.shape[1]))
+        samples = np.zeros((n, self.warmup.shape[1]))
 
-            for i in range(1, self.thinning * n + 1):
-                self.__single_iteration()
+        for i in range(1, self.thinning * n + 1):
+            self.__single_iteration()
 
-                if i % self.thinning == 0:
-                    _samples[i // self.thinning - 1, :] = self.prev
-
-            samples.append(_samples)
-
-        samples = np.array(samples)
-        samples = samples.reshape(-1, samples.shape[-1])
+            if i % self.thinning == 0:
+                samples[i // self.thinning - 1, :] = self.prev
 
         if fluxes:
             names = [r.id for r in self.model.reactions]
@@ -175,5 +166,3 @@ class ACHRSampler(HRSampler):
             names = [v.name for v in self.model.variables]
 
             return pd.DataFrame(samples, columns=names)
-
-

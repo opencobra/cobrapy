@@ -126,7 +126,7 @@ class OptGPSampler(HRSampler):
             (len(self.model.variables),), self.warmup.mean(axis=0)
         )
 
-    def sample(self, n: int, chains: int = 1, fluxes: bool = True) -> pd.DataFrame | list[pd.DataFrame]:
+    def sample(self, n: int, fluxes: bool = True) -> pd.DataFrame:
         """Generate a set of samples.
 
         This is the basic sampling function for all hit-and-run samplers.
@@ -135,8 +135,6 @@ class OptGPSampler(HRSampler):
         ----------
         n : int
             The minimum number of samples that are generated at once.
-        chains : int
-            The numer of parallel sampling runs.
         fluxes : bool, optional
             Whether to return fluxes or the internal solver variables. If
             set to False, will return a variable for each forward and
