@@ -10,6 +10,8 @@ from .hopsy import hopsy_is_available
 
 if hopsy_is_available:
     from .hopsy import HopsySampler
+else:
+    import warnings
 
 from .optgp import OptGPSampler
 
@@ -122,6 +124,9 @@ def sample(
     """
     if not hopsy_is_available and method == "chrr":
         method = "optgp"
+        warnings.warn(
+            "hopsy and thus chrr are not available, switching to optgp.", stacklevel=2
+        )
 
     if method == "optgp":
         sampler = OptGPSampler(model, processes=processes, thinning=thinning, seed=seed)

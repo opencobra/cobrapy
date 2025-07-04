@@ -6,8 +6,6 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from cobra import Model
 
-import sys
-
 from ..core.configuration import Configuration
 from .hr_sampler import HRSampler
 
@@ -17,16 +15,14 @@ __all__ = (
     "hopsy_is_available",
 )
 
-hopsy_is_available = False
 configuration = Configuration()
 
-
-if "hopsy" in sys.modules:
-    hopsy_is_available = True
-
+try:
     import hopsy
     import numpy as np
     import pandas as pd
+
+    hopsy_is_available = True
 
     # for the time being while the updated hopsy version isn't released
     def back_transform(problem, samples):
@@ -213,3 +209,6 @@ if "hopsy" in sys.modules:
                 names = [v.name for v in self.model.variables]
 
                 return pd.DataFrame(samples, columns=names)
+
+except ModuleNotFoundError:
+    hopsy_is_available = False
