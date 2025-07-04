@@ -2,39 +2,46 @@
 
 from typing import TYPE_CHECKING, Optional
 
+
 if TYPE_CHECKING:
     from cobra import Model
 
-from .hr_sampler import HRSampler
 import sys
 
-__all__ = ("HopsySampler", "hopsy_is_available",)
+from ..core.configuration import Configuration
+from .hr_sampler import HRSampler
+
+
+__all__ = (
+    "HopsySampler",
+    "hopsy_is_available",
+)
 
 hopsy_is_available = False
+configuration = Configuration()
 
-if 'hopsy' in sys.modules:
+
+if "hopsy" in sys.modules:
     hopsy_is_available = True
 
     import hopsy
     import numpy as np
     import pandas as pd
 
-    import optlang
-
     # for the time being while the updated hopsy version isn't released
     def back_transform(problem, samples):
         """
         Transform samples from the sampling space to the original parameter space.
-        
+
         Parameters
         ----------
         problem : hopsy.Problem
           A hopsy.Problem with populated `problem.transformation` and `problem.shift` of
-          shape `(m, d)` and `(d, )`, respectively. If not populated, the identity operation 
-          is performed.
+          shape `(m, d)` and `(d, )`, respectively. If not populated, the identity
+          operation is performed.
         samples : np.array
-          Parameter samples of shape `(..., d)` which are to be transformed. 
-        
+          Parameter samples of shape `(..., d)` which are to be transformed.
+
         Returns
         -------
         np.array
@@ -54,7 +61,8 @@ if 'hopsy' in sys.modules:
         model : cobra.Model
             The cobra model from which to generate samples.
         sampler : hopsy.Proposal, optional
-            The hopsy sampler for sampling the polytope (default hopsy.UniformCoordinateHitAndRunProposal). 
+            The hopsy sampler for sampling the polytope
+            (default hopsy.UniformCoordinateHitAndRunProposal).
         processes: int, optional
             The number of processes used during sampling
             (default cobra.Configuration.processes).
@@ -67,7 +75,8 @@ if 'hopsy' in sys.modules:
             you observe many equality constraint violations with
             `sampler.validate` you should lower this number (default None).
         rounding : bool, optional
-            Whether to precondition the sampling problem by applying an offline rounding transformation.
+            Whether to precondition the sampling problem by applying an offline rounding
+            transformation.
         seed : int > 0, optional
             Sets the random number seed. Initialized to the current time stamp
             if None (default None).
@@ -86,12 +95,12 @@ if 'hopsy' in sys.modules:
         rev_idx : numpy.array
             A numpy array having one entry for each reaction in the model,
             containing the index of the respective reverse variable.
-        sampler : 
+        sampler :
             The hopsy sampler type.
         mcs : list
-            List of hopsy.MarkovChain objects. Is initialized lazily after calling `sample` and will be of length `chains`.
+            List of length `processes` of hopsy.MarkovChain objects.
         rngs : list
-            List of hopsy.RandomNumberGenerator objects. Is initialized lazily after calling `sample` and will be of length `chains`.
+            List of length `processes` of hopsy.RandomNumberGenerator objects.
 
         """
 
@@ -100,10 +109,10 @@ if 'hopsy' in sys.modules:
             model: "Model",
             sampler: hopsy.Proposal = hopsy.UniformCoordinateHitAndRunProposal,
             thinning: int = 100,
+            processes: Optional[int] = None,
             nproj: Optional[int] = None,
             seed: Optional[int] = None,
             rounding: bool = True,
-            processes: int = 1,
             **kwargs,
         ) -> None:
             """Initialize a new HopsySampler."""
@@ -112,20 +121,22 @@ if 'hopsy' in sys.modules:
             if self.problem.inequalities.shape[0] > 0:
                 A = self.problem.inequalities
                 b = self.problem.bounds
-
-                problem = hopsy.Problem(A, b)
-                problem = hopsy.add_box_constraints(problem, self.problem.variable_bounds[0], self.problem.variable_bounds[1], simplify=False)
-                problem = hopsy.add_equality_constraints(problem, self.problem.equalities, self.problem.b)
-                problem = hopsy.round(problem, simplify=False) if rounding else problem
             else:
                 # empty dummy constraint to set problem dimension
                 A = np.ones((0, self.problem.equalities.shape[1]))
                 b = np.ones(0)
 
-                problem = hopsy.Problem(A, b)
-                problem = hopsy.add_box_constraints(problem, self.problem.variable_bounds[0], self.problem.variable_bounds[1], simplify=False)
-                problem = hopsy.add_equality_constraints(problem, self.problem.equalities, self.problem.b)
-                problem = hopsy.round(problem, simplify=False) if rounding else problem
+            problem = hopsy.Problem(A, b)
+            problem = hopsy.add_box_constraints(
+                problem,
+                self.problem.variable_bounds[0],
+                self.problem.variable_bounds[1],
+                simplify=False,
+            )
+            problem = hopsy.add_equality_constraints(
+                problem, self.problem.equalities, self.problem.b
+            )
+            problem = hopsy.round(problem, simplify=False) if rounding else problem
 
             self.sampler = sampler
 
@@ -136,15 +147,22 @@ if 'hopsy' in sys.modules:
             problem.transformation = None
             problem.shift = None
 
-            self.hopsy_problem = problem
+            self._problem = problem
 
-            self.processes = processes
+            if processes is None:
+                self.processes = configuration.processes
+            else:
+                self.processes = processes
 
             self.mcs = None
             self.rngs = None
 
-            self.mcs = [hopsy.MarkovChain(self.hopsy_problem, self.sampler) for i in range(processes)]
-            self.rngs = [hopsy.RandomNumberGenerator(self._seed, i) for i in range(processes)]
+            self.mcs = [
+                hopsy.MarkovChain(self._problem, self.sampler) for i in range(processes)
+            ]
+            self.rngs = [
+                hopsy.RandomNumberGenerator(self._seed, i) for i in range(processes)
+            ]
 
         def sample(self, n: int, fluxes: bool = True) -> pd.DataFrame:
             """Generate a set of samples by calling hopsy.
@@ -167,14 +185,24 @@ if 'hopsy' in sys.modules:
 
 
             """
-            _, samples = hopsy.sample(self.mcs, self.rngs, n_samples=n // self.processes, thinning=self.thinning, n_procs=self.processes, )
+            _, samples = hopsy.sample(
+                self.mcs,
+                self.rngs,
+                n_samples=n // self.processes,
+                thinning=self.thinning,
+                n_procs=self.processes,
+            )
 
             # batched transformation to better exploit vectorization
-            self.hopsy_problem.transformation, self.hopsy_problem.shift = self.transformation, self.shift
-            samples = back_transform(self.hopsy_problem, samples)
-            self.hopsy_problem.transformation, self.hopsy_problem.shift = None, None
+            self._problem.transformation = self.transformation
+            self._problem.shift = self.shift
 
-            samples = samples.reshape(-1, samples.shape[-1]) # flatten chain dim
+            samples = back_transform(self._problem, samples)
+
+            self._problem.transformation = None
+            self._problem.shift = None
+
+            samples = samples.reshape(-1, samples.shape[-1])  # flatten chain dim
 
             if fluxes:
                 names = [r.id for r in self.model.reactions]
@@ -187,4 +215,3 @@ if 'hopsy' in sys.modules:
                 names = [v.name for v in self.model.variables]
 
                 return pd.DataFrame(samples, columns=names)
-

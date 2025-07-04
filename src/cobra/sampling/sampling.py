@@ -3,16 +3,20 @@
 from typing import TYPE_CHECKING, Optional
 
 import pandas as pd
-import hopsy
 
 from .achr import ACHRSampler
 from .hopsy import hopsy_is_available
+
+
 if hopsy_is_available:
     from .hopsy import HopsySampler
+
 from .optgp import OptGPSampler
+
 
 if TYPE_CHECKING:
     from cobra import Model
+
 
 def sample(
     model: "Model",
@@ -21,7 +25,7 @@ def sample(
     thinning: int = 100,
     processes: int = 1,
     seed: Optional[int] = None,
-) -> pd.DataFrame | list[pd.DataFrame]:
+) -> pd.DataFrame:
     """Sample valid flux distributions from a cobra model.
 
     Currently, two methods are supported:
@@ -50,8 +54,8 @@ def sample(
         in benchmarks gives approximately uncorrelated samples. If set to 1
         will return all iterates (default 100).
     processes : int, optional
-        Only used for 'optgp' and the hopsy samplers. The number of processes used to generate
-        samples (default 1).
+        Only used for 'optgp' and the hopsy samplers. The number of processes
+        used to generate samples (default 1).
     seed : int > 0, optional
         Sets the random number seed. Initialized to the current time stamp
         if None (default None).
@@ -91,7 +95,9 @@ def sample(
     elif method == "achr":
         sampler = ACHRSampler(model, thinning=thinning, seed=seed)
     elif method == "uchrr":
-        sampler = HopsySampler(model, processes=processes, thinning=thinning, seed=seed, rounding=True)
+        sampler = HopsySampler(
+            model, processes=processes, thinning=thinning, seed=seed, rounding=True
+        )
     else:
         raise ValueError(
             f'Invalid value: "{method}" for method used. '
@@ -99,4 +105,3 @@ def sample(
         )
 
     return sampler.sample(n)
-
