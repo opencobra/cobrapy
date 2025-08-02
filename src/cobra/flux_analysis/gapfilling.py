@@ -68,7 +68,7 @@ class GapFiller:
         integrality threshold). If gapfilled models fail to validate,
         you may want to lower this value (default 1E-6).
     fast_gapfill : bool, optional
-        Whether to use the fast gap filling approach (default False).  
+        Whether to use the fast gap filling approach (default False).
 
     Attributes
     ----------
@@ -143,7 +143,7 @@ class GapFiller:
             self.penalties.update(penalties)
         self.indicators = []
         self.fast_gapfill = fast_gapfill
-        
+
         self.costs = {}
         self.extend_model(exchange_reactions, demand_reactions)
         fix_objective_as_constraint(self.model, bound=lower_bound)
@@ -235,7 +235,7 @@ class GapFiller:
         for rxn in self.model.reactions:
             if not hasattr(rxn, "gapfilling_type"):
                 continue
-            
+
             indicator = prob.Variable(
                 name=f"indicator_{rxn.id}", lb=0, ub=1, type=indicator_type
             )
@@ -318,8 +318,6 @@ class GapFiller:
             used_reactions.append(solution)
             self.update_costs()
         return used_reactions
-
-
 
     def validate(self, reactions: List["Reaction"]) -> bool:
         """Validate the model.
@@ -419,6 +417,6 @@ def gapfill(
         penalties=penalties,
         demand_reactions=demand_reactions,
         exchange_reactions=exchange_reactions,
-        fast_gapfill=fast_gapfill
+        fast_gapfill=fast_gapfill,
     )
     return gapfiller.fill(iterations=iterations)
