@@ -88,6 +88,7 @@ def test_gapfilling(salmonella: Model) -> None:
         assert "TKT2" not in {r.id for r in solution[0]}
         assert gf.validate(solution[0])
 
+
 def test_fast_gapfilling(salmonella: Model) -> None:
     """Test Gapfilling."""
     m = Model()
@@ -138,7 +139,11 @@ def test_fast_gapfilling(salmonella: Model) -> None:
     universal_noDM.add_reactions([a2b])
     a2b.build_reaction_from_string("a --> b + d", verbose=False)
     result = gapfill(
-        m, universal_noDM, exchange_reactions=False, demand_reactions=True, fast_gapfill=True
+        m,
+        universal_noDM,
+        exchange_reactions=False,
+        demand_reactions=True,
+        fast_gapfill=True,
     )[0]
     # add reaction a2b and demand reaction to clear met d
     assert len(result) == 2
@@ -153,7 +158,11 @@ def test_fast_gapfilling(salmonella: Model) -> None:
     universal_withDM.add_reactions([d_dm])
     d_dm.build_reaction_from_string("d -->", verbose=False)
     result = gapfill(
-        m, universal_withDM, exchange_reactions=False, demand_reactions=False, fast_gapfill=True
+        m,
+        universal_withDM,
+        exchange_reactions=False,
+        demand_reactions=False,
+        fast_gapfill=True,
     )[0]
     assert len(result) == 2
     assert "a2b" in [x.id for x in result]
@@ -161,12 +170,17 @@ def test_fast_gapfilling(salmonella: Model) -> None:
     # somewhat bigger model
     universal = Model("universal_reactions")
     with salmonella as model:
-        for i in [i.id for i in model.metabolites.f6p_c.reactions]:
+        f6p_rxns = [i.id for i in model.metabolites.f6p_c.reactions]
+        for i in f6p_rxns:
             reaction = model.reactions.get_by_id(i)
             universal.add_reactions([reaction.copy()])
             model.remove_reactions([reaction])
         gf = GapFiller(
-            model, universal, penalties={"TKT2": 1e3}, demand_reactions=False, fast_gapfill=True
+            model,
+            universal,
+            penalties={"TKT2": 1e3},
+            demand_reactions=False,
+            fast_gapfill=True,
         )
         solution = gf.fill()
         assert "TKT2" not in {r.id for r in solution[0]}
