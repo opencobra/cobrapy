@@ -170,8 +170,7 @@ def test_fast_gapfilling(salmonella: Model) -> None:
     # somewhat bigger model
     universal = Model("universal_reactions")
     with salmonella as model:
-        f6p_rxns = [i.id for i in model.metabolites.f6p_c.reactions]
-        for i in f6p_rxns:
+        for i in [i.id for i in model.metabolites.f6p_c.reactions]:
             reaction = model.reactions.get_by_id(i)
             universal.add_reactions([reaction.copy()])
             model.remove_reactions([reaction])
