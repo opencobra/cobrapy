@@ -71,7 +71,6 @@ def test_unknown_model() -> None:
     with pytest.raises(RuntimeError):
         load_model("MODELWHO?", cache=False)
 
-
 @pytest.mark.parametrize(
     "model_id, num_metabolites, num_reactions",
     [("e_coli_core", 72, 95), ("BIOMD0000000633", 50, 35)],
@@ -89,6 +88,9 @@ def test_remote_load(model_id: str, num_metabolites: int, num_reactions: int) ->
         The total number of reactions in the model having ID `model_id`.
 
     """
+    if os.getenv("CI") == "true":
+        pytest.skip("Skipping remote load tests on CI")
+
     model = load_model(model_id, cache=False)
     assert len(model.metabolites) == num_metabolites
     assert len(model.reactions) == num_reactions
