@@ -68,7 +68,7 @@ methods both easier to implement and easier to use, thereby bringing the power
 of COBRA to more researchers.
 
 The documentation is browseable online at `readthedocs
-<https://cobrapy.readthedocs.org/en/stable/>`_ and can also be `downloaded
+<https://cobrapy.readthedocs.io/en/latest/>`_ and can also be `downloaded
 <https://readthedocs.org/projects/cobrapy/downloads/>`_.
 
 Please use the `Google Group <http://groups.google.com/group/cobra-pie>`_ for
