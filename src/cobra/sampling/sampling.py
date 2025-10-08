@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 def sample(
     model: "Model",
     n: int,
-    method: str = "chrr",
+    method: str = "auto",
     thinning: int = 100,
     processes: int = 1,
     seed: Optional[int] = None,
@@ -32,7 +32,7 @@ def sample(
 
     Currently, three methods are supported:
 
-    1. 'chrr' (default) which uses a the coordinate Hit-and-Run algorithm
+    1. 'chrr' which uses a the coordinate Hit-and-Run algorithm
         with rounding ([1]_), which has been shown to often outperform OptGP
         and ACHR, refer [2]_, [3]_. The rounding transformation is performed
         in an offline manner which inflicts a certain base cost, however
@@ -48,6 +48,9 @@ def sample(
     3. 'achr' which uses artificial centering hit-and-run. This is a single
        process method with good convergence. For details, refer [6]_ .
 
+    A fourth 'auto' option is available, which tries to choose 'chrr' if ``hopsy``
+    is available. This is the default option.
+
     Parameters
     ----------
     model : cobra.Model
@@ -56,15 +59,15 @@ def sample(
         The number of samples to obtain. When using 'optgp', this must be a
         multiple of `processes`, otherwise a larger number of samples will
         be returned.
-    method : {"optgp", "achr"}, optional
-        The sampling algorithm to use (default "optgp").
+    method : {"auto", "chrr", "optgp", "achr"}, optional
+        The sampling algorithm to use (default "auto").
     thinning : int, optional
         The thinning factor of the generated sampling chain. A thinning of
         10 means samples are returned every 10 steps. Defaults to 100 which
         in benchmarks gives approximately uncorrelated samples. If set to 1
         will return all iterates (default 100).
     processes : int, optional
-        Only used for 'optgp' and the hopsy samplers. The number of processes
+        Only used for 'optgp' and 'chrr'. The number of processes
         used to generate samples (default 1).
     seed : int > 0, optional
         Sets the random number seed. Initialized to the current time stamp
@@ -122,11 +125,8 @@ def sample(
        https://doi.org/10.1287/opre.46.1.84
 
     """
-    if not hopsy_is_available and method == "chrr":
-        method = "optgp"
-        warnings.warn(
-            "hopsy and thus chrr are not available, switching to optgp.", stacklevel=2
-        )
+    if method == "auto":
+        method = "chrr" if hopsy_is_available else "optgp"
 
     if method == "optgp":
         sampler = OptGPSampler(model, processes=processes, thinning=thinning, seed=seed)
