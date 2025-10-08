@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 logger = getLogger(__name__)
 LARGE_VALUE = 1.0e6
 
+
 def _add_lp7_vars(
     model: "Model", rxns: List["Reaction"], flux_threshold: float
 ) -> None:
@@ -33,9 +34,7 @@ def _add_lp7_vars(
     vars_and_cons = []
 
     for rxn in rxns:
-        var = prob.Variable(
-            "auxiliary_{}".format(rxn.id), lb=0.0, ub=flux_threshold
-        )
+        var = prob.Variable(f"auxiliary_{rxn.id}", lb=0.0, ub=flux_threshold)
         const = prob.Constraint(
             rxn.flux_expression - var,
             name="aux_constraint_{}".format(rxn.id),
@@ -72,9 +71,9 @@ def _find_sparse_mode(
 
     # Enable constraints for the reactions
     for rid in rxn_ids:
-        model.constraints.get("aux_constraint_{}".format(rid)).lb = 0.0
+        model.constraints.get(f"aux_constraint_{rid}").lb = 0.0
 
-    obj_vars = [model.variables.get("auxiliary_{}".format(rid)) for rid in rxn_ids]
+    obj_vars = [model.variables.get(f"auxiliary_{rid}") for rid in rxn_ids]
     model.objective = Zero
     model.objective.set_linear_coefficients({v: 1.0 for v in obj_vars})
 
@@ -102,11 +101,12 @@ def _flip_coefficients(model: "Model", rxn_ids: Set[str]) -> None:
         return
     # flip reactions
     for rxn in rxn_ids:
-        const = model.constraints.get("aux_constraint_{}".format(rxn))
-        var = model.variables.get("auxiliary_{}".format(rxn))
+        const = model.constraints.get(f"aux_constraint_{rxn}")
+        var = model.variables.get(f"auxiliary_{rxn}")
         coefs = const.get_linear_coefficients(const.variables)
         const.set_linear_coefficients({k: -v for k, v in coefs.items() if k is not var})
         model.solver.update()
+
 
 def _any_set(s):
     for x in s:
@@ -169,25 +169,25 @@ def fastcc(
     with model:
         _add_lp7_vars(model, model.reactions, flux_threshold)
 
-        rxns_to_keep = _find_sparse_mode(
-            model, rxns_to_check, zero_cutoff
-        )
+        rxns_to_keep = _find_sparse_mode(model, rxns_to_check, zero_cutoff)
         rxns_to_check = all_rxns.difference(rxns_to_keep)
         logger.info(
             "Initial step found %d consistent reactions. "
             "Starting the consistency loop for the remaining %d reactions.",
-            len(rxns_to_keep), len(rxns_to_check)
+            len(rxns_to_keep),
+            len(rxns_to_check),
         )
 
         while rxns_to_check:
             logger.debug(
                 "reactions to check: %d - consistent reactions: %d - flipped: %d - singletons: %d",
-                len(rxns_to_check), len(rxns_to_keep), flipped, singletons
+                len(rxns_to_check),
+                len(rxns_to_keep),
+                flipped,
+                singletons,
             )
             check = _any_set(rxns_to_check) if singletons else rxns_to_check
-            new_rxns = _find_sparse_mode(
-                model, check, zero_cutoff
-            )
+            new_rxns = _find_sparse_mode(model, check, zero_cutoff)
             rxns_to_keep.update(new_rxns)
 
             if rxns_to_check.intersection(rxns_to_keep):
@@ -206,14 +206,16 @@ def fastcc(
                     check = _any_set(rxns_to_check) if singletons else rxns_to_check
                     _flip_coefficients(model, check_irr)
         logger.info(
-                "Final - consistent reactions: %d - inconsistent reactions: %d [eps=%.2g, tol=%.2g]",
-                len(rxns_to_keep), len(all_rxns) - len(rxns_to_keep), flux_threshold, zero_cutoff
-            )
+            "Final - consistent reactions: %d - inconsistent reactions: %d [eps=%.2g, tol=%.2g]",
+            len(rxns_to_keep),
+            len(all_rxns) - len(rxns_to_keep),
+            flux_threshold,
+            zero_cutoff,
+        )
 
     consistent_model = model.copy()
     consistent_model.remove_reactions(
-        all_rxns.difference(rxns_to_keep),
-        remove_orphans=True
+        all_rxns.difference(rxns_to_keep), remove_orphans=True
     )
 
     return consistent_model
