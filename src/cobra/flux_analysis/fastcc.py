@@ -180,7 +180,8 @@ def fastcc(
 
         while rxns_to_check:
             logger.debug(
-                "reactions to check: %d - consistent reactions: %d - flipped: %d - singletons: %d",
+                "reactions to check: %d - consistent reactions:"
+                " %d - flipped: %d - singletons: %d",
                 len(rxns_to_check),
                 len(rxns_to_keep),
                 flipped,
@@ -206,7 +207,8 @@ def fastcc(
                     check = _any_set(rxns_to_check) if singletons else rxns_to_check
                     _flip_coefficients(model, check_irr)
         logger.info(
-            "Final - consistent reactions: %d - inconsistent reactions: %d [eps=%.2g, tol=%.2g]",
+            "Final - consistent reactions: %d"
+            " - inconsistent reactions: %d [eps=%.2g, tol=%.2g]",
             len(rxns_to_keep),
             len(all_rxns) - len(rxns_to_keep),
             flux_threshold,
