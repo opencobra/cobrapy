@@ -11,6 +11,9 @@ reaction.build_reaction_from_string
 
 Fix `reaction.check_mass_balance` giving incorrect results for reactions with floating point coefficients.
 
+Fixes FastCC. This now implements the full algorithm as in the original paper and gives
+the same results as the Matlab implementation (within the solver tolerance).
+
 ## Other
 
 ## Deprecated features
