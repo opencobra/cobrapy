@@ -102,9 +102,7 @@ def test_opposing(opposing_model: Model, all_solvers: List[str]) -> None:
     assert expected_reactions == {rxn.id for rxn in consistent_model.reactions}
 
 
-def test_fastcc_against_nonblocked_rxns(
-    model: Model, all_solvers: List[str]
-) -> None:
+def test_fastcc_against_nonblocked_rxns(model: Model, all_solvers: List[str]) -> None:
     """Test non-blocked reactions obtained by FASTCC."""
     model.solver = all_solvers
     model.tolerance = 1e-6
