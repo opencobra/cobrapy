@@ -5,7 +5,7 @@ from typing import Callable, List
 import pytest
 
 from cobra import Model, Reaction
-from cobra.flux_analysis import fastcc, flux_variability_analysis
+from cobra.flux_analysis import fastcc, find_blocked_reactions
 
 
 @pytest.fixture(scope="module")
@@ -102,14 +102,25 @@ def test_opposing(opposing_model: Model, all_solvers: List[str]) -> None:
     assert expected_reactions == {rxn.id for rxn in consistent_model.reactions}
 
 
-def test_fastcc_against_fva_nonblocked_rxns(
+def test_fastcc_against_nonblocked_rxns(
     model: Model, all_solvers: List[str]
 ) -> None:
-    """Test non-blocked reactions obtained by FASTCC against FVA."""
+    """Test non-blocked reactions obtained by FASTCC."""
     model.solver = all_solvers
-    fastcc_consistent_model = fastcc(model)
-    fva = flux_variability_analysis(model, fraction_of_optimum=0.0)
-    nonblocked_rxns_fva = fva.index[
-        (fva.minimum.abs() > model.tolerance) | (fva.maximum.abs() > model.tolerance)
-    ]
-    assert all(fastcc_consistent_model.reactions) == all(nonblocked_rxns_fva.tolist())
+    model.tolerance = 1e-6
+    fastcc_consistent_model = fastcc(model, 1e-3, 1e-6)
+    blocked = find_blocked_reactions(model)
+    fastcc_ids = set(rxn.id for rxn in fastcc_consistent_model.reactions)
+    assert len(model.reactions) - len(blocked) == len(fastcc_consistent_model.reactions)
+    assert fastcc_ids & set(blocked) == set()
+
+
+def test_fastcc_against_nonblocked_rxns_large(large_model: Model) -> None:
+    """Test non-blocked reactions obtained by FASTCC."""
+    model = large_model
+    model.tolerance = 1e-7
+    fastcc_consistent_model = fastcc(model, 1e-3, 1e-7)
+    blocked = find_blocked_reactions(model, zero_cutoff=1e-7)
+    fastcc_ids = set(rxn.id for rxn in fastcc_consistent_model.reactions)
+    assert len(model.reactions) - len(blocked) == len(fastcc_consistent_model.reactions)
+    assert fastcc_ids & set(blocked) == set()
