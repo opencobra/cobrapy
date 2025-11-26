@@ -11,6 +11,8 @@
 
 ## Other
 
+- Updated type hinting for the `DictList` class so that the type of `Object` contained by a `DictList` can be specified. For example, the hinted return type of `model.reactions.get_by_id` is now `Reaction` instead of `Object`.
+
 ## Deprecated features
 
 - Changed the type of the `loopless` parameter in `flux_variability_analysis` from `bool` to `Optional[str]`. Using `loopless=False` or `loopless=True` (boolean) is now deprecated.
