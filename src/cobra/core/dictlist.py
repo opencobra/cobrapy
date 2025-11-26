@@ -16,8 +16,10 @@ from typing import (
     Union,
 )
 
+from .object import Object
 
-_TObject = TypeVar("_TObject")
+
+_TObject = TypeVar("_TObject", bound=Object)
 
 
 class DictList(List[_TObject]):
