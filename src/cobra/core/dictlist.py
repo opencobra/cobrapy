@@ -525,7 +525,7 @@ class DictList(List[_TObject]):
         """Remove slice."""
         self.__delitem__(slice(i, j))
 
-    def __getattr__(self, attr: Any) -> Any:
+    def __getattr__(self, attr: Any) -> _TObject:
         """Get an attribute by id."""
         try:
             return DictList.get_by_id(self, attr)
