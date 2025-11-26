@@ -81,10 +81,10 @@ class Model(Object):
             self._solver = id_or_model.solver
         else:
             Object.__init__(self, id_or_model, name=name)
-            self.genes = DictList()
-            self.reactions = DictList()  # A list of cobra.Reactions
-            self.metabolites = DictList()  # A list of cobra.Metabolites
-            self.groups = DictList()  # A list of cobra.Groups
+            self.genes: DictList[Gene] = DictList()
+            self.reactions: DictList[Reaction] = DictList()
+            self.metabolites: DictList[Metabolite] = DictList()
+            self.groups: DictList[Group] = DictList()
             # genes based on their ids {Gene.id: Gene}
             self._compartments = {}
             self._contexts = []
