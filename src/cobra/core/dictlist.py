@@ -19,10 +19,10 @@ from typing import (
 from .object import Object
 
 
-_TObject = TypeVar("_TObject", bound=Object)
+CobraObject = TypeVar("CobraObject", bound=Object)
 
 
-class DictList(List[_TObject]):
+class DictList(List[CobraObject]):
     """
     Define a combined dict and list.
 
@@ -53,12 +53,12 @@ class DictList(List[_TObject]):
                 self.extend(other)
 
     # noinspection PyShadowingBuiltins
-    def has_id(self, id: Union[_TObject, str]) -> bool:
+    def has_id(self, id: Union[CobraObject, str]) -> bool:
         """Check if id is in DictList."""
         return id in self._dict
 
     # noinspection PyShadowingBuiltins
-    def _check(self, id: Union[_TObject, str]) -> None:
+    def _check(self, id: Union[CobraObject, str]) -> None:
         """Make sure duplicate id's are not added.
 
         This function is called before adding in elements.
@@ -72,7 +72,7 @@ class DictList(List[_TObject]):
         self._dict = {v.id: k for k, v in enumerate(self)}
 
     # noinspection PyShadowingBuiltins
-    def get_by_id(self, id: Union[_TObject, str]) -> _TObject:
+    def get_by_id(self, id: Union[CobraObject, str]) -> CobraObject:
         """Return the element with a matching id."""
         return list.__getitem__(self, self._dict[id])
 
@@ -80,7 +80,9 @@ class DictList(List[_TObject]):
         """Return a list of the given attribute for every object."""
         return [getattr(i, attribute) for i in self]
 
-    def get_by_any(self, iterable: List[Union[str, _TObject, int]]) -> List[_TObject]:
+    def get_by_any(
+        self, iterable: List[Union[str, CobraObject, int]]
+    ) -> List[CobraObject]:
         """Get a list of members using several different ways of indexing.
 
         Parameters
@@ -96,7 +98,7 @@ class DictList(List[_TObject]):
             a list of members
         """
 
-        def get_item(item: Any) -> _TObject:
+        def get_item(item: Any) -> CobraObject:
             if isinstance(item, int):
                 return self[item]
             elif isinstance(item, str):
@@ -114,7 +116,7 @@ class DictList(List[_TObject]):
         self,
         search_function: Union[str, Pattern, Callable],
         attribute: Union[str, None] = None,
-    ) -> "DictList[_TObject]":
+    ) -> "DictList[CobraObject]":
         """Query the list.
 
         Parameters
@@ -171,21 +173,21 @@ class DictList(List[_TObject]):
         results._extend_nocheck(matches)
         return results
 
-    def _replace_on_id(self, new_object: _TObject) -> None:
+    def _replace_on_id(self, new_object: CobraObject) -> None:
         """Replace an object by another with the same id."""
         the_id = new_object.id
         the_index = self._dict[the_id]
         list.__setitem__(self, the_index, new_object)
 
     # overriding default list functions with new ones
-    def append(self, entity: _TObject) -> None:
+    def append(self, entity: CobraObject) -> None:
         """Append object to end."""
         the_id = entity.id
         self._check(the_id)
         self._dict[the_id] = len(self)
         list.append(self, entity)
 
-    def union(self, iterable: Iterable[_TObject]) -> None:
+    def union(self, iterable: Iterable[CobraObject]) -> None:
         """Add elements with id's not already in the model."""
         _dict = self._dict
         append = self.append
@@ -193,7 +195,7 @@ class DictList(List[_TObject]):
             if i.id not in _dict:
                 append(i)
 
-    def extend(self, iterable: Iterable[_TObject]) -> None:
+    def extend(self, iterable: Iterable[CobraObject]) -> None:
         """Extend list by appending elements from the iterable.
 
         Sometimes during initialization from an older pickle, _dict
@@ -226,7 +228,7 @@ class DictList(List[_TObject]):
                     f"Is it present twice?"
                 )
 
-    def _extend_nocheck(self, iterable: Iterable[_TObject]) -> None:
+    def _extend_nocheck(self, iterable: Iterable[CobraObject]) -> None:
         """Extend without checking for uniqueness.
 
         This function should only be used internally by DictList when it
@@ -248,7 +250,7 @@ class DictList(List[_TObject]):
         for i, obj in enumerate(islice(self, current_length, None), current_length):
             _dict[obj.id] = i
 
-    def __sub__(self, other: Iterable[_TObject]) -> "DictList[_TObject]":
+    def __sub__(self, other: Iterable[CobraObject]) -> "DictList[CobraObject]":
         """Remove a value or values, and returns the new DictList.
 
         x.__sub__(y) <==> x - y
@@ -268,7 +270,7 @@ class DictList(List[_TObject]):
             total.remove(item)
         return total
 
-    def __isub__(self, other: Iterable[_TObject]) -> "DictList[_TObject]":
+    def __isub__(self, other: Iterable[CobraObject]) -> "DictList[CobraObject]":
         """Remove a value or values in place.
 
         x.__sub__(y) <==> x -= y
@@ -282,7 +284,7 @@ class DictList(List[_TObject]):
             self.remove(item)
         return self
 
-    def __add__(self, other: Iterable[_TObject]) -> "DictList[_TObject]":
+    def __add__(self, other: Iterable[CobraObject]) -> "DictList[CobraObject]":
         """Add item while returning a new DictList.
 
         x.__add__(y) <==> x + y
@@ -298,7 +300,7 @@ class DictList(List[_TObject]):
         total.extend(other)
         return total
 
-    def __iadd__(self, other: Iterable[_TObject]) -> "DictList[_TObject]":
+    def __iadd__(self, other: Iterable[CobraObject]) -> "DictList[CobraObject]":
         """Add item while returning the same DictList.
 
         x.__iadd__(y) <==> x += y
@@ -313,7 +315,7 @@ class DictList(List[_TObject]):
         self.extend(other)
         return self
 
-    def __reduce__(self) -> Tuple[Type["DictList"], Tuple, dict, Iterator[_TObject]]:
+    def __reduce__(self) -> Tuple[Type["DictList"], Tuple, dict, Iterator[CobraObject]]:
         """Return a reduced version of DictList.
 
         This reduced version details the class, an empty Tuple, a dictionary of the
@@ -340,7 +342,7 @@ class DictList(List[_TObject]):
         self._generate_index()
 
     # noinspection PyShadowingBuiltins
-    def index(self, id: Union[str, _TObject], *args) -> int:
+    def index(self, id: Union[str, CobraObject], *args) -> int:
         """Determine the position in the list.
 
         Parameters
@@ -364,7 +366,7 @@ class DictList(List[_TObject]):
         except KeyError:
             raise ValueError(f"{str(id)} not found")
 
-    def __contains__(self, entity: Union[str, _TObject]) -> bool:
+    def __contains__(self, entity: Union[str, CobraObject]) -> bool:
         """Ask if the DictList contain an entity.
 
         DictList.__contains__(entity) <==> entity in DictList
@@ -381,14 +383,14 @@ class DictList(List[_TObject]):
             the_id = entity
         return the_id in self._dict
 
-    def __copy__(self) -> "DictList[_TObject]":
+    def __copy__(self) -> "DictList[CobraObject]":
         """Copy the DictList into a new one."""
         the_copy = DictList()
         list.extend(the_copy, self)
         the_copy._dict = self._dict.copy()
         return the_copy
 
-    def insert(self, index: int, entity: _TObject) -> None:
+    def insert(self, index: int, entity: CobraObject) -> None:
         """Insert entity before index."""
         self._check(entity.id)
         list.insert(self, index, entity)
@@ -399,7 +401,7 @@ class DictList(List[_TObject]):
                 _dict[i] = j + 1
         _dict[entity.id] = index
 
-    def pop(self, *args) -> _TObject:
+    def pop(self, *args) -> CobraObject:
         """Remove and return item at index (default last)."""
         value = list.pop(self, *args)
         index = self._dict.pop(value.id)
@@ -413,11 +415,11 @@ class DictList(List[_TObject]):
                 _dict[i] = j - 1
         return value
 
-    def add(self, x: _TObject) -> None:
+    def add(self, x: CobraObject) -> None:
         """Opposite of `remove`. Mirrors set.add."""
         self.extend([x])
 
-    def remove(self, x: Union[str, _TObject]) -> None:
+    def remove(self, x: Union[str, CobraObject]) -> None:
         """.. warning :: Internal use only.
 
         Each item is unique in the list which allows this
@@ -449,8 +451,8 @@ class DictList(List[_TObject]):
         self._generate_index()
 
     def __getitem__(
-        self, i: Union[int, slice, Iterable, _TObject, "DictList[_TObject]"]
-    ) -> Union["DictList[_TObject]", _TObject]:
+        self, i: Union[int, slice, Iterable, CobraObject, "DictList[CobraObject]"]
+    ) -> Union["DictList[CobraObject]", CobraObject]:
         """Get item from DictList."""
         if isinstance(i, int):
             return list.__getitem__(self, i)
@@ -470,7 +472,7 @@ class DictList(List[_TObject]):
             return list.__getitem__(self, i)
 
     def __setitem__(
-        self, i: Union[slice, int], y: Union[List[_TObject], _TObject]
+        self, i: Union[slice, int], y: Union[List[CobraObject], CobraObject]
     ) -> None:
         """Set an item via index or slice.
 
@@ -513,11 +515,13 @@ class DictList(List[_TObject]):
             if j > index:
                 _dict[i] = j - 1
 
-    def __getslice__(self, i: int, j: int) -> "DictList[_TObject]":
+    def __getslice__(self, i: int, j: int) -> "DictList[CobraObject]":
         """Get a slice from it to j of DictList."""
         return self.__getitem__(slice(i, j))
 
-    def __setslice__(self, i: int, j: int, y: Union[List[_TObject], _TObject]) -> None:
+    def __setslice__(
+        self, i: int, j: int, y: Union[List[CobraObject], CobraObject]
+    ) -> None:
         """Set slice, where y is an iterable."""
         self.__setitem__(slice(i, j), y)
 
@@ -525,7 +529,7 @@ class DictList(List[_TObject]):
         """Remove slice."""
         self.__delitem__(slice(i, j))
 
-    def __getattr__(self, attr: Any) -> _TObject:
+    def __getattr__(self, attr: Any) -> CobraObject:
         """Get an attribute by id."""
         try:
             return DictList.get_by_id(self, attr)
