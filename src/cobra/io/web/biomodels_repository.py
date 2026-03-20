@@ -49,7 +49,7 @@ class BioModels(AbstractModelRepository):
             Passed to the parent constructor in order to enable multiple inheritance.
 
         """
-        super().__init__(url="https://www.ebi.ac.uk/biomodels/model/", **kwargs)
+        super().__init__(url="https://biomodels.org/model/", **kwargs)
 
     def get_sbml(self, model_id: str) -> bytes:
         """
