@@ -116,7 +116,9 @@ try:
 
             if self.problem.inequalities.shape[0] > 0:
                 A = self.problem.inequalities
-                b = self.problem.bounds
+                lb, ub = self.problem.bounds
+                A, b = np.concat([-A, A], axis=0), np.concat([-lb, ub], axis=0)
+                A, b = A[~np.isinf(b)], b[~np.isinf(b)]
             else:
                 # empty dummy constraint to set problem dimension
                 A = np.ones((0, self.problem.equalities.shape[1]))
