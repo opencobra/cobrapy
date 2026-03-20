@@ -9,6 +9,8 @@
 
 ## Fixes
 
+- Updated BioModel URL from `https://www.ebi.ac.ak/biomodels/model/` to `https://biomodels.org/model/`.
+
 ## Other
 
 - Updated type hinting for the `DictList` class so that the type of `Object` contained by a `DictList` can be specified. For example, the hinted return type of `model.reactions.get_by_id` is now `Reaction` instead of `Object`.
