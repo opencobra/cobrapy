@@ -126,7 +126,15 @@ def sample(
 
     """
     if method == "auto":
-        method = "chrr" if hopsy_is_available else "optgp"
+        if hopsy_is_available:
+            method = "chrr"
+        else:
+            method = "optgp"
+            warnings.warn(
+                "hopsy is not available in your environment."
+                "Falling back to 'optgp' sampler.",
+                stacklevel=2,
+            )
 
     if method == "optgp":
         sampler = OptGPSampler(model, processes=processes, thinning=thinning, seed=seed)

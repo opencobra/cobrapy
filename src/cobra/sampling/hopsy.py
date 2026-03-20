@@ -154,10 +154,12 @@ try:
             self.rngs = None
 
             self.mcs = [
-                hopsy.MarkovChain(self._problem, self.sampler) for i in range(processes)
+                hopsy.MarkovChain(self._problem, self.sampler)
+                for i in range(self.processes)
             ]
             self.rngs = [
-                hopsy.RandomNumberGenerator(self._seed, i) for i in range(processes)
+                hopsy.RandomNumberGenerator(self._seed, i)
+                for i in range(self.processes)
             ]
 
         def sample(self, n: int, fluxes: bool = True) -> pd.DataFrame:
@@ -182,7 +184,7 @@ try:
             _, samples = hopsy.sample(
                 self.mcs,
                 self.rngs,
-                n_samples=n // self.processes,
+                n_samples=int(np.ceil(n / self.processes)),
                 thinning=self.thinning,
                 n_procs=self.processes,
             )
