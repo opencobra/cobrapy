@@ -10,6 +10,7 @@
 ## Fixes
 
 - Updated BioModel URL from `https://www.ebi.ac.ak/biomodels/model/` to `https://biomodels.org/model/`.
+- Caching of downloads from model repositories has been temporarily deactivated due to [CVE in diskcache](https://github.com/grantjenks/python-diskcache/issues/357). This will be re-enabled as soon as a fix is implemented or we find an adequate substitute.
 
 ## Other
 
