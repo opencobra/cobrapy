@@ -10,7 +10,7 @@ jobs:
   prerequisites:
     uses: ./.github/workflows/test.yml
   safety:
-    uses: ./github/workflows/safety.yml
+    uses: ./.github/workflows/safety.yml
 
   release:
     needs: [prerequisites]
