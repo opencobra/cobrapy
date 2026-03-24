@@ -54,7 +54,10 @@ def test_bigg_access(bigg_models: Mock) -> None:
     bigg_models.get_sbml.assert_called_once_with(model_id="e_coli_core")
 
 
-@pytest.mark.xfail(condition=os.environ.get("GITHUB_ACTIONS"), reason="BioModels often blocks Github Actions")
+@pytest.mark.xfail(
+    condition=os.environ.get("GITHUB_ACTIONS"),
+    reason="BioModels often blocks Github Actions",
+)
 def test_biomodels_access(biomodels: Mock) -> None:
     """Test that SBML would be retrieved from the BioModels repository.
 
