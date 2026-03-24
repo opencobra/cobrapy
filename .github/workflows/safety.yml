@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: [3.10, 3.13]
+        python-version: ["3.10", "3.13"]
     timeout-minutes: 360
 
     steps:
