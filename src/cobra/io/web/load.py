@@ -4,7 +4,6 @@ import gzip
 import logging
 from typing import TYPE_CHECKING, Iterable
 
-import diskcache
 import httpx
 import libsbml
 
@@ -57,8 +56,6 @@ def load_model(
         specific.
     repositories : iterable, optional
         An iterable of repository accessor instances. The model_id is searched in order.
-    cache : bool, optional
-        Whether or not to use the local caching mechanism (default yes).
 
     Returns
     -------
@@ -84,50 +81,8 @@ def load_model(
     BioModels
 
     """
-    if cache:
-        data = _cached_load(
-            model_id=model_id,
-            repositories=repositories,
-        )
-    else:
-        data = _fetch_model(model_id=model_id, repositories=repositories)
+    data = _fetch_model(model_id=model_id, repositories=repositories)
     return get_model_from_gzip_sbml(data)
-
-
-def _cached_load(
-    model_id: str,
-    repositories: Iterable[AbstractModelRepository],
-) -> bytes:
-    """
-    Attempt to load a gzip-compressed SBML document from the cache.
-
-    If the given model identifier is not in the cache, the remote repositories are
-    searched.
-
-    Parameters
-    ----------
-    model_id : str
-        The identifier of the desired metabolic model. This is typically repository
-        specific.
-    repositories : iterable
-        An iterable of repository accessor instances. The model_id is searched in order.
-
-    Returns
-    -------
-    bytes
-        A gzip-compressed, UTF-8 encoded SBML document.
-
-    """
-    with diskcache.Cache(
-        directory=str(configuration.cache_directory),
-        size_limit=configuration.max_cache_size,
-    ) as cache:
-        try:
-            return cache[model_id]
-        except KeyError:
-            data = _fetch_model(model_id=model_id, repositories=repositories)
-            cache.set(key=model_id, value=data, expire=configuration.cache_expiration)
-            return data
 
 
 def _fetch_model(

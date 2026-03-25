@@ -102,6 +102,7 @@ def test_remote_load(model_id: str, num_metabolites: int, num_reactions: int) ->
     assert len(model.reactions) == num_reactions
 
 
+@pytest.mark.skip("caching currently removed because of a CVE in diskcache")
 def test_cache(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, bigg_models: Mock, biomodels: Mock
 ) -> None:
