@@ -3,7 +3,7 @@
 import hashlib
 import re
 from collections import defaultdict
-from copy import copy, deepcopy
+from copy import deepcopy
 from functools import partial
 from math import isclose, isinf
 from operator import attrgetter
