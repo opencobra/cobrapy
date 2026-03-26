@@ -6,7 +6,22 @@
     <description>Recent content in Releases on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 31 Oct 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/releases/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 26 Mar 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/releases/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>0.31.1</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.31.1/</link>
+      <pubDate>Thu, 26 Mar 2026 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/releases/0.31.1/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0310&#34;&gt;Release notes for cobrapy 0.31.0&lt;/h1&gt;
+&lt;h2 id=&#34;new-features&#34;&gt;New features&lt;/h2&gt;
+&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;fix the failed deployment of 0.31.0, my bad - CD&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;other&#34;&gt;Other&lt;/h2&gt;</description>
+    </item>
+    
     <item>
       <title>0.29.0</title>
       <link>https://opencobra.github.io/cobrapy/releases/0.29.0/</link>

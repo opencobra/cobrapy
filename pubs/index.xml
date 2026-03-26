@@ -6,7 +6,1528 @@
     <description>Recent content in Pubs on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 29 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/pubs/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 05 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/pubs/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>A quantitative description of light-limited cyanobacterial growth using flux balance analysis</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm39102434/</link>
+      <pubDate>Mon, 05 Aug 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm39102434/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>CFSA: Comparative flux sampling analysis as a guide for strain design</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm39072282/</link>
+      <pubDate>Mon, 29 Jul 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm39072282/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Current State, Challenges, and Opportunities in Genome-Scale Resource Allocation Models: A Mathematical Perspective</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm39057688/</link>
+      <pubDate>Fri, 26 Jul 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm39057688/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genome-scale community modelling elucidates the metabolic interaction in Indian type-2 diabetic gut microbiota</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm39060274/</link>
+      <pubDate>Fri, 26 Jul 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm39060274/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Mixotrophic growth of a ubiquitous marine diatom</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm39018398/</link>
+      <pubDate>Wed, 17 Jul 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm39018398/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Emerging tools and best practices for studying gut microbial community metabolism</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38961185/</link>
+      <pubDate>Wed, 03 Jul 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38961185/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Pangenome reconstruction of Lactobacillaceae metabolism predicts species-specific metabolic traits</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38920366/</link>
+      <pubDate>Wed, 26 Jun 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38920366/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Model-driven characterization of functional diversity of Pseudomonas aeruginosa clinical isolates with broadly representative phenotypes</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38836744/</link>
+      <pubDate>Wed, 05 Jun 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38836744/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>A synthetic methylotrophic Escherichia coli as a chassis for bioproduction from methanol</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38828428/</link>
+      <pubDate>Mon, 03 Jun 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38828428/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Accounting for NAD Concentrations in Genome-Scale Metabolic Models Captures Important Metabolic Alterations in NAD-Depleted Systems</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38786009/</link>
+      <pubDate>Fri, 24 May 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38786009/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Construction of an enzyme-constrained metabolic network model for Myceliophthora thermophila using machine learning-based k(cat) data</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38750569/</link>
+      <pubDate>Wed, 15 May 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38750569/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Convex Representation of Metabolic Networks with Michaelis-Menten Kinetics</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38671332/</link>
+      <pubDate>Fri, 26 Apr 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38671332/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Spatial transcriptome-guided multi-scale framework connects P. aeruginosa metabolic states to oxidative stress biofilm microenvironment</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38669236/</link>
+      <pubDate>Fri, 26 Apr 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38669236/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>ECMpy 2.0: A Python package for automated construction and analysis of enzyme-constrained models</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38651096/</link>
+      <pubDate>Tue, 23 Apr 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38651096/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genome-scale model of Rothia mucilaginosa predicts gene essentialities and reveals metabolic capabilities</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38652457/</link>
+      <pubDate>Tue, 23 Apr 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38652457/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genome-scale model development and genomic sequencing of the oleaginous clade Lipomyces</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38638323/</link>
+      <pubDate>Fri, 19 Apr 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38638323/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Cat-E: A comprehensive web tool for exploring cancer targeting strategies</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38596315/</link>
+      <pubDate>Wed, 10 Apr 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38596315/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Reconstruction of the genome-scale metabolic network model of Sinorhizobium fredii CCBAU45436 for free-living and symbiotic states</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38590605/</link>
+      <pubDate>Tue, 09 Apr 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38590605/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Investigating the metabolite signature of an altered oral microbiota as a discriminant factor for multiple sclerosis: a pilot study</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38565581/</link>
+      <pubDate>Tue, 02 Apr 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38565581/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Logic programming-based Minimal Cut Sets reveal consortium-level therapeutic targets for chronic wound infections</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38565568/</link>
+      <pubDate>Tue, 02 Apr 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38565568/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>PyCoMo: a python package for community metabolic model creation and analysis</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38532295/</link>
+      <pubDate>Wed, 27 Mar 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38532295/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Prediction of metabolites associated with somatic mutations in cancers by using genome-scale metabolic models and mutation data</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38468344/</link>
+      <pubDate>Tue, 12 Mar 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38468344/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Shu: visualization of high-dimensional biological pathways</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38452346/</link>
+      <pubDate>Thu, 07 Mar 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38452346/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Integration of graph neural networks and genome-scale metabolic models for predicting gene essentiality</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38448436/</link>
+      <pubDate>Wed, 06 Mar 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38448436/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Computational analysis into the potential of azo dyes as a feedstock for actinorhodin biosynthesis in Pseudomonas putida</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38437212/</link>
+      <pubDate>Mon, 04 Mar 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38437212/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Metabolites of pathogenic microorganisms database (MPMdb) and its seed metabolite applications</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38391229/</link>
+      <pubDate>Fri, 23 Feb 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38391229/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genome scale metabolic network modelling for metabolic profile predictions</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38386685/</link>
+      <pubDate>Thu, 22 Feb 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38386685/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Intracellular Flux Prediction of Recombinant Escherichia coli Producing Gamma-Aminobutyric Acid</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38379308/</link>
+      <pubDate>Wed, 21 Feb 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38379308/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Probing efficient microbial CO(2) utilisation through metabolic and process modelling</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38380934/</link>
+      <pubDate>Wed, 21 Feb 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38380934/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>A validated pangenome-scale metabolic model for the Klebsiella pneumoniae species complex</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38376382/</link>
+      <pubDate>Tue, 20 Feb 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38376382/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Deciphering the impact of microbial interactions on COPD exacerbation: An in-depth analysis of the lung microbiome</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38370212/</link>
+      <pubDate>Mon, 19 Feb 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38370212/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Protein production dynamics and physiological adaptation of recombinant Komagataella phaffii at near-zero growth rates</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38331812/</link>
+      <pubDate>Thu, 08 Feb 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38331812/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>mergem: merging, comparing, and translating genome-scale metabolic models using universal identifiers</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38312936/</link>
+      <pubDate>Mon, 05 Feb 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38312936/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Machine learning identifies key metabolic reactions in bacterial growth on different carbon sources</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38291231/</link>
+      <pubDate>Tue, 30 Jan 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38291231/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>FastKnock: an efficient next-generation approach to identify all knockout strategies for strain optimization</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38287320/</link>
+      <pubDate>Mon, 29 Jan 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38287320/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genome-scale metabolic network model and phenome of solvent-tolerant Pseudomonas putida S12</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38229031/</link>
+      <pubDate>Tue, 16 Jan 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38229031/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>DLTKcat: deep learning-based prediction of temperature-dependent enzyme turnover rates</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38189538/</link>
+      <pubDate>Mon, 08 Jan 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38189538/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Convergence of resistance and evolutionary responses in Escherichia coli and Salmonella enterica co-inhabiting chicken farms in China</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38182559/</link>
+      <pubDate>Fri, 05 Jan 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38182559/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Disentangling a metabolic cross-feeding in a halophilic archaea-bacteria consortium</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38179456/</link>
+      <pubDate>Fri, 05 Jan 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38179456/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genome-scale metabolic model of the versatile bacterium Paracoccus denitrificans Pd1222</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38180324/</link>
+      <pubDate>Fri, 05 Jan 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38180324/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Methanol bioconversion into C3, C4, and C5 platform chemicals by the yeast Ogataea polymorpha</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38172830/</link>
+      <pubDate>Wed, 03 Jan 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38172830/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>A computational model of Pseudomonas syringae metabolism unveils a role for branched-chain amino acids in Arabidopsis leaf colonization</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38150474/</link>
+      <pubDate>Wed, 27 Dec 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38150474/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>MMP3C: an in-silico framework to depict cancer metabolic plasticity using gene expression profiles</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38145946/</link>
+      <pubDate>Mon, 25 Dec 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38145946/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>State-of the-Art Constraint-Based Modeling of Microbial Metabolism: From Basics to Context-Specific Models with a Focus on Methanotrophs</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38138131/</link>
+      <pubDate>Sat, 23 Dec 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38138131/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Metabolic engineering of Caldicellulosiruptor bescii for 2,3-butanediol production from unpretreated lignocellulosic biomass and metabolic strategies for improving yields and titers</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38131671/</link>
+      <pubDate>Fri, 22 Dec 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38131671/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Microbial interactions shape cheese flavour formation</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38129392/</link>
+      <pubDate>Thu, 21 Dec 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38129392/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Statistical prediction of microbial metabolic traits from genomes</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38113208/</link>
+      <pubDate>Tue, 19 Dec 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38113208/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Co-Cultivated Enzyme Constraint Metabolic Network Model for Rational Guidance in Constructing Synthetic Consortia to Achieve Optimal Pathway Allocation Prediction</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38093511/</link>
+      <pubDate>Thu, 14 Dec 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38093511/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>A toolbox of machine learning software to support microbiome analysis</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38075858/</link>
+      <pubDate>Mon, 11 Dec 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38075858/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Evolution of E. coli in a mouse model of inflammatory bowel disease leads to a disease-specific bacterial genotype and trade-offs with clinical relevance</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38059748/</link>
+      <pubDate>Thu, 07 Dec 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38059748/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genome sequencing and metabolic network reconstruction of a novel sulfur-oxidizing bacterium Acidithiobacillus Ameehan</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38053556/</link>
+      <pubDate>Wed, 06 Dec 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38053556/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>IL-17A Orchestrates Reactive Oxygen Species/HIF1α-Mediated Metabolic Reprogramming in Psoriasis</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38019129/</link>
+      <pubDate>Wed, 29 Nov 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38019129/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>PolyID: Artificial Intelligence for Discovering Performance-Advantaged and Sustainable Polymers</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38024155/</link>
+      <pubDate>Wed, 29 Nov 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38024155/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Sulfate limitation increases specific plasmid DNA yield and productivity in E. coli fed-batch processes</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm38017439/</link>
+      <pubDate>Wed, 29 Nov 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm38017439/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Model validation and selection in metabolic flux analysis and flux balance analysis</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37997613/</link>
+      <pubDate>Fri, 24 Nov 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37997613/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genome-scale metabolic models reveal determinants of phenotypic differences in non-Saccharomyces yeasts</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37990145/</link>
+      <pubDate>Wed, 22 Nov 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37990145/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Metabolic similarity and the predictability of microbial community assembly</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37961608/</link>
+      <pubDate>Tue, 14 Nov 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37961608/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Inferring microbial interactions with their environment from genomic and metagenomic data</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37956203/</link>
+      <pubDate>Mon, 13 Nov 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37956203/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>BayFlux: A Bayesian method to quantify metabolic Fluxes and their uncertainty at the genome scale</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37948450/</link>
+      <pubDate>Fri, 10 Nov 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37948450/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>The limitations of phenotype prediction in metabolism</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37948461/</link>
+      <pubDate>Fri, 10 Nov 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37948461/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>COVID-19: A complex disease with a unique metabolic signature</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37943960/</link>
+      <pubDate>Thu, 09 Nov 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37943960/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genome-scale metabolic models consistently predict in vitro characteristics of Corynebacterium striatum</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37936955/</link>
+      <pubDate>Wed, 08 Nov 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37936955/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>COMO: a pipeline for multi-omics data integration in metabolic modeling and drug discovery</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37930022/</link>
+      <pubDate>Mon, 06 Nov 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37930022/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Simultaneous application of enzyme and thermodynamic constraints to metabolic models using an updated Python implementation of GECKO</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37931133/</link>
+      <pubDate>Mon, 06 Nov 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37931133/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>A genome-scale metabolic model of parasitic whipworm</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37907472/</link>
+      <pubDate>Wed, 01 Nov 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37907472/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>&#39;Social&#39; versus &#39;asocial&#39; cells-dynamic competition flux balance analysis</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37898597/</link>
+      <pubDate>Sun, 29 Oct 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37898597/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Evaluating E. coli genome-scale metabolic model accuracy with high-throughput mutant fitness data</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37888487/</link>
+      <pubDate>Fri, 27 Oct 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37888487/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>pymgpipe: microbiome metabolic modeling in Python</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37885608/</link>
+      <pubDate>Fri, 27 Oct 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37885608/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Diverse electron carriers drive syntrophic interactions in an enriched anaerobic acetate-oxidizing consortium</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37880541/</link>
+      <pubDate>Wed, 25 Oct 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37880541/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Predicting metabolic fluxes from omics data via machine learning: Moving from knowledge-driven towards data-driven approaches</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37876626/</link>
+      <pubDate>Wed, 25 Oct 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37876626/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>An integrated systems biology approach reveals differences in formate metabolism in the genus Methanothermobacter</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37854702/</link>
+      <pubDate>Thu, 19 Oct 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37854702/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Heterologous overproduction of oviedomycin by refactoring biosynthetic gene cluster and metabolic engineering of host strain Streptomyces coelicolor</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37838667/</link>
+      <pubDate>Sat, 14 Oct 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37838667/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Bactabolize is a tool for high-throughput generation of bacterial strain-specific metabolic models</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37815531/</link>
+      <pubDate>Tue, 10 Oct 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37815531/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Enzyme-constrained metabolic model and in silico metabolic engineering of Clostridium ljungdahlii for the development of sustainable production processes</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37790242/</link>
+      <pubDate>Wed, 04 Oct 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37790242/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Optimal energy and redox metabolism in the cyanobacterium Synechocystis sp. PCC 6803</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37739963/</link>
+      <pubDate>Fri, 22 Sep 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37739963/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Unveiling metabolic pathways involved in the extreme desiccation tolerance of an Atacama cyanobacterium</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37737281/</link>
+      <pubDate>Fri, 22 Sep 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37737281/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>The first multi-tissue genome-scale metabolic model of a woody plant highlights suberin biosynthesis pathways in Quercus suber</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37729340/</link>
+      <pubDate>Wed, 20 Sep 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37729340/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Data-driven transcriptomics analysis identifies PCSK9 as a novel key regulator in liver aging</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37726433/</link>
+      <pubDate>Tue, 19 Sep 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37726433/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Hybrid computational modeling highlights reverse warburg effect in breast cancer-associated fibroblasts</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37705596/</link>
+      <pubDate>Thu, 14 Sep 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37705596/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Co-feeding enhances the yield of methyl ketones</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37704397/</link>
+      <pubDate>Wed, 13 Sep 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37704397/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Immunometabolic actions of trabectedin and lurbinectedin on human macrophages: relevance for their anti-tumor activity</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37675104/</link>
+      <pubDate>Thu, 07 Sep 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37675104/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genome content predicts the carbon catabolic preferences of heterotrophic bacteria</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37653010/</link>
+      <pubDate>Thu, 31 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37653010/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Protein engineering and iterative multimodule optimization for vitamin B(6) production in Escherichia coli</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37652926/</link>
+      <pubDate>Thu, 31 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37652926/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>SBcoyote: An Extensible Python-Based Reaction Editor and Viewer</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37645048/</link>
+      <pubDate>Wed, 30 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37645048/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Simulated Design-Build-Test-Learn Cycles for Consistent Comparison of Machine Learning Methods in Metabolic Engineering</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37616156/</link>
+      <pubDate>Thu, 24 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37616156/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>The Architecture of Metabolic Networks Constrains the Evolution of Microbial Resource Hierarchies</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37619982/</link>
+      <pubDate>Thu, 24 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37619982/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>A methanotrophic bacterium to enable methane removal for climate mitigation</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37603746/</link>
+      <pubDate>Mon, 21 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37603746/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>A structured evaluation of genome-scale constraint-based modeling tools for microbial consortia</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37578975/</link>
+      <pubDate>Mon, 14 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37578975/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>FreeFlux: A Python Package for Time-Efficient Isotopically Nonstationary Metabolic Flux Analysis</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37561998/</link>
+      <pubDate>Thu, 10 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37561998/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Construction and application of high-quality genome-scale metabolic model of Zymomonas mobilis to guide rational design of microbial cell factories</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37554249/</link>
+      <pubDate>Wed, 09 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37554249/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>A neural-mechanistic hybrid approach improving the predictive power of genome-scale metabolic models</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37537192/</link>
+      <pubDate>Thu, 03 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37537192/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Network-wide thermodynamic constraints shape NAD(P)H cofactor specificity of biochemical reactions</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37537166/</link>
+      <pubDate>Thu, 03 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37537166/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>The Ratio of Key Metabolic Transcripts Is a Predictive Biomarker of Breast Cancer Metastasis to the Lung</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37526524/</link>
+      <pubDate>Tue, 01 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37526524/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Stable diverse food webs become more common when interactions are more biologically constrained</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37487080/</link>
+      <pubDate>Mon, 24 Jul 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37487080/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genome-scale metabolic modeling of Aspergillus fumigatus strains reveals growth dependencies on the lung microbiome</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37474497/</link>
+      <pubDate>Thu, 20 Jul 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37474497/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Biomanufacturing by In Vitro Biotransformation (ivBT) Using Purified Cascade Multi-enzymes</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37455283/</link>
+      <pubDate>Sun, 16 Jul 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37455283/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Multiplatform Metabolomics Characterization Reveals Novel Metabolites and Phospholipid Compositional Rules of Haemophilus influenzae Rd KW20</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37446331/</link>
+      <pubDate>Fri, 14 Jul 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37446331/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Turnover number predictions for kinetically uncharacterized enzymes using machine and deep learning</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37438349/</link>
+      <pubDate>Wed, 12 Jul 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37438349/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Transcriptome-guided metabolic network analysis reveals rearrangements of carbon flux distribution in Neisseria gonorrhoeae during neutrophil co-culture</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37387581/</link>
+      <pubDate>Fri, 30 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37387581/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Prediction of Metabolic Flux Distribution by Flux Sampling: As a Case Study, Acetate Production from Glucose in Escherichia coli</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37370567/</link>
+      <pubDate>Wed, 28 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37370567/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>A systematic overexpression approach reveals native targets to increase squalene production in Synechocystis sp. PCC 6803</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37324717/</link>
+      <pubDate>Fri, 16 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37324717/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Dynamic genome-based metabolic modeling of the predominant cellulolytic rumen bacterium Fibrobacter succinogenes S85</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37289026/</link>
+      <pubDate>Thu, 08 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37289026/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Microbial electrosynthesis with Clostridium ljungdahlii benefits from hydrogen electron mediation and permits a greater variety of products</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37288452/</link>
+      <pubDate>Thu, 08 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37288452/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Optimizing Strategies for Bio-Based Ethanol Production Using Genome-Scale Metabolic Modeling of the Hyperthermophilic Archaeon, Pyrococcus furiosus</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37289085/</link>
+      <pubDate>Thu, 08 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37289085/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>From genotype to phenotype: computational approaches for inferring microbial traits relevant to the food industry</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37286882/</link>
+      <pubDate>Wed, 07 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37286882/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Reconstructor: a COBRApy compatible tool for automated genome-scale metabolic network reconstruction with parsimonious flux-based gap-filling</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37279743/</link>
+      <pubDate>Tue, 06 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37279743/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>On the representativeness and stability of a set of EFMs</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37252834/</link>
+      <pubDate>Tue, 30 May 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37252834/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Extracting functionally accurate context-specific models of Atlantic salmon metabolism</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37244928/</link>
+      <pubDate>Sat, 27 May 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37244928/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>PTEN-induced kinase 1 is associated with renal aging, via the cGAS-STING pathway</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37183600/</link>
+      <pubDate>Mon, 15 May 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37183600/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Engineering a new-to-nature cascade for phosphate-dependent formate to formaldehyde conversion in vitro and in vivo</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37160875/</link>
+      <pubDate>Wed, 10 May 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37160875/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Manipulating Fermentation Pathways in the Hyperthermophilic Archaeon Pyrococcus furiosus for Ethanol Production up to 95°C Driven by Carbon Monoxide Oxidation</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37162365/</link>
+      <pubDate>Wed, 10 May 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37162365/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>CAVE: a cloud-based platform for analysis and visualization of metabolic pathways</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37158271/</link>
+      <pubDate>Tue, 09 May 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37158271/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Mycobacterial metabolic model development for drug target identification</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37153490/</link>
+      <pubDate>Mon, 08 May 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37153490/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Optimal enzyme utilization suggests that concentrations and thermodynamics determine binding mechanisms and enzyme saturations</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37147292/</link>
+      <pubDate>Fri, 05 May 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37147292/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Meta-analysis of cheese microbiomes highlights contributions to multiple aspects of quality</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37128079/</link>
+      <pubDate>Tue, 02 May 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37128079/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Engineering Escherichia coli for Poly-β-hydroxybutyrate Production from Methanol</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37106602/</link>
+      <pubDate>Fri, 28 Apr 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37106602/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>PeakDecoder enables machine learning-based metabolite annotation and accurate profiling in multidimensional mass spectrometry measurements</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37117207/</link>
+      <pubDate>Fri, 28 Apr 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37117207/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Parameter inference for enzyme and temperature constrained genome-scale models</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm37055413/</link>
+      <pubDate>Thu, 13 Apr 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm37055413/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Highlighting the potential of Synechococcus elongatus PCC 7942 as platform to produce α-linolenic acid through an updated genome-scale metabolic modeling</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36998399/</link>
+      <pubDate>Fri, 31 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36998399/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Model Validation and Selection in Metabolic Flux Analysis and Flux Balance Analysis</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36994165/</link>
+      <pubDate>Thu, 30 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36994165/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>FBA-PRCC. Partial Rank Correlation Coefficient (PRCC) Global Sensitivity Analysis (GSA) in Application to Constraint-Based Models</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36979435/</link>
+      <pubDate>Wed, 29 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36979435/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Loss of the Kidney Urate Transporter, Urat1, Leads to Disrupted Redox Homeostasis in Mice</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36979028/</link>
+      <pubDate>Wed, 29 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36979028/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>New workflow predicts drug targets against SARS-CoV-2 via metabolic changes in infected cells</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36952396/</link>
+      <pubDate>Thu, 23 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36952396/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>An Assessment of Quaternary Structure Functionality in Homomer Protein Complexes</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36947103/</link>
+      <pubDate>Wed, 22 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36947103/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Proteomic analysis for the effects of non-saponin fraction with rich polysaccharide from Korean Red Ginseng on Alzheimer&#39;s disease in a mouse model</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36926613/</link>
+      <pubDate>Fri, 17 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36926613/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Phenotype-specific estimation of metabolic fluxes using gene expression data</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36915687/</link>
+      <pubDate>Tue, 14 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36915687/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Analysis of companion cell and phloem metabolism using a transcriptome-guided model of Arabidopsis metabolism</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36913519/</link>
+      <pubDate>Mon, 13 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36913519/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Elucidating dynamic anaerobe metabolism with HRMAS (13)C NMR and genome-scale modeling</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36894723/</link>
+      <pubDate>Thu, 09 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36894723/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>How reliable are Chinese hamster ovary (CHO) cell genome-scale metabolic models?</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36866411/</link>
+      <pubDate>Fri, 03 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36866411/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Vibrio natriegens genome-scale modeling reveals insights into halophilic adaptations and resource allocation</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36847213/</link>
+      <pubDate>Mon, 27 Feb 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36847213/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Metatranscriptomics-guided genome-scale metabolic modeling of microbial communities</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36814842/</link>
+      <pubDate>Thu, 23 Feb 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36814842/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genome-scale model of Pseudomonas aeruginosa metabolism unveils virulence and drug potentiation</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36765199/</link>
+      <pubDate>Fri, 10 Feb 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36765199/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Distinct evolutionary trajectories in the Escherichia coli pangenome occur within sequence types</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36748558/</link>
+      <pubDate>Tue, 07 Feb 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36748558/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>A systems level approach to study metabolic networks in prokaryotes with the aromatic amino acid biosynthesis pathway</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36726720/</link>
+      <pubDate>Thu, 02 Feb 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36726720/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>CONTRABASS: exploiting flux constraints in genome-scale models for the detection of vulnerabilities</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36692133/</link>
+      <pubDate>Tue, 24 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36692133/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Model-driven experimental design workflow expands understanding of regulatory role of Nac in Escherichia coli</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36685725/</link>
+      <pubDate>Mon, 23 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36685725/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Context-Specific Genome-Scale Metabolic Modelling and Its Application to the Analysis of COVID-19 Metabolic Signatures</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36677051/</link>
+      <pubDate>Sat, 21 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36677051/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>ecBSU1: A Genome-Scale Enzyme-Constrained Model of Bacillus subtilis Based on the ECMpy Workflow</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36677469/</link>
+      <pubDate>Sat, 21 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36677469/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>In silico prediction of potential indigenous microbial biomarkers in Penaeus vannamei identified through meta-analysis and genome-scale metabolic modelling</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36631881/</link>
+      <pubDate>Wed, 11 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36631881/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Model-driven approach for the production of butyrate from CO(2)/H(2) by a novel co-culture of C. autoethanogenum and C. beijerinckii</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36620068/</link>
+      <pubDate>Mon, 09 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36620068/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>A study of a diauxic growth experiment using an expanded dynamic flux balance framework</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36607958/</link>
+      <pubDate>Fri, 06 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36607958/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Identifying metabolic shifts in Crohn&#39;s disease using&#39; omics-driven contextualized computational metabolic network models</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36604447/</link>
+      <pubDate>Thu, 05 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36604447/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>High-quality genome-scale metabolic network reconstruction of probiotic bacterium Escherichia coli Nissle 1917</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36585633/</link>
+      <pubDate>Fri, 30 Dec 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36585633/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Predicting stress response and improved protein overproduction in Bacillus subtilis</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36575180/</link>
+      <pubDate>Tue, 27 Dec 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36575180/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>An improved algorithm for flux variability analysis</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36536290/</link>
+      <pubDate>Mon, 19 Dec 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36536290/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Metabolic Network Models of the Gardnerella Pangenome Identify Key Interactions with the Vaginal Environment</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36511689/</link>
+      <pubDate>Tue, 13 Dec 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36511689/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Application of comparative genomics of Acetobacter species facilitates genome-scale metabolic reconstruction of the Acetobacter ghanensis LMG 23848(T) and Acetobacter senegalensis 108B cocoa strains</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36504784/</link>
+      <pubDate>Mon, 12 Dec 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36504784/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Metabolic reprogramming in Rheumatoid Arthritis Synovial Fibroblasts: A hybrid modeling approach</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36508473/</link>
+      <pubDate>Mon, 12 Dec 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36508473/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>ChiMera: an easy to use pipeline for bacterial genome based metabolic network reconstruction, evaluation and visualization</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36451100/</link>
+      <pubDate>Wed, 30 Nov 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36451100/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genetically personalised organ-specific metabolic models in health and disease</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36446790/</link>
+      <pubDate>Tue, 29 Nov 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36446790/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Evolution and regulation of microbial secondary metabolism</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36409069/</link>
+      <pubDate>Mon, 21 Nov 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36409069/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>YEASTRACT&#43;: a portal for the exploitation of global transcription regulation and metabolic model data in yeast biotechnology and pathogenesis</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36350610/</link>
+      <pubDate>Wed, 09 Nov 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36350610/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Enhancing control systems of higher plant culture chambers via multilevel structural mechanistic modelling</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36340344/</link>
+      <pubDate>Mon, 07 Nov 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36340344/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Coordination of CcpA and CodY Regulators in Staphylococcus aureus USA300 Strains</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36321827/</link>
+      <pubDate>Wed, 02 Nov 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36321827/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Drug transporters OAT1 and OAT3 have specific effects on multiple organs and gut microbiome as revealed by contextualized metabolic network reconstructions</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36316339/</link>
+      <pubDate>Tue, 01 Nov 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36316339/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Whole-genome sequencing and genome-scale metabolic modeling of Chromohalobacter canadensis 85B to explore its salt tolerance and biotechnological use</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36314754/</link>
+      <pubDate>Mon, 31 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36314754/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genome-scale metabolic modeling reveals increased reliance on valine catabolism in clinical isolates of Klebsiella pneumoniae</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36307414/</link>
+      <pubDate>Fri, 28 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36307414/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>NCMW: A Python Package to Analyze Metabolic Interactions in the Nasal Microbiome</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36304309/</link>
+      <pubDate>Fri, 28 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36304309/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Combining denoising of RNA-seq data and flux balance analysis for cluster analysis of single cells</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36284276/</link>
+      <pubDate>Wed, 26 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36284276/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Machine Learning and Hybrid Methods for Metabolic Pathway Modeling</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36227553/</link>
+      <pubDate>Thu, 13 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36227553/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Towards a hybrid user interface for the visual exploration of large biomolecular networks using virtual reality</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36215728/</link>
+      <pubDate>Mon, 10 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36215728/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>AHR is a master regulator of diverse pathways in endogenous metabolism</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36198709/</link>
+      <pubDate>Wed, 05 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36198709/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Angiogenesis goes computational - The future way forward to discover new angiogenic targets?</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36187917/</link>
+      <pubDate>Mon, 03 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36187917/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Interaction Networks Are Driven by Community-Responsive Phenotypes in a Chitin-Degrading Consortium of Soil Microbes</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36154140/</link>
+      <pubDate>Mon, 26 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36154140/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Staphylococcus epidermidis RP62A&#39;s Metabolic Network: Validation and Intervention Strategies</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36144212/</link>
+      <pubDate>Fri, 23 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36144212/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>StrainDesign: a comprehensive Python package for computational design of metabolic networks</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36111857/</link>
+      <pubDate>Fri, 16 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36111857/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>High throughput genome scale modeling predicts microbial vitamin requirements contribute to gut microbiome community structure</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36081364/</link>
+      <pubDate>Fri, 09 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36081364/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Integration of physiologically relevant photosynthetic energy flows into whole genome models of light-driven metabolism</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36053127/</link>
+      <pubDate>Fri, 02 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36053127/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Systematic assessment of template-based genome-scale metabolic models created with the BiGG Integration Tool</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm36054839/</link>
+      <pubDate>Fri, 02 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm36054839/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>The automated Galaxy-SynBioCAD pipeline for synthetic biology design and engineering</title>
       <link>https://opencobra.github.io/cobrapy/pubs/pm36038542/</link>
@@ -53,11 +1574,29 @@
     </item>
     
     <item>
+      <title>Idiosyncratic Purifying Selection on Metabolic Enzymes in the Long-Term Evolution Experiment with Escherichia coli</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm35975326/</link>
+      <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm35975326/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Spatial resolution of an integrated C(4)&#43;CAM photosynthetic metabolism</title>
       <link>https://opencobra.github.io/cobrapy/pubs/pm35930634/</link>
       <pubDate>Fri, 05 Aug 2022 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/pubs/pm35930634/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genome-Scale Metabolic Modeling Combined with Transcriptome Profiling Provides Mechanistic Understanding of Streptococcus thermophilus CH8 Metabolism</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm35924931/</link>
+      <pubDate>Thu, 04 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm35924931/</guid>
       <description></description>
     </item>
     
@@ -193,6 +1732,24 @@
       <pubDate>Mon, 23 May 2022 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/pubs/pm35604933/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Examining organic acid production potential and growth-coupled strategies in Issatchenkia orientalis using constraint-based modeling</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm35603544/</link>
+      <pubDate>Mon, 23 May 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm35603544/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Transmission of Klebsiella strains and plasmids within and between grey-headed flying fox colonies</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm35590448/</link>
+      <pubDate>Fri, 20 May 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm35590448/</guid>
       <description></description>
     </item>
     
@@ -386,6 +1943,15 @@
     </item>
     
     <item>
+      <title>Fundamental behaviors emerge from simulations of a living minimal cell</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm35063075/</link>
+      <pubDate>Sat, 22 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm35063075/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>ECMpy, a Simplified Workflow for Constructing Enzymatic Constrained Metabolic Network Model</title>
       <link>https://opencobra.github.io/cobrapy/pubs/pm35053213/</link>
       <pubDate>Fri, 21 Jan 2022 00:00:00 +0000</pubDate>
@@ -400,6 +1966,15 @@
       <pubDate>Thu, 20 Jan 2022 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/pubs/pm35048533/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Genome-Scale Metabolic Modeling Enables In-Depth Understanding of Big Data</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm35050136/</link>
+      <pubDate>Thu, 20 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm35050136/</guid>
       <description></description>
     </item>
     
@@ -2222,6 +3797,15 @@
     </item>
     
     <item>
+      <title>Tellurium: An extensible python-based modeling environment for systems and synthetic biology</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm30053414/</link>
+      <pubDate>Sat, 28 Jul 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm30053414/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>An enormous potential for niche construction through bacterial cross-feeding in a homogeneous environment</title>
       <link>https://opencobra.github.io/cobrapy/pubs/pm30040834/</link>
       <pubDate>Wed, 25 Jul 2018 00:00:00 +0000</pubDate>
@@ -2803,6 +4387,15 @@
       <pubDate>Wed, 02 Dec 2015 00:00:00 +0000</pubDate>
       
       <guid>https://opencobra.github.io/cobrapy/pubs/pm26621749/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>A Markov chain model for N-linked protein glycosylation--towards a low-parameter tool for model-driven glycoengineering</title>
+      <link>https://opencobra.github.io/cobrapy/pubs/pm26537759/</link>
+      <pubDate>Fri, 06 Nov 2015 00:00:00 +0000</pubDate>
+      
+      <guid>https://opencobra.github.io/cobrapy/pubs/pm26537759/</guid>
       <description></description>
     </item>
     
