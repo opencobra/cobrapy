@@ -1,6 +1,7 @@
 """Test model loading from local and remote model repositores."""
 
 import gzip
+import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 from unittest.mock import Mock
@@ -53,6 +54,10 @@ def test_bigg_access(bigg_models: Mock) -> None:
     bigg_models.get_sbml.assert_called_once_with(model_id="e_coli_core")
 
 
+@pytest.mark.xfail(
+    condition=os.environ.get("GITHUB_ACTIONS"),
+    reason="BioModels often blocks Github Actions",
+)
 def test_biomodels_access(biomodels: Mock) -> None:
     """Test that SBML would be retrieved from the BioModels repository.
 
@@ -89,11 +94,15 @@ def test_remote_load(model_id: str, num_metabolites: int, num_reactions: int) ->
         The total number of reactions in the model having ID `model_id`.
 
     """
+    if model_id.startswith("BIOMD"):
+        pytest.xfail(reason="BioModels often blocks Github Actions.")
+
     model = load_model(model_id, cache=False)
     assert len(model.metabolites) == num_metabolites
     assert len(model.reactions) == num_reactions
 
 
+@pytest.mark.skip("caching currently removed because of a CVE in diskcache")
 def test_cache(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, bigg_models: Mock, biomodels: Mock
 ) -> None:

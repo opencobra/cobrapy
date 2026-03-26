@@ -9,13 +9,15 @@ on:
 jobs:
   prerequisites:
     uses: ./.github/workflows/test.yml
+  safety:
+    uses: ./.github/workflows/safety.yml
 
   release:
     needs: [prerequisites]
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.12"]
+        python-version: ["3.13"]
     runs-on: ${{ matrix.os }}
     permissions:
       # Write permissions are needed to create OIDC tokens.

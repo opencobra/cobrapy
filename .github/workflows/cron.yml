@@ -8,4 +8,6 @@ on:
 jobs:
   prerequisites:
     uses: ./.github/workflows/test.yml
+  safety:
+    uses: ./.github/workflows/safety.yml
 
