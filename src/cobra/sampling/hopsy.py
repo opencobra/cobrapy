@@ -6,7 +6,14 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from cobra import Model
 
-import hopsy
+try:
+    import hopsy
+
+    hopsy_is_available = True
+
+except ModuleNotFoundError:
+    hopsy_is_available = False
+
 import numpy as np
 import pandas as pd
 
@@ -14,7 +21,7 @@ from ..core.configuration import Configuration
 from .hr_sampler import HRSampler
 
 
-__all__ = ("HopsySampler",)
+__all__ = ("HopsySampler", "hopsy_is_available")
 
 configuration = Configuration()
 
