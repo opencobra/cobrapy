@@ -2,10 +2,14 @@ from .hr_sampler import HRSampler, shared_np_array
 from .achr import ACHRSampler
 from .core import step
 
-from .hopsy import hopsy_is_available
+try:
+    import hopsy
 
-if hopsy_is_available:
+    hopsy_is_available = True
     from .hopsy import HopsySampler
+
+except ModuleNotFoundError:
+    hopsy_is_available = False
 
 from .optgp import OptGPSampler
 from .sampling import sample

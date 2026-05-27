@@ -1,19 +1,20 @@
 """Provide a wrapper function for performing flux sampling of cobra models."""
 
+import logging
 from typing import TYPE_CHECKING, Optional
 
 import pandas as pd
 
 from .achr import ACHRSampler
 from .hopsy import hopsy_is_available
+from .optgp import OptGPSampler
+
+
+logger = logging.getLogger(__name__)
 
 
 if hopsy_is_available:
     from .hopsy import HopsySampler
-else:
-    import warnings
-
-from .optgp import OptGPSampler
 
 
 if TYPE_CHECKING:
@@ -130,7 +131,7 @@ def sample(
             method = "chrr"
         else:
             method = "optgp"
-            warnings.warn(
+            logger.warn(
                 "hopsy is not available in your environment."
                 "Falling back to 'optgp' sampler.",
                 stacklevel=2,
