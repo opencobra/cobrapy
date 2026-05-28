@@ -1,39 +1,33 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>general modeling on cobrapy - constraint-based metabolic modeling in Python</title>
+    <title>General Modeling on cobrapy - constraint-based metabolic modeling in Python</title>
     <link>https://opencobra.github.io/cobrapy/tags/general-modeling/</link>
-    <description>Recent content in general modeling on cobrapy - constraint-based metabolic modeling in Python</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in General Modeling on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 14 Sep 2022 12:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/tags/general-modeling/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 14 Sep 2022 12:00:00 +0000</lastBuildDate>
+    <atom:link href="https://opencobra.github.io/cobrapy/tags/general-modeling/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>CNApy</title>
       <link>https://opencobra.github.io/cobrapy/packages/cnapy/</link>
       <pubDate>Wed, 14 Sep 2022 12:00:00 +0000</pubDate>
-      
       <guid>https://opencobra.github.io/cobrapy/packages/cnapy/</guid>
-      <description>CNApy is a graphical integrated environment for metabolic network analysis. With CNApy, it is possible to load, edit and create metabolic models together with interactive network maps. Many standard and advanced COBRA techniques (including, e.g., Flux Balance Analysis, Flux Variability Analysis and Minimal Cut Sets) are supported and all main results of these techniques can be directly visualized in the network maps. Furthermore, CNApy also provides a GUI for all major functions of the StrainDesign package.</description>
+      <description>&lt;p&gt;CNApy is a graphical integrated environment for metabolic network analysis. With CNApy, it is possible to load, edit and create metabolic models together with interactive network maps. Many standard and advanced COBRA techniques (including, e.g., Flux Balance Analysis, Flux Variability Analysis and Minimal Cut Sets) are supported and all main results of these techniques can be directly visualized in the network maps. Furthermore, CNApy also provides a GUI for all major functions of the StrainDesign package.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>cameo</title>
       <link>https://opencobra.github.io/cobrapy/packages/cameo/</link>
       <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
-      
       <guid>https://opencobra.github.io/cobrapy/packages/cameo/</guid>
-      <description>Cameo is a high-level python library developed to aid the strain design process in metabolic engineering projects. The library provides a modular framework of simulation methods, strain design methods, access to models, that targets developers that want custom analysis workflows.
-Computationally heavy methods have been parallelized and can be run on a clusters using the IPython parallelization framework (see example and documentation for more details). The default fallback is python&amp;rsquo;s multiprocessing library.</description>
+      <description>&lt;p&gt;Cameo is a high-level python library developed to aid the strain design process in metabolic engineering projects. The library provides a modular framework of simulation methods, strain design methods, access to models, that targets developers that want custom analysis workflows.&lt;/p&gt;&#xA;&lt;p&gt;Computationally heavy methods have been parallelized and can be run on a clusters using the IPython parallelization framework (see example and documentation for more details). The default fallback is python&amp;rsquo;s multiprocessing library.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>optlang</title>
       <link>https://opencobra.github.io/cobrapy/packages/optlang/</link>
       <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
-      
       <guid>https://opencobra.github.io/cobrapy/packages/optlang/</guid>
-      <description>Optlang is a Python package for solving mathematical optimization problems, i.e. maximizing or minimizing an objective function over a set of variables subject to a number of constraints. Optlang provides a common interface to a series of optimization tools, so different solver backends can be changed in a transparent way. Optlang&amp;rsquo;s object-oriented API takes advantage of the symbolic math library sympy to allow objective functions and constraints to be easily formulated from symbolic expressions of variables</description>
+      <description>&lt;p&gt;Optlang is a Python package for solving mathematical optimization&#xA;problems, i.e. maximizing or minimizing an objective function over a&#xA;set of variables subject to a number of constraints. Optlang provides&#xA;a common interface to a series of optimization tools, so different&#xA;solver backends can be changed in a transparent way. Optlang&amp;rsquo;s&#xA;object-oriented API takes advantage of the symbolic math library&#xA;&lt;a href=&#34;http://sympy.org/en/index.html&#34;&gt;sympy&lt;/a&gt; to allow objective functions&#xA;and constraints to be easily formulated from symbolic expressions of&#xA;variables&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

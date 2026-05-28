@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>dfba on cobrapy - constraint-based metabolic modeling in Python</title>
+    <title>Dfba on cobrapy - constraint-based metabolic modeling in Python</title>
     <link>https://opencobra.github.io/cobrapy/tags/dfba/</link>
-    <description>Recent content in dfba on cobrapy - constraint-based metabolic modeling in Python</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Dfba on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 07 Aug 2019 13:03:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/tags/dfba/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 07 Aug 2019 13:03:00 +0000</lastBuildDate>
+    <atom:link href="https://opencobra.github.io/cobrapy/tags/dfba/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>dfba</title>
       <link>https://opencobra.github.io/cobrapy/packages/dfba/</link>
       <pubDate>Wed, 07 Aug 2019 13:03:00 +0000</pubDate>
-      
       <guid>https://opencobra.github.io/cobrapy/packages/dfba/</guid>
-      <description>The dfba project provides an object-oriented software package for dynamic flux-balance analysis (DFBA) simulations using implementations of the direct method or Algorithm 1 described in the paper Harwood et al., 2016. The main algorithms for solving embedded LP problems are written in C++ and use the GLPK (GNU Linear Programming (LP) Kit) and SUNDIALS (Suite of Nonlinear and Differential/Algebraic Equation Solvers) CVODE or IDA. Extension modules to cobrapy are provided for easy generation and simulation of DFBA models.</description>
+      <description>&lt;p&gt;The &lt;code&gt;dfba&lt;/code&gt; project provides an object-oriented software package for dynamic&#xA;flux-balance analysis (DFBA) simulations using implementations of the direct&#xA;method or Algorithm 1 described in the paper &lt;a href=&#34;https://link.springer.com/article/10.1007/s00211-015-0760-3&#34;&gt;Harwood et al.,&#xA;2016&lt;/a&gt;. The main&#xA;algorithms for solving embedded LP problems are written in &lt;code&gt;C++&lt;/code&gt; and use the&#xA;&lt;a href=&#34;https://www.gnu.org/software/glpk/&#34;&gt;GLPK (GNU Linear Programming (LP) Kit)&lt;/a&gt;&#xA;and &lt;a href=&#34;https://computation.llnl.gov/projects/sundials&#34;&gt;SUNDIALS (Suite of Nonlinear and Differential/Algebraic Equation Solvers)&#xA;CVODE or IDA&lt;/a&gt;. Extension modules&#xA;to &lt;a href=&#34;https://github.com/opencobra/cobrapy&#34;&gt;cobrapy&lt;/a&gt; are provided for easy&#xA;generation and simulation of DFBA models.&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

@@ -1,29 +1,26 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>minimal-cut-sets on cobrapy - constraint-based metabolic modeling in Python</title>
+    <title>Minimal-Cut-Sets on cobrapy - constraint-based metabolic modeling in Python</title>
     <link>https://opencobra.github.io/cobrapy/tags/minimal-cut-sets/</link>
-    <description>Recent content in minimal-cut-sets on cobrapy - constraint-based metabolic modeling in Python</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Minimal-Cut-Sets on cobrapy - constraint-based metabolic modeling in Python</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 14 Sep 2022 12:00:00 +0000</lastBuildDate><atom:link href="https://opencobra.github.io/cobrapy/tags/minimal-cut-sets/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 14 Sep 2022 12:00:00 +0000</lastBuildDate>
+    <atom:link href="https://opencobra.github.io/cobrapy/tags/minimal-cut-sets/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>CNApy</title>
       <link>https://opencobra.github.io/cobrapy/packages/cnapy/</link>
       <pubDate>Wed, 14 Sep 2022 12:00:00 +0000</pubDate>
-      
       <guid>https://opencobra.github.io/cobrapy/packages/cnapy/</guid>
-      <description>CNApy is a graphical integrated environment for metabolic network analysis. With CNApy, it is possible to load, edit and create metabolic models together with interactive network maps. Many standard and advanced COBRA techniques (including, e.g., Flux Balance Analysis, Flux Variability Analysis and Minimal Cut Sets) are supported and all main results of these techniques can be directly visualized in the network maps. Furthermore, CNApy also provides a GUI for all major functions of the StrainDesign package.</description>
+      <description>&lt;p&gt;CNApy is a graphical integrated environment for metabolic network analysis. With CNApy, it is possible to load, edit and create metabolic models together with interactive network maps. Many standard and advanced COBRA techniques (including, e.g., Flux Balance Analysis, Flux Variability Analysis and Minimal Cut Sets) are supported and all main results of these techniques can be directly visualized in the network maps. Furthermore, CNApy also provides a GUI for all major functions of the StrainDesign package.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>StrainDesign</title>
       <link>https://opencobra.github.io/cobrapy/packages/straindesign/</link>
       <pubDate>Tue, 31 May 2022 12:00:00 +0000</pubDate>
-      
       <guid>https://opencobra.github.io/cobrapy/packages/straindesign/</guid>
-      <description>StrainDesign, a comprehensive Python package that integrates the most popular deterministic metabolic design algorithms, including nested strain optimization methods such as RobustKnock, OptCouple and OptKnock, as well as the more general minimal cut sets approach. The optimization approaches are embedded in individual modules, which can also be combined for setting up more elaborate strain design problems. Advanced features, such as the efficient integration of GPR-rules, the consideration of gene and reaction additions and of regulatory interventions are available for all modules.</description>
+      <description>&lt;p&gt;StrainDesign, a comprehensive Python package that integrates the most popular deterministic&#xA;metabolic design algorithms, including nested strain optimization methods such&#xA;as RobustKnock, OptCouple and OptKnock, as well as the more general minimal cut&#xA;sets approach. The optimization approaches are embedded in individual modules,&#xA;which can also be combined for setting up more elaborate strain design problems.&#xA;Advanced features, such as the efficient integration of GPR-rules, the consideration&#xA;of gene and reaction additions and of regulatory interventions are available for all&#xA;modules. The package uses state-of-the art preprocessing methods, supports CPLEX,&#xA;Gurobi, GLPK and SCIP and provides a number of enhanced tools for analyzing computed&#xA;intervention strategies, for example, 2D and 3D plots of user-selected metabolic&#xA;fluxes and yields. Furthermore, a user-friendlyGUI-based interface for the&#xA;StrainDesign package has been implemented in the metabolic modeling software CNApy.&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>
