@@ -6,6 +6,7 @@
 
 ## Fixes
 - Rare race condition in cache directory creation from running seperate processes loading cobrapy on clean machine fixed. (https://github.com/opencobra/cobrapy/issues/1476)
+- `Formula.__add__` now accepts a plain `str` for the right-hand operand, matching its documented type hint and docstring. Previously `Formula("H2O") + "C"` raised `AttributeError`.
 
 
 ## Other
