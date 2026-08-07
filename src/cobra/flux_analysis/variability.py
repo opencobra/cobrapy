@@ -149,7 +149,10 @@ def flux_variability_analysis(
         and discards every solution but the objective value; setting this keeps
         them, which saves recomputing an FVA-sized batch of solves when the
         distributions themselves are wanted -- for example as a starting pool
-        for sampling.
+        for sampling. With `loopless="fastSNP"` the loop constraints are applied
+        to the whole model when this is set, so that every returned distribution
+        is loopless; this is slower than the default, which constrains only the
+        reactions that can carry a loop.
 
     Returns
     -------
@@ -303,17 +306,32 @@ def flux_variability_analysis(
             model.add_cons_vars([flux_sum, flux_sum_constraint])
 
         model.objective = Zero  # This will trigger the reset as well
+
+        # Reactions that cannot carry a loop are normally optimized without the
+        # loop constraints: their optimum is the same either way, so only the
+        # objective value is needed and the LP is cheaper. But that shortcut also
+        # means their solution VECTORS may contain loops elsewhere in the network.
+        # When the caller asks for those vectors, constrain the whole model up
+        # front so every returned distribution is loopless. The bounds are
+        # unaffected -- the loop law over cyclic reactions is the entire loop law,
+        # so the feasible set is identical either way.
+        constrained_upfront = False
+        if return_fluxes and loopless == "fastSNP":
+            add_loopless(model, method=loopless, reactions=cyclic_reactions)
+            constrained_upfront = True
+
         for loopless_reactions, opt_rxn_ids in enumerate(reaction_ids_by_type):
             if len(opt_rxn_ids["minimum"]) == 0 and len(opt_rxn_ids["maximum"]) == 0:
                 continue
 
             run_cycle_free_flux = bool(loopless_reactions)
             if loopless_reactions and loopless == "fastSNP":
-                add_loopless(
-                    model,
-                    method=loopless,
-                    reactions=cyclic_reactions,
-                )
+                if not constrained_upfront:
+                    add_loopless(
+                        model,
+                        method=loopless,
+                        reactions=cyclic_reactions,
+                    )
                 run_cycle_free_flux = False
 
             for what in ("minimum", "maximum"):

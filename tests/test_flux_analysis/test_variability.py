@@ -9,6 +9,7 @@ import pytest
 
 from cobra import Model
 from cobra.exceptions import Infeasible
+from cobra.flux_analysis.loopless import add_loopless
 from cobra.util.array import create_stoichiometric_matrix
 from cobra.flux_analysis.variability import (
     find_blocked_reactions,
@@ -244,3 +245,22 @@ def test_fva_return_fluxes(model: "Model", loopless: Optional[str]) -> None:
             frame[[r.id for r in model.reactions]].values.T
         )
         assert np.abs(residual).max() < 1e-6
+
+    if loopless is None:
+        return
+    # Every returned distribution must be loopless, including those for
+    # reactions that cannot themselves carry a loop -- those are optimized
+    # without the loop constraints by default, which would leave loops in
+    # their solution vectors.
+    with model:
+        add_loopless(model)
+        reference = {r.id: r.bounds for r in model.reactions}
+        for rxn_id in list(fluxes["maximum"].index)[:3]:
+            row = fluxes["maximum"].loc[rxn_id]
+            for rxn in model.reactions:
+                rxn.bounds = (row[rxn.id] - 1e-6, row[rxn.id] + 1e-6)
+            assert model.slim_optimize(error_value=None) is not None, (
+                f"flux distribution for {rxn_id} is not loopless"
+            )
+            for rxn in model.reactions:
+                rxn.bounds = reference[rxn.id]
