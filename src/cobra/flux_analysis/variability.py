@@ -6,6 +6,7 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
+from optlang.interface import OPTIMAL, TIME_LIMIT
 from optlang.symbolics import Zero
 
 from ..core import Configuration, get_solution
@@ -27,7 +28,12 @@ configuration = Configuration()
 
 
 def _init_worker(
-    model: "Model", loopless: bool, sense: str, return_fluxes: bool = False
+    model: "Model",
+    loopless: bool,
+    sense: str,
+    return_fluxes: bool = False,
+    time_limit: Optional[float] = None,
+    accept_incumbent: bool = False,
 ) -> None:
     """Initialize a global model object for multiprocessing.
 
@@ -39,18 +45,32 @@ def _init_worker(
         Whether to use loopless version.
     sense: {"max", "min"}
         Whether to maximise or minimise objective.
+    return_fluxes: bool
+        Whether to keep the flux distribution of each optimum.
+    time_limit: float, optional
+        Per-solve time limit in seconds, applied to this worker's solver
+        (default None, no limit).
+    accept_incumbent: bool
+        Whether a solve that ends at the time limit records the solver's
+        best feasible solution instead of NaN.
 
     """
     global _model
     global _loopless
     global _return_fluxes
+    global _accept_incumbent
     _model = model
     _model.solver.objective.direction = sense
     _loopless = loopless
     _return_fluxes = return_fluxes
+    _accept_incumbent = accept_incumbent
+    if time_limit is not None:
+        model.solver.configuration.timeout = time_limit
 
 
-def _fva_step(reaction_id: str) -> Tuple[str, float, Optional[Dict[str, float]]]:
+def _fva_step(
+    reaction_id: str,
+) -> Tuple[str, float, Optional[Dict[str, float]], bool]:
     """Take a step for calculating FVA.
 
     Parameters
@@ -67,6 +87,7 @@ def _fva_step(reaction_id: str) -> Tuple[str, float, Optional[Dict[str, float]]]
     global _model
     global _loopless
     global _return_fluxes
+    global _accept_incumbent
     rxn = _model.reactions.get_by_id(reaction_id)
     # The previous objective assignment already triggers a reset
     # so directly update coefs here to not trigger redundant resets
@@ -76,30 +97,51 @@ def _fva_step(reaction_id: str) -> Tuple[str, float, Optional[Dict[str, float]]]
         {rxn.forward_variable: 1, rxn.reverse_variable: -1}
     )
     _model.slim_optimize()
-    sutil.check_solver_status(_model.solver.status)
+    status = _model.solver.status
+    optimal = status == OPTIMAL
     fluxes = None
+    value = None
     if _loopless:
-        if _return_fluxes:
+        if not optimal:
+            sutil.check_solver_status(status)
+        elif _return_fluxes:
             solution = loopless_fva_iter(_model, rxn, solution=True)
             value = None if solution is None else solution.fluxes[reaction_id]
             fluxes = None if solution is None else solution.fluxes
         else:
             value = loopless_fva_iter(_model, rxn)
-    else:
+    elif optimal:
         value = _model.solver.objective.value
         if _return_fluxes:
             fluxes = get_solution(_model).fluxes
+    elif _accept_incumbent and status == TIME_LIMIT:
+        # The solver holds its best feasible solution (the incumbent) when a
+        # time limit interrupts branch and bound. Record it, flagged as
+        # unproven; if no incumbent exists yet, extraction raises and the
+        # value stays NaN.
+        try:
+            value = _model.solver.objective.value
+            if _return_fluxes:
+                fluxes = get_solution(_model).fluxes
+        except Exception:
+            value = None
+            fluxes = None
+    else:
+        sutil.check_solver_status(status)
     # handle infeasible case
-    if value is None:
+    if value is None or value != value:
         value = float("nan")
+        fluxes = None
         logger.warning(
             f"Could not get flux for reaction {rxn.id}, setting it to NaN. "
-            "This is usually due to numerical instability."
+            "This is usually due to numerical instability or a time limit "
+            "hit before any feasible solution was found."
         )
     _model.solver.objective.set_linear_coefficients(
         {rxn.forward_variable: 0, rxn.reverse_variable: 0}
     )
-    return reaction_id, value, fluxes
+    proven = optimal and value == value
+    return reaction_id, value, fluxes, proven
 
 
 def flux_variability_analysis(
@@ -110,6 +152,8 @@ def flux_variability_analysis(
     pfba_factor: Optional[float] = None,
     processes: Optional[int] = None,
     return_fluxes: bool = False,
+    time_limit: Optional[float] = None,
+    accept_incumbent: bool = False,
 ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, Dict[str, pd.DataFrame]]]:
     """Determine the minimum and maximum flux value for each reaction.
 
@@ -153,6 +197,24 @@ def flux_variability_analysis(
         to the whole model when this is set, so that every returned distribution
         is loopless; this is slower than the default, which constrains only the
         reactions that can carry a loop.
+    time_limit : float, optional
+        Per-solve time limit in seconds, applied to every optimization in the
+        analysis (default None, no limit). Mainly useful with the MILP
+        loopless variants ("fastSNP", "potentials") at genome scale, where
+        individual solves may not prove optimality in reasonable time. What a
+        solve that hits the limit records depends on `accept_incumbent`.
+    accept_incumbent : bool, optional
+        Only meaningful for solves that end non-optimal at the `time_limit`.
+        If False (default), such solves record NaN. If True, the solver's
+        best feasible solution found so far (the incumbent) is recorded
+        instead, and the result gains boolean columns ``minimum_proven`` /
+        ``maximum_proven`` marking, per direction, whether the value carries
+        an optimality proof. Unproven values are one-sided estimates: an
+        unproven maximum is a lower bound on the true maximum, and vice
+        versa. With `return_fluxes`, incumbent flux distributions are
+        returned like optimal ones -- they are feasible (loopless under the
+        MILP variants, up to the solver's integrality tolerance) but not
+        necessarily extreme. Ignored on the "cycleFreeFlux" path.
 
     Returns
     -------
@@ -160,6 +222,9 @@ def flux_variability_analysis(
         A data frame with reaction identifiers as the index and two columns:
         - maximum: indicating the highest possible flux
         - minimum: indicating the lowest possible flux
+        If `time_limit` is set, two additional boolean columns
+        ``minimum_proven`` and ``maximum_proven`` report per direction
+        whether the recorded value was solved to proven optimality.
         If `return_fluxes` is True, a tuple whose second element maps
         "minimum" and "maximum" to data frames of the flux distributions, each
         indexed by the optimized reaction with reaction identifiers as columns.
@@ -223,14 +288,22 @@ def flux_variability_analysis(
 
     num_reactions = len(reaction_ids)
     processes = min(processes, num_reactions)
+    # In serial mode _init_worker runs on the caller's model; remember the
+    # solver timeout so it can be restored afterwards.
+    orig_timeout = model.solver.configuration.timeout
 
     fva_result = pd.DataFrame(
         {
             "minimum": np.zeros(num_reactions, dtype=float),
             "maximum": np.zeros(num_reactions, dtype=float),
+            "minimum_proven": np.ones(num_reactions, dtype=bool),
+            "maximum_proven": np.ones(num_reactions, dtype=bool),
         },
         index=reaction_ids,
     )
+    result_columns = ["minimum", "maximum"]
+    if time_limit is not None:
+        result_columns += ["minimum_proven", "maximum_proven"]
 
     reaction_ids_by_type = [
         {
@@ -352,32 +425,46 @@ def flux_variability_analysis(
                             run_cycle_free_flux,
                             what[:3],
                             return_fluxes,
+                            time_limit,
+                            accept_incumbent,
                         ),
                     ) as pool:
-                        for rxn_id, value, fluxes in pool.imap_unordered(
+                        for rxn_id, value, fluxes, proven in pool.imap_unordered(
                             _fva_step, opt_rxn_ids[what], chunksize=chunk_size
                         ):
                             fva_result.at[rxn_id, what] = value
+                            fva_result.at[rxn_id, what + "_proven"] = proven
                             if return_fluxes and fluxes is not None:
                                 flux_rows[what][rxn_id] = fluxes
                 else:
                     _init_worker(
-                        model, run_cycle_free_flux, what[:3], return_fluxes
+                        model,
+                        run_cycle_free_flux,
+                        what[:3],
+                        return_fluxes,
+                        time_limit,
+                        accept_incumbent,
                     )
-                    for rxn_id, value, fluxes in map(_fva_step, opt_rxn_ids[what]):
+                    for rxn_id, value, fluxes, proven in map(
+                        _fva_step, opt_rxn_ids[what]
+                    ):
                         fva_result.at[rxn_id, what] = value
+                        fva_result.at[rxn_id, what + "_proven"] = proven
                         if return_fluxes and fluxes is not None:
                             flux_rows[what][rxn_id] = fluxes
 
+    if time_limit is not None and processes <= 1:
+        model.solver.configuration.timeout = orig_timeout
+
     if return_fluxes:
         return (
-            fva_result[["minimum", "maximum"]],
+            fva_result[result_columns],
             {
                 what: pd.DataFrame.from_dict(rows, orient="index")
                 for what, rows in flux_rows.items()
             },
         )
-    return fva_result[["minimum", "maximum"]]
+    return fva_result[result_columns]
 
 
 def find_blocked_reactions(
