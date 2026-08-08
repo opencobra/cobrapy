@@ -42,7 +42,7 @@ def ll_test_model(request: pytest.FixtureRequest) -> Model:
     return test_model
 
 
-@pytest.mark.parametrize("method", ["fastSNP", "original"])
+@pytest.mark.parametrize("method", ["fastSNP", "original", "potentials"])
 def test_loopless_benchmark_before(benchmark: Callable, method: str) -> None:
     """Benchmark initial condition."""
     test_model = construct_ll_test_model()
@@ -82,7 +82,7 @@ def test_loopless_solution_fluxes(model: Model) -> None:
     assert ll_solution.objective_value == pytest.approx(sol.objective_value)
 
 
-@pytest.mark.parametrize("method", ["fastSNP", "original"])
+@pytest.mark.parametrize("method", ["fastSNP", "original", "potentials"])
 def test_add_loopless(ll_test_model: Model, method: str) -> None:
     """Test add_loopless()."""
     add_loopless(ll_test_model, method=method)

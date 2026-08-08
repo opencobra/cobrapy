@@ -106,7 +106,7 @@ def flux_variability_analysis(
     reaction_list : list of cobra.Reaction or str, optional
         The reactions for which to obtain min/max fluxes. If None will use
         all reactions in the model (default None).
-    loopless : str, "fastSNP" or "cycleFreeFlux", optional
+    loopless : str, "fastSNP", "potentials" or "cycleFreeFlux", optional
         If this value is set, only loopless solutions will be returned.
         Boolean values are deprecated. Provided value means the algorithm
         to constrain the model to loopless solutions.
@@ -148,7 +148,8 @@ def flux_variability_analysis(
     Using the loopless option will lead to a significant increase in
     computation time (about a factor of 100 for large models).
 
-    If `loopless` is set to "fastSNP", the optimal loopless flux bounds will be
+    If `loopless` is set to "fastSNP" or "potentials", the optimal loopless
+    flux bounds will be
     found by adding the loopless constraints to the model using efficient
     Fast-SNP algorithm (see [2]_).
 
@@ -181,9 +182,10 @@ def flux_variability_analysis(
         )
         loopless = "cycleFreeFlux" if loopless else None
 
-    if loopless not in (None, "fastSNP", "cycleFreeFlux"):
+    if loopless not in (None, "fastSNP", "potentials", "cycleFreeFlux"):
         raise ValueError(
-            "The `loopless` argument must be either None, 'fastSNP' or 'cycleFreeFlux'."
+            "The `loopless` argument must be either None, 'fastSNP', "
+            "'potentials' or 'cycleFreeFlux'."
         )
 
     if reaction_list is None:
@@ -282,7 +284,7 @@ def flux_variability_analysis(
                 continue
 
             run_cycle_free_flux = bool(loopless_reactions)
-            if loopless_reactions and loopless == "fastSNP":
+            if loopless_reactions and loopless in ("fastSNP", "potentials"):
                 add_loopless(
                     model,
                     method=loopless,
