@@ -6,7 +6,7 @@
     <description>Recent content on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 26 Mar 2026 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 10 Aug 2026 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://opencobra.github.io/cobrapy/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title></title>
@@ -28,6 +28,13 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://opencobra.github.io/cobrapy/intro/help/</guid>
       <description>&lt;p&gt;The documentation is browsable online at&#xA;&lt;a href=&#34;https://cobrapy.readthedocs.org/&#34;&gt;readthedocs&lt;/a&gt; and can&#xA;also be&#xA;&lt;a href=&#34;https://readthedocs.org/projects/cobrapy/downloads/&#34;&gt;downloaded&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;p&gt;Please use the &lt;a href=&#34;http://groups.google.com/group/cobra-pie&#34;&gt;Google&#xA;Group&lt;/a&gt; for help.&#xA;Alternatively, you can use&#xA;&lt;a href=&#34;https://gitter.im/opencobra/cobrapy&#34;&gt;gitter.im&lt;/a&gt; for quick questions&#xA;and discussions about cobrapy (faster response times).&lt;/p&gt;&#xA;&lt;p&gt;File bug reports and contribute to development on our &lt;a href=&#34;https://github.com/opencobra/cobrapy&#34;&gt;github page&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;p&gt;If you use cobrapy in a scientific publication, please cite&#xA;&lt;a href=&#34;http://dx.doi.org/doi:10.1186/1752-0509-7-74&#34;&gt;our publication&lt;/a&gt; &amp;#x1f604;&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>0.32.0</title>
+      <link>https://opencobra.github.io/cobrapy/releases/0.32.0/</link>
+      <pubDate>Mon, 10 Aug 2026 00:00:00 +0000</pubDate>
+      <guid>https://opencobra.github.io/cobrapy/releases/0.32.0/</guid>
+      <description>&lt;h1 id=&#34;release-notes-for-cobrapy-0320&#34;&gt;Release notes for cobrapy 0.32.0&lt;/h1&gt;&#xA;&lt;h2 id=&#34;new-features&#34;&gt;New features&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Added &lt;code&gt;chrr&lt;/code&gt; sampler for flux polytope sampling, which is guaranteed to yield uniformly distributed samples. Uses the optional dependency &lt;code&gt;hopsy&lt;/code&gt;, installable with &lt;code&gt;pip install cobra[chrr]&lt;/code&gt;.&lt;/li&gt;&#xA;&lt;li&gt;COBRAPY now works on Python 3.14.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;fixes&#34;&gt;Fixes&lt;/h2&gt;</description>
     </item>
     <item>
       <title>0.31.1</title>

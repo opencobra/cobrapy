@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Cell-Factories on cobrapy - constraint-based metabolic modeling in Python</title>
+    <title>Cell Factories on cobrapy - constraint-based metabolic modeling in Python</title>
     <link>https://opencobra.github.io/cobrapy/tags/cell-factories/</link>
-    <description>Recent content in Cell-Factories on cobrapy - constraint-based metabolic modeling in Python</description>
+    <description>Recent content in Cell Factories on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 31 May 2022 12:00:00 +0000</lastBuildDate>
