@@ -6,14 +6,7 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from cobra import Model
 
-try:
-    import hopsy
-
-    hopsy_is_available = True
-
-except ModuleNotFoundError:
-    hopsy_is_available = False
-
+import hopsy
 import numpy as np
 import pandas as pd
 

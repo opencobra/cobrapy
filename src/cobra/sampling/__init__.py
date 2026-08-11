@@ -3,10 +3,12 @@ from .achr import ACHRSampler
 from .core import step
 
 try:
-    from .hopsy import HopsySampler, hopsy_is_available
-
+    import hopsy
 except ModuleNotFoundError:
     hopsy_is_available = False
+else:
+    from .hopsy import HopsySampler
+    hopsy_is_available = True
 
 from .optgp import OptGPSampler
 from .sampling import sample

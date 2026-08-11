@@ -6,15 +6,18 @@ from typing import TYPE_CHECKING, Optional
 import pandas as pd
 
 from .achr import ACHRSampler
-from .hopsy import hopsy_is_available
 from .optgp import OptGPSampler
+
+try:
+    import hopsy
+except ModuleNotFoundError:
+    hopsy_is_available = False
+else:
+    hopsy_is_available = True
+    from .hopsy import HopsySampler
 
 
 logger = logging.getLogger(__name__)
-
-
-if hopsy_is_available:
-    from .hopsy import HopsySampler
 
 
 if TYPE_CHECKING:
