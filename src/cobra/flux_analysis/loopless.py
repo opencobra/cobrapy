@@ -167,8 +167,10 @@ def add_loopless(
             name = f"potential_constraint_{rxn.id}"
             if name not in model.constraints:
                 continue
-            coefs = {potentials[met.id]: -float(coef)
-                     for met, coef in rxn.metabolites.items()}
+            coefs = {
+                potentials[met.id]: -float(coef)
+                for met, coef in rxn.metabolites.items()
+            }
             coefs[model.variables[f"delta_g_{rxn.id}"]] = 1.0
             model.constraints[name].set_linear_coefficients(coefs)
         return
