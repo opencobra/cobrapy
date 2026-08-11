@@ -3,7 +3,7 @@ from .achr import ACHRSampler
 from .core import step
 
 try:
-    import hopsy
+    import hopsy  # noqa: F401
 except ModuleNotFoundError:
     hopsy_is_available = False
 else:
