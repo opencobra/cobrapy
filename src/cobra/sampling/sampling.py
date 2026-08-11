@@ -8,6 +8,7 @@ import pandas as pd
 from .achr import ACHRSampler
 from .optgp import OptGPSampler
 
+
 try:
     import hopsy
 except ModuleNotFoundError:
