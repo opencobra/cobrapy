@@ -14,7 +14,7 @@ from ..core.configuration import Configuration
 from .hr_sampler import HRSampler
 
 
-__all__ = ("HopsySampler", "hopsy_is_available")
+__all__ = ("HopsySampler")
 
 configuration = Configuration()
 
