@@ -10,7 +10,7 @@ from .optgp import OptGPSampler
 
 
 try:
-    import hopsy
+    import hopsy  # noqa: F401
 except ModuleNotFoundError:
     hopsy_is_available = False
 else:
