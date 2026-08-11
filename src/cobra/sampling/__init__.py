@@ -8,6 +8,7 @@ except ModuleNotFoundError:
     hopsy_is_available = False
 else:
     from .hopsy import HopsySampler
+
     hopsy_is_available = True
 
 from .optgp import OptGPSampler
