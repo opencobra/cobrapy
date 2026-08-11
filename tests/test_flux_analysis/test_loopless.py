@@ -5,60 +5,27 @@ from typing import Callable
 import pytest
 from optlang.interface import INFEASIBLE, OPTIMAL
 
-from cobra.core import Metabolite, Model, Reaction
+from cobra.core import Model
 from cobra.flux_analysis.loopless import add_loopless, loopless_solution
-from cobra.util import solver as sutil
 
 
-def construct_ll_test_model() -> Model:
-    """Construct test model."""
-    test_model = Model()
-    test_model.add_metabolites(Metabolite("A"))
-    test_model.add_metabolites(Metabolite("B"))
-    test_model.add_metabolites(Metabolite("C"))
-    EX_A = Reaction("EX_A")
-    EX_A.add_metabolites({test_model.metabolites.A: 1})
-    DM_C = Reaction("DM_C")
-    DM_C.add_metabolites({test_model.metabolites.C: -1})
-    v1 = Reaction("v1")
-    v1.add_metabolites({test_model.metabolites.A: -1, test_model.metabolites.B: 1})
-    v2 = Reaction("v2")
-    v2.add_metabolites({test_model.metabolites.B: -1, test_model.metabolites.C: 1})
-    v3 = Reaction("v3")
-    v3.add_metabolites({test_model.metabolites.C: -1, test_model.metabolites.A: 1})
-    test_model.add_reactions([EX_A, DM_C, v1, v2, v3])
-    DM_C.objective_coefficient = 1
-    return test_model
-
-
-@pytest.fixture(
-    scope="function",
-    params=[s for s in ["glpk", "cplex", "gurobi"] if s in sutil.solvers],
-)
-def ll_test_model(request: pytest.FixtureRequest) -> Model:
-    """Return test model set with different solvers."""
-    test_model = construct_ll_test_model()
-    test_model.solver = request.param
-    return test_model
-
-
-@pytest.mark.parametrize("method", ["fastSNP", "original"])
-def test_loopless_benchmark_before(benchmark: Callable, method: str) -> None:
+@pytest.mark.parametrize("method", ["fastSNP", "potentials", "original"])
+def test_loopless_benchmark_before(
+    benchmark: Callable, ll_test_model: Model, method: str
+) -> None:
     """Benchmark initial condition."""
-    test_model = construct_ll_test_model()
 
     def _():
-        with test_model:
-            add_loopless(test_model, method=method)
-            test_model.optimize()
+        with ll_test_model:
+            add_loopless(ll_test_model, method=method)
+            ll_test_model.optimize()
 
     benchmark(_)
 
 
-def test_loopless_benchmark_after(benchmark: Callable) -> None:
+def test_loopless_benchmark_after(benchmark: Callable, ll_test_model: Model) -> None:
     """Benchmark final condition."""
-    test_model = construct_ll_test_model()
-    benchmark(loopless_solution, test_model)
+    benchmark(loopless_solution, ll_test_model)
 
 
 def test_loopless_solution(ll_test_model: Model) -> None:
@@ -82,10 +49,13 @@ def test_loopless_solution_fluxes(model: Model) -> None:
     assert ll_solution.objective_value == pytest.approx(sol.objective_value)
 
 
-@pytest.mark.parametrize("method", ["fastSNP", "original"])
-def test_add_loopless(ll_test_model: Model, method: str) -> None:
+@pytest.mark.parametrize("method", ["fastSNP", "potentials", "original"])
+@pytest.mark.parametrize("flux_threshold", [None, 1e-2])
+def test_add_loopless(
+    ll_test_model: Model, method: str, flux_threshold: float | None
+) -> None:
     """Test add_loopless()."""
-    add_loopless(ll_test_model, method=method)
+    add_loopless(ll_test_model, method=method, flux_threshold=flux_threshold)
     feasible_status = ll_test_model.optimize().status
     ll_test_model.reactions.v3.lower_bound = 1
     ll_test_model.slim_optimize()

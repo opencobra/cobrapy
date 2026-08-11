@@ -7,7 +7,7 @@ from typing import List
 import pandas as pd
 import pytest
 
-from cobra.core import Model, Reaction, Solution
+from cobra.core import Metabolite, Model, Reaction, Solution
 from cobra.util import solver as sutil
 
 
@@ -29,6 +29,38 @@ def all_solvers(request) -> List[str]:
 def qp_solvers(request) -> List[str]:
     """Return the available QP solvers."""
     return request.param
+
+
+def construct_ll_test_model() -> Model:
+    """Construct loopless test model."""
+    test_model = Model()
+    test_model.add_metabolites(Metabolite("A"))
+    test_model.add_metabolites(Metabolite("B"))
+    test_model.add_metabolites(Metabolite("C"))
+    ex_a = Reaction("EX_A")
+    ex_a.add_metabolites({test_model.metabolites.A: 1})
+    dm_c = Reaction("DM_C")
+    dm_c.add_metabolites({test_model.metabolites.C: -1})
+    v1 = Reaction("v1")
+    v1.add_metabolites({test_model.metabolites.A: -1, test_model.metabolites.B: 1})
+    v2 = Reaction("v2")
+    v2.add_metabolites({test_model.metabolites.B: -1, test_model.metabolites.C: 1})
+    v3 = Reaction("v3")
+    v3.add_metabolites({test_model.metabolites.C: -1, test_model.metabolites.A: 1})
+    test_model.add_reactions([ex_a, dm_c, v1, v2, v3])
+    dm_c.objective_coefficient = 1
+    return test_model
+
+
+@pytest.fixture(
+    scope="function",
+    params=[s for s in ["glpk", "cplex", "gurobi"] if s in sutil.solvers],
+)
+def ll_test_model(request: pytest.FixtureRequest) -> Model:
+    """Return loopless test model set with different solvers."""
+    test_model = construct_ll_test_model()
+    test_model.solver = request.param
+    return test_model
 
 
 @pytest.fixture(scope="module")

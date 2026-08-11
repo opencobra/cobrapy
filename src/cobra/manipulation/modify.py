@@ -94,6 +94,26 @@ def escape_ID(model: "Model") -> None:
     model.repair()
 
 
+def clip_reaction_bounds(model: "Model", max_bound: float) -> None:
+    """Clip all reaction bounds to the interval [-max_bound, max_bound].
+
+    Parameters
+    ----------
+    model: cobra.Model
+        The model to operate on.
+    max_bound: float
+        The maximum absolute lower or upper bound.
+
+    """
+    if max_bound < 0:
+        raise ValueError("max_bound must be non-negative.")
+
+    for reaction in model.reactions:
+        lower_bound = min(max(reaction.lower_bound, -max_bound), max_bound)
+        upper_bound = min(max(reaction.upper_bound, -max_bound), max_bound)
+        reaction.bounds = (lower_bound, upper_bound)
+
+
 class _Renamer(NodeTransformer):
     """
     Class to represent a gene renamer.

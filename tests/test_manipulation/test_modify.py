@@ -1,7 +1,7 @@
 """Test functionalities of model component modifcations."""
 
 from cobra.core import Model
-from cobra.manipulation import escape_ID, rename_genes
+from cobra.manipulation import clip_reaction_bounds, escape_ID, rename_genes
 
 
 def test_escape_ids(model: Model) -> None:
@@ -10,6 +10,33 @@ def test_escape_ids(model: Model) -> None:
     assert "a.b" in model.genes
     escape_ID(model)
     assert "a.b" not in model.genes
+
+
+def test_clip_reaction_bounds(model: Model) -> None:
+    """Test clipping reaction bounds."""
+    model.reactions.PGI.bounds = (-5000, 5000)
+    model.reactions.PFK.bounds = (2000, 3000)
+    model.reactions.ACALD.bounds = (-3000, -2000)
+
+    clip_reaction_bounds(model, 1000)
+
+    assert model.reactions.PGI.bounds == (-1000, 1000)
+    assert model.reactions.PFK.bounds == (1000, 1000)
+    assert model.reactions.ACALD.bounds == (-1000, -1000)
+    assert all(reaction.lower_bound >= -1000 for reaction in model.reactions)
+    assert all(reaction.upper_bound <= 1000 for reaction in model.reactions)
+
+
+def test_clip_reaction_bounds_with_context(model: Model) -> None:
+    """Test clipping reaction bounds is reversed with context."""
+    model.reactions.PGI.bounds = (-5000, 5000)
+    original_bounds = model.reactions.list_attr("bounds")
+
+    with model:
+        clip_reaction_bounds(model, 1000)
+        assert model.reactions.PGI.bounds == (-1000, 1000)
+
+    assert model.reactions.list_attr("bounds") == original_bounds
 
 
 def test_rename_genes(model: Model) -> None:

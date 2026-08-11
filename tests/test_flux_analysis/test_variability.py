@@ -10,7 +10,6 @@ import pytest
 from cobra import Model
 from cobra.exceptions import Infeasible
 from cobra.flux_analysis.variability import (
-    find_blocked_reactions,
     find_essential_genes,
     find_essential_reactions,
     flux_variability_analysis,
@@ -60,7 +59,7 @@ def test_pfba_flux_variability(
     assert comparison["maximum"].all()
 
 
-@pytest.mark.parametrize("loopless", ["fastSNP", "cycleFreeFlux"])
+@pytest.mark.parametrize("loopless", ["fastSNP", "potentials", "cycleFreeFlux"])
 def test_loopless_pfba_fva(model: Model, loopless: str) -> None:
     """Test loopless FVA using pFBA."""
     loop_reactions = [model.reactions.get_by_id(rid) for rid in ("FRD7", "SUCDi")]
@@ -86,6 +85,53 @@ def test_flux_variability(
     assert np.allclose(fva_out, fva_results)
 
 
+def test_flux_variability_directional_reactions(model: Model) -> None:
+    """Test FVA with directional reactions."""
+    full = flux_variability_analysis(
+        model,
+        reaction_list=["FRD7", "SUCDi", "FUM"],
+        processes=1,
+    )
+    directional = flux_variability_analysis(
+        model,
+        reaction_list=[("FRD7", "max"), ("SUCDi", "min"), "FUM"],
+        processes=1,
+    )
+
+    assert directional.at["FRD7", "maximum"] == pytest.approx(
+        full.at["FRD7", "maximum"]
+    )
+    assert np.isnan(directional.at["FRD7", "minimum"])
+    assert directional.at["SUCDi", "minimum"] == pytest.approx(
+        full.at["SUCDi", "minimum"]
+    )
+    assert np.isnan(directional.at["SUCDi", "maximum"])
+    assert directional.at["FUM", "minimum"] == pytest.approx(full.at["FUM", "minimum"])
+    assert directional.at["FUM", "maximum"] == pytest.approx(full.at["FUM", "maximum"])
+
+
+def test_flux_variability_abs_flux_clip(model: Model, all_solvers: List[str]) -> None:
+    """Test FVA with clipped absolute flux values."""
+    model.solver = all_solvers
+    abs_flux_clip = 10.0
+
+    fva_out = flux_variability_analysis(
+        model,
+        fraction_of_optimum=None,
+        processes=1,
+    )
+    expected = fva_out.clip(lower=-abs_flux_clip, upper=abs_flux_clip)
+
+    clipped_fva_out = flux_variability_analysis(
+        model,
+        fraction_of_optimum=None,
+        abs_flux_clip=abs_flux_clip,
+        processes=1,
+    )
+
+    assert np.allclose(clipped_fva_out, expected)
+
+
 @pytest.mark.skipif("SKIP_MP" in os.environ, reason="unsafe for parallel execution")
 def test_parallel_flux_variability(
     model: Model, fva_results: pd.DataFrame, all_solvers: List[str]
@@ -97,8 +143,33 @@ def test_parallel_flux_variability(
     assert np.allclose(fva_out, fva_results)
 
 
+@pytest.mark.skipif("SKIP_MP" in os.environ, reason="unsafe for parallel execution")
+def test_parallel_flux_variability_abs_flux_clip(
+    model: Model, all_solvers: List[str]
+) -> None:
+    """Test parallel FVA with clipped absolute flux values."""
+    model.solver = all_solvers
+    abs_flux_clip = 10.0
+
+    fva_out = flux_variability_analysis(
+        model,
+        fraction_of_optimum=None,
+        processes=1,
+    )
+    expected = fva_out.clip(lower=-abs_flux_clip, upper=abs_flux_clip)
+
+    clipped_fva_out = flux_variability_analysis(
+        model,
+        fraction_of_optimum=None,
+        abs_flux_clip=abs_flux_clip,
+        processes=2,  # run in parallel
+    )
+
+    assert np.allclose(clipped_fva_out, expected)
+
+
 # Loopless FVA
-@pytest.mark.parametrize("loopless", ["fastSNP", "cycleFreeFlux"])
+@pytest.mark.parametrize("loopless", ["fastSNP", "potentials", "cycleFreeFlux"])
 def test_flux_variability_loopless_benchmark(
     model: Model, benchmark: Callable, all_solvers: List[str], loopless: str
 ) -> None:
@@ -112,7 +183,7 @@ def test_flux_variability_loopless_benchmark(
     )
 
 
-@pytest.mark.parametrize("loopless", ["fastSNP", "cycleFreeFlux"])
+@pytest.mark.parametrize("loopless", ["fastSNP", "potentials", "cycleFreeFlux"])
 def test_flux_variability_loopless(
     model: Model, all_solvers: List[str], loopless: str
 ) -> None:
@@ -130,7 +201,33 @@ def test_flux_variability_loopless(
     assert np.allclose(fva_loopless["maximum"], fva_loopless["minimum"])
 
 
-# Internals (essentiality, blocked reactions)
+@pytest.mark.parametrize("loopless", ["fastSNP", "potentials", "cycleFreeFlux"])
+def test_flux_variability_loopless_abs_flux_clip(
+    model: Model, all_solvers: List[str], loopless: str
+) -> None:
+    """Test loopless FVA with clipped absolute flux values."""
+    model.solver = all_solvers
+    abs_flux_clip = 3.0
+
+    loop_reactions = [model.reactions.get_by_id(rid) for rid in ("FRD7", "SUCDi")]
+    fva_loopless = flux_variability_analysis(
+        model,
+        reaction_list=loop_reactions,
+        loopless=loopless,
+    )
+    expected = fva_loopless.clip(lower=-abs_flux_clip, upper=abs_flux_clip)
+
+    clipped_fva_out = flux_variability_analysis(
+        model,
+        reaction_list=loop_reactions,
+        loopless=loopless,
+        abs_flux_clip=abs_flux_clip,
+    )
+
+    assert np.allclose(clipped_fva_out, expected)
+
+
+# Internals (essentiality)
 def test_fva_data_frame(model: Model) -> None:
     """Test DataFrame obtained from FVA."""
     df = flux_variability_analysis(model)
@@ -155,12 +252,6 @@ def test_fva_minimization(model: Model) -> None:
     assert solution.at["EX_glc__D_e", "maximum"] == -9.5
 
 
-def test_find_blocked_reactions_solver_none(model: Model) -> None:
-    """Test find_blocked_reactions() [no specific solver]."""
-    result = find_blocked_reactions(model, model.reactions[40:46])
-    assert result == ["FRUpts2"]
-
-
 def test_essential_genes(model: Model) -> None:
     """Test find_essential_genes()."""
     essential_genes = {
@@ -177,7 +268,7 @@ def test_essential_genes(model: Model) -> None:
 
 
 def test_essential_reactions(model: Model) -> None:
-    """Test find_blocked_reactions()."""
+    """Test find_essential_reactions()."""
     essential_reactions = {
         "GLNS",
         "Biomass_Ecoli_core",
@@ -200,16 +291,3 @@ def test_essential_reactions(model: Model) -> None:
     }
     observed_essential_reactions = {r.id for r in find_essential_reactions(model)}
     assert observed_essential_reactions == essential_reactions
-
-
-def test_find_blocked_reactions(model: Model, all_solvers: List[str]) -> None:
-    """Test find_blocked_reactions()."""
-    model.solver = all_solvers
-    result = find_blocked_reactions(model, model.reactions[40:46])
-    assert result == ["FRUpts2"]
-
-    result = find_blocked_reactions(model, model.reactions[42:48])
-    assert set(result) == {"FUMt2_2", "FRUpts2"}
-
-    result = find_blocked_reactions(model, model.reactions[30:50], open_exchanges=True)
-    assert result == []
