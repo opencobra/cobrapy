@@ -27,7 +27,7 @@ configuration = Configuration()
 
 
 def _init_worker(
-    model: "Model", loopless: bool, sense: str, return_fluxes: bool = False
+    model: "Model", loopless: bool, sense: str, all_fluxes: bool = False
 ) -> None:
     """Initialize a global model object for multiprocessing.
 
@@ -43,11 +43,11 @@ def _init_worker(
     """
     global _model
     global _loopless
-    global _return_fluxes
+    global _all_fluxes
     _model = model
     _model.solver.objective.direction = sense
     _loopless = loopless
-    _return_fluxes = return_fluxes
+    _all_fluxes = all_fluxes
 
 
 def _fva_step(reaction_id: str) -> Tuple[str, float, Optional[Dict[str, float]]]:
@@ -66,7 +66,7 @@ def _fva_step(reaction_id: str) -> Tuple[str, float, Optional[Dict[str, float]]]
     """
     global _model
     global _loopless
-    global _return_fluxes
+    global _all_fluxes
     rxn = _model.reactions.get_by_id(reaction_id)
     # The previous objective assignment already triggers a reset
     # so directly update coefs here to not trigger redundant resets
@@ -79,7 +79,7 @@ def _fva_step(reaction_id: str) -> Tuple[str, float, Optional[Dict[str, float]]]
     sutil.check_solver_status(_model.solver.status)
     fluxes = None
     if _loopless:
-        if _return_fluxes:
+        if _all_fluxes:
             solution = loopless_fva_iter(_model, rxn, solution=True)
             value = None if solution is None else solution.fluxes[reaction_id]
             fluxes = None if solution is None else solution.fluxes
@@ -87,7 +87,7 @@ def _fva_step(reaction_id: str) -> Tuple[str, float, Optional[Dict[str, float]]]
             value = loopless_fva_iter(_model, rxn)
     else:
         value = _model.solver.objective.value
-        if _return_fluxes:
+        if _all_fluxes:
             fluxes = get_solution(_model).fluxes
     # handle infeasible case
     if value is None:
@@ -109,7 +109,7 @@ def flux_variability_analysis(
     fraction_of_optimum: float = 1.0,
     pfba_factor: Optional[float] = None,
     processes: Optional[int] = None,
-    return_fluxes: bool = False,
+    all_fluxes: bool = False,
 ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, Dict[str, pd.DataFrame]]]:
     """Determine the minimum and maximum flux value for each reaction.
 
@@ -143,7 +143,7 @@ def flux_variability_analysis(
     processes : int, optional
         The number of parallel processes to run. If not explicitly passed,
         will be set from the global configuration singleton (default None).
-    return_fluxes : bool, optional
+    all_fluxes : bool, optional
         Whether to also return the flux distribution found at each optimum
         (default False). FVA solves one optimization per reaction per direction
         and discards every solution but the objective value; setting this keeps
@@ -160,9 +160,10 @@ def flux_variability_analysis(
         A data frame with reaction identifiers as the index and two columns:
         - maximum: indicating the highest possible flux
         - minimum: indicating the lowest possible flux
-        If `return_fluxes` is True, a tuple whose second element maps
-        "minimum" and "maximum" to data frames of the flux distributions, each
-        indexed by the optimized reaction with reaction identifiers as columns.
+        If `all_fluxes` is True, a tuple whose second element is a dict
+        with keys "maximum" and "minimum", each containing a DataFrame with
+        the optimized reactions as rows/index and the obtained flux
+        distributions for all reactions as columns.
 
     Notes
     -----
@@ -316,7 +317,7 @@ def flux_variability_analysis(
         # unaffected -- the loop law over cyclic reactions is the entire loop law,
         # so the feasible set is identical either way.
         constrained_upfront = False
-        if return_fluxes and loopless == "fastSNP":
+        if all_fluxes and loopless == "fastSNP":
             add_loopless(model, method=loopless, reactions=cyclic_reactions)
             constrained_upfront = True
 
@@ -351,25 +352,23 @@ def flux_variability_analysis(
                             model,
                             run_cycle_free_flux,
                             what[:3],
-                            return_fluxes,
+                            all_fluxes,
                         ),
                     ) as pool:
                         for rxn_id, value, fluxes in pool.imap_unordered(
                             _fva_step, opt_rxn_ids[what], chunksize=chunk_size
                         ):
                             fva_result.at[rxn_id, what] = value
-                            if return_fluxes and fluxes is not None:
+                            if all_fluxes and fluxes is not None:
                                 flux_rows[what][rxn_id] = fluxes
                 else:
-                    _init_worker(
-                        model, run_cycle_free_flux, what[:3], return_fluxes
-                    )
+                    _init_worker(model, run_cycle_free_flux, what[:3], all_fluxes)
                     for rxn_id, value, fluxes in map(_fva_step, opt_rxn_ids[what]):
                         fva_result.at[rxn_id, what] = value
-                        if return_fluxes and fluxes is not None:
+                        if all_fluxes and fluxes is not None:
                             flux_rows[what][rxn_id] = fluxes
 
-    if return_fluxes:
+    if all_fluxes:
         return (
             fva_result[["minimum", "maximum"]],
             {

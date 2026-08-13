@@ -10,13 +10,13 @@ import pytest
 from cobra import Model
 from cobra.exceptions import Infeasible
 from cobra.flux_analysis.loopless import add_loopless
-from cobra.util.array import create_stoichiometric_matrix
 from cobra.flux_analysis.variability import (
     find_blocked_reactions,
     find_essential_genes,
     find_essential_reactions,
     flux_variability_analysis,
 )
+from cobra.util.array import create_stoichiometric_matrix
 
 
 # FVA
@@ -218,14 +218,12 @@ def test_find_blocked_reactions(model: Model, all_solvers: List[str]) -> None:
 
 
 @pytest.mark.parametrize("loopless", [None, "fastSNP"])
-def test_fva_return_fluxes(model: "Model", loopless: Optional[str]) -> None:
-    """`return_fluxes` keeps the distributions FVA already computes."""
+def test_fva_all_fluxes(model: "Model", loopless: Optional[str]) -> None:
+    """`all_fluxes` keeps the distributions FVA already computes."""
     reactions = model.reactions[:8]
-    bounds = flux_variability_analysis(
-        model, reactions, loopless=loopless, processes=1
-    )
+    bounds = flux_variability_analysis(model, reactions, loopless=loopless, processes=1)
     bounds_2, fluxes = flux_variability_analysis(
-        model, reactions, loopless=loopless, processes=1, return_fluxes=True
+        model, reactions, loopless=loopless, processes=1, all_fluxes=True
     )
 
     # Asking for the fluxes must not change the bounds.
@@ -259,8 +257,8 @@ def test_fva_return_fluxes(model: "Model", loopless: Optional[str]) -> None:
             row = fluxes["maximum"].loc[rxn_id]
             for rxn in model.reactions:
                 rxn.bounds = (row[rxn.id] - 1e-6, row[rxn.id] + 1e-6)
-            assert model.slim_optimize(error_value=None) is not None, (
-                f"flux distribution for {rxn_id} is not loopless"
-            )
+            assert (
+                model.slim_optimize(error_value=None) is not None
+            ), f"flux distribution for {rxn_id} is not loopless"
             for rxn in model.reactions:
                 rxn.bounds = reference[rxn.id]
