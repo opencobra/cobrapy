@@ -1,7 +1,7 @@
 """Test functionalities of Flux Variability Analysis."""
 
 import os
-from typing import Callable, List
+from typing import Callable, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -9,12 +9,14 @@ import pytest
 
 from cobra import Model
 from cobra.exceptions import Infeasible
+from cobra.flux_analysis.loopless import add_loopless
 from cobra.flux_analysis.variability import (
     find_blocked_reactions,
     find_essential_genes,
     find_essential_reactions,
     flux_variability_analysis,
 )
+from cobra.util.array import create_stoichiometric_matrix
 
 
 # FVA
@@ -213,3 +215,50 @@ def test_find_blocked_reactions(model: Model, all_solvers: List[str]) -> None:
 
     result = find_blocked_reactions(model, model.reactions[30:50], open_exchanges=True)
     assert result == []
+
+
+@pytest.mark.parametrize("loopless", [None, "fastSNP"])
+def test_fva_all_fluxes(model: "Model", loopless: Optional[str]) -> None:
+    """`all_fluxes` keeps the distributions FVA already computes."""
+    reactions = model.reactions[:8]
+    bounds = flux_variability_analysis(model, reactions, loopless=loopless, processes=1)
+    bounds_2, fluxes = flux_variability_analysis(
+        model, reactions, loopless=loopless, processes=1, all_fluxes=True
+    )
+
+    # Asking for the fluxes must not change the bounds.
+    assert np.allclose(bounds.values, bounds_2.values, atol=1e-6, equal_nan=True)
+
+    assert set(fluxes) == {"minimum", "maximum"}
+    for direction, frame in fluxes.items():
+        assert set(frame.index) == {r.id for r in reactions}
+        assert set(frame.columns) == {r.id for r in model.reactions}
+        # The kept distribution must attain the reported optimum for its own
+        # reaction, and satisfy the steady-state constraint.
+        for rxn_id in frame.index:
+            assert frame.at[rxn_id, rxn_id] == pytest.approx(
+                bounds_2.at[rxn_id, direction], abs=1e-6
+            )
+        residual = create_stoichiometric_matrix(model).dot(
+            frame[[r.id for r in model.reactions]].values.T
+        )
+        assert np.abs(residual).max() < 1e-6
+
+    if loopless is None:
+        return
+    # Every returned distribution must be loopless, including those for
+    # reactions that cannot themselves carry a loop -- those are optimized
+    # without the loop constraints by default, which would leave loops in
+    # their solution vectors.
+    with model:
+        add_loopless(model)
+        reference = {r.id: r.bounds for r in model.reactions}
+        for rxn_id in list(fluxes["maximum"].index)[:3]:
+            row = fluxes["maximum"].loc[rxn_id]
+            for rxn in model.reactions:
+                rxn.bounds = (row[rxn.id] - 1e-6, row[rxn.id] + 1e-6)
+            assert (
+                model.slim_optimize(error_value=None) is not None
+            ), f"flux distribution for {rxn_id} is not loopless"
+            for rxn in model.reactions:
+                rxn.bounds = reference[rxn.id]

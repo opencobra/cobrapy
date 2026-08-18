@@ -1,7 +1,7 @@
 """Provide variability based methods such as flux variability or gene essentiality."""
 
 import logging
-from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple, Union
 from warnings import warn
 
 import numpy as np
@@ -26,7 +26,9 @@ logger = logging.getLogger(__name__)
 configuration = Configuration()
 
 
-def _init_worker(model: "Model", loopless: bool, sense: str) -> None:
+def _init_worker(
+    model: "Model", loopless: bool, sense: str, all_fluxes: bool = False
+) -> None:
     """Initialize a global model object for multiprocessing.
 
     Parameters
@@ -41,12 +43,14 @@ def _init_worker(model: "Model", loopless: bool, sense: str) -> None:
     """
     global _model
     global _loopless
+    global _all_fluxes
     _model = model
     _model.solver.objective.direction = sense
     _loopless = loopless
+    _all_fluxes = all_fluxes
 
 
-def _fva_step(reaction_id: str) -> Tuple[str, float]:
+def _fva_step(reaction_id: str) -> Tuple[str, float, Optional[Dict[str, float]]]:
     """Take a step for calculating FVA.
 
     Parameters
@@ -62,6 +66,7 @@ def _fva_step(reaction_id: str) -> Tuple[str, float]:
     """
     global _model
     global _loopless
+    global _all_fluxes
     rxn = _model.reactions.get_by_id(reaction_id)
     # The previous objective assignment already triggers a reset
     # so directly update coefs here to not trigger redundant resets
@@ -72,10 +77,18 @@ def _fva_step(reaction_id: str) -> Tuple[str, float]:
     )
     _model.slim_optimize()
     sutil.check_solver_status(_model.solver.status)
+    fluxes = None
     if _loopless:
-        value = loopless_fva_iter(_model, rxn)
+        if _all_fluxes:
+            solution = loopless_fva_iter(_model, rxn, solution=True)
+            value = None if solution is None else solution.fluxes[reaction_id]
+            fluxes = None if solution is None else solution.fluxes
+        else:
+            value = loopless_fva_iter(_model, rxn)
     else:
         value = _model.solver.objective.value
+        if _all_fluxes:
+            fluxes = get_solution(_model).fluxes
     # handle infeasible case
     if value is None:
         value = float("nan")
@@ -86,7 +99,7 @@ def _fva_step(reaction_id: str) -> Tuple[str, float]:
     _model.solver.objective.set_linear_coefficients(
         {rxn.forward_variable: 0, rxn.reverse_variable: 0}
     )
-    return reaction_id, value
+    return reaction_id, value, fluxes
 
 
 def flux_variability_analysis(
@@ -96,7 +109,8 @@ def flux_variability_analysis(
     fraction_of_optimum: float = 1.0,
     pfba_factor: Optional[float] = None,
     processes: Optional[int] = None,
-) -> pd.DataFrame:
+    all_fluxes: bool = False,
+) -> Union[pd.DataFrame, Tuple[pd.DataFrame, Dict[str, pd.DataFrame]]]:
     """Determine the minimum and maximum flux value for each reaction.
 
     Parameters
@@ -129,13 +143,27 @@ def flux_variability_analysis(
     processes : int, optional
         The number of parallel processes to run. If not explicitly passed,
         will be set from the global configuration singleton (default None).
+    all_fluxes : bool, optional
+        Whether to also return the flux distribution found at each optimum
+        (default False). FVA solves one optimization per reaction per direction
+        and discards every solution but the objective value; setting this keeps
+        them, which saves recomputing an FVA-sized batch of solves when the
+        distributions themselves are wanted -- for example as a starting pool
+        for sampling. With `loopless="fastSNP"` the loop constraints are applied
+        to the whole model when this is set, so that every returned distribution
+        is loopless; this is slower than the default, which constrains only the
+        reactions that can carry a loop.
 
     Returns
     -------
-    pandas.DataFrame
+    pandas.DataFrame or tuple of (pandas.DataFrame, dict of {str: pandas.DataFrame})
         A data frame with reaction identifiers as the index and two columns:
         - maximum: indicating the highest possible flux
         - minimum: indicating the lowest possible flux
+        If `all_fluxes` is True, a tuple whose second element is a dict
+        with keys "maximum" and "minimum", each containing a DataFrame with
+        the optimized reactions as rows/index and the obtained flux
+        distributions for all reactions as columns.
 
     Notes
     -----
@@ -229,6 +257,8 @@ def flux_variability_analysis(
         reaction_ids_by_type[0]["minimum"] = reaction_ids
         reaction_ids_by_type[0]["maximum"] = reaction_ids
 
+    flux_rows: Dict[str, Dict[str, pd.Series]] = {"minimum": {}, "maximum": {}}
+
     prob = model.problem
     with model:
         # Safety check before setting up FVA.
@@ -277,17 +307,32 @@ def flux_variability_analysis(
             model.add_cons_vars([flux_sum, flux_sum_constraint])
 
         model.objective = Zero  # This will trigger the reset as well
+
+        # Reactions that cannot carry a loop are normally optimized without the
+        # loop constraints: their optimum is the same either way, so only the
+        # objective value is needed and the LP is cheaper. But that shortcut also
+        # means their solution VECTORS may contain loops elsewhere in the network.
+        # When the caller asks for those vectors, constrain the whole model up
+        # front so every returned distribution is loopless. The bounds are
+        # unaffected -- the loop law over cyclic reactions is the entire loop law,
+        # so the feasible set is identical either way.
+        constrained_upfront = False
+        if all_fluxes and loopless == "fastSNP":
+            add_loopless(model, method=loopless, reactions=cyclic_reactions)
+            constrained_upfront = True
+
         for loopless_reactions, opt_rxn_ids in enumerate(reaction_ids_by_type):
             if len(opt_rxn_ids["minimum"]) == 0 and len(opt_rxn_ids["maximum"]) == 0:
                 continue
 
             run_cycle_free_flux = bool(loopless_reactions)
             if loopless_reactions and loopless == "fastSNP":
-                add_loopless(
-                    model,
-                    method=loopless,
-                    reactions=cyclic_reactions,
-                )
+                if not constrained_upfront:
+                    add_loopless(
+                        model,
+                        method=loopless,
+                        reactions=cyclic_reactions,
+                    )
                 run_cycle_free_flux = False
 
             for what in ("minimum", "maximum"):
@@ -303,17 +348,34 @@ def flux_variability_analysis(
                     with ProcessPool(
                         cur_processes,
                         initializer=_init_worker,
-                        initargs=(model, run_cycle_free_flux, what[:3]),
+                        initargs=(
+                            model,
+                            run_cycle_free_flux,
+                            what[:3],
+                            all_fluxes,
+                        ),
                     ) as pool:
-                        for rxn_id, value in pool.imap_unordered(
+                        for rxn_id, value, fluxes in pool.imap_unordered(
                             _fva_step, opt_rxn_ids[what], chunksize=chunk_size
                         ):
                             fva_result.at[rxn_id, what] = value
+                            if all_fluxes and fluxes is not None:
+                                flux_rows[what][rxn_id] = fluxes
                 else:
-                    _init_worker(model, run_cycle_free_flux, what[:3])
-                    for rxn_id, value in map(_fva_step, opt_rxn_ids[what]):
+                    _init_worker(model, run_cycle_free_flux, what[:3], all_fluxes)
+                    for rxn_id, value, fluxes in map(_fva_step, opt_rxn_ids[what]):
                         fva_result.at[rxn_id, what] = value
+                        if all_fluxes and fluxes is not None:
+                            flux_rows[what][rxn_id] = fluxes
 
+    if all_fluxes:
+        return (
+            fva_result[["minimum", "maximum"]],
+            {
+                what: pd.DataFrame.from_dict(rows, orient="index")
+                for what, rows in flux_rows.items()
+            },
+        )
     return fva_result[["minimum", "maximum"]]
 
 
