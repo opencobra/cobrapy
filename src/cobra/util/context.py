@@ -1,7 +1,7 @@
 """Context manager for the package."""
 
 from functools import partial
-from typing import TYPE_CHECKING, Any, Callable, Optional
+from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar
 
 
 if TYPE_CHECKING:
@@ -79,7 +79,10 @@ def get_context(obj: "Object") -> Optional[HistoryManager]:
         pass
 
 
-def resettable(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
+F = TypeVar("F", bound=Callable)
+
+
+def resettable(func: F) -> F:
     """
     Simplify the context management of simple object attributes.
 

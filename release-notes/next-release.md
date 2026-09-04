@@ -7,6 +7,7 @@
 ## Fixes
 
 - fixed import failure when hopsy was not installed
+- type-annotations on resetable properties fixed.
 
 ## Other
 
