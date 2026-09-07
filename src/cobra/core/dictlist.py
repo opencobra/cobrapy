@@ -14,6 +14,7 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    Generic
 )
 
 from .object import Object
@@ -22,7 +23,7 @@ from .object import Object
 CobraObject = TypeVar("CobraObject", bound=Object)
 
 
-class DictList(List[CobraObject]):
+class DictList(Generic[CobraObject], List[CobraObject]):
     """
     Define a combined dict and list.
 
