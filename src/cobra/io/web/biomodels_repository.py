@@ -70,6 +70,9 @@ class BioModels(AbstractModelRepository):
         ------
         httpx.HTTPError
             In case there are any connection problems.
+        RuntimeError
+            If the model's file listing contains no SBML document, for example
+            when the model is only deposited as a COMBINE (OMEX) archive.
 
         """
         data = BytesIO()
@@ -83,7 +86,12 @@ class BioModels(AbstractModelRepository):
             if model.name.endswith("xml"):
                 break
         else:
-            RuntimeError(f"Could not find an SBML document for '{model_id}'.")
+            raise RuntimeError(
+                f"Could not find an SBML document for '{model_id}'. The model's main "
+                f"files are "
+                f"{sorted(f.name for f in files.main) if files.main else 'empty'}. "
+                f"Models deposited as COMBINE (OMEX) archives are not supported yet."
+            )
         with self._progress, httpx.stream(
             method="GET",
             url=self._url.join(f"download/{model_id}"),

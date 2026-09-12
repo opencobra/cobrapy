@@ -10,6 +10,7 @@ import pytest
 
 from cobra import Configuration
 from cobra.io import BiGGModels, BioModels, load_model
+from cobra.io.web import biomodels_repository
 
 
 if TYPE_CHECKING:
@@ -75,6 +76,45 @@ def test_unknown_model() -> None:
     """Expect that a not found error is raised (e2e)."""
     with pytest.raises(RuntimeError):
         load_model("MODELWHO?", cache=False)
+
+
+@pytest.mark.parametrize(
+    "main_files",
+    [
+        pytest.param(
+            [{"name": "253_2019_9630_MOESM3_ESM.omex", "fileSize": "106359"}],
+            id="omex-only",
+        ),
+        pytest.param([], id="empty-listing"),
+    ],
+)
+def test_biomodels_without_sbml_document(
+    mocker: "MockerFixture", main_files: list
+) -> None:
+    """Expect a clear error when BioModels lists no SBML document.
+
+    Some models are deposited only as COMBINE (OMEX) archives, so the file
+    listing contains no ``.xml`` entry. The download must not be attempted,
+    because the archive bytes are not an SBML document and would surface much
+    later as a ``UnicodeDecodeError``.
+
+    Parameters
+    ----------
+    mocker : pytest_mock.MockerFixture
+        The mocking fixture.
+    main_files : list
+        The ``main`` section of the mocked BioModels files response.
+
+    """
+    response = mocker.Mock()
+    response.json.return_value = {"additional": [], "main": main_files}
+    mocker.patch.object(biomodels_repository.httpx, "get", return_value=response)
+    stream = mocker.patch.object(biomodels_repository.httpx, "stream")
+
+    with pytest.raises(RuntimeError, match="Could not find an SBML document"):
+        BioModels().get_sbml(model_id="BIOMD0000001089")
+
+    stream.assert_not_called()
 
 
 @pytest.mark.parametrize(
