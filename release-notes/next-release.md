@@ -1,4 +1,4 @@
-# Release notes for cobrapy 0.32.1
+# Release notes for cobrapy 0.33.0
 
 ## New features
 
@@ -6,7 +6,7 @@
 
 ## Fixes
 
-- fixed import failure when hopsy was not installed
+- fixed the URL for the BIGG repository
 
 ## Other
 
