@@ -5,6 +5,7 @@ from itertools import islice
 from typing import (
     Any,
     Callable,
+    Generic
     Iterable,
     Iterator,
     List,
@@ -14,7 +15,6 @@ from typing import (
     Type,
     TypeVar,
     Union,
-    Generic
 )
 
 from .object import Object
