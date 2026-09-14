@@ -5,7 +5,7 @@ from itertools import islice
 from typing import (
     Any,
     Callable,
-    Generic
+    Generic,
     Iterable,
     Iterator,
     List,
