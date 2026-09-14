@@ -33,7 +33,7 @@ class BiGGModels(AbstractModelRepository):
             Passed to the parent constructor in order to enable multiple inheritance.
 
         """
-        super().__init__(url="http://bigg.ucsd.edu/static/models/", **kwargs)
+        super().__init__(url="https://bigg.ucsd.edu/static/models/", **kwargs)
 
     def get_sbml(self, model_id: str) -> bytes:
         """
