@@ -6,6 +6,8 @@
 
 ## Fixes
 
+- fixed the URL for the BIGG repository
+
 ## Other
 
 ## Deprecated features
