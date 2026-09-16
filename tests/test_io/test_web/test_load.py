@@ -42,6 +42,10 @@ def biomodels(mini_sbml: bytes, mocker: "MockerFixture") -> Mock:
     return result
 
 
+@pytest.mark.xfail(
+    condition=os.environ.get("GITHUB_ACTIONS"),
+    reason="BIGG often blocks Github Actions",
+)
 def test_bigg_access(bigg_models: Mock) -> None:
     """Test that SBML would be retrieved from the BiGG Models repository.
 
@@ -116,7 +120,10 @@ def test_biomodels_without_sbml_document(
 
     stream.assert_not_called()
 
-
+@pytest.mark.xfail(
+    condition=os.environ.get("GITHUB_ACTIONS"),
+    reason="BioModels/BIGG often blocks Github Actions",
+)
 @pytest.mark.parametrize(
     "model_id, num_metabolites, num_reactions",
     [("e_coli_core", 72, 95), ("BIOMD0000000633", 50, 35)],
@@ -134,9 +141,6 @@ def test_remote_load(model_id: str, num_metabolites: int, num_reactions: int) ->
         The total number of reactions in the model having ID `model_id`.
 
     """
-    if model_id.startswith("BIOMD"):
-        pytest.xfail(reason="BioModels often blocks Github Actions.")
-
     model = load_model(model_id, cache=False)
     assert len(model.metabolites) == num_metabolites
     assert len(model.reactions) == num_reactions

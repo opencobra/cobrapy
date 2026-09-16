@@ -49,7 +49,7 @@ class BioModels(AbstractModelRepository):
             Passed to the parent constructor in order to enable multiple inheritance.
 
         """
-        super().__init__(url="https://biomodels.org/model/", **kwargs)
+        super().__init__(url="https://www.biomodels.org/model/", **kwargs)
 
     def get_sbml(self, model_id: str) -> bytes:
         """
@@ -81,7 +81,7 @@ class BioModels(AbstractModelRepository):
             headers={"Accept": "application/json"},
         )
         response.raise_for_status()
-        files = BioModelsFilesResponse.parse_obj(response.json())
+        files = BioModelsFilesResponse.model_validate(response.json())
         for model in files.main:
             if model.name.endswith("xml"):
                 break
