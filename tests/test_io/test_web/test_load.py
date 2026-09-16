@@ -120,6 +120,7 @@ def test_biomodels_without_sbml_document(
 
     stream.assert_not_called()
 
+
 @pytest.mark.xfail(
     condition=os.environ.get("GITHUB_ACTIONS"),
     reason="BioModels/BIGG often blocks Github Actions",
