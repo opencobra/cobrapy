@@ -713,9 +713,17 @@ def _sbml_to_model(
     cobra_model.add_metabolites(metabolites)
 
     # Add exchange reactions for boundary metabolites
+    sbml_reaction_ids = set()
+    for reaction in model.getListOfReactions():
+        rid = _check_required(reaction, reaction.getIdAttribute(), "id")
+        if f_replace and F_REACTION in f_replace:
+            rid = f_replace[F_REACTION](rid)
+        sbml_reaction_ids.add(rid)
     ex_reactions = []
     for met in boundary_metabolites:
         ex_rid = f"EX_{met.id}"
+        if ex_rid in sbml_reaction_ids:
+            continue
         ex_reaction = Reaction(ex_rid)
         ex_reaction.name = ex_rid
         ex_reaction.annotation = {"sbo": SBO_EXCHANGE_REACTION}
