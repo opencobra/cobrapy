@@ -10,6 +10,10 @@
 
 - type-annotations on resetable properties fixed.
 - fixed the URL for the BIGG repository
+- `read_sbml_model` no longer invents a default-bound `EX_{id}` when
+  `ListOfReactions` already names that exchange, so SBML flux bounds and
+  annotations are not dropped. Extra exchanges are still created for
+  boundary species that the document does not already exchange (`#1446`).
 
 ## Other
 
