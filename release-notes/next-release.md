@@ -10,8 +10,11 @@
 
 - type-annotations on resetable properties fixed.
 - fixed the URL for the BIGG repository
+- fixed the URL for the BioModels repository
 
 ## Other
+
+- Downloads from BioModels and BIGG now get xfail markers as they are often blocked
 
 ## Deprecated features
 
