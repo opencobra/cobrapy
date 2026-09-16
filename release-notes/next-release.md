@@ -8,6 +8,7 @@
 
 ## Fixes
 
+- type-annotations on resetable properties fixed.
 - fixed the URL for the BIGG repository
 
 ## Other
