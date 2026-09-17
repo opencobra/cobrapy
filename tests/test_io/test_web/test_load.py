@@ -43,7 +43,7 @@ def biomodels(mini_sbml: bytes, mocker: "MockerFixture") -> Mock:
 
 
 @pytest.mark.xfail(
-    condition=os.environ.get("GITHUB_ACTIONS"),
+    condition="GITHUB_ACTIONS" in os.environ,
     reason="BIGG often blocks Github Actions",
 )
 def test_bigg_access(bigg_models: Mock) -> None:
@@ -60,7 +60,7 @@ def test_bigg_access(bigg_models: Mock) -> None:
 
 
 @pytest.mark.xfail(
-    condition=os.environ.get("GITHUB_ACTIONS"),
+    condition="GITHUB_ACTIONS" in os.environ,
     reason="BioModels often blocks Github Actions",
 )
 def test_biomodels_access(biomodels: Mock) -> None:
@@ -122,7 +122,7 @@ def test_biomodels_without_sbml_document(
 
 
 @pytest.mark.xfail(
-    condition=os.environ.get("GITHUB_ACTIONS"),
+    condition="GITHUB_ACTIONS" in os.environ,
     reason="BioModels/BIGG often blocks Github Actions",
 )
 @pytest.mark.parametrize(
