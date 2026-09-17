@@ -1555,19 +1555,29 @@ class Reaction(Object):
         # reversible case
         arrow_match = reversible_arrow_finder.search(reaction_str)
         if arrow_match is not None:
-            self.bounds = config.lower_bound, config.upper_bound
+            # Only reset bounds when they are inconsistent with a reversible
+            # arrow (i.e. the current bounds do not allow flux in both
+            # directions).  Preserves user-set bounds that are already valid.
+            if not (self._lower_bound < 0 < self._upper_bound):
+                self.bounds = config.lower_bound, config.upper_bound
         else:  # irreversible
             # try forward
             arrow_match = forward_arrow_finder.search(reaction_str)
             if arrow_match is not None:
-                self.bounds = 0, config.upper_bound
+                # Only reset when the lower bound contradicts forward-only
+                # directionality (lb < 0).  Preserve a tighter upper bound.
+                if self._lower_bound < 0:
+                    self.bounds = 0, config.upper_bound
             else:
                 # must be reverse
                 arrow_match = reverse_arrow_finder.search(reaction_str)
                 if arrow_match is None:
                     raise ValueError(f"no suitable arrow found in '{reaction_str}'")
                 else:
-                    self.bounds = config.lower_bound, 0
+                    # Only reset when the upper bound contradicts reverse-only
+                    # directionality (ub > 0).  Preserve a tighter lower bound.
+                    if self._upper_bound > 0:
+                        self.bounds = config.lower_bound, 0
         reactant_str = reaction_str[: arrow_match.start()].strip()
         product_str = reaction_str[arrow_match.end() :].strip()
 

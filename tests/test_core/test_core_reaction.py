@@ -396,6 +396,64 @@ def test_build_from_string_creating_metabolites() -> None:
     assert model.reactions.R1.compartments == set(["c"])
 
 
+def test_build_from_string_preserves_compatible_bounds() -> None:
+    """Test that build_reaction_from_string preserves bounds consistent with the arrow.
+
+    Regression test for https://github.com/opencobra/cobrapy/issues/1463.
+    Before the fix, ALL three arrow branches unconditionally reset bounds to
+    the config defaults, discarding any user-set bounds.
+    """
+    from cobra.core.configuration import Configuration
+
+    config = Configuration()
+
+    # --- forward arrow: lb >= 0 is consistent, should be preserved ---
+    model = Model()
+    rxn = Reaction("fwd", lower_bound=0, upper_bound=10)
+    model.add_reactions([rxn])
+    rxn.build_reaction_from_string("A --> B", verbose=False)
+    assert rxn.bounds == (
+        0,
+        10,
+    ), "forward-compatible bounds must be preserved (issue #1463)"
+
+    # Tighter non-zero lb that is still >= 0 should also be preserved
+    model2 = Model()
+    rxn2 = Reaction("fwd2", lower_bound=5, upper_bound=10)
+    model2.add_reactions([rxn2])
+    rxn2.build_reaction_from_string("A --> B", verbose=False)
+    assert rxn2.bounds == (5, 10)
+
+    # Inconsistent lb < 0 for a forward arrow → reset to config default
+    model3 = Model()
+    rxn3 = Reaction("fwd_incompat", lower_bound=-10, upper_bound=10)
+    model3.add_reactions([rxn3])
+    rxn3.build_reaction_from_string("A --> B", verbose=False)
+    assert rxn3.lower_bound == 0
+    assert rxn3.upper_bound == config.upper_bound
+
+    # --- reverse arrow: ub <= 0 is consistent, should be preserved ---
+    model4 = Model()
+    rxn4 = Reaction("rev", lower_bound=-10, upper_bound=0)
+    model4.add_reactions([rxn4])
+    rxn4.build_reaction_from_string("A <-- B", verbose=False)
+    assert rxn4.bounds == (-10, 0)
+
+    # --- reversible arrow: lb < 0 < ub is consistent, should be preserved ---
+    model5 = Model()
+    rxn5 = Reaction("revs", lower_bound=-10, upper_bound=10)
+    model5.add_reactions([rxn5])
+    rxn5.build_reaction_from_string("A <=> B", verbose=False)
+    assert rxn5.bounds == (-10, 10)
+
+    # Inconsistent lb >= 0 for a reversible arrow → reset to config default
+    model6 = Model()
+    rxn6 = Reaction("revs_incompat", lower_bound=0, upper_bound=10)
+    model6.add_reactions([rxn6])
+    rxn6.build_reaction_from_string("A <=> B", verbose=False)
+    assert rxn6.bounds == (config.lower_bound, config.upper_bound)
+
+
 def test_bounds_setter(model: Model) -> None:
     """Test reaction bounds setter."""
     rxn = model.reactions.get_by_id("PGI")
