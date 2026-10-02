@@ -348,6 +348,15 @@ def spectra_cc(
     ``zero_cutoff=0.99 * tol`` to reproduce that, at the cost of also
     discarding reactions that can carry some flux but never as much as `tol`.
 
+    Because a reaction that resists the forward LP is handled by a dedicated
+    reverse LP instead of being retried, :func:`spectra_cc` never needs
+    :func:`~cobra.flux_analysis.fastcc.fastcc`'s per-reaction fallback (its
+    ``singletons`` phase). On models with few reversible reactions the two
+    take a similar number of LP solves; on larger, more reversibility-rich
+    models :func:`spectra_cc` tends to need markedly fewer, while returning
+    the same consistent set. See ``benchmarks/spectra_cc_vs_fastcc.ipynb``
+    for a runtime comparison on bundled test models.
+
     References
     ----------
     .. [1] S, P. K., Sridhar, S., Alsmadi, N., Mahadevan, R., & Bhatt, N. P.
