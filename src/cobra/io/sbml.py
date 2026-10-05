@@ -1359,7 +1359,7 @@ def _model_to_sbml(
         reaction.setId(rid)
         reaction.setName(cobra_reaction.name)
         reaction.setFast(False)
-        reaction.setReversible((cobra_reaction.lower_bound < 0))
+        reaction.setReversible(bool(cobra_reaction.lower_bound < 0))
         _sbase_annotations(reaction, cobra_reaction.annotation)
         _sbase_notes_dict(reaction, cobra_reaction.notes)
 
@@ -1373,14 +1373,14 @@ def _model_to_sbml(
                     reaction.createReactant()
                 )  # noqa: E501 type: libsbml.SpeciesReference
                 sref.setSpecies(sid)
-                sref.setStoichiometry(-stoichiometry)
+                sref.setStoichiometry(float(-stoichiometry))
                 sref.setConstant(True)
             else:
                 sref = (
                     reaction.createProduct()
                 )  # noqa: E501 type: libsbml.SpeciesReference
                 sref.setSpecies(sid)
-                sref.setStoichiometry(stoichiometry)
+                sref.setStoichiometry(float(stoichiometry))
                 sref.setConstant(True)
 
         # bounds
@@ -1568,7 +1568,7 @@ def _create_parameter(
     """
     parameter: "libsbml.Parameter" = model.createParameter()
     parameter.setId(pid)
-    parameter.setValue(value)
+    parameter.setValue(float(value))
     parameter.setConstant(constant)
     if sbo:
         parameter.setSBOTerm(sbo)

@@ -11,6 +11,7 @@
 - type-annotations on resetable properties fixed.
 - fixed the URL for the BIGG repository
 - fixed the URL for the BioModels repository
+- `write_sbml_model` no longer fails with a libSBML `TypeError` when reaction bounds or stoichiometries are numpy scalars.
 
 ## Other
 
