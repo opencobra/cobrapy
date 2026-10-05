@@ -8,6 +8,7 @@ from pickle import load
 from tempfile import gettempdir
 from typing import List, Tuple
 
+import numpy as np
 import pytest
 from _pytest.fixtures import SubRequest
 
@@ -485,6 +486,26 @@ def test_infinity_bounds(data_directory: Path, tmp_path: Path) -> None:
         r = model2.reactions.get_by_id("EX_X")
         assert r.lower_bound == -float("Inf")
         assert r.upper_bound == float("Inf")
+
+
+@pytest.mark.parametrize("dtype", [np.float64, np.float32, np.int64])
+def test_numpy_values_on_write(dtype: type, tmp_path: Path) -> None:
+    """Test that numpy scalars in bounds and stoichiometry can be written."""
+    model = Model("numpy_values")
+    a = cobra.Metabolite("a_c", compartment="c")
+    b = cobra.Metabolite("b_c", compartment="c")
+    reaction = cobra.Reaction("R")
+    model.add_reactions([reaction])
+    reaction.add_metabolites({a: dtype(-1), b: dtype(2)})
+    reaction.bounds = (dtype(-5), dtype(7))
+
+    sbml_path = tmp_path / "test.xml"
+    write_sbml_model(model, str(sbml_path))
+    r2 = read_sbml_model(str(sbml_path)).reactions.get_by_id("R")
+
+    assert r2.reversibility
+    assert r2.bounds == (-5, 7)
+    assert {m.id: c for m, c in r2.metabolites.items()} == {"a_c": -1, "b_c": 2}
 
 
 def test_boundary_conditions(data_directory: Path) -> None:
