@@ -11,6 +11,7 @@
 - type-annotations on resetable properties fixed.
 - fixed the URL for the BIGG repository
 - fixed the URL for the BioModels repository
+- gene ids containing characters such as `@`, `+`, `*` or `#` are now parsed correctly in GPRs, so reactions using them can be copied (#1448)
 
 ## Other
 
