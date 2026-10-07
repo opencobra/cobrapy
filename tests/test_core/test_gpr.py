@@ -247,6 +247,45 @@ def test_gpr_that_needs_two_replacements() -> None:
     assert "591001.3.peg.1893" in gpr1.genes
 
 
+@pytest.mark.parametrize(
+    "gene_id",
+    [
+        "a@b",
+        "a+b",
+        "a*b",
+        "a%b",
+        "a^b",
+        "a~b",
+        "a!b",
+        "a?b",
+        "a$b",
+        "a#b",
+        "a,b",
+        "a;b",
+        "a<b",
+        "a>b",
+        "a[b]",
+        "a{b}",
+    ],
+)
+def test_gpr_with_special_characters(gene_id: str) -> None:
+    """Test that gene ids with operator characters survive a string round trip."""
+    gpr = GPR.from_string(f"{gene_id} or c")
+    assert gpr.genes == {gene_id, "c"}
+    assert gpr.to_string() == f"{gene_id} or c"
+    assert GPR.from_string(gpr.to_string()) == gpr
+
+
+def test_reaction_copy_with_special_characters(model: Model) -> None:
+    """Test that a reaction with operator characters in gene ids can be copied."""
+    rxn = model.reactions.get_by_id("PGI")
+    rxn.gene_reaction_rule = "a@b or a@c"
+    assert {"a@b", "a@c"} <= {gene.id for gene in model.genes}
+    copied = rxn.copy()
+    assert copied.gpr.genes == {"a@b", "a@c"}
+    assert copied.gene_reaction_rule == "a@b or a@c"
+
+
 def test_deprecated_gpr() -> None:
     """Test deprecated GPR."""
     gpr1 = GPR.from_string("(a | b) & c")
