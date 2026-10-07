@@ -37,24 +37,10 @@
       <description></description>
     </item>
     <item>
-      <title>Metabolic Reconstruction</title>
-      <link>https://opencobra.github.io/cobrapy/tags/metabolic-reconstruction/</link>
-      <pubDate>Sun, 04 Oct 2026 12:00:00 +0000</pubDate>
-      <guid>https://opencobra.github.io/cobrapy/tags/metabolic-reconstruction/</guid>
-      <description></description>
-    </item>
-    <item>
       <title>Minimal Microbiome</title>
       <link>https://opencobra.github.io/cobrapy/tags/minimal-microbiome/</link>
       <pubDate>Sun, 04 Oct 2026 12:00:00 +0000</pubDate>
       <guid>https://opencobra.github.io/cobrapy/tags/minimal-microbiome/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Model Extraction</title>
-      <link>https://opencobra.github.io/cobrapy/tags/model-extraction/</link>
-      <pubDate>Sun, 04 Oct 2026 12:00:00 +0000</pubDate>
-      <guid>https://opencobra.github.io/cobrapy/tags/model-extraction/</guid>
       <description></description>
     </item>
     <item>
@@ -72,14 +58,14 @@
       <description></description>
     </item>
     <item>
-      <title>General-Modeling</title>
+      <title>General Modeling</title>
       <link>https://opencobra.github.io/cobrapy/tags/general-modeling/</link>
       <pubDate>Wed, 14 Sep 2022 12:00:00 +0000</pubDate>
       <guid>https://opencobra.github.io/cobrapy/tags/general-modeling/</guid>
       <description></description>
     </item>
     <item>
-      <title>Metabolic-Model</title>
+      <title>Metabolic Model</title>
       <link>https://opencobra.github.io/cobrapy/tags/metabolic-model/</link>
       <pubDate>Wed, 14 Sep 2022 12:00:00 +0000</pubDate>
       <guid>https://opencobra.github.io/cobrapy/tags/metabolic-model/</guid>
@@ -100,7 +86,7 @@
       <description></description>
     </item>
     <item>
-      <title>Strain Design</title>
+      <title>Strain-Design</title>
       <link>https://opencobra.github.io/cobrapy/tags/strain-design/</link>
       <pubDate>Wed, 14 Sep 2022 12:00:00 +0000</pubDate>
       <guid>https://opencobra.github.io/cobrapy/tags/strain-design/</guid>
@@ -114,7 +100,7 @@
       <description></description>
     </item>
     <item>
-      <title>Cell-Factories</title>
+      <title>Cell Factories</title>
       <link>https://opencobra.github.io/cobrapy/tags/cell-factories/</link>
       <pubDate>Tue, 31 May 2022 12:00:00 +0000</pubDate>
       <guid>https://opencobra.github.io/cobrapy/tags/cell-factories/</guid>
@@ -230,6 +216,13 @@
       <link>https://opencobra.github.io/cobrapy/tags/synthetic-biology/</link>
       <pubDate>Fri, 13 Jan 2017 11:00:01 -0600</pubDate>
       <guid>https://opencobra.github.io/cobrapy/tags/synthetic-biology/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Metabolic Reconstruction</title>
+      <link>https://opencobra.github.io/cobrapy/tags/metabolic-reconstruction/</link>
+      <pubDate>Fri, 06 Jan 2017 11:00:01 -0600</pubDate>
+      <guid>https://opencobra.github.io/cobrapy/tags/metabolic-reconstruction/</guid>
       <description></description>
     </item>
     <item>

@@ -66,8 +66,6 @@
 
 <a href="../tags/metabolic-model"class="mdl-badge mdl-color-text--grey-500" data-badge="2">metabolic model</a>
 
-<a href="../tags/metabolic-reconstruction"class="mdl-badge mdl-color-text--grey-500" data-badge="2">metabolic reconstruction</a>
-
 <a href="../tags/microbiome"class="mdl-badge mdl-color-text--grey-500" data-badge="2">microbiome</a>
 
 <a href="../tags/microbiota"class="mdl-badge mdl-color-text--grey-500" data-badge="2">microbiota</a>
@@ -102,9 +100,9 @@
 
 <a href="../tags/me-models"class="mdl-badge mdl-color-text--grey-500" data-badge="1">me-models</a>
 
-<a href="../tags/minimal-microbiome"class="mdl-badge mdl-color-text--grey-500" data-badge="1">minimal microbiome</a>
+<a href="../tags/metabolic-reconstruction"class="mdl-badge mdl-color-text--grey-500" data-badge="1">metabolic reconstruction</a>
 
-<a href="../tags/model-extraction"class="mdl-badge mdl-color-text--grey-500" data-badge="1">model extraction</a>
+<a href="../tags/minimal-microbiome"class="mdl-badge mdl-color-text--grey-500" data-badge="1">minimal microbiome</a>
 
 <a href="../tags/modelseed"class="mdl-badge mdl-color-text--grey-500" data-badge="1">modelseed</a>
 
@@ -737,7 +735,7 @@ standardized, large-scale, visually appealing maps.</p></p>
 <div class="mdl-card mdl-shadow--4dp">
 <div class="mdl-card__supporting-text">
 <h1 class="mdl-color-text--accent">spectra-cobra</h1>
-<span class="spaced"><h2 class="mdl-color-text--primary">by bisect-group</h2>
+<span class="spaced"><h2 class="mdl-color-text--primary">by Pavan Kumar S</h2>
 
 
 <span>
@@ -747,10 +745,7 @@ standardized, large-scale, visually appealing maps.</p></p>
 </span>
 <p class="mdl-typography--caption" style="margin-top: .5em">
   Tags: 
-  <a href="../tags/metabolic-reconstruction">metabolic reconstruction</a>
-
-
-  , <a href="../tags/context-specific-models">context-specific models</a>
+  <a href="../tags/context-specific-models">context-specific models</a>
 
 
   , <a href="../tags/gap-filling">gap-filling</a>
@@ -762,9 +757,6 @@ standardized, large-scale, visually appealing maps.</p></p>
   , <a href="../tags/minimal-microbiome">minimal microbiome</a>
 
 
-  , <a href="../tags/model-extraction">model extraction</a>
-
-
   , <a href="../tags/flux-consistency">flux consistency</a>
 
 
@@ -773,16 +765,11 @@ standardized, large-scale, visually appealing maps.</p></p>
 
 </p>
 <br>
-<p><p>SPECTRA reconstructs metabolic networks from multi-omics data at a range of
-biological scales: minimal reactomes, context-specific models, gap-filled
-reconstructions, minimal microbiomes, microbial community models and
-multi-tissue models. What changes between them is the universal model, the
-evidence supplied and the objective chosen, not the routine called.</p>
-<p>Two options give that range. <code>consistency_type</code> picks the steady state
-<code>S v = 0</code> or the accumulation condition <code>S v &gt;= 0</code> that gap filling needs.
-<code>problem_type</code> picks the objective: minimise total flux, minimise reaction
-count, maximise signed omics evidence, or maximise biomass against a flux
-penalty.</p></p>
+<p><p>SPECTRA checks flux consistency and reconstructs metabolic networks at a
+range of biological scales: minimal reactomes, context-specific models,
+gap-filled reconstructions, minimal microbiomes, microbial community models
+and multi-tissue models. What changes between them is the universal model,
+the evidence supplied (omics evidence) and the objective chosen.</p></p>
 </div>
 <div class="mdl-card__actions mdl-card--border">
 <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"

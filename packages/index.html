@@ -83,9 +83,6 @@
             <a href="../tags/metabolic-model" class="mdl-badge mdl-color-text--grey-500"
               data-badge="2">metabolic model</a>
             
-            <a href="../tags/metabolic-reconstruction" class="mdl-badge mdl-color-text--grey-500"
-              data-badge="2">metabolic reconstruction</a>
-            
             <a href="../tags/microbiome" class="mdl-badge mdl-color-text--grey-500"
               data-badge="2">microbiome</a>
             
@@ -137,11 +134,11 @@
             <a href="../tags/me-models" class="mdl-badge mdl-color-text--grey-500"
               data-badge="1">me-models</a>
             
+            <a href="../tags/metabolic-reconstruction" class="mdl-badge mdl-color-text--grey-500"
+              data-badge="1">metabolic reconstruction</a>
+            
             <a href="../tags/minimal-microbiome" class="mdl-badge mdl-color-text--grey-500"
               data-badge="1">minimal microbiome</a>
-            
-            <a href="../tags/model-extraction" class="mdl-badge mdl-color-text--grey-500"
-              data-badge="1">model extraction</a>
             
             <a href="../tags/modelseed" class="mdl-badge mdl-color-text--grey-500"
               data-badge="1">modelseed</a>
@@ -1247,7 +1244,7 @@ standardized, large-scale, visually appealing maps.</p>
           <h1 class="mdl-color-text--accent header">spectra-cobra</h1>
         </a>
         <span class="spaced">
-          <h2 class="mdl-color-text--primary header">by bisect-group</h2>
+          <h2 class="mdl-color-text--primary header">by Pavan Kumar S</h2>
           
           
           <span>
@@ -1258,10 +1255,7 @@ standardized, large-scale, visually appealing maps.</p>
         </span>
         <p class="mdl-typography--caption" style="margin-top: .5em">
           Tags: 
-            <a href="../tags/metabolic-reconstruction">metabolic reconstruction</a>
-
-          
-            , <a href="../tags/context-specific-models">context-specific models</a>
+            <a href="../tags/context-specific-models">context-specific models</a>
 
           
             , <a href="../tags/gap-filling">gap-filling</a>
@@ -1273,9 +1267,6 @@ standardized, large-scale, visually appealing maps.</p>
             , <a href="../tags/minimal-microbiome">minimal microbiome</a>
 
           
-            , <a href="../tags/model-extraction">model extraction</a>
-
-          
             , <a href="../tags/flux-consistency">flux consistency</a>
 
           
@@ -1284,26 +1275,11 @@ standardized, large-scale, visually appealing maps.</p>
           
         </p>
         <br>
-        <p>SPECTRA reconstructs metabolic networks from multi-omics data at a range of
-biological scales: minimal reactomes, context-specific models, gap-filled
-reconstructions, minimal microbiomes, microbial community models and
-multi-tissue models. What changes between them is the universal model, the
-evidence supplied and the objective chosen, not the routine called.</p>
-<p>Two options give that range. <code>consistency_type</code> picks the steady state
-<code>S v = 0</code> or the accumulation condition <code>S v &gt;= 0</code> that gap filling needs.
-<code>problem_type</code> picks the objective: minimise total flux, minimise reaction
-count, maximise signed omics evidence, or maximise biomass against a flux
-penalty.</p>
-<p><code>spectra_cc</code> removes blocked reactions, <code>spectra_me</code> extracts a network
-around a set of core reactions, and <code>spectra_ccme</code> does both at once.
-Alternative solutions come from core direction or pathway exclusion.</p>
-<p>The accompanying paper reports a 56-fold speed-up over existing algorithms
-for consistency-based reconstruction, with applications to 1,479 cancer cell
-lines, 7,302 gap-filled AGORA2 reconstructions and synthetic gut microbiota.</p>
-<p>Implements: Kumar S, P., Sridhar, S., Alsmadi, N., Mahadevan, R., and Bhatt,
-N. &ldquo;Generalist method to reconstruct metabolic networks from multi-omics data
-at large-scale.&rdquo; bioRxiv (2026).
-DOI: <a href="https://doi.org/10.64898/2026.04.02.716249">https://doi.org/10.64898/2026.04.02.716249</a></p>
+        <p>SPECTRA checks flux consistency and reconstructs metabolic networks at a
+range of biological scales: minimal reactomes, context-specific models,
+gap-filled reconstructions, minimal microbiomes, microbial community models
+and multi-tissue models. What changes between them is the universal model,
+the evidence supplied (omics evidence) and the objective chosen.</p>
 
       </div>
       <div class="mdl-card__actions mdl-card--border">

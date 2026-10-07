@@ -23,13 +23,7 @@
     <loc>https://opencobra.github.io/cobrapy/tags/gap-filling/</loc>
     <lastmod>2026-10-04T12:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/metabolic-reconstruction/</loc>
-    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://opencobra.github.io/cobrapy/tags/minimal-microbiome/</loc>
-    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/model-extraction/</loc>
     <lastmod>2026-10-04T12:00:00+00:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/tags/omics-integration/</loc>
@@ -2163,6 +2157,9 @@
     <lastmod>2017-01-13T11:00:01-06:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/packages/memote/</loc>
+    <lastmod>2017-01-06T11:00:01-06:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/metabolic-reconstruction/</loc>
     <lastmod>2017-01-06T11:00:01-06:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/tags/sbml/</loc>

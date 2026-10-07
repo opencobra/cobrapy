@@ -13,7 +13,7 @@
       <link>https://opencobra.github.io/cobrapy/packages/spectra-cobra/</link>
       <pubDate>Sun, 04 Oct 2026 12:00:00 +0000</pubDate>
       <guid>https://opencobra.github.io/cobrapy/packages/spectra-cobra/</guid>
-      <description>&lt;p&gt;SPECTRA reconstructs metabolic networks from multi-omics data at a range of&#xA;biological scales: minimal reactomes, context-specific models, gap-filled&#xA;reconstructions, minimal microbiomes, microbial community models and&#xA;multi-tissue models. What changes between them is the universal model, the&#xA;evidence supplied and the objective chosen, not the routine called.&lt;/p&gt;&#xA;&lt;p&gt;Two options give that range. &lt;code&gt;consistency_type&lt;/code&gt; picks the steady state&#xA;&lt;code&gt;S v = 0&lt;/code&gt; or the accumulation condition &lt;code&gt;S v &amp;gt;= 0&lt;/code&gt; that gap filling needs.&#xA;&lt;code&gt;problem_type&lt;/code&gt; picks the objective: minimise total flux, minimise reaction&#xA;count, maximise signed omics evidence, or maximise biomass against a flux&#xA;penalty.&lt;/p&gt;</description>
+      <description>&lt;p&gt;SPECTRA checks flux consistency and reconstructs metabolic networks at a&#xA;range of biological scales: minimal reactomes, context-specific models,&#xA;gap-filled reconstructions, minimal microbiomes, microbial community models&#xA;and multi-tissue models. What changes between them is the universal model,&#xA;the evidence supplied (omics evidence) and the objective chosen.&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>
