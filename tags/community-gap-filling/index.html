@@ -82,11 +82,11 @@
 
 <a href="../../tags/algorithms" class="mdl-badge mdl-color-text--grey-500" data-badge="1">algorithms</a>
 
-<a href="../../tags/community-gap-filling" class="mdl-badge mdl-color-text--grey-500" data-badge="1">community gap-filling</a>
+<a href="../../tags/community-gap-filling" class="mdl-badge " data-badge="1">community gap-filling</a>
 
 <a href="../../tags/context-specific-models" class="mdl-badge mdl-color-text--grey-500" data-badge="1">context-specific models</a>
 
-<a href="../../tags/dfba" class="mdl-badge " data-badge="1">dfba</a>
+<a href="../../tags/dfba" class="mdl-badge mdl-color-text--grey-500" data-badge="1">dfba</a>
 
 <a href="../../tags/dynamic-flux-balance-analysis" class="mdl-badge mdl-color-text--grey-500" data-badge="1">dynamic flux-balance analysis</a>
 
@@ -130,35 +130,59 @@
 <div class="mdl-cell mdl-cell--6-col mdl-cell--4-col-phone mdl-cell--8-col-tablet">
 <div class="mdl-card mdl-shadow--4dp">
 <div class="mdl-card__supporting-text">
-<h1 class="mdl-color-text--accent">dfba</h1>
-<span class="spaced"><h2 class="mdl-color-text--primary">by David S. Tourigny and Moritz E. Beber</h2>
+<h1 class="mdl-color-text--accent">spectra-cobra</h1>
+<span class="spaced"><h2 class="mdl-color-text--primary">by bisect-group</h2>
+
+
+<span>
+<img src="https://img.shields.io/github/license/bisect-group/spectra-cobra.svg"/>
+<img src="https://img.shields.io/github/stars/bisect-group/spectra-cobra.svg?style=social&label=Star"/>
+</span>
 </span>
 <p class="mdl-typography--caption" style="margin-top: .5em">
   Tags: 
-  <a href="../../tags/dynamic-flux-balance-analysis">dynamic flux-balance analysis</a>
+  <a href="../../tags/metabolic-reconstruction">metabolic reconstruction</a>
 
 
-  , <a href="../../tags/dfba">dfba</a>
+  , <a href="../../tags/context-specific-models">context-specific models</a>
+
+
+  , <a href="../../tags/gap-filling">gap-filling</a>
+
+
+  , <a href="../../tags/community-gap-filling">community gap-filling</a>
+
+
+  , <a href="../../tags/minimal-microbiome">minimal microbiome</a>
+
+
+  , <a href="../../tags/model-extraction">model extraction</a>
+
+
+  , <a href="../../tags/flux-consistency">flux consistency</a>
+
+
+  , <a href="../../tags/omics-integration">omics integration</a>
 
 
 </p>
 <br>
-<p><p>The <code>dfba</code> project provides an object-oriented software package for dynamic
-flux-balance analysis (DFBA) simulations using implementations of the direct
-method or Algorithm 1 described in the paper <a href="https://link.springer.com/article/10.1007/s00211-015-0760-3">Harwood et al.,
-2016</a>. The main
-algorithms for solving embedded LP problems are written in <code>C++</code> and use the
-<a href="https://www.gnu.org/software/glpk/">GLPK (GNU Linear Programming (LP) Kit)</a>
-and <a href="https://computation.llnl.gov/projects/sundials">SUNDIALS (Suite of Nonlinear and Differential/Algebraic Equation Solvers)
-CVODE or IDA</a>. Extension modules
-to <a href="https://github.com/opencobra/cobrapy">cobrapy</a> are provided for easy
-generation and simulation of DFBA models.</p></p>
+<p><p>SPECTRA reconstructs metabolic networks from multi-omics data at a range of
+biological scales: minimal reactomes, context-specific models, gap-filled
+reconstructions, minimal microbiomes, microbial community models and
+multi-tissue models. What changes between them is the universal model, the
+evidence supplied and the objective chosen, not the routine called.</p>
+<p>Two options give that range. <code>consistency_type</code> picks the steady state
+<code>S v = 0</code> or the accumulation condition <code>S v &gt;= 0</code> that gap filling needs.
+<code>problem_type</code> picks the objective: minimise total flux, minimise reaction
+count, maximise signed omics evidence, or maximise biomass against a flux
+penalty.</p></p>
 </div>
 <div class="mdl-card__actions mdl-card--border">
 <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
-    href="https://pypi.org/project/dfba/"><i class="material-icons">link</i>&nbsp;Webpage</a>
+    href="https://spectra-cobra.readthedocs.io"><i class="material-icons">link</i>&nbsp;Webpage</a>
 <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-color-text--accent"
-    href="https://gitlab.com/davidtourigny/dynamic-fba"><i class="material-icons">code</i>&nbsp;Repository</a>
+    href="https://github.com/bisect-group/spectra-cobra"><i class="material-icons">code</i>&nbsp;Repository</a>
 </div></div></div>
 
 </div>

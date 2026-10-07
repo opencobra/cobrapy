@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Metabolic Reconstruction on cobrapy - constraint-based metabolic modeling in Python</title>
-    <link>https://opencobra.github.io/cobrapy/tags/metabolic-reconstruction/</link>
-    <description>Recent content in Metabolic Reconstruction on cobrapy - constraint-based metabolic modeling in Python</description>
+    <title>Model Extraction on cobrapy - constraint-based metabolic modeling in Python</title>
+    <link>https://opencobra.github.io/cobrapy/tags/model-extraction/</link>
+    <description>Recent content in Model Extraction on cobrapy - constraint-based metabolic modeling in Python</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Sun, 04 Oct 2026 12:00:00 +0000</lastBuildDate>
-    <atom:link href="https://opencobra.github.io/cobrapy/tags/metabolic-reconstruction/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://opencobra.github.io/cobrapy/tags/model-extraction/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>spectra-cobra</title>
       <link>https://opencobra.github.io/cobrapy/packages/spectra-cobra/</link>
       <pubDate>Sun, 04 Oct 2026 12:00:00 +0000</pubDate>
       <guid>https://opencobra.github.io/cobrapy/packages/spectra-cobra/</guid>
       <description>&lt;p&gt;SPECTRA reconstructs metabolic networks from multi-omics data at a range of&#xA;biological scales: minimal reactomes, context-specific models, gap-filled&#xA;reconstructions, minimal microbiomes, microbial community models and&#xA;multi-tissue models. What changes between them is the universal model, the&#xA;evidence supplied and the objective chosen, not the routine called.&lt;/p&gt;&#xA;&lt;p&gt;Two options give that range. &lt;code&gt;consistency_type&lt;/code&gt; picks the steady state&#xA;&lt;code&gt;S v = 0&lt;/code&gt; or the accumulation condition &lt;code&gt;S v &amp;gt;= 0&lt;/code&gt; that gap filling needs.&#xA;&lt;code&gt;problem_type&lt;/code&gt; picks the objective: minimise total flux, minimise reaction&#xA;count, maximise signed omics evidence, or maximise biomass against a flux&#xA;penalty.&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>memote</title>
-      <link>https://opencobra.github.io/cobrapy/packages/memote/</link>
-      <pubDate>Fri, 06 Jan 2017 11:00:01 -0600</pubDate>
-      <guid>https://opencobra.github.io/cobrapy/packages/memote/</guid>
-      <description>&lt;p&gt;Our goal in promoting this tool is to achieve two major shifts in the metabolic model building community:&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Models should be version-controlled such that changes can be tracked and if necessary reverted. Ideally, they should be available through a public repository such as GitHub that will allow other researchers to inspect, share, and contribute to the model.&lt;/li&gt;&#xA;&lt;li&gt;Models should, for the benefit of the community and for research gain, live up to certain standards and minimal functionality.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;The memote tool therefore performs four subfunctions:&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>

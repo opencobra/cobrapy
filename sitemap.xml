@@ -8,10 +8,43 @@
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/intro/help/</loc>
   </url><url>
-    <loc>https://opencobra.github.io/cobrapy/releases/0.32.1/</loc>
-    <lastmod>2026-08-11T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://opencobra.github.io/cobrapy/</loc>
+    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/community-gap-filling/</loc>
+    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/context-specific-models/</loc>
+    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/flux-consistency/</loc>
+    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/gap-filling/</loc>
+    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/metabolic-reconstruction/</loc>
+    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/minimal-microbiome/</loc>
+    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/model-extraction/</loc>
+    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/omics-integration/</loc>
+    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/packages/</loc>
+    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/packages/spectra-cobra/</loc>
+    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/</loc>
+    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/releases/0.32.1/</loc>
     <lastmod>2026-08-11T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/releases/</loc>
@@ -1007,13 +1040,7 @@
     <loc>https://opencobra.github.io/cobrapy/tags/models/</loc>
     <lastmod>2022-09-14T12:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://opencobra.github.io/cobrapy/packages/</loc>
-    <lastmod>2022-09-14T12:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://opencobra.github.io/cobrapy/tags/strain-design/</loc>
-    <lastmod>2022-09-14T12:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/</loc>
     <lastmod>2022-09-14T12:00:00+00:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/tags/visualization/</loc>
@@ -2136,9 +2163,6 @@
     <lastmod>2017-01-13T11:00:01-06:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/packages/memote/</loc>
-    <lastmod>2017-01-06T11:00:01-06:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/metabolic-reconstruction/</loc>
     <lastmod>2017-01-06T11:00:01-06:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/tags/sbml/</loc>
