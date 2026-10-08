@@ -11,25 +11,13 @@
     <loc>https://opencobra.github.io/cobrapy/</loc>
     <lastmod>2026-10-04T12:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/community-gap-filling/</loc>
-    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/context-specific-models/</loc>
-    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://opencobra.github.io/cobrapy/tags/flux-consistency/</loc>
     <lastmod>2026-10-04T12:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/gap-filling/</loc>
-    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/minimal-microbiome/</loc>
-    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/omics-integration/</loc>
-    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://opencobra.github.io/cobrapy/packages/</loc>
+    <lastmod>2026-10-04T12:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://opencobra.github.io/cobrapy/tags/reconstruction/</loc>
     <lastmod>2026-10-04T12:00:00+00:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/packages/spectra-cobra/</loc>
@@ -2091,9 +2079,6 @@
     <lastmod>2017-03-27T11:52:51-06:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/packages/corda/</loc>
-    <lastmod>2017-03-27T11:52:47-06:00</lastmod>
-  </url><url>
-    <loc>https://opencobra.github.io/cobrapy/tags/reconstruction/</loc>
     <lastmod>2017-03-27T11:52:47-06:00</lastmod>
   </url><url>
     <loc>https://opencobra.github.io/cobrapy/tags/algorithms/</loc>
