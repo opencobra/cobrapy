@@ -6,7 +6,8 @@ from typing import Callable, List
 import pytest
 
 from cobra.core import Model
-from cobra.exceptions import Infeasible
+from cobra.exceptions import Infeasible, OptimizationError
+from cobra.flux_analysis import parsimonious
 from cobra.flux_analysis.parsimonious import add_pfba, pfba
 
 
@@ -65,3 +66,20 @@ def test_pfba(model: Model, all_solvers: List[str]) -> None:
         warnings.simplefilter("error", UserWarning)
         with pytest.raises((UserWarning, Infeasible, ValueError)):
             pfba(model)
+
+
+@pytest.mark.parametrize("raise_error", [True, False])
+def test_pfba_forwards_raise_error(model: Model, mocker, raise_error: bool) -> None:
+    """Test that `raise_error` is forwarded to `get_solution` like in `optimize`."""
+    get_solution = mocker.spy(parsimonious, "get_solution")
+    solution = pfba(model, raise_error=raise_error)
+    assert solution.status == "optimal"
+    assert get_solution.call_args.kwargs["raise_error"] is raise_error
+
+
+def test_pfba_raise_error_infeasible(model: Model) -> None:
+    """Test that an infeasible problem raises when `raise_error` is True."""
+    with model:
+        model.reactions.ATPM.lower_bound = 500
+        with pytest.raises(OptimizationError):
+            pfba(model, raise_error=True)

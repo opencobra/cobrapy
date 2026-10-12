@@ -21,6 +21,7 @@ def geometric_fba(
     epsilon: float = 1e-06,
     max_tries: int = 200,
     processes: Optional[int] = None,
+    raise_error: bool = False,
 ) -> "Solution":
     """Perform geometric FBA to obtain a unique, centered flux distribution.
 
@@ -40,6 +41,9 @@ def geometric_fba(
     processes : int, optional
         The number of parallel processes to run. If not explicitly passed,
         will be set from the global configuration singleton (default None).
+    raise_error : bool, optional
+        If true, raise an OptimizationError if solver status is not
+        optimal, mirroring `Model.optimize` (default False).
 
     Returns
     -------
@@ -51,6 +55,8 @@ def geometric_fba(
     ------
     RuntimeError
         If iteration count becomes equal to `max_tries`.
+    OptimizationError
+        If `raise_error` is True and the solver status is not optimal.
 
     References
     ----------
@@ -69,7 +75,7 @@ def geometric_fba(
         # The first iteration.
         prob = model.problem
         add_pfba(model)  # Minimize the solution space to a convex hull.
-        model.optimize()
+        model.optimize(raise_error=raise_error)
         fva_sol = flux_variability_analysis(model, processes=processes)
         mean_flux = (fva_sol["maximum"] + fva_sol["minimum"]).abs() / 2
 
@@ -95,7 +101,7 @@ def geometric_fba(
         model.objective = prob.Objective(Zero, sloppy=True, direction="min")
         model.objective.set_linear_coefficients({v: 1.0 for v in obj_vars})
         # Update loop variables.
-        sol = model.optimize()
+        sol = model.optimize(raise_error=raise_error)
         fva_sol = flux_variability_analysis(model, processes=processes)
         mean_flux = (fva_sol["maximum"] + fva_sol["minimum"]).abs() / 2
         delta = (fva_sol["maximum"] - fva_sol["minimum"]).max()
@@ -109,7 +115,7 @@ def geometric_fba(
                 u_c.ub = mean_flux[rxn_id]
                 l_c.lb = fva_sol.at[rxn_id, "minimum"]
             # Update loop variables.
-            sol = model.optimize()
+            sol = model.optimize(raise_error=raise_error)
             fva_sol = flux_variability_analysis(model, processes=processes)
             mean_flux = (fva_sol["maximum"] + fva_sol["minimum"]).abs() / 2
             delta = (fva_sol["maximum"] - fva_sol["minimum"]).max()

@@ -46,6 +46,7 @@ def pfba(
     fraction_of_optimum: float = 1.0,
     objective: Union[Dict, "Objective", None] = None,
     reactions: Optional[List["Reaction"]] = None,
+    raise_error: bool = False,
 ) -> "Solution":
     """Perform basic pFBA (parsimonious Enzyme Usage Flux Balance Analysis).
 
@@ -71,6 +72,9 @@ def pfba(
         List of cobra.Reaction. Implies `return_frame` to be true. Only
         return fluxes for the given reactions. Faster than fetching all
         fluxes if only a few are needed (default None).
+    raise_error : bool, optional
+        If true, raise an OptimizationError if solver status is not
+        optimal, mirroring `Model.optimize` (default False).
 
     Returns
     -------
@@ -92,8 +96,8 @@ def pfba(
     )
     with model as m:
         add_pfba(m, objective=objective, fraction_of_optimum=fraction_of_optimum)
-        m.slim_optimize(error_value=None)
-        solution = get_solution(m, reactions=reactions)
+        m.slim_optimize()
+        solution = get_solution(m, reactions=reactions, raise_error=raise_error)
     return solution
 
 
