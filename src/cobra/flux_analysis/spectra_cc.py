@@ -1,23 +1,24 @@
 """Provide an implementation of the SPECTRA consistency check."""
 
+from copy import deepcopy
 from logging import getLogger
-from typing import TYPE_CHECKING, Dict, Optional, Set, Tuple
+from typing import TYPE_CHECKING, Dict, Iterable, Optional, Set, Tuple
 
 import numpy as np
 from optlang.interface import OPTIMAL
 from optlang.symbolics import Zero
 
-from ..core import get_solution
+from ..core import Group, Model
+from ..core.dictlist import DictList
 from .helpers import normalize_cutoff
 
 
 if TYPE_CHECKING:
-    from cobra.core import Model, Reaction
+    from cobra.core import Reaction
 
 
 logger = getLogger(__name__)
 
-LARGE_VALUE = 1.0e6
 #: Lower and upper limit of the uniformly sampled objective coefficients.
 WEIGHT_RANGE = (1.0, 1.1)
 
@@ -65,95 +66,45 @@ def _is_reversible(reaction: "Reaction") -> bool:
     return min(sign * reaction.lower_bound, sign * reaction.upper_bound) < 0.0
 
 
-def _add_auxiliary_vars(
-    model: "Model", signs: Dict[str, float], flux_threshold: float
-) -> Set[str]:
-    """Add the auxiliary variables and constraints for both LPs.
-
-    Two families are added. The forward family bounds an auxiliary variable
-    from above by ``flux_threshold`` and by the oriented flux, so that
-    maximizing it drives the reaction towards positive flux. The reverse
-    family does the mirror image for reversible reactions. Both are added in
-    a disabled state; :func:`_find_flux_mode` enables the subset it needs.
-
-    Parameters
-    ----------
-    model: cobra.Model
-        The model to operate on.
-    signs: dict of {str: float}
-        The orientation of every reaction, keyed by reaction identifier.
-    flux_threshold: float
-        The magnitude the auxiliary variables, and hence the reaction fluxes,
-        are driven to.
-
-    Returns
-    -------
-    set of str
-        The identifiers of the reversible reactions, for which a reverse
-        auxiliary variable was added.
-
-    """
-    prob = model.problem
-    reversible_ids = set()
-    vars_and_cons = []
-
-    for rxn in model.reactions:
-        oriented_flux = signs[rxn.id] * rxn.flux_expression
-
-        var = prob.Variable(
-            f"spectra_fwd_aux_{rxn.id}", lb=-LARGE_VALUE, ub=flux_threshold
-        )
-        # Enabled by raising the lower bound back to 0, i.e. v_i >= z_i.
-        const = prob.Constraint(
-            oriented_flux - var, name=f"spectra_fwd_{rxn.id}", lb=-LARGE_VALUE
-        )
-        vars_and_cons.extend([var, const])
-
-        if not _is_reversible(rxn):
-            continue
-
-        reversible_ids.add(rxn.id)
-        var = prob.Variable(
-            f"spectra_rev_aux_{rxn.id}", lb=-flux_threshold, ub=LARGE_VALUE
-        )
-        # Enabled by lowering the upper bound back to 0, i.e. v_i <= z_i.
-        const = prob.Constraint(
-            oriented_flux - var, name=f"spectra_rev_{rxn.id}", ub=LARGE_VALUE
-        )
-        vars_and_cons.extend([var, const])
-
-    model.add_cons_vars(vars_and_cons)
-    model.solver.update()
-    return reversible_ids
-
-
 def _find_flux_mode(
     model: "Model",
-    rxn_ids: Set[str],
+    rxn_ids: Iterable[str],
+    signs: Dict[str, float],
+    flux_threshold: float,
     zero_cutoff: float,
     rng: np.random.Generator,
     reverse: bool = False,
 ) -> Set[str]:
     """Perform one of the two LPs required for SPECTRA.
 
-    The LP pushes as many of the given reactions as possible towards the flux
-    threshold at once, in the forward or the reverse orientation. Randomized
-    objective coefficients break ties between reactions, so that repeated
-    calls explore different corners of the optimal face.
+    An auxiliary variable is tied to each given reaction's oriented flux by a
+    one-sided constraint, and a randomly weighted sum of those auxiliary
+    variables is pushed as far as the flux bounds allow. The randomized
+    weights break ties between reactions, so that repeated calls explore
+    different corners of the optimal face.
+
+    The auxiliary variables are free on the side they are pushed away from,
+    rather than held by a large finite bound. A finite bound would quietly
+    become binding on a model whose flux bounds exceed it.
 
     Parameters
     ----------
     model: cobra.Model
-        The model to operate on, already holding the auxiliary variables.
-    rxn_ids: set of str
+        The model to operate on.
+    rxn_ids: iterable of str
         The reactions to drive towards the flux threshold.
+    signs: dict of {str: float}
+        The orientation of every reaction, keyed by reaction identifier.
+    flux_threshold: float
+        The magnitude the auxiliary variables, and hence the reaction fluxes,
+        are driven to.
     zero_cutoff: float
         The cutoff below which a flux is considered zero.
     rng: numpy.random.Generator
         The random generator supplying the objective coefficients.
     reverse: bool, optional
-        Whether to use the reverse family of auxiliary variables, driving the
-        reactions towards negative flux instead (default False).
+        Whether to drive the reactions towards negative oriented flux instead
+        (default False).
 
     Returns
     -------
@@ -161,48 +112,186 @@ def _find_flux_mode(
         The identifiers of the reactions carrying flux above the cutoff.
 
     """
+    # Sorted, not merely listed: the objective coefficients are drawn in one
+    # block and zipped against the variables positionally, so the order
+    # decides which reaction gets which weight. Callers pass a set, whose
+    # iteration order varies with PYTHONHASHSEED, which would make a seeded
+    # run irreproducible between processes.
+    rxn_ids = sorted(rxn_ids)
     if not rxn_ids:
         return set()
 
-    prefix = "spectra_rev" if reverse else "spectra_fwd"
-    constraints = [model.constraints.get(f"{prefix}_{rid}") for rid in rxn_ids]
+    prob = model.problem
+    aux_vars = []
+    cons_and_vars = []
+    coefficients = []
 
-    for const in constraints:
+    for rxn_id in rxn_ids:
+        rxn = model.reactions.get_by_id(rxn_id)
+        sign = signs[rxn_id]
+
         if reverse:
-            const.ub = 0.0
+            # z_i >= -eps and v_i <= z_i, minimized: drives v_i down to -eps.
+            var = prob.Variable(f"spectra_aux_{rxn_id}", lb=-flux_threshold)
+            const = prob.Constraint(Zero, name=f"spectra_cons_{rxn_id}", ub=0.0)
         else:
-            const.lb = 0.0
+            # z_i <= eps and v_i >= z_i, maximized: drives v_i up to eps.
+            var = prob.Variable(f"spectra_aux_{rxn_id}", ub=flux_threshold)
+            const = prob.Constraint(Zero, name=f"spectra_cons_{rxn_id}", lb=0.0)
 
-    try:
-        weights = rng.uniform(*WEIGHT_RANGE, size=len(rxn_ids))
-        obj_vars = [model.variables.get(f"{prefix}_aux_{rid}") for rid in rxn_ids]
-        model.objective = model.problem.Objective(
-            Zero, direction="min" if reverse else "max"
+        aux_vars.append(var)
+        cons_and_vars.extend([var, const])
+        # The constraint is sign_i * v_i - z_i, and v_i is itself the
+        # difference of the forward and reverse variables. Declaring it empty
+        # and filling in the three coefficients avoids handing optlang an
+        # expression to build symbolically, which sympy otherwise dominates
+        # the runtime of.
+        coefficients.append(
+            (
+                const,
+                {
+                    rxn.forward_variable: sign,
+                    rxn.reverse_variable: -sign,
+                    var: -1.0,
+                },
+            )
         )
-        model.objective.set_linear_coefficients(dict(zip(obj_vars, weights)))
+
+    with model:
+        model.add_cons_vars(cons_and_vars)
+        # Coefficients can only be set once the constraints belong to a
+        # problem.
+        model.solver.update()
+        for const, terms in coefficients:
+            const.set_linear_coefficients(terms)
+        # Reversed in place so that leaving the context deletes from the tail
+        # of optlang's containers: removing from the front re-indexes
+        # everything after it, which is quadratic in the number of auxiliary
+        # variables. The context holds this very list, so reversing it here
+        # reverses the teardown.
+        cons_and_vars.reverse()
+
+        model.objective = prob.Objective(Zero, direction="min" if reverse else "max")
+        weights = rng.uniform(*WEIGHT_RANGE, size=len(aux_vars))
+        model.objective.set_linear_coefficients(dict(zip(aux_vars, weights)))
 
         model.slim_optimize()
         status = model.solver.status
-        if status == OPTIMAL:
-            fluxes = get_solution(model).fluxes
-            return set(fluxes[fluxes.abs() >= zero_cutoff].index)
+        if status != OPTIMAL:
+            logger.warning(
+                "The %s LP terminated with status '%s'; treating its %d "
+                "reactions as carrying no flux.",
+                "reverse" if reverse else "forward",
+                status,
+                len(rxn_ids),
+            )
+            return set()
 
-        logger.warning(
-            "The %s LP terminated with status '%s'; treating its %d reactions "
-            "as carrying no flux.",
-            "reverse" if reverse else "forward",
-            status,
-            len(rxn_ids),
-        )
-        return set()
+        return {rxn.id for rxn in model.reactions if abs(rxn.flux) >= zero_cutoff}
+
+
+def _subset_model(model: "Model", keep_ids: Set[str]) -> "Model":
+    """Return a new model holding only the given reactions.
+
+    The model is *built* from the reactions that are kept rather than copied
+    whole and then cut down. Deleting is quadratic: each removal makes
+    ``optlang.Container._reindex`` rebuild the whole name-to-index map, and
+    the solver is updated once per reaction. Building instead is linear in
+    what is kept, and populates the solver in a single batch.
+
+    Parameters
+    ----------
+    model: cobra.Model
+        The model to take the subset of. It is left unchanged.
+    keep_ids: set of str
+        The identifiers of the reactions to keep.
+
+    Returns
+    -------
+    cobra.Model
+        A new model carrying the kept reactions and everything attached to
+        them, in the order the source had them.
+
+    """
+    keep = set(keep_ids)
+    reactions = [rxn for rxn in model.reactions if rxn.id in keep]
+    metabolites = {met for rxn in reactions for met in rxn._metabolites}
+    genes = {gene for rxn in reactions for gene in rxn._genes}
+
+    # ``deepcopy`` carries every attribute, so nothing has to be enumerated
+    # and nothing is silently dropped. It needs ``_model`` detached first:
+    # ``Reaction.__getstate__`` does not null it, unlike
+    # ``Object.__getstate__``, so a plain deepcopy would drag the whole source
+    # model, and its solver, along behind each reaction.
+    detached = [(obj, obj._model) for obj in (*reactions, *metabolites, *genes)]
+    for obj, _ in detached:
+        obj._model = None
+    try:
+        copies = deepcopy(reactions)
     finally:
-        # Leave the constraints slack again, so that the next LP starts from a
-        # clean problem even if this one failed.
-        for const in constraints:
-            if reverse:
-                const.ub = LARGE_VALUE
-            else:
-                const.lb = -LARGE_VALUE
+        for obj, owner in detached:
+            obj._model = owner
+
+    subset = Model(model.id)
+    subset.name = model.name
+    subset.compartments = dict(model.compartments)
+    subset.annotation = deepcopy(model.annotation)
+    subset.notes = deepcopy(model.notes)
+    subset.add_reactions(copies)
+
+    # ``Reaction.__getstate__`` serialises the GPR to a string, so the rule is
+    # re-parsed when the reactions are added and the genes come back as fresh
+    # objects carrying nothing but an identifier. Their metadata has to be put
+    # back from the source, or a model whose genes are annotated loses every
+    # annotation it had.
+    for gene in subset.genes:
+        original = model.genes.get_by_id(gene.id)
+        gene.name = original.name
+        gene.annotation = deepcopy(original.annotation)
+        gene.notes = deepcopy(original.notes)
+
+    # ``add_reactions`` interns metabolites and genes in the order it first
+    # meets them, which is not the order they had in the source.
+    for attribute in ("metabolites", "genes"):
+        position = {obj.id: i for i, obj in enumerate(getattr(model, attribute))}
+        current = list(getattr(subset, attribute))
+        setattr(
+            subset,
+            attribute,
+            DictList(sorted(current, key=lambda obj: position[obj.id])),
+        )
+
+    # Groups survive the loss of all their members, as they would have done
+    # when the reactions were deleted out from under them.
+    groups = []
+    for group in model.groups:
+        members = []
+        for member in group.members:
+            for container in (subset.reactions, subset.metabolites, subset.genes):
+                if member.id in container:
+                    members.append(container.get_by_id(member.id))
+                    break
+        new_group = Group(group.id, name=group.name, members=members, kind=group.kind)
+        new_group.annotation = deepcopy(group.annotation)
+        new_group.notes = deepcopy(group.notes)
+        groups.append(new_group)
+    if groups:
+        subset.add_groups(groups)
+
+    # Nothing above reaches model-level state, so it is carried over by hand.
+    subset.solver = model.solver.interface
+    subset.tolerance = model.tolerance
+    coefficients = {
+        subset.reactions.get_by_id(rxn.id): rxn.objective_coefficient
+        for rxn in reactions
+        if rxn.objective_coefficient
+    }
+    if coefficients:
+        subset.objective = coefficients
+    # Unconditional: with every objective reaction gone the coefficients are
+    # empty but the direction still has to follow the original.
+    subset.objective.direction = model.objective.direction
+    return subset
 
 
 def _find_consistent_reaction_ids(
@@ -245,33 +334,33 @@ def _find_consistent_reaction_ids(
     rng = np.random.default_rng(seed)
 
     signs = {rxn.id: _reaction_sign(rxn) for rxn in model.reactions}
+    reversible_ids = {rxn.id for rxn in model.reactions if _is_reversible(rxn)}
     # Reactions that have not been shown to carry flux yet.
     rxns_to_check = set(signs)
     n_lps = 0
 
-    with model:
-        reversible_ids = _add_auxiliary_vars(model, signs, tol)
+    previous_count = None
+    while len(rxns_to_check) != previous_count:
+        previous_count = len(rxns_to_check)
+        n_lps += 2
 
-        previous_count = None
-        while len(rxns_to_check) != previous_count:
-            previous_count = len(rxns_to_check)
-            n_lps += 2
-
-            rxns_to_check -= _find_flux_mode(
-                model, rxns_to_check, zero_cutoff, rng, reverse=False
-            )
-            rxns_to_check -= _find_flux_mode(
-                model,
-                rxns_to_check & reversible_ids,
-                zero_cutoff,
-                rng,
-                reverse=True,
-            )
-            logger.debug(
-                "LPs solved: %d - reactions left to check: %d",
-                n_lps,
-                len(rxns_to_check),
-            )
+        rxns_to_check -= _find_flux_mode(
+            model, rxns_to_check, signs, tol, zero_cutoff, rng, reverse=False
+        )
+        rxns_to_check -= _find_flux_mode(
+            model,
+            rxns_to_check & reversible_ids,
+            signs,
+            tol,
+            zero_cutoff,
+            rng,
+            reverse=True,
+        )
+        logger.debug(
+            "LPs solved: %d - reactions left to check: %d",
+            n_lps,
+            len(rxns_to_check),
+        )
 
     consistent_ids = set(signs) - rxns_to_check
     logger.info(
@@ -358,9 +447,4 @@ def spectra_cc(
     """
     consistent_ids, _ = _find_consistent_reaction_ids(model, tol, zero_cutoff, seed)
 
-    consistent_model = model.copy()
-    consistent_model.remove_reactions(
-        {rxn.id for rxn in model.reactions} - consistent_ids, remove_orphans=True
-    )
-
-    return consistent_model
+    return _subset_model(model, consistent_ids)
