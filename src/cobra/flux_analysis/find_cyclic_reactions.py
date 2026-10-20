@@ -164,18 +164,18 @@ def find_cyclic_reactions(
 
                 sutil.check_solver_status(lp.status)
 
-                if abs(lp.objective.value) > zero_cutoff:
-                    remove_coef = {}
-                    for i in range(n):
-                        if not is_cyclic[i] and abs(q_list[i].primal) > zero_cutoff:
-                            is_cyclic[i] = True
-                            cyclic_reactions_num += 1
-                            remove_coef[q_list[i]] = 0
-                            if q_list[i].primal > zero_cutoff:
-                                can_positive[i] = True
-                            else:
-                                can_negative[i] = True
+                remove_coef = {}
+                for i in range(n):
+                    if not is_cyclic[i] and abs(q_list[i].primal) > zero_cutoff:
+                        is_cyclic[i] = True
+                        cyclic_reactions_num += 1
+                        remove_coef[q_list[i]] = 0
+                        if q_list[i].primal > zero_cutoff:
+                            can_positive[i] = True
+                        else:
+                            can_negative[i] = True
 
+                if len(remove_coef) > 0:
                     found_cyclic = True
                     lp.objective.set_linear_coefficients(remove_coef)
                     stop_checks_num = 0

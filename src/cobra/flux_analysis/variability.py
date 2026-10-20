@@ -289,11 +289,27 @@ def _find_loopless_fva_clipped_reactions(
             model.objective.set_linear_coefficients(coefs)
             model.objective.direction = "max"
 
+            remaining_candidate_constraint_name = (
+                "loopless_fva_at_least_one_remaining_candidate"
+            )
+            remaining_candidate_constraint = model.problem.Constraint(
+                Zero,
+                lb=1,
+                name=remaining_candidate_constraint_name,
+            )
+            model.add_cons_vars([remaining_candidate_constraint])
+            remaining_candidate_constraint = model.constraints[
+                remaining_candidate_constraint_name
+            ]
+            remaining_candidate_constraint.set_linear_coefficients(coefs)
+
             while (
                 len(candidates_by_direction["maximum"]) > 0
                 or len(candidates_by_direction["minimum"]) > 0
             ):
                 model.slim_optimize()
+                if model.solver.status == optlang.interface.INFEASIBLE:
+                    break
                 sutil.check_solver_status(model.solver.status)
 
                 remove_coef = {}
@@ -321,6 +337,7 @@ def _find_loopless_fva_clipped_reactions(
                 result["maximum"].update(validated_reactions["maximum"])
 
                 model.objective.set_linear_coefficients(remove_coef)
+                remaining_candidate_constraint.set_linear_coefficients(remove_coef)
 
         except Exception:
             logger.warning(
