@@ -1,7 +1,7 @@
 """Test functionalities of Flux Variability Analysis."""
 
 import os
-from typing import Callable, List
+from typing import Callable, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -9,11 +9,14 @@ import pytest
 
 from cobra import Model
 from cobra.exceptions import Infeasible
+from cobra.flux_analysis import variability
+from cobra.flux_analysis.loopless import add_loopless
 from cobra.flux_analysis.variability import (
     find_essential_genes,
     find_essential_reactions,
     flux_variability_analysis,
 )
+from cobra.util.array import create_stoichiometric_matrix
 
 
 # FVA
@@ -291,3 +294,133 @@ def test_essential_reactions(model: Model) -> None:
     }
     observed_essential_reactions = {r.id for r in find_essential_reactions(model)}
     assert observed_essential_reactions == essential_reactions
+
+
+@pytest.mark.parametrize("loopless", [None, "fastSNP", "potentials", "cycleFreeFlux"])
+@pytest.mark.parametrize("abs_flux_clip", [None, 10.0])
+@pytest.mark.parametrize("processes", [1, 2])
+def test_fva_all_fluxes(
+    model: Model,
+    loopless: Optional[str],
+    abs_flux_clip: Optional[float],
+    processes: int,
+) -> None:
+    """`all_fluxes` keeps the distributions FVA already computes."""
+    if processes > 1 and "SKIP_MP" in os.environ:
+        pytest.skip("unsafe for parallel execution")
+    reactions = model.reactions[:8]
+    original_bounds = {r.id: r.bounds for r in model.reactions}
+    original_objective = model.objective.expression
+    original_variables = set(model.variables.keys())
+    original_constraints = set(model.constraints.keys())
+    bounds = flux_variability_analysis(
+        model, reactions, loopless=loopless, abs_flux_clip=abs_flux_clip, processes=1
+    )
+    bounds_2, fluxes = flux_variability_analysis(
+        model,
+        reactions,
+        loopless=loopless,
+        abs_flux_clip=abs_flux_clip,
+        processes=processes,
+        all_fluxes=True,
+    )
+
+    # Asking for the fluxes must not change the bounds.
+    assert np.allclose(bounds.values, bounds_2.values, atol=1e-6, equal_nan=True)
+
+    assert set(fluxes) == {"minimum", "maximum"}
+    for direction, frame in fluxes.items():
+        assert set(frame.index) == {r.id for r in reactions}
+        assert set(frame.columns) == {r.id for r in model.reactions}
+        # The actual flux may exceed the threshold, but clipping it must give
+        # the reported bound. The full distribution must remain feasible.
+        for rxn_id in frame.index:
+            value = frame.at[rxn_id, rxn_id]
+            if abs_flux_clip is not None:
+                value = np.clip(value, -abs_flux_clip, abs_flux_clip)
+            assert value == pytest.approx(bounds_2.at[rxn_id, direction], abs=1e-6)
+        residual = create_stoichiometric_matrix(model).dot(
+            frame[[r.id for r in model.reactions]].values.T
+        )
+        assert np.abs(residual).max() < 1e-6
+        for rxn in model.reactions:
+            assert (frame[rxn.id] >= rxn.lower_bound - 1e-6).all()
+            assert (frame[rxn.id] <= rxn.upper_bound + 1e-6).all()
+
+    assert {r.id: r.bounds for r in model.reactions} == original_bounds
+    assert model.objective.expression == original_objective
+    assert set(model.variables.keys()) == original_variables
+    assert set(model.constraints.keys()) == original_constraints
+
+    if loopless is None:
+        return
+    # Every returned distribution must be loopless, including those for
+    # reactions that cannot themselves carry a loop -- those are optimized
+    # without the loop constraints by default, which would leave loops in
+    # their solution vectors.
+    with model:
+        add_loopless(model)
+        reference = {r.id: r.bounds for r in model.reactions}
+        for rxn_id in list(fluxes["maximum"].index)[:3]:
+            row = fluxes["maximum"].loc[rxn_id]
+            for rxn in model.reactions:
+                rxn.bounds = (row[rxn.id] - 1e-6, row[rxn.id] + 1e-6)
+            assert (
+                model.slim_optimize(error_value=None) is not None
+            ), f"flux distribution for {rxn_id} is not loopless"
+            for rxn in model.reactions:
+                rxn.bounds = reference[rxn.id]
+
+
+@pytest.mark.parametrize("loopless", ["fastSNP", "potentials"])
+@pytest.mark.parametrize("processes", [1, 2])
+def test_fva_all_fluxes_precomputed(
+    ll_test_model: Model, loopless: str, processes: int, mocker
+) -> None:
+    """Reuse validated distributions for clipped reactions in both directions."""
+    if processes > 1 and "SKIP_MP" in os.environ:
+        pytest.skip("unsafe for parallel execution")
+    model = ll_test_model
+    # Reverse v2 so precomputation supplies both minimum and maximum rows.
+    model.reactions.v2 *= -1
+    search = mocker.spy(variability, "_find_loopless_fva_clipped_reactions")
+    requests = [("v2", "min"), ("v1", "max"), ("v3", "max"), ("EX_A", "min")]
+    bounds, fluxes = flux_variability_analysis(
+        model,
+        requests,
+        loopless=loopless,
+        abs_flux_clip=10.0,
+        processes=processes,
+        all_fluxes=True,
+    )
+
+    assert list(fluxes["minimum"].index) == ["v2", "EX_A"]
+    assert list(fluxes["maximum"].index) == ["v1", "v3"]
+    assert np.isnan(bounds.at["v1", "minimum"])
+    assert np.isnan(bounds.at["v2", "maximum"])
+    assert bounds.at["v1", "maximum"] == pytest.approx(10.0)
+    assert bounds.at["v2", "minimum"] == pytest.approx(-10.0)
+    assert bounds.at["v3", "maximum"] == pytest.approx(0.0, abs=1e-6)
+
+    # Exercise the actual precomputation; a silent fallback must not pass.
+    for direction, rxn_id in [("maximum", "v1"), ("minimum", "v2")]:
+        pd.testing.assert_series_equal(
+            fluxes[direction].loc[rxn_id], search.spy_return[direction][rxn_id]
+        )
+    for frame in fluxes.values():
+        assert np.allclose(frame["v3"], 0.0, atol=1e-6)
+        assert np.allclose(frame["EX_A"], 1000.0)
+        assert np.allclose(frame["DM_C"], 1000.0)
+        assert np.allclose(frame["v1"], 1000.0)
+        assert np.allclose(frame["v2"], -1000.0)
+
+
+@pytest.mark.parametrize("reaction_list", [[], [("FUM", "max")]])
+def test_fva_all_fluxes_empty_direction(model: Model, reaction_list: list) -> None:
+    """Empty distributions retain reaction columns and no unrequested rows."""
+    bounds, fluxes = flux_variability_analysis(
+        model, reaction_list, processes=1, all_fluxes=True
+    )
+    assert fluxes["minimum"].empty
+    assert list(fluxes["minimum"].columns) == [r.id for r in model.reactions]
+    assert list(fluxes["maximum"].index) == list(bounds.index)

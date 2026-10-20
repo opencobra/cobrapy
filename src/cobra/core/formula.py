@@ -49,7 +49,9 @@ class Formula(Object):
         Formula: Formula
            The combined formula
         """
-        return Formula(self.formula + other_formula.formula)
+        if isinstance(other_formula, Formula):
+            other_formula = other_formula.formula
+        return Formula(self.formula + other_formula)
 
     def parse_composition(self) -> None:
         """Break the chemical formula down by element."""

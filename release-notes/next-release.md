@@ -1,16 +1,22 @@
-# Release notes for cobrapy x.y.z
+# Release notes for cobrapy 0.33.0
 
 ## New features
 
-- Added `chrr` sampler for flux polytope sampling, which is guaranteed to yield uniformly distributed samples. Uses the optional dependency `hopsy`, installable with `pip install cobra[chrr]`.
+- `flux_variability_analysis` gained an `all_fluxes` argument. FVA solves one optimization per reaction per direction and keeps only the objective value; setting this to `True` also returns the flux distribution found at each optimum, as a dict mapping `"minimum"`/`"maximum"` to data frames indexed by the optimized reaction. This avoids re-running an FVA-sized batch of solves when the distributions themselves are wanted, for example as a starting pool for sampling. With `loopless="fastSNP"` the loop constraints are applied to the whole model when this is set, so every returned distribution is loopless. The default return value is unchanged.
+
+- `Dictlists` (`model.reactions`, `model.genes`, `model.metabolites`) are now generic containers and the types of their contents are now inferable by python type checkers.
 
 ## Fixes
-- Rare race condition in cache directory creation from running seperate processes loading cobrapy on clean machine fixed. (https://github.com/opencobra/cobrapy/issues/1476)
 
+- type-annotations on resetable properties fixed.
+- fixed the URL for the BIGG repository
+- fixed the URL for the BioModels repository
+- gene ids containing characters such as `@`, `+`, `*` or `#` are now parsed correctly in GPRs, so reactions using them can be copied (#1448)
 
 ## Other
 
-## Deprecated features
+- Downloads from BioModels and BIGG now get xfail markers as they are often blocked
 
+## Deprecated features
 
 ## Backwards incompatible changes

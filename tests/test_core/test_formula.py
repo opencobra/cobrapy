@@ -26,3 +26,15 @@ def test_formula_wrong() -> None:
     with pytest.warns(UserWarning):
         w = Formula("NOX").weight
         assert w is None
+
+
+def test_formula_add_formula() -> None:
+    """Test combining two Formula objects."""
+    f = Formula("H2O") + Formula("C")
+    assert f.formula == "H2OC"
+
+
+def test_formula_add_str() -> None:
+    """Test combining a Formula with a plain string, per the documented API."""
+    f = Formula("H2O") + "C"
+    assert f.formula == "H2OC"

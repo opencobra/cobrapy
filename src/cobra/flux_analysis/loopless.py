@@ -639,12 +639,10 @@ def loopless_fva_iter(
     if current is None:
         return None
 
-    # boundary reactions can not be part of cycles
-    if reaction.boundary:
-        if solution:
-            return sol
-        else:
-            return current
+    # Boundary reactions cannot be part of cycles, but their full solutions
+    # can still contain cycles elsewhere in the model.
+    if reaction.boundary and not solution:
+        return current
 
     with model:
         _add_cycle_free(model, sol.fluxes)
@@ -654,7 +652,7 @@ def loopless_fva_iter(
         # loopless and we are done
         if abs(reaction.flux - current) < zero_cutoff:
             if solution:
-                return sol
+                return get_solution(model)
             return current
 
         # If previous optimum was not in the loopless solution create a new

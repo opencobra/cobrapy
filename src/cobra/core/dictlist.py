@@ -5,6 +5,7 @@ from itertools import islice
 from typing import (
     Any,
     Callable,
+    Generic,
     Iterable,
     Iterator,
     List,
@@ -22,7 +23,7 @@ from .object import Object
 CobraObject = TypeVar("CobraObject", bound=Object)
 
 
-class DictList(List[CobraObject]):
+class DictList(Generic[CobraObject], List[CobraObject]):
     """
     Define a combined dict and list.
 
