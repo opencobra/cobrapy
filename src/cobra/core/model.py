@@ -470,6 +470,7 @@ class Model(Object):
             # Cplex has an issue with deep copies
         except Exception:  # pragma: no cover
             new._solver = copy(self.solver)  # pragma: no cover
+        new._tolerance = self._tolerance
 
         # it doesn't make sense to retain the context of a copied model so
         # assign a new empty context

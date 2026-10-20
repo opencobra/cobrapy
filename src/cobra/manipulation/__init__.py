@@ -6,5 +6,5 @@ from .delete import (
     prune_unused_reactions,
     remove_genes,
 )
-from .modify import escape_ID, rename_genes
+from .modify import clip_reaction_bounds, escape_ID, rename_genes
 from .validate import check_mass_balance, check_metabolite_compartment_formula

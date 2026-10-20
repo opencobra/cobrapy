@@ -1,64 +1,36 @@
 """Test functionalities of removing loops in model."""
 
 from typing import Callable
+from unittest.mock import DEFAULT
 
 import pytest
 from optlang.interface import INFEASIBLE, OPTIMAL
 
-from cobra.core import Metabolite, Model, Reaction
-from cobra.flux_analysis.loopless import add_loopless, loopless_solution
-from cobra.util import solver as sutil
-
-
-def construct_ll_test_model() -> Model:
-    """Construct test model."""
-    test_model = Model()
-    test_model.add_metabolites(Metabolite("A"))
-    test_model.add_metabolites(Metabolite("B"))
-    test_model.add_metabolites(Metabolite("C"))
-    EX_A = Reaction("EX_A")
-    EX_A.add_metabolites({test_model.metabolites.A: 1})
-    DM_C = Reaction("DM_C")
-    DM_C.add_metabolites({test_model.metabolites.C: -1})
-    v1 = Reaction("v1")
-    v1.add_metabolites({test_model.metabolites.A: -1, test_model.metabolites.B: 1})
-    v2 = Reaction("v2")
-    v2.add_metabolites({test_model.metabolites.B: -1, test_model.metabolites.C: 1})
-    v3 = Reaction("v3")
-    v3.add_metabolites({test_model.metabolites.C: -1, test_model.metabolites.A: 1})
-    test_model.add_reactions([EX_A, DM_C, v1, v2, v3])
-    DM_C.objective_coefficient = 1
-    return test_model
-
-
-@pytest.fixture(
-    scope="function",
-    params=[s for s in ["glpk", "cplex", "gurobi"] if s in sutil.solvers],
+from cobra.core import Metabolite, Model, Reaction, get_solution
+from cobra.flux_analysis.loopless import (
+    add_loopless,
+    loopless_fva_iter,
+    loopless_solution,
 )
-def ll_test_model(request: pytest.FixtureRequest) -> Model:
-    """Return test model set with different solvers."""
-    test_model = construct_ll_test_model()
-    test_model.solver = request.param
-    return test_model
 
 
-@pytest.mark.parametrize("method", ["fastSNP", "original"])
-def test_loopless_benchmark_before(benchmark: Callable, method: str) -> None:
+@pytest.mark.parametrize("method", ["fastSNP", "potentials", "original"])
+def test_loopless_benchmark_before(
+    benchmark: Callable, ll_test_model: Model, method: str
+) -> None:
     """Benchmark initial condition."""
-    test_model = construct_ll_test_model()
 
     def _():
-        with test_model:
-            add_loopless(test_model, method=method)
-            test_model.optimize()
+        with ll_test_model:
+            add_loopless(ll_test_model, method=method)
+            ll_test_model.optimize()
 
     benchmark(_)
 
 
-def test_loopless_benchmark_after(benchmark: Callable) -> None:
+def test_loopless_benchmark_after(benchmark: Callable, ll_test_model: Model) -> None:
     """Benchmark final condition."""
-    test_model = construct_ll_test_model()
-    benchmark(loopless_solution, test_model)
+    benchmark(loopless_solution, ll_test_model)
 
 
 def test_loopless_solution(ll_test_model: Model) -> None:
@@ -82,10 +54,43 @@ def test_loopless_solution_fluxes(model: Model) -> None:
     assert ll_solution.objective_value == pytest.approx(sol.objective_value)
 
 
-@pytest.mark.parametrize("method", ["fastSNP", "original"])
-def test_add_loopless(ll_test_model: Model, method: str) -> None:
+@pytest.mark.parametrize("reaction_id", ["EX_A", "entry"])
+def test_loopless_fva_solution_removes_unrelated_cycle(
+    ll_test_model: Model, reaction_id: str, mocker
+) -> None:
+    """Return the cleaned solution even when loop removal preserves the optimum."""
+    model = ll_test_model
+    source = Metabolite("source")
+    model.reactions.EX_A.add_metabolites({model.metabolites.A: -1, source: 1})
+    entry = Reaction("entry")
+    entry.add_metabolites({source: -1, model.metabolites.A: 1})
+    model.add_reactions([entry])
+    model.reactions.EX_A.upper_bound = 10
+    model.objective = model.reactions.get_by_id(reaction_id)
+
+    # Supply a feasible optimal distribution with an extra cycle, independent
+    # of which optimal basis the solver happens to choose.
+    cyclic_solution = model.optimize()
+    assert cyclic_solution.objective_value == pytest.approx(10.0)
+    cyclic_solution.fluxes[["v1", "v2", "v3"]] = [11.0, 11.0, 1.0]
+    mocker.patch(
+        "cobra.flux_analysis.loopless.get_solution",
+        side_effect=[cyclic_solution, DEFAULT],
+        wraps=get_solution,
+    )
+
+    solution = loopless_fva_iter(model, model.reactions.get_by_id(reaction_id), True)
+    assert solution.fluxes[reaction_id] == pytest.approx(10.0)
+    assert solution.fluxes["v3"] == pytest.approx(0.0, abs=1e-6)
+
+
+@pytest.mark.parametrize("method", ["fastSNP", "potentials", "original"])
+@pytest.mark.parametrize("flux_threshold", [None, 1e-2])
+def test_add_loopless(
+    ll_test_model: Model, method: str, flux_threshold: float | None
+) -> None:
     """Test add_loopless()."""
-    add_loopless(ll_test_model, method=method)
+    add_loopless(ll_test_model, method=method, flux_threshold=flux_threshold)
     feasible_status = ll_test_model.optimize().status
     ll_test_model.reactions.v3.lower_bound = 1
     ll_test_model.slim_optimize()
