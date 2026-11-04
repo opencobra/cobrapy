@@ -1,7 +1,7 @@
 """Test functions of cobra.core.reaction ."""
 
 import warnings
-from typing import Iterable
+from typing import Iterable, Tuple
 
 import numpy as np
 import pytest
@@ -373,12 +373,8 @@ def test_build_from_string(model: Model) -> None:
         assert len(model.metabolites) == m
 
     with model:
-        old_bounds = config.bounds
-        assert old_bounds == (-1000, 1000)
-        config.bounds = (-5, 5)
         pgi.build_reaction_from_string("g6p_c <--> f6p_c + new", verbose=False)
-        assert pgi.bounds == (-5, 5)
-        config.bounds = old_bounds
+        assert pgi.bounds == (-1000, 1000)
         pgi.build_reaction_from_string("g6p_c --> f6p_c + new", verbose=False)
         assert pgi.bounds == (0, 1000)
 
@@ -394,6 +390,34 @@ def test_build_from_string_creating_metabolites() -> None:
     assert model.metabolites.get_by_id("a[c]").compartment == "c"
     assert model.metabolites.get_by_id("b[c]").compartment == "c"
     assert model.reactions.R1.compartments == set(["c"])
+
+
+@pytest.mark.parametrize(
+    "bounds, reaction_str, expected",
+    [
+        ((0, 10), "A --> B", (0, 10)),
+        ((5, 10), "A --> B", (5, 10)),
+        ((-10, 10), "A --> B", (0, 10)),
+        ((-10, 0), "A --> B", (0, 10)),
+        ((-10, 0), "A <-- B", (-10, 0)),
+        ((-10, 10), "A <-- B", (-10, 0)),
+        ((-10, 10), "A <=> B", (-10, 10)),
+        ((0, 10), "A <=> B", (-10, 10)),
+        ((-10, 0), "A <=> B", (-10, 10)),
+        ((0, 0), "A <=> B", (0, 0)),
+        ((0, 0), "A --> B", (0, 0)),
+        ((0, 0), "A <-- B", (0, 0)),
+    ],
+)
+def test_build_from_string_bounds(
+    bounds: Tuple[float, float], reaction_str: str, expected: Tuple[float, float]
+) -> None:
+    """Test that only bounds contradicting the arrow are changed (#1463)."""
+    model = Model()
+    rxn = Reaction("R1", lower_bound=bounds[0], upper_bound=bounds[1])
+    model.add_reactions([rxn])
+    rxn.build_reaction_from_string(reaction_str, verbose=False)
+    assert rxn.bounds == expected
 
 
 def test_bounds_setter(model: Model) -> None:
