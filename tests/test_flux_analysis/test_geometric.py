@@ -66,3 +66,17 @@ def test_geometric_fba(geometric_fba_model: Model, all_solvers: List[str]) -> No
         index=["v1", "v2", "v3", "v4", "v5"],
     )
     assert np.allclose(geometric_fba_sol.fluxes, expected, atol=1e-02)
+
+
+@pytest.mark.parametrize("raise_error", [True, False])
+def test_geometric_fba_forwards_raise_error(
+    geometric_fba_model: Model, mocker, raise_error: bool
+) -> None:
+    """Test that `raise_error` is forwarded to every `optimize` call."""
+    optimize = mocker.spy(geometric_fba_model, "optimize")
+    solution = geometric_fba(geometric_fba_model, processes=1, raise_error=raise_error)
+    assert solution.status == "optimal"
+    assert optimize.call_count > 0
+    assert all(
+        call.kwargs["raise_error"] is raise_error for call in optimize.call_args_list
+    )
