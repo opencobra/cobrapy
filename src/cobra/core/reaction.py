@@ -1,6 +1,7 @@
 """Define the Reaction class."""
 
 import hashlib
+import logging
 import re
 from collections import defaultdict
 from copy import deepcopy
@@ -45,6 +46,7 @@ from .metabolite import Metabolite
 from .object import Object
 
 
+logger = logging.getLogger(__name__)
 config = Configuration()
 
 # This regular expression finds any single letter compartment enclosed in
@@ -1552,22 +1554,34 @@ class Reaction(Object):
         else:
             compartment = None
 
+        lb, ub = self._lower_bound, self._upper_bound
         # reversible case
         arrow_match = reversible_arrow_finder.search(reaction_str)
         if arrow_match is not None:
-            self.bounds = config.lower_bound, config.upper_bound
+            # open a closed direction by mirroring the open one
+            if lb >= 0 and ub > 0:
+                lb = -ub
+            elif ub <= 0 and lb < 0:
+                ub = -lb
         else:  # irreversible
             # try forward
             arrow_match = forward_arrow_finder.search(reaction_str)
             if arrow_match is not None:
-                self.bounds = 0, config.upper_bound
+                if lb < 0:
+                    lb, ub = 0, ub if ub > 0 else -lb
             else:
                 # must be reverse
                 arrow_match = reverse_arrow_finder.search(reaction_str)
                 if arrow_match is None:
                     raise ValueError(f"no suitable arrow found in '{reaction_str}'")
-                else:
-                    self.bounds = config.lower_bound, 0
+                elif ub > 0:
+                    lb, ub = lb if lb < 0 else -ub, 0
+        if (lb, ub) != self.bounds:
+            logger.warning(
+                f"Changing bounds of reaction {self.id} from {self.bounds} to "
+                f"{(lb, ub)} to match the arrow in '{reaction_str}'."
+            )
+            self.bounds = lb, ub
         reactant_str = reaction_str[: arrow_match.start()].strip()
         product_str = reaction_str[arrow_match.end() :].strip()
 
