@@ -13,6 +13,7 @@
 - fixed the URL for the BIGG repository
 - fixed the URL for the BioModels repository
 - gene ids containing characters such as `@`, `+`, `*` or `#` are now parsed correctly in GPRs, so reactions using them can be copied (#1448)
+- adding a reaction that already belongs to another model copies it, so changing the new reaction no longer changes the source model (#1456)
 
 ## Other
 
