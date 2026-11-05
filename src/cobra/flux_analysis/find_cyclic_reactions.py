@@ -125,6 +125,9 @@ def find_cyclic_reactions(
     zero_cutoff = normalize_cutoff(model, zero_cutoff)
 
     internal = [i for i, r in enumerate(model.reactions) if not r.boundary]
+    if not internal:
+        return [], []
+
     s_int = create_stoichiometric_matrix(model)[:, np.array(internal)]
     n = s_int.shape[1]
 

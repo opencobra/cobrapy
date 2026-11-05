@@ -9,6 +9,7 @@
 
 ## Fixes
 
+- `add_loopless` now handles models and reaction selections without internal cycles, and `find_cyclic_reactions` returns empty results when there are no internal reactions.
 - type-annotations on resetable properties fixed.
 - fixed the URL for the BIGG repository
 - fixed the URL for the BioModels repository

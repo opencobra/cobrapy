@@ -4,7 +4,7 @@ from typing import Callable, List
 
 import pytest
 
-from cobra import Model
+from cobra import Metabolite, Model, Reaction
 from cobra.flux_analysis.find_cyclic_reactions import find_cyclic_reactions
 
 
@@ -35,3 +35,20 @@ def test_find_cyclic_reactions(
         assert reaction in cyclic_reactions, f"Expected {reaction} in cyclic reactions"
     for directions in cyclic_directions:
         assert directions == (False, True)
+
+
+@pytest.mark.parametrize("method", ["basic", "optimized"])
+@pytest.mark.parametrize("boundary_only", [False, True])
+def test_find_cyclic_reactions_no_internal(method: str, boundary_only: bool) -> None:
+    """No internal reactions means no internal cyclic directions."""
+    model = Model()
+    model.solver = "glpk"
+    if boundary_only:
+        metabolite = Metabolite("A")
+        uptake = Reaction("uptake")
+        uptake.add_metabolites({metabolite: 1})
+        drain = Reaction("drain")
+        drain.add_metabolites({metabolite: -1})
+        model.add_reactions([uptake, drain])
+
+    assert find_cyclic_reactions(model, method=method) == ([], [])
