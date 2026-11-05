@@ -12,6 +12,7 @@
 - type-annotations on resetable properties fixed.
 - fixed the URL for the BIGG repository
 - fixed the URL for the BioModels repository
+- `write_sbml_model` no longer fails with a libSBML `TypeError` when reaction bounds or stoichiometries are numpy scalars.
 - gene ids containing characters such as `@`, `+`, `*` or `#` are now parsed correctly in GPRs, so reactions using them can be copied (#1448)
 
 ## Other
