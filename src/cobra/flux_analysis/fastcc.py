@@ -35,8 +35,11 @@ def _add_lp7_vars(
 
     for rxn in rxns:
         var = prob.Variable(f"auxiliary_{rxn.id}", lb=0.0, ub=flux_threshold)
+        flux_expression = rxn.flux_expression
+        if rxn.upper_bound <= 0:
+            flux_expression = -flux_expression
         const = prob.Constraint(
-            rxn.flux_expression - var,
+            flux_expression - var,
             name="aux_constraint_{}".format(rxn.id),
             lb=-LARGE_VALUE,
         )
