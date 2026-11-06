@@ -691,7 +691,8 @@ class Model(Object):
         """Add reactions to the model.
 
         Reactions with identifiers identical to a reaction already in the
-        model are ignored.
+        model are ignored. A reaction that already belongs to another model
+        is copied first, so the source model keeps its own reaction.
 
         The change is reverted upon exit when using the model as a context.
 
@@ -721,6 +722,16 @@ class Model(Object):
 
         # First check whether the reactions exist in the model.
         pruned = DictList(filter(existing_filter, reaction_list))
+        # The reaction object stores its model. Reusing one that already
+        # belongs elsewhere would move it out of that model.
+        pruned = DictList(
+            (
+                reaction.copy()
+                if reaction._model is not None and reaction._model is not self
+                else reaction
+            )
+            for reaction in pruned
+        )
 
         context = get_context(self)
 

@@ -1017,6 +1017,33 @@ def test_add_reactions_duplicate(model: Model) -> None:
     assert r2 is not model.reactions.get_by_id(rxn.id)
 
 
+def test_add_reaction_from_other_model_is_copied() -> None:
+    """Test that a reaction already in a model is copied, not aliased."""
+    source = Model("M1")
+    reaction = Reaction("R1")
+    reaction.add_metabolites({Metabolite("A"): -1, Metabolite("B"): 1})
+    reaction.gene_reaction_rule = "gene_a"
+    source.add_reactions([reaction])
+    original_bounds = source.reactions.R1.bounds
+
+    destination = Model("M2")
+    with destination:
+        destination.add_reactions(source.reactions)
+        added = destination.reactions.R1
+        assert added is not source.reactions.R1
+        assert added.model is destination
+        assert source.reactions.R1.model is source
+        added.bounds = (500, 600)
+        assert source.reactions.R1.bounds == original_bounds
+        assert added.gene_reaction_rule == "gene_a"
+        assert {gene.id for gene in added.genes} == {"gene_a"}
+        assert all(gene.model is destination for gene in added.genes)
+        assert all(gene.model is source for gene in source.reactions.R1.genes)
+    assert "R1" not in destination.reactions
+    assert source.reactions.R1.model is source
+    assert source.reactions.R1.bounds == original_bounds
+
+
 def test_all_objects_point_to_all_other_correct_objects(model: Model) -> None:
     """Test that objects point to needed other objects.
 
