@@ -60,7 +60,7 @@ def _create_find_cyclic_reactions_problem(
 def find_cyclic_reactions(
     model: "Model",
     zero_cutoff: Optional[float] = None,
-    bound: float = 1e4,
+    bound: float = 1e3,
     method: str = "optimized",
     required_stop_checks_num: int = 3,
 ) -> Tuple[List[str], List[Tuple[bool, bool]]]:
@@ -75,7 +75,7 @@ def find_cyclic_reactions(
         The default uses the `model.tolerance` (default None).
     bound : float, optional
         The bound for the reaction fluxes in the optimization problem.
-        (default is 1e4).
+        (default is 1e3).
     method : str, optional
         The method to use for finding cyclic reactions.
         Options are "optimized" (default) or "basic".
@@ -164,18 +164,18 @@ def find_cyclic_reactions(
 
                 sutil.check_solver_status(lp.status)
 
-                if abs(lp.objective.value) > zero_cutoff:
-                    remove_coef = {}
-                    for i in range(n):
-                        if not is_cyclic[i] and abs(q_list[i].primal) > zero_cutoff:
-                            is_cyclic[i] = True
-                            cyclic_reactions_num += 1
-                            remove_coef[q_list[i]] = 0
-                            if q_list[i].primal > zero_cutoff:
-                                can_positive[i] = True
-                            else:
-                                can_negative[i] = True
+                remove_coef = {}
+                for i in range(n):
+                    if not is_cyclic[i] and abs(q_list[i].primal) > zero_cutoff:
+                        is_cyclic[i] = True
+                        cyclic_reactions_num += 1
+                        remove_coef[q_list[i]] = 0
+                        if q_list[i].primal > zero_cutoff:
+                            can_positive[i] = True
+                        else:
+                            can_negative[i] = True
 
+                if len(remove_coef) > 0:
                     found_cyclic = True
                     lp.objective.set_linear_coefficients(remove_coef)
                     stop_checks_num = 0
