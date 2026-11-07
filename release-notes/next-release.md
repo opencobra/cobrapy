@@ -17,6 +17,7 @@
 - `write_sbml_model` no longer fails with a libSBML `TypeError` when reaction bounds or stoichiometries are numpy scalars.
 - gene ids containing characters such as `@`, `+`, `*` or `#` are now parsed correctly in GPRs, so reactions using them can be copied (#1448)
 - adding a reaction that already belongs to another model copies it, so changing the new reaction no longer changes the source model (#1456)
+- `Reaction.add_metabolites(..., combine=False)` inside a model context no longer raises a `KeyError` when it adds a metabolite that was not yet in the reaction, so co-factor pairs can be swapped reversibly (#849)
 
 ## Other
 

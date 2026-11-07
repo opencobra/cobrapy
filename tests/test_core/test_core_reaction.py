@@ -972,6 +972,38 @@ def test_add_metabolites_combine_false(model: Model) -> None:
         )
 
 
+def test_add_metabolites_combine_false_with_context(model: Model) -> None:
+    """Test swapping co-factors with combine = False is reverted (#849)."""
+    rxn = model.reactions.PDH
+    original = rxn.metabolites
+    nad, nadh, nadp, nadph = model.metabolites.get_by_any(
+        ["nad_c", "nadh_c", "nadp_c", "nadph_c"]
+    )
+    with model:
+        rxn.add_metabolites(
+            {nad: 0, nadh: 0, nadp: original[nad], nadph: original[nadh]},
+            combine=False,
+        )
+        assert nad not in rxn.metabolites
+        assert rxn.metabolites[nadp] == original[nad]
+    assert rxn.metabolites == original
+    for met in (nad, nadp):
+        assert model.constraints[met.id].get_linear_coefficients(
+            [rxn.forward_variable]
+        )[rxn.forward_variable] == original.get(met, 0)
+
+
+def test_combine_false_foreign_metabolite_with_context(model: Model) -> None:
+    """Test a metabolite from another model keeps its old coefficient on undo."""
+    rxn = model.reactions.PDH
+    original = rxn.metabolites
+    foreign_nad = model.copy().metabolites.nad_c
+    with model:
+        rxn.add_metabolites({foreign_nad: -2}, combine=False)
+        assert rxn.metabolites[model.metabolites.nad_c] == -2
+    assert rxn.metabolites == original
+
+
 def test_reaction_imul(model: Model) -> None:
     """Test in-place scalar factor multiplication to reaction."""
     with model:
