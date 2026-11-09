@@ -24,6 +24,7 @@ from typing import (
 )
 from warnings import warn
 
+from .compartment import Compartment
 
 if TYPE_CHECKING:
     from optlang.interface import Variable
@@ -112,6 +113,8 @@ class Reaction(Object):
         # self.model is None or refers to the cobra.Model that
         # contains self
         self._model = None
+
+        self._compartment = None
 
         # from cameo ...
         self._lower_bound = (
@@ -1441,9 +1444,12 @@ class Reaction(Object):
         set
             A set of compartments the metabolites are in.
         """
-        return {
-            met.compartment for met in self._metabolites if met.compartment is not None
-        }
+        if self._compartment:
+            return set(self._compartment.id)
+        else:
+            return {
+                met.compartment for met in self._metabolites if met.compartment is not None
+            }
 
     def get_compartments(self) -> list:
         """List compartments the metabolites are in.
@@ -1457,6 +1463,18 @@ class Reaction(Object):
         """
         warn("use Reaction.compartments instead", DeprecationWarning)
         return list(self.compartments)
+
+    @property
+    def location(self) -> Optional[Compartment]:
+        """Get assigned compartment, if any.
+
+        Returns
+        -------
+        Compartment
+            Gets the compartment this reaction was explicitly assigned to, if one
+            exists. If no compartment was assigned, return None.
+        """
+        return self._compartment
 
     def _associate_gene(self, cobra_gene: Gene) -> None:
         """Associates a cobra.Gene object with a cobra.Reaction.
