@@ -1281,7 +1281,7 @@ class Reaction(Object):
             else:
                 # Reset them with add_metabolites
                 mets_to_reset = {
-                    key: old_coefficients[model.metabolites.get_by_any(key)[0]]
+                    key: old_coefficients.get(model.metabolites.get_by_id(str(key)), 0)
                     for key in metabolites_to_add.keys()
                 }
 
