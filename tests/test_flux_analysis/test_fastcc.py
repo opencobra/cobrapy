@@ -122,3 +122,63 @@ def test_fastcc_against_nonblocked_rxns_large(large_model: Model) -> None:
     fastcc_ids = set(rxn.id for rxn in fastcc_consistent_model.reactions)
     assert len(model.reactions) - len(blocked) == len(fastcc_consistent_model.reactions)
     assert fastcc_ids & set(blocked) == set()
+
+
+@pytest.mark.filterwarnings("error:Solver status is")
+@pytest.mark.parametrize("reverse_mask", range(8))
+@pytest.mark.parametrize("minimum_flux,close_path", [(0, False), (0, True), (1, False)])
+def test_fastcc_signed_path(
+    reverse_mask: int, minimum_flux: int, close_path: bool, all_solvers: str
+) -> None:
+    """Changing reaction orientation preserves the exact consistency set."""
+    test_model = Model("signed_path")
+    uptake, path, drain, dead_end, closed = [
+        Reaction(rid) for rid in ("uptake", "path", "drain", "dead_end", "closed")
+    ]
+    test_model.add_reactions([uptake, path, drain, dead_end, closed])
+    uptake.reaction = "-> A"
+    path.reaction = "A -> B"
+    drain.reaction = "B ->"
+    dead_end.reaction = "A -> C"
+    closed.reaction = "A -> B"
+    for reaction in test_model.reactions:
+        reaction.bounds = (0, 10)
+    closed.bounds = (0, 0)
+    for reaction in (uptake, path, drain):
+        reaction.bounds = (minimum_flux, 10)
+    if close_path:
+        path.bounds = (0, 0)
+    for index, reaction in enumerate((uptake, path, drain)):
+        if reverse_mask & (1 << index):
+            reaction *= -1
+    test_model.solver = all_solvers
+    test_model.objective = drain
+    before_objective = str(test_model.objective.expression)
+    before = [(r.id, r.reaction, r.bounds) for r in test_model.reactions]
+    before_variables = set(test_model.variables.keys())
+    before_constraints = set(test_model.constraints.keys())
+
+    consistent_model = fastcc(test_model)
+
+    # C has no consumer, so dead_end is zero. The other mass balances force
+    # equal physical pathway fluxes; all can reach 10 unless path is closed.
+    expected = set() if close_path else {"uptake", "path", "drain"}
+    assert {r.id for r in consistent_model.reactions} == expected
+    assert [(r.id, r.reaction, r.bounds) for r in test_model.reactions] == before
+    assert str(test_model.objective.expression) == before_objective
+    assert set(test_model.variables.keys()) == before_variables
+    assert set(test_model.constraints.keys()) == before_constraints
+
+
+def test_fastcc_reversible_cycle_with_closed_reaction(all_solvers: str) -> None:
+    """Reversible loops remain flux-consistent and fixed-zero reactions do not."""
+    test_model = Model("reversible_cycle")
+    forward, backward, closed = [Reaction(rid) for rid in ("f", "b", "closed")]
+    test_model.add_reactions([forward, backward, closed])
+    forward.reaction = "A <-> B"
+    backward.reaction = "B <-> A"
+    closed.reaction = "A -> B"
+    forward.bounds = backward.bounds = (-10, 10)
+    closed.bounds = (0, 0)
+    test_model.solver = all_solvers
+    assert {r.id for r in fastcc(test_model).reactions} == {"f", "b"}
