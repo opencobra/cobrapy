@@ -9,9 +9,12 @@
 
 ## Fixes
 
+- `add_loopless` now handles models and reaction selections without internal cycles, and `find_cyclic_reactions` returns empty results when there are no internal reactions.
+- FASTCC now uses the feasible direction of negative-only irreversible reactions when constructing its consistency LP, preserving consistency under supported reaction reversal.
 - type-annotations on resetable properties fixed.
 - fixed the URL for the BIGG repository
 - fixed the URL for the BioModels repository
+- `write_sbml_model` no longer fails with a libSBML `TypeError` when reaction bounds or stoichiometries are numpy scalars.
 - gene ids containing characters such as `@`, `+`, `*` or `#` are now parsed correctly in GPRs, so reactions using them can be copied (#1448)
 - adding a reaction that already belongs to another model copies it, so changing the new reaction no longer changes the source model (#1456)
 

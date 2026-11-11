@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from cobra import Model
+from cobra import Metabolite, Model, Reaction
 from cobra.exceptions import Infeasible
 from cobra.flux_analysis.loopless import add_loopless
 from cobra.flux_analysis.variability import (
@@ -100,6 +100,37 @@ def test_parallel_flux_variability(
 
 
 # Loopless FVA
+@pytest.mark.parametrize("internal_reaction", [False, True])
+@pytest.mark.parametrize("all_fluxes", [False, True])
+def test_flux_variability_loopless_acyclic(
+    internal_reaction: bool, all_fluxes: bool
+) -> None:
+    """Loopless FVA preserves bounds for networks without internal cycles."""
+    model = Model()
+    model.solver = "glpk"
+    a, b = Metabolite("A"), Metabolite("B")
+    uptake, drain = Reaction("uptake"), Reaction("drain")
+    uptake.add_metabolites({a: 1})
+    drain.add_metabolites({b if internal_reaction else a: -1})
+    uptake.bounds = drain.bounds = (0, 10)
+    model.add_reactions([uptake, drain])
+    if internal_reaction:
+        internal = Reaction("internal")
+        internal.add_metabolites({a: -1, b: 1})
+        internal.bounds = (0, 10)
+        model.add_reactions([internal])
+    model.objective = drain
+
+    result = flux_variability_analysis(
+        model, loopless="fastSNP", all_fluxes=all_fluxes, processes=1
+    )
+
+    bounds = result[0] if all_fluxes else result
+    assert np.allclose(bounds, 10)
+    if all_fluxes:
+        assert all(np.allclose(fluxes, 10) for fluxes in result[1].values())
+
+
 @pytest.mark.parametrize("loopless", ["fastSNP", "cycleFreeFlux"])
 def test_flux_variability_loopless_benchmark(
     model: Model, benchmark: Callable, all_solvers: List[str], loopless: str

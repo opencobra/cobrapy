@@ -83,6 +83,9 @@ def add_loopless(
             if not r.boundary and r.id in reactions_set
         ]
 
+    if not reactions_to_constrain:
+        return
+
     s_int = create_stoichiometric_matrix(model)[:, np.array(reactions_to_constrain)]
 
     if method == "original":

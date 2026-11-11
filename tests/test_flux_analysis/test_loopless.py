@@ -92,3 +92,56 @@ def test_add_loopless(ll_test_model: Model, method: str) -> None:
     infeasible_status = ll_test_model.solver.status
     assert feasible_status == OPTIMAL
     assert infeasible_status == INFEASIBLE
+
+
+def test_add_loopless_acyclic(ll_test_model: Model) -> None:
+    """A model without internal cycles needs no loopless constraints."""
+    ll_test_model.remove_reactions(["v3"])
+    expected_objective = ll_test_model.slim_optimize()
+    variables = list(ll_test_model.variables)
+    constraints = list(ll_test_model.constraints)
+
+    add_loopless(ll_test_model)
+
+    assert ll_test_model.slim_optimize() == pytest.approx(expected_objective)
+    assert list(ll_test_model.variables) == variables
+    assert list(ll_test_model.constraints) == constraints
+
+
+@pytest.mark.parametrize("method", ["fastSNP", "original"])
+def test_add_loopless_boundary_only(ll_test_model: Model, method: str) -> None:
+    """Boundary-only models cannot contain an internal cycle."""
+    ll_test_model.remove_reactions(["v1", "v2", "v3"])
+    expected_objective = ll_test_model.slim_optimize()
+
+    add_loopless(ll_test_model, method=method)
+
+    assert ll_test_model.slim_optimize() == pytest.approx(expected_objective)
+
+
+@pytest.mark.parametrize("method", ["fastSNP", "original"])
+@pytest.mark.parametrize("reactions", [[], ["EX_A", "DM_C"]])
+def test_add_loopless_empty_internal_selection(
+    ll_test_model: Model, method: str, reactions: list
+) -> None:
+    """Selecting no internal reactions leaves the feasible flux space intact."""
+    ll_test_model.reactions.v3.lower_bound = 1
+    expected_objective = ll_test_model.slim_optimize()
+    variables = list(ll_test_model.variables)
+    constraints = list(ll_test_model.constraints)
+
+    add_loopless(ll_test_model, method=method, reactions=reactions)
+
+    assert ll_test_model.slim_optimize() == pytest.approx(expected_objective)
+    assert list(ll_test_model.variables) == variables
+    assert list(ll_test_model.constraints) == constraints
+
+
+def test_add_loopless_all_blocked(ll_test_model: Model) -> None:
+    """Reactions fixed to zero have no feasible cyclic directions."""
+    for reaction in ll_test_model.reactions:
+        reaction.bounds = (0, 0)
+
+    add_loopless(ll_test_model)
+
+    assert ll_test_model.slim_optimize() == 0
