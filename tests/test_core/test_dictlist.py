@@ -158,6 +158,28 @@ def test_extend(dict_list: Tuple[Object, DictList]) -> None:
         test_list.extend([Object("testd"), Object("testd")])
 
 
+@pytest.mark.parametrize("method", ["extend", "__iadd__"])
+@pytest.mark.parametrize(
+    "ids", [["test1"], ["test2", "test1", "test3"], ["test2", "test2", "test3"]]
+)
+def test_extend_duplicate_rollback(
+    dict_list: Tuple[Object, DictList], method: str, ids: list
+) -> None:
+    """Test that a rejected extension preserves the list and its index."""
+    obj, test_list = dict_list
+    with pytest.raises(ValueError):
+        getattr(test_list, method)(Object(id) for id in ids)
+
+    assert list(test_list) == [obj]
+    assert test_list.get_by_id("test1") is obj
+    assert test_list.index("test1") == 0
+    assert "test2" not in test_list
+    assert "test3" not in test_list
+
+    test_list.append(Object("test2"))
+    assert test_list.index("test2") == 1
+
+
 def test_iadd(dict_list: Tuple[Object, DictList]) -> None:
     """Test in-place addition for dictlist.
 
