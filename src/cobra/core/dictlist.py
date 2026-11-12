@@ -220,7 +220,7 @@ class DictList(Generic[CobraObject], List[CobraObject]):
                 _dict[the_id] = i
             else:
                 # undo the extend and raise an error
-                self = self[:current_length]
+                del self[current_length:]
                 self._check(the_id)
                 # if the above succeeded, then the id must be present
                 # twice in the list being added
