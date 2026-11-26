@@ -58,8 +58,8 @@ def _find_sparse_mode(
     ----------
     model: cobra.Model
         The model to perform FASTCC on.
-    rxns: list of cobra.Reaction
-        The reactions to use for LP.
+    rxn_ids: set of str
+        The IDs of the reactions to use for LP.
     zero_cutoff: float
         The cutoff below which flux is considered zero.
 
@@ -96,8 +96,8 @@ def _flip_coefficients(model: "Model", rxn_ids: Set[str]) -> None:
     ----------
     model: cobra.Model
         The model to operate on.
-    rxns: list of cobra.Reaction
-        The list of reactions whose coefficients will be flipped.
+    rxn_ids: set of str
+        The IDs of the reactions whose coefficients will be flipped.
 
     """
     if not rxn_ids:

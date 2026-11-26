@@ -56,7 +56,7 @@ def _reaction_deletion(
     ----------
     model : cobra.Model
         The model to perform reaction deletion on.
-    ids : list of str
+    reaction_ids : list of str
         The reaction IDs to knock-out.
 
     Returns
@@ -100,7 +100,7 @@ def _gene_deletion(model: Model, gene_ids: List[str]) -> Tuple[List[str], float,
     ----------
     model : cobra.Model
         The model to perform gene deletion on.
-    ids : list of str
+    gene_ids : list of str
         The gene IDs to knock-out.
 
     Returns
